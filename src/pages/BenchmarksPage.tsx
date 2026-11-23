@@ -6,7 +6,7 @@ import styles from './BenchmarksPage.module.css';
 
 const HALF_NAMES = { dev: '研发', ops: '运维' } as const;
 
-export function stageLabels(stages: Stage[], benchmarks: BenchmarkSummary[]): Record<string, StageLabel> {
+function stageLabels(stages: Stage[], benchmarks: BenchmarkSummary[]): Record<string, StageLabel> {
   const names = Object.fromEntries(benchmarks.map(item => [item.id, item.name]));
   return Object.fromEntries(stages.filter(stage => stage.benchmarkIds.length > 0).map(stage => [
     stage.id, { primary: stage.benchmarkIds.map(id => names[id]).join(' · '), secondary: `${stage.id} ${stage.name}` },

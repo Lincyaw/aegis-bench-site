@@ -14,7 +14,7 @@ const TABS: { tab: RunTab; label: string }[] = [
 const METHOD_LABELS: Record<CheckMethod, string> = { hiddenTest: '隐藏测试', script: '脚本', modelReview: '模型评审' };
 
 /** A failed run opens on why it failed; any other run on what it produced. */
-export function defaultTab(run: RunDetail): RunTab {
+function defaultTab(run: RunDetail): RunTab {
   return run.outcome === 'failed' ? 'failure' : run.outcome === 'executionFailed' ? 'trajectory' : 'output';
 }
 
