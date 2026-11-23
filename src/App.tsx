@@ -1,6 +1,5 @@
 import { Outlet, ScrollRestoration, createBrowserRouter } from 'react-router-dom';
 import { SiteFooter, SiteNav } from './components/SiteChrome';
-import { LandingPage } from './landing/LandingPage';
 import { BenchmarkPage } from './pages/BenchmarkPage';
 import { BenchmarksPage } from './pages/BenchmarksPage';
 import { LeaderboardPage } from './pages/LeaderboardPage';
@@ -20,7 +19,14 @@ function Layout() {
 }
 
 export const router = createBrowserRouter([
-  { path: '/', element: <><LandingPage /><ScrollRestoration /></> },
+  {
+    path: '/',
+    // The landing page brings three.js and anime.js, so it loads on its own.
+    lazy: async () => {
+      const { LandingPage } = await import('./landing/LandingPage');
+      return { Component: () => <><LandingPage /><ScrollRestoration /></> };
+    },
+  },
   {
     element: <Layout />,
     children: [
