@@ -1,0 +1,282 @@
+<canvas id="scene" aria-hidden="true"></canvas>
+<div class="veil" id="veil-side" aria-hidden="true"></div>
+<div class="veil" id="veil-dim" aria-hidden="true"></div>
+<div class="veil" id="veil-hero" aria-hidden="true"></div>
+<svg id="tether" aria-hidden="true"></svg>
+<div id="labels" aria-hidden="true"></div>
+<div id="vignettes" aria-hidden="true">
+  <!-- 01 Requirements: a spoken request becomes a checklist of acceptable tasks. -->
+  <div class="vignette" data-stage="0"><svg class="vg" viewBox="0 0 360 240">
+    <path class="dim draw" d="M44 62h104a10 10 0 0 1 10 10v52a10 10 0 0 1-10 10H86l-18 16v-16H44a10 10 0 0 1-10-10V72a10 10 0 0 1 10-10z"/>
+    <path class="ink draw" d="M50 84q10-6 20 0t20 0t20 0t20 0"/>
+    <path class="ink draw" d="M50 100q10-6 20 0t20 0t20 0"/>
+    <path class="ink draw" d="M50 116q10-6 20 0t20 0"/>
+    <path class="c draw" d="M176 100h32m-7-6l7 6l-7 6"/>
+    <g class="row"><rect class="dim" x="226" y="58" width="14" height="14" rx="3"/><path class="c tick" d="M229.5 65l3 3l5-6"/><rect class="fdim" x="250" y="62" width="78" height="6" rx="3"/></g>
+    <g class="row"><rect class="dim" x="226" y="92" width="14" height="14" rx="3"/><path class="c tick" d="M229.5 99l3 3l5-6"/><rect class="fdim" x="250" y="96" width="60" height="6" rx="3"/></g>
+    <g class="row"><rect class="dim" x="226" y="126" width="14" height="14" rx="3"/><path class="c tick" d="M229.5 133l3 3l5-6"/><rect class="fdim" x="250" y="130" width="86" height="6" rx="3"/></g>
+    <text x="64" y="196">原始需求</text><text x="248" y="196">可验收的任务</text>
+  </svg></div>
+  <!-- 02 Design: components appear, get wired together, and a request travels through them. -->
+  <div class="vignette" data-stage="1"><svg class="vg" viewBox="0 0 360 240">
+    <path class="dim link" d="M180 56v18H92v24"/>
+    <path class="dim link" d="M180 74h88v24"/>
+    <path class="dim link" d="M92 128v42h50"/>
+    <path class="dim link" d="M268 128v42h-50"/>
+    <rect class="c solid pop node" x="148" y="26" width="64" height="30" rx="5"/>
+    <rect class="ink solid pop node" x="56" y="98" width="72" height="30" rx="5"/>
+    <rect class="ink solid pop node" x="232" y="98" width="72" height="30" rx="5"/>
+    <g class="pop node"><path class="ink solid" d="M146 162v24a34 8 0 0 0 68 0v-24"/><ellipse class="ink solid" cx="180" cy="162" rx="34" ry="8"/></g>
+    <text class="mono" x="168" y="45">UI</text><text class="mono" x="80" y="117">API</text><text class="mono" x="252" y="117">AUTH</text><text class="mono" x="170" y="192">DB</text>
+    <path id="v1-flow" d="M180 56v18H92v24v30v42h50" stroke="none"/>
+    <circle class="fc dot" r="4" cx="0" cy="0"/>
+  </svg></div>
+  <!-- 03 Implementation: code is typed into an editor line by line. -->
+  <div class="vignette" data-stage="2"><svg class="vg" viewBox="0 0 360 240">
+    <rect class="dim" x="20" y="22" width="320" height="196" rx="6"/>
+    <path class="dim" d="M20 44h320"/>
+    <circle class="fdim" cx="34" cy="33" r="3"/><circle class="fdim" cx="45" cy="33" r="3"/><circle class="fdim" cx="56" cy="33" r="3"/>
+    <g class="nums"><rect class="fdim" x="32" y="60" width="10" height="6" rx="3"/><rect class="fdim" x="32" y="80" width="10" height="6" rx="3"/><rect class="fdim" x="32" y="100" width="10" height="6" rx="3"/><rect class="fdim" x="32" y="120" width="10" height="6" rx="3"/><rect class="fdim" x="32" y="140" width="10" height="6" rx="3"/><rect class="fdim" x="32" y="160" width="10" height="6" rx="3"/><rect class="fdim" x="32" y="180" width="10" height="6" rx="3"/></g>
+    <rect class="fc code" x="56" y="60" width="96" height="6" rx="3"/>
+    <rect class="fink code" x="72" y="80" width="140" height="6" rx="3"/>
+    <rect class="fc code" x="72" y="100" width="72" height="6" rx="3"/>
+    <rect class="fink code" x="88" y="120" width="168" height="6" rx="3"/>
+    <rect class="fink code" x="88" y="140" width="120" height="6" rx="3"/>
+    <rect class="fc code" x="72" y="160" width="90" height="6" rx="3"/>
+    <rect class="fink code" x="56" y="180" width="40" height="6" rx="3"/>
+    <rect class="fc caret" x="56" y="57" width="6" height="12" rx="1"/>
+  </svg></div>
+  <!-- 04 Review: a diff marks what changed, a comment is raised, and the change is approved. -->
+  <div class="vignette" data-stage="3"><svg class="vg" viewBox="0 0 360 240">
+    <rect class="dim" x="20" y="22" width="320" height="196" rx="6"/>
+    <g class="drow"><rect class="fdim" x="44" y="42" width="120" height="6" rx="3"/></g>
+    <g class="drow"><rect class="fbad mark-bg" x="21" y="58" width="318" height="22"/><path class="bad" d="M30 69h6"/><rect class="fdim" x="44" y="66" width="150" height="6" rx="3"/></g>
+    <g class="drow"><rect class="fok mark-bg" x="21" y="82" width="318" height="22"/><path class="ok" d="M30 93h6m-3-3v6"/><rect class="fink" x="44" y="90" width="170" height="6" rx="3"/></g>
+    <g class="drow"><rect class="fok mark-bg" x="21" y="106" width="318" height="22"/><path class="ok" d="M30 117h6m-3-3v6"/><rect class="fink" x="60" y="114" width="110" height="6" rx="3"/></g>
+    <g class="drow"><rect class="fdim" x="44" y="138" width="90" height="6" rx="3"/></g>
+    <g class="pop comment"><path class="c solid" d="M206 128h108a6 6 0 0 1 6 6v28a6 6 0 0 1-6 6h-80l-10 10v-10h-18a6 6 0 0 1-6-6v-28a6 6 0 0 1 6-6z"/><rect class="fc" x="218" y="140" width="70" height="5" rx="2.5"/><rect class="fdim" x="218" y="151" width="46" height="5" rx="2.5"/></g>
+    <circle class="ok draw" cx="302" cy="54" r="14"/><path class="ok draw" d="M295 54l5 5l9-10"/>
+  </svg></div>
+  <!-- 05 Testing: cases pass one by one; one fails, is fixed and rerun, and the suite goes green. -->
+  <div class="vignette" data-stage="4"><svg class="vg" viewBox="0 0 360 240">
+    <g class="trow"><circle class="dim st" cx="44" cy="44" r="8"/><path class="ok draw chk" d="M40 44l3 3l6-6"/><rect class="fdim" x="64" y="41" width="150" height="6" rx="3"/></g>
+    <g class="trow"><circle class="dim st" cx="44" cy="74" r="8"/><path class="ok draw chk" d="M40 74l3 3l6-6"/><rect class="fdim" x="64" y="71" width="190" height="6" rx="3"/></g>
+    <g class="trow"><circle class="dim st" cx="44" cy="104" r="8"/><path class="bad draw cross" d="M40.5 100.5l7 7m0-7l-7 7"/><path class="ok draw chk" d="M40 104l3 3l6-6"/><rect class="fdim" x="64" y="101" width="120" height="6" rx="3"/></g>
+    <g class="trow"><circle class="dim st" cx="44" cy="134" r="8"/><path class="ok draw chk" d="M40 134l3 3l6-6"/><rect class="fdim" x="64" y="131" width="170" height="6" rx="3"/></g>
+    <g class="trow"><circle class="dim st" cx="44" cy="164" r="8"/><path class="ok draw chk" d="M40 164l3 3l6-6"/><rect class="fdim" x="64" y="161" width="140" height="6" rx="3"/></g>
+    <rect class="fdim" x="30" y="198" width="300" height="4" rx="2"/><rect class="fc prog" x="30" y="198" width="0" height="4" rx="2"/>
+    <text class="mono rerun" x="272" y="108">rerun</text>
+  </svg></div>
+  <!-- 06 Build and release: a change moves through build, test, package and deploy. -->
+  <div class="vignette" data-stage="5"><svg class="vg" viewBox="0 0 360 240">
+    <path class="dim" d="M72 108h44M156 108h44M240 108h44"/>
+    <g class="stagebox"><circle class="dim solid st" cx="52" cy="108" r="20"/><path class="ink" d="M45 101h8v8h-8zM51 107h8v8h-8z"/></g>
+    <g class="stagebox"><circle class="dim solid st" cx="136" cy="108" r="20"/><path class="ink" d="M129 108l5 5l9-10"/></g>
+    <g class="stagebox"><circle class="dim solid st" cx="220" cy="108" r="20"/><path class="ink" d="M212 104l8-5l8 5v9l-8 5l-8-5zM212 104l8 5l8-5M220 109v9"/></g>
+    <g class="stagebox"><circle class="dim solid st" cx="304" cy="108" r="20"/><path class="ink" d="M296 113a5 5 0 0 1 1-9.5a7 7 0 0 1 13 1a4.5 4.5 0 0 1 3 8.5z"/></g>
+    <circle class="c pop done" cx="304" cy="108" r="20"/>
+    <circle class="fc token" r="5" cx="52" cy="108"/>
+    <text x="40" y="150">构建</text><text x="124" y="150">测试</text><text x="208" y="150">打包</text><text x="292" y="150">部署</text>
+  </svg></div>
+  <!-- 07 Operations: an incident spikes on the dashboard, raises an alert, and the service recovers. -->
+  <div class="vignette" data-stage="6"><svg class="vg" viewBox="0 0 360 240">
+    <path class="dim" d="M30 40v160h300"/>
+    <path class="fdim" d="M30 160h300" style="stroke: rgba(var(--ink-rgb), .08)"/>
+    <path class="ink draw sig" d="M30 160q8-6 16 0t16 0t16 0t16 0t16 0t16 0t16 0l10 0l10-104l10 104"/>
+    <path class="ok draw rec" d="M188 160q8-6 16 0t16 0t16 0t16 0t16 0t16 0t16 0t16 0h14"/>
+    <circle class="bad pop pulse" cx="178" cy="56" r="8"/>
+    <g><rect class="dim" x="236" y="28" width="94" height="22" rx="11"/><circle class="status" cx="250" cy="39" r="4" fill="#ef6f6f"/><text class="alert-text" x="260" y="43">告警</text><text class="ok-text" x="260" y="43">已恢复</text></g>
+  </svg></div>
+  <!-- 08 Maintenance: scattered modules are refactored into order and the version moves on. -->
+  <div class="vignette" data-stage="7"><svg class="vg" viewBox="0 0 360 240">
+    <rect class="ink solid pop block" x="96" y="66" width="50" height="28" rx="4"/>
+    <rect class="ink solid pop block" x="156" y="66" width="50" height="28" rx="4"/>
+    <rect class="c solid pop block" x="216" y="66" width="50" height="28" rx="4"/>
+    <rect class="ink solid pop block" x="96" y="104" width="50" height="28" rx="4"/>
+    <rect class="c solid pop block" x="156" y="104" width="50" height="28" rx="4"/>
+    <rect class="ink solid pop block" x="216" y="104" width="50" height="28" rx="4"/>
+    <rect class="dim" x="140" y="164" width="82" height="26" rx="13"/>
+    <text class="mono v-old" x="168" y="181">v1.4</text><text class="mono v-new" x="168" y="181">v2.0</text>
+  </svg></div>
+</div>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="#top"><svg class="logo" data-logo="mark" aria-hidden="true"></svg>AEGIS <span>BENCH</span></a>
+    <nav class="links" aria-label="主导航">
+      <a href="/leaderboard" data-proto="board">排行榜</a>
+      <a href="/benchmarks" data-proto="index">评测基准</a>
+      <a href="#updates">研究报告</a>
+      <a href="#team">关于我们</a>
+    </nav>
+  </div>
+  <div class="nav-end">
+    <button class="btn btn-line theme-toggle" type="button" id="theme-toggle" aria-label="切换深色或浅色主题"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.25" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1.75a6.25 6.25 0 0 1 0 12.5z" fill="currentColor"/></svg></button>
+    <a class="btn btn-line" href="#contact">联系我们</a>
+  </div>
+</header>
+
+<nav class="rail" id="rail" aria-label="软件开发生命周期"></nav>
+
+<main>
+  <section class="panel hero" id="top" data-key="smoke">
+    <div class="copy" data-fade>
+      <div class="eyebrow"><span class="live"></span>最近更新：2026 年 11 月 20 日 · 第 3 版</div>
+      <h1><span class="nowrap">覆盖软件工程全生命周期的</span><wbr><span class="nowrap">智能体评测</span></h1>
+      <p class="lead">以真实工程任务，系统评估智能体从需求分析到运维保障的工程能力。</p>
+      <div class="actions">
+        <a class="btn btn-solid" href="/leaderboard" data-proto="board">查看排行榜</a>
+        <a class="btn btn-line" href="/benchmarks" data-proto="index">浏览评测基准</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel map" id="map" data-key="map">
+    <div class="copy" data-fade>
+      <div class="eyebrow">软件开发生命周期</div>
+      <h2>八个环节，构成持续的循环</h2>
+      <div class="legend"><span><i></i>已发布评测基准</span><span><i class="planned"></i>规划中</span></div>
+    </div>
+  </section>
+
+  <section class="panel" id="stage-01" data-key="focus:0" style="--c: var(--dev)">
+    <div class="copy" data-fade>
+      <div class="eyebrow"><i class="planned"></i>研发 · 01</div>
+      <h2>需求分析</h2>
+      <p class="duty">理解业务需求，澄清歧义，并将其拆解为可验收的任务。</p>
+      <span class="tag">评测基准建设中</span>
+    </div>
+  </section>
+
+  <section class="panel" id="stage-02" data-key="focus:1" style="--c: var(--dev)">
+    <div class="copy" data-fade>
+      <div class="eyebrow"><i class="planned"></i>研发 · 02</div>
+      <h2>架构设计</h2>
+      <p class="duty">在既有约束下提出技术方案，权衡取舍并形成设计决策。</p>
+      <span class="tag">评测基准建设中</span>
+    </div>
+  </section>
+
+  <section class="panel is-covered" id="stage-03" data-key="focus:2" style="--c: var(--dev)">
+    <div class="copy" data-fade>
+      <div class="eyebrow"><i></i>研发 · 03</div>
+      <h2>编码实现</h2>
+      <p class="duty">在既有代码库中实现功能、修复缺陷，并与现有代码保持一致。</p>
+      <div class="bench" data-bench="A" role="link" tabindex="0">
+        <div class="bench-head"><h3>Bench A</h3><span class="meta">320 道任务 · 通过率 · 前 3 名</span></div>
+        <ol class="leaders"></ol>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="stage-04" data-key="focus:3" style="--c: var(--dev)">
+    <div class="copy" data-fade>
+      <div class="eyebrow"><i class="planned"></i>研发 · 04</div>
+      <h2>代码评审</h2>
+      <p class="duty">审查代码变更，识别缺陷与风险，并提出可执行的修改意见。</p>
+      <span class="tag">评测基准建设中</span>
+    </div>
+  </section>
+
+  <section class="panel is-covered" id="stage-05" data-key="focus:4" style="--c: var(--ops)">
+    <div class="copy" data-fade>
+      <div class="eyebrow"><i></i>运维 · 05</div>
+      <h2>测试验证</h2>
+      <p class="duty">设计并执行测试，定位失败原因，判断变更能否交付。</p>
+      <div class="bench" data-bench="B" role="link" tabindex="0">
+        <div class="bench-head"><h3>Bench B</h3><span class="meta">180 道任务 · 缺陷检出率 · 前 3 名</span></div>
+        <ol class="leaders"></ol>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="stage-06" data-key="focus:5" style="--c: var(--ops)">
+    <div class="copy" data-fade>
+      <div class="eyebrow"><i class="planned"></i>运维 · 06</div>
+      <h2>构建发布</h2>
+      <p class="duty">完成构建与发布，管理变更，并在异常时安全回滚。</p>
+      <span class="tag">评测基准建设中</span>
+    </div>
+  </section>
+
+  <section class="panel is-covered" id="stage-07" data-key="focus:6" style="--c: var(--ops)">
+    <div class="copy" data-fade>
+      <div class="eyebrow"><i></i>运维 · 07</div>
+      <h2>运维保障</h2>
+      <p class="duty">响应告警，诊断线上故障，恢复服务并说明根因。</p>
+      <div class="bench" data-bench="C" role="link" tabindex="0">
+        <div class="bench-head"><h3>Bench C</h3><span class="meta">120 道任务 · 通过率 · 前 3 名</span></div>
+        <ol class="leaders"></ol>
+      </div>
+      <div class="bench" data-bench="D" role="link" tabindex="0">
+        <div class="bench-head"><h3>Bench D</h3><span class="meta">86 道任务 · 节点召回均值 · 前 3 名</span></div>
+        <ol class="leaders"></ol>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="stage-08" data-key="focus:7" style="--c: var(--ops)">
+    <div class="copy" data-fade>
+      <div class="eyebrow"><i class="planned"></i>运维 · 08</div>
+      <h2>维护演进</h2>
+      <p class="duty">重构代码、迁移系统与升级依赖，保证系统的长期可维护性。</p>
+      <span class="tag">评测基准建设中</span>
+    </div>
+  </section>
+
+  <section class="panel" id="updates" data-key="far">
+    <div class="copy wide" data-fade>
+      <div class="eyebrow">使用机构</div>
+      <div class="logos"><span>机构标识</span><span>机构标识</span><span>机构标识</span><span>机构标识</span><span>机构标识</span><span>机构标识</span></div>
+      <div class="eyebrow">最新动态</div>
+      <ul class="updates">
+        <li><time datetime="2026-11-20">2026-11-20</time><span class="kind">新闻</span><p>评测基准第 3 版发布，新增运维保障环节任务<small>发布说明</small></p></li>
+        <li><time datetime="2026-11-18">2026-11-18</time><span class="kind">论文</span><p>面向软件工程全生命周期的智能体评测基准<small>会议名称 2027</small></p></li>
+        <li><time datetime="2026-10-25">2026-10-25</time><span class="kind">报告</span><p>智能体为何在回退后仍能导出完整结果<small>研究报告 · Bench C</small></p></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="closing" id="team" data-key="logo">
+    <div class="copy wide">
+      <div class="eyebrow">研究团队</div>
+      <div class="team">
+        <div class="member"><span class="avatar">姓</span><strong>姓名</strong><small>所属机构 · 职务</small></div>
+        <div class="member"><span class="avatar">姓</span><strong>姓名</strong><small>所属机构 · 职务</small></div>
+        <div class="member"><span class="avatar">姓</span><strong>姓名</strong><small>所属机构 · 职务</small></div>
+        <div class="member"><span class="avatar">姓</span><strong>姓名</strong><small>所属机构 · 职务</small></div>
+        <div class="member"><span class="avatar">姓</span><strong>姓名</strong><small>所属机构 · 职务</small></div>
+      </div>
+      <div class="pair" id="contact">
+        <div>
+          <h3>引用本工作</h3>
+          <p>如在研究中使用本评测基准，请引用以下论文。</p>
+<pre id="bibtex">@inproceedings{aegisbench2027,
+  title     = {论文标题},
+  author    = {作者},
+  booktitle = {会议名称},
+  year      = {2027}
+}</pre>
+          <button class="btn btn-line" type="button" data-copy="bibtex" data-done="BibTeX 已复制到剪贴板"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h8"/></svg>复制 BibTeX</button>
+        </div>
+        <div>
+          <h3>联系我们</h3>
+          <p>如需评测模型或了解更多评测基准，请通过邮件与我们联系。</p>
+          <span class="email" id="email">contact@example.com</span>
+          <button class="btn btn-line" type="button" data-copy="email" data-done="邮箱地址已复制到剪贴板"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h8"/></svg>复制邮箱地址</button>
+        </div>
+      </div>
+    </div>
+      <footer class="sign-off">
+        <div class="logo-slot" id="logo-slot"><svg class="logo" data-logo="sign" role="img" aria-label="Aegis Bench 标识"></svg></div>
+        <div class="wordmark">AEGIS <span>BENCH</span></div>
+        <p>覆盖软件工程全生命周期的智能体评测</p>
+        <div class="footer-row">
+          <span>© 2026 Aegis Bench · 设计演示：评测基准、模型与数值均为占位内容</span>
+          <nav aria-label="页脚"><a href="/leaderboard" data-proto="board">排行榜</a><a href="/benchmarks" data-proto="index">评测基准</a><a href="#updates">研究报告</a><a href="#team">关于我们</a><a href="#team">评测方法</a><a href="#updates">更新日志</a></nav>
+        </div>
+      </footer>
+  </section>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>

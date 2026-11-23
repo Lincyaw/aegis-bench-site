@@ -1,5 +1,6 @@
 import { Outlet, ScrollRestoration, createBrowserRouter } from 'react-router-dom';
 import { SiteFooter, SiteNav } from './components/SiteChrome';
+import { LandingPage } from './landing/LandingPage';
 import { BenchmarkPage } from './pages/BenchmarkPage';
 import { BenchmarksPage } from './pages/BenchmarksPage';
 import { LeaderboardPage } from './pages/LeaderboardPage';
@@ -19,10 +20,10 @@ function Layout() {
 }
 
 export const router = createBrowserRouter([
+  { path: '/', element: <><LandingPage /><ScrollRestoration /></> },
   {
     element: <Layout />,
     children: [
-      { path: '/', element: <BenchmarksPage /> },
       { path: '/benchmarks', element: <BenchmarksPage /> },
       { path: '/benchmarks/:benchmarkId', element: <BenchmarkPage /> },
       { path: '/benchmarks/:benchmarkId/runs', element: <RunRecordsPage /> },
