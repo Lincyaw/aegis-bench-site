@@ -1,0 +1,51 @@
+.view { display: grid; gap: 16px; }
+.controls { display: flex; align-items: center; gap: 10px; }
+.controls > button {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--border-emphasis);
+  border-radius: 50%;
+  background: none;
+  color: var(--text-main);
+  font-size: 10px;
+  cursor: pointer;
+}
+.controls > button:hover { background: var(--bg-muted); }
+.controls > span:first-of-type { flex: 1; justify-content: space-between; overflow-x: auto; scrollbar-width: none; }
+.controls > span:last-child { flex: none; }
+
+.steps { display: grid; border-top: 1px solid var(--border-hairline); }
+.step { border-bottom: 1px solid var(--border-hairline); }
+.step.open { margin: 6px 0; border: 1px solid var(--border-hairline); border-radius: var(--radius-md); background: var(--bg-panel); }
+.step.evidence { box-shadow: inset 2px 0 0 var(--accent-warning); }
+.stepHead {
+  display: grid;
+  grid-template-columns: 28px auto auto 1fr;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 12px;
+  border: 0;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+.stepHead:hover { background: var(--bg-muted); }
+.open .stepHead:hover { background: none; }
+.tag { padding: 1px 7px; border: 1px solid var(--border-emphasis); border-radius: var(--radius-sm); color: var(--text-muted); white-space: nowrap; }
+.ok { border-color: var(--accent-success); color: var(--accent-success); }
+.bad { border-color: var(--accent-warning); color: var(--accent-warning); }
+.target { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.message { min-width: 0; }
+
+.detail { display: grid; gap: 10px; padding: 0 12px 14px 50px; }
+.block { padding: 10px 12px; border: 1px solid var(--border-hairline); border-radius: var(--radius-md); background: var(--bg-page); }
+.block pre, .userText { margin-top: 6px; white-space: pre-wrap; word-break: break-word; color: var(--text-muted); }
+.userText { padding: 0 12px 14px 50px; font-family: var(--font-text); }
+
+@media (max-width: 760px) {
+  .stepHead { grid-template-columns: 24px auto 1fr; }
+  .target { display: none; }
+  .detail, .userText { padding-left: 12px; }
+}
