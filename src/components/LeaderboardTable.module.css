@@ -10,10 +10,11 @@
   transition: background-color .18s;
 }
 .head { min-height: 40px; border-top: 1px solid var(--border-hairline); }
-a.row:hover { background: var(--bg-muted); }
+.row:not(.head) { cursor: pointer; }
+.row:not(.head):hover { background: var(--bg-muted); }
 .score { display: inline-flex; align-items: center; gap: 12px; }
 .arrow { color: var(--text-faint); transition: transform .18s, color .18s; }
-a.row:hover .arrow { color: var(--text-main); transform: translateX(4px); }
+.row:hover .arrow { color: var(--text-main); transform: translateX(4px); }
 
 @media (max-width: 760px) {
   .row { grid-template-columns: 24px 1fr auto; gap: 8px 12px; padding: 12px 0; }
