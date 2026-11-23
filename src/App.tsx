@@ -1,5 +1,6 @@
 import { Outlet, ScrollRestoration, createBrowserRouter } from 'react-router-dom';
 import { SiteFooter, SiteNav } from './components/SiteChrome';
+import { BenchmarkPage } from './pages/BenchmarkPage';
 import { BenchmarksPage } from './pages/BenchmarksPage';
 import { PendingPage } from './pages/PendingPage';
 
@@ -20,6 +21,7 @@ export const router = createBrowserRouter([
     children: [
       { path: '/', element: <BenchmarksPage /> },
       { path: '/benchmarks', element: <BenchmarksPage /> },
+      { path: '/benchmarks/:benchmarkId', element: <BenchmarkPage /> },
       { path: '*', element: <PendingPage /> },
     ],
   },
