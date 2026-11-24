@@ -191,10 +191,28 @@ model TaskSummary {
   passRate: float64;
 }
 
-model TaskPage {
-  items: TaskSummary[];
+/** No page of a list holds more than this, so no response carries a list that grows with the data. */
+const MAX_PAGE_SIZE = 50;
+
+/** Which page of a list to return. */
+model PageQuery<DefaultSize extends valueof int32> {
+  // Query parameters are exploded, OpenAPI's default; the mock's validator reads a non-exploded one as a list.
+  /** Position of the page's first item in the whole list */
+  @query(#{ explode: true }) @minValue(0) offset?: int32 = 0;
+
+  /** Items per page */
+  @query(#{ explode: true }) @minValue(1) @maxValue(MAX_PAGE_SIZE) limit?: int32 = DefaultSize;
+}
+
+/** One page of a list, and the length of the whole list. */
+model Page<Item> {
+  items: Item[];
   total: int32;
 }
+
+model TaskPage is Page<TaskSummary>;
+
+model LeaderboardPage is Page<LeaderboardEntry>;
 
 model RunRef {
   id: string;
@@ -202,9 +220,14 @@ model RunRef {
   outcome: RunOutcome;
 }
 
-model CombinationRuns {
+/** A model and the harness it ran in, evaluated together as one entrant. */
+model Combination {
   `model`: ModelRef;
   harness: HarnessRef;
+}
+
+model CombinationRuns {
+  ...Combination;
   runs: RunRef[];
 }
 
@@ -439,14 +462,20 @@ interface Benchmarks {
   @route("/{benchmarkId}")
   read(@path benchmarkId: string, ...LanguageHeader): Localized<BenchmarkDetail> | NotFoundError;
 
+  /** The ranking a page at a time, best first */
   @get
   @route("/{benchmarkId}/leaderboard")
   leaderboard(
     @path benchmarkId: string,
-    // Query parameters are exploded, OpenAPI's default; the mock's validator reads a non-exploded one as a list.
     @query(#{ explode: true }) view?: LeaderboardView = LeaderboardView.combination,
+    ...PageQuery<20>,
     ...LanguageHeader,
-  ): Localized<LeaderboardEntry[]> | NotFoundError;
+  ): Localized<LeaderboardPage> | NotFoundError;
+
+  /** Every combination evaluated on the benchmark, in ranking order, for choosing one */
+  @get
+  @route("/{benchmarkId}/combinations")
+  combinations(@path benchmarkId: string, ...LanguageHeader): Localized<Combination[]> | NotFoundError;
 
   /** Tasks are records: their titles stay in the language the task was written in */
   @get
@@ -457,11 +486,7 @@ interface Benchmarks {
     /** Matches the task id or title */
     @query(#{ explode: true }) q?: string,
 
-    /** Position of the page's first task among the matches */
-    @query(#{ explode: true }) @minValue(0) offset?: int32 = 0,
-
-    /** Tasks per page; a page never holds more than 50, so no request carries a benchmark's whole task list */
-    @query(#{ explode: true }) @minValue(1) @maxValue(50) limit?: int32 = 14,
+    ...PageQuery<14>,
   ): TaskPage | NotFoundError;
 
   @get

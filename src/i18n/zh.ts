@@ -115,6 +115,7 @@ export const zh = {
     lead: '各评测基准独立排名，不计算综合分。所有成绩均在统一的评测框架、轮次预算与执行环境下取得。',
     otherStages: '其余环节的评测基准建设中',
     meta: '{{stage}} · 指标：{{metric}} · {{version}} · {{date}} 更新',
+    loadMore: '显示前 {{shown}} 名，共 {{total}} 名 · 继续加载',
     viewLabel: '排行方式',
     view: { combination: '模型 × 框架', model: '按模型', harness: '按框架' },
     details: '评测基准详情',

@@ -47,11 +47,28 @@ export function useBenchmark(benchmarkId: string) {
   }).data;
 }
 
-export function useLeaderboard(benchmarkId: string, view: LeaderboardView) {
+/** Where the page after those loaded starts, or undefined once the whole list is loaded. */
+export function nextPageOffset<Page extends { items: unknown[]; total: number }>(last: Page, pages: Page[]): number | undefined {
+  const loaded = pages.reduce((count, page) => count + page.items.length, 0);
+  return loaded < last.total ? loaded : undefined;
+}
+
+/** The ranking a page at a time: each further page asks only for the entries after those already loaded. */
+export function useLeaderboardPages(benchmarkId: string, view: LeaderboardView, pageSize: number) {
+  const locale = useLocale();
+  return useSuspenseInfiniteQuery({
+    queryKey: ['leaderboard', benchmarkId, view, pageSize, locale],
+    queryFn: ({ pageParam }) => responseBody(api.GET('/benchmarks/{benchmarkId}/leaderboard', { params: { path: { benchmarkId }, query: { view, offset: pageParam, limit: pageSize }, header: languageHeader(locale) } })),
+    initialPageParam: 0,
+    getNextPageParam: nextPageOffset,
+  });
+}
+
+export function useCombinations(benchmarkId: string) {
   const locale = useLocale();
   return useSuspenseQuery({
-    queryKey: ['leaderboard', benchmarkId, view, locale],
-    queryFn: () => responseBody(api.GET('/benchmarks/{benchmarkId}/leaderboard', { params: { path: { benchmarkId }, query: { view }, header: languageHeader(locale) } })),
+    queryKey: ['combinations', benchmarkId, locale],
+    queryFn: () => responseBody(api.GET('/benchmarks/{benchmarkId}/combinations', { params: { path: { benchmarkId }, header: languageHeader(locale) } })),
   }).data;
 }
 
@@ -64,10 +81,7 @@ export function useTaskPages(benchmarkId: string, q: string, pageSize: number) {
     queryKey: ['tasks', benchmarkId, q, pageSize],
     queryFn: ({ pageParam }) => responseBody(api.GET('/benchmarks/{benchmarkId}/tasks', { params: { path: { benchmarkId }, query: { q, offset: pageParam, limit: pageSize } } })),
     initialPageParam: 0,
-    getNextPageParam: (last, pages) => {
-      const loaded = pages.reduce((count, page) => count + page.items.length, 0);
-      return loaded < last.total ? loaded : undefined;
-    },
+    getNextPageParam: nextPageOffset,
   });
 }
 

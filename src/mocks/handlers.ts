@@ -4,7 +4,7 @@ import { createOpenApiHttp } from 'openapi-msw';
 import { localeValues, type paths } from '../api/schema';
 import { API_ROOT } from '../api/server';
 import type { Locale } from '../api/types';
-import { BENCHMARKS, benchmarkDetail, benchmarkSummary, hasBenchmark, leaderboardView, stagesWithBenchmarks } from './benchmarks';
+import { BENCHMARKS, DEFAULT_LEADERBOARD_PAGE_SIZE, benchmarkDetail, benchmarkSummary, hasBenchmark, leaderboardView, stagesWithBenchmarks } from './benchmarks';
 import { RUNS_PER_TASK } from './catalog';
 import { hasModel, modelProfile } from './models';
 import { passRateOf, taskRunsOf, taskSummariesOf } from './runs';
@@ -34,6 +34,13 @@ export function writtenIn(locale: Locale) {
   return { headers: { 'Content-Language': locale } };
 }
 
+/** The page of a list a request asks for with the spec's PageQuery parameters, and the length of the whole list. */
+export function pageOf<Item>(list: readonly Item[], query: { get(name: 'offset' | 'limit'): string | null }, defaultSize: number) {
+  const offset = Number(query.get('offset') ?? 0);
+  const limit = Number(query.get('limit') ?? defaultSize);
+  return { items: list.slice(offset, offset + limit), total: list.length };
+}
+
 export const handlers = [
   http.get('/stages', ({ request, response }) => {
     const locale = localeOf(request);
@@ -59,7 +66,16 @@ export const handlers = [
       return response(404).json({ message: `no benchmark ${params.benchmarkId}` });
     }
     const locale = localeOf(request);
-    return response(200).json(leaderboardView(params.benchmarkId, query.get('view') ?? 'combination', locale), writtenIn(locale));
+    const entries = leaderboardView(params.benchmarkId, query.get('view') ?? 'combination', locale);
+    return response(200).json(pageOf(entries, query, DEFAULT_LEADERBOARD_PAGE_SIZE), writtenIn(locale));
+  }),
+
+  http.get('/benchmarks/{benchmarkId}/combinations', ({ params, request, response }) => {
+    if (!hasBenchmark(params.benchmarkId)) {
+      return response(404).json({ message: `no benchmark ${params.benchmarkId}` });
+    }
+    const locale = localeOf(request);
+    return response(200).json(leaderboardView(params.benchmarkId, 'combination', locale).map(entry => ({ model: entry.model, harness: entry.harness })), writtenIn(locale));
   }),
 
   http.get('/benchmarks/{benchmarkId}/tasks', async ({ params, query, response }) => {
@@ -67,11 +83,9 @@ export const handlers = [
       return response(404).json({ message: `no benchmark ${params.benchmarkId}` });
     }
     const q = (query.get('q') ?? '').trim();
-    const offset = Number(query.get('offset') ?? 0);
-    const limit = Number(query.get('limit') ?? DEFAULT_TASK_PAGE_SIZE);
     const matching = taskSummariesOf(params.benchmarkId).filter(task => !q || task.id.includes(q) || task.title.includes(q));
     await delay(80);
-    return response(200).json({ items: matching.slice(offset, offset + limit), total: matching.length });
+    return response(200).json(pageOf(matching, query, DEFAULT_TASK_PAGE_SIZE));
   }),
 
   http.get('/benchmarks/{benchmarkId}/tasks/{taskId}/runs', async ({ params, request, response }) => {

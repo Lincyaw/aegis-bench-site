@@ -2,17 +2,17 @@ import { clsx } from 'clsx';
 import { Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
-import { useBenchmarks, useLeaderboard, useStages, type BenchmarkSummary, type LeaderboardView } from '../api/client';
+import { useBenchmarks, useLeaderboardPages, useStages, type BenchmarkSummary, type LeaderboardView } from '../api/client';
 import { leaderboardViewValues } from '../api/schema';
 import { LocaleLink } from '../i18n/LocaleRouting';
 import { HalfDot } from '../lifecycle/LifecycleMap';
 import { benchmarksAt } from '../lifecycle/stages';
 import { benchmarkPath } from '../site/siteMap';
 import { Loading } from '../ui/content';
-import { SegmentedControl } from '../ui/controls';
+import { MoreButton, SegmentedControl } from '../ui/controls';
 import controls from '../ui/controls.module.css';
 import { LeaderboardTable } from './LeaderboardTable';
-import { LEADERBOARD_VIEW_LABELS, parseLeaderboardView } from './presentation';
+import { LEADERBOARD_PAGE_SIZE, LEADERBOARD_VIEW_LABELS, parseLeaderboardView } from './presentation';
 import styles from './LeaderboardPage.module.css';
 
 /** One benchmark at a time: switching the benchmark or the view only changes the table. */
@@ -69,7 +69,21 @@ export function LeaderboardPage() {
   );
 }
 
+/** The ranking, a page at a time. */
 export function Board({ benchmark, view }: { benchmark: BenchmarkSummary; view: LeaderboardView }) {
-  const entries = useLeaderboard(benchmark.id, view);
-  return <div data-half={benchmark.stage.half}><LeaderboardTable benchmarkId={benchmark.id} entries={entries} metric={benchmark.metric} /></div>;
+  const { t } = useTranslation();
+  const pages = useLeaderboardPages(benchmark.id, view, LEADERBOARD_PAGE_SIZE);
+  if (pages.isFetchNextPageError) {
+    throw pages.error;
+  }
+  const entries = pages.data.pages.flatMap(page => page.items);
+  const total = pages.data.pages[0].total;
+  return (
+    <div data-half={benchmark.stage.half}>
+      <LeaderboardTable benchmarkId={benchmark.id} entries={entries} metric={benchmark.metric} />
+      {entries.length < total && (
+        <MoreButton className={styles.more} label={t('leaderboard.loadMore', { shown: entries.length, total })} loading={pages.isFetchingNextPage} onClick={() => void pages.fetchNextPage()} />
+      )}
+    </div>
+  );
 }

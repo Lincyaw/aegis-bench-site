@@ -165,6 +165,9 @@ export function leaderboardOf(benchmarkId: string, locale: Locale): LeaderboardE
   }));
 }
 
+/** Leaderboard entries per page when a request names no limit, as the spec declares. */
+export const DEFAULT_LEADERBOARD_PAGE_SIZE = 20;
+
 /** The combination view, or each model's (or harness's) best combination, re-ranked. */
 export function leaderboardView(benchmarkId: string, view: LeaderboardView, locale: Locale): LeaderboardEntry[] {
   const entries = leaderboardOf(benchmarkId, locale);

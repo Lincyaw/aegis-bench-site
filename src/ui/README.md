@@ -136,6 +136,7 @@
 | `ButtonLink`、`Button` | 大号胶囊按钮，有实心（`solid`）和描边（`line`）两种 |
 | `CopyButton` | 复制一段文字，成功后在旁边画出对勾 |
 | `IconButton` | 圆形图标按钮，悬停时图标旋转半圈 |
+| `MoreButton` | 在列表末尾加载下一页，文字说明已显示多少，加载时变淡且不可点 |
 | `SegmentedControl` | 一条轨道内互斥的几个选项 |
 | `SearchField` | 胶囊形搜索框 |
 | `Select` | 胶囊触发器和玻璃面板组成的下拉选择 |

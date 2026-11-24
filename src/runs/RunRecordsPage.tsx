@@ -2,11 +2,11 @@ import { clsx } from 'clsx';
 import { Suspense, useDeferredValue } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { useBenchmark, useLeaderboard, useTaskPages, useTaskRuns, type BenchmarkDetail, type CombinationRuns, type TaskPage } from '../api/client';
+import { useBenchmark, useCombinations, useTaskPages, useTaskRuns, type BenchmarkDetail, type CombinationRuns, type TaskPage } from '../api/client';
 import { VendorBadge } from '../models/ModelBadge';
 import { BENCHMARKS_PATH, benchmarkPath, stagePath } from '../site/siteMap';
 import { Loading } from '../ui/content';
-import { SearchField, Select } from '../ui/controls';
+import { MoreButton, SearchField, Select } from '../ui/controls';
 import controls from '../ui/controls.module.css';
 import { NARROW_QUERY, useMediaQuery } from '../ui/media';
 import { Breadcrumbs } from '../ui/navigation';
@@ -56,7 +56,7 @@ export function RunRecordsPage() {
 
 export function RunToolbar({ benchmark, query, onQuery }: { benchmark: BenchmarkDetail; query: RunRecordsQuery; onQuery: (query: RunRecordsQuery) => void }) {
   const { t } = useTranslation();
-  const combinations = useLeaderboard(benchmark.id, 'combination');
+  const combinations = useCombinations(benchmark.id);
   return (
     <header className={styles.toolbar}>
       <h1 className="visually-hidden">{t('runs.pageTitle', { benchmark: benchmark.name })}</h1>
@@ -105,7 +105,7 @@ export function TaskColumn({ tasks, currentTask, onTask, loadingMore, onMore }: 
         {tasks.items.length === 0 && <li className={clsx(styles.empty, 't-small c-faint')}>{t('runs.noTasks')}</li>}
       </ol>
       {tasks.items.length < tasks.total && (
-        <button type="button" className={clsx(styles.more, 't-micro c-muted')} disabled={loadingMore} aria-busy={loadingMore} onClick={onMore}>{t('runs.loadMore', { shown: tasks.items.length, total: tasks.total })}</button>
+        <MoreButton className={styles.more} label={t('runs.loadMore', { shown: tasks.items.length, total: tasks.total })} loading={loadingMore} onClick={onMore} />
       )}
     </div>
   );

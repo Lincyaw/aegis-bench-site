@@ -41,6 +41,11 @@ export function IconButton({ label, onClick, expanded, children }: { label: stri
   return <button type="button" className={clsx(styles.pill, styles.icon, 'loop-edge')} aria-label={label} aria-expanded={expanded} onClick={onClick}>{children}</button>;
 }
 
+/** Appends a list's next page; its label says how much is shown, and it waits while the page loads. */
+export function MoreButton({ label, loading, onClick, className }: { label: string; loading: boolean; onClick: () => void; className?: string }) {
+  return <button type="button" className={clsx(styles.more, 't-micro', className)} disabled={loading} aria-busy={loading} onClick={onClick}>{label}</button>;
+}
+
 export interface Choice<T extends string> {
   value: T;
   label: string;

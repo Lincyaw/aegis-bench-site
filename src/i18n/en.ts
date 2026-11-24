@@ -116,6 +116,7 @@ export const en: Messages = {
     lead: 'Each benchmark is ranked on its own, with no composite score. Every result comes from the same harnesses, turn budget and execution environment.',
     otherStages: 'Benchmarks for the other stages are under construction',
     meta: '{{stage}} · metric: {{metric}} · {{version}} · updated {{date}}',
+    loadMore: 'Showing the top {{shown}} of {{total}} · load more',
     viewLabel: 'Rank by',
     view: { combination: 'Model × harness', model: 'By model', harness: 'By harness' },
     details: 'Benchmark details',
