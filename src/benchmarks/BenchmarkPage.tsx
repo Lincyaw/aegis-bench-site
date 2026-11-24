@@ -12,7 +12,7 @@ import { StageScene } from '../lifecycle/StageScene';
 import { HALF_LABELS } from '../lifecycle/stages';
 import { runRecordsPath } from '../runs/runRecordsQuery';
 import { PageSectionsContext } from '../site/pageSections';
-import { leaderboardPath, stagePath } from '../site/siteMap';
+import { BENCHMARKS_PATH, leaderboardPath, stagePath } from '../site/siteMap';
 import { FactList, Tag } from '../ui/content';
 import { ButtonLink } from '../ui/controls';
 import controls from '../ui/controls.module.css';
@@ -49,7 +49,7 @@ export function BenchmarkHero({ benchmark }: { benchmark: BenchmarkDetail }) {
   return (
     <section className={clsx('page', styles.hero)}>
       <div className={styles.heroText}>
-        <Breadcrumbs crumbs={[{ label: t('site.nav.benchmarks'), to: '/benchmarks' }, { label: `${stage.id} ${stage.name}`, to: stagePath(stage.id) }, { label: benchmark.name }]} />
+        <Breadcrumbs crumbs={[{ label: t('site.nav.benchmarks'), to: BENCHMARKS_PATH }, { label: `${stage.id} ${stage.name}`, to: stagePath(stage.id) }, { label: benchmark.name }]} />
         <h1 className={clsx('t-display', styles.name)}>{benchmark.name}</h1>
         <p className="t-lead c-muted">{benchmark.summary}</p>
         <p className={styles.version}><Tag>{benchmark.version}</Tag><span className="t-micro c-faint">{t('benchmarks.updated', { date: benchmark.updatedOn })} · {t(HALF_LABELS[stage.half])} · {stage.id} {stage.name}</span></p>

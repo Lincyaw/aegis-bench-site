@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { useBenchmark, useLeaderboard, useTaskRuns, useTasks, type BenchmarkDetail, type CombinationRuns, type TaskPage } from '../api/client';
 import { VendorBadge } from '../models/ModelBadge';
-import { benchmarkPath, stagePath } from '../site/siteMap';
+import { BENCHMARKS_PATH, benchmarkPath, stagePath } from '../site/siteMap';
 import { Loading } from '../ui/content';
 import { SearchField, Select } from '../ui/controls';
 import controls from '../ui/controls.module.css';
@@ -58,7 +58,7 @@ export function RunToolbar({ benchmark, query, onQuery }: { benchmark: Benchmark
     <header className={styles.toolbar}>
       <h1 className="visually-hidden">{t('runs.pageTitle', { benchmark: benchmark.name })}</h1>
       <Breadcrumbs className={styles.crumbs} crumbs={[
-        { label: t('site.nav.benchmarks'), to: '/benchmarks' }, { label: `${benchmark.stage.id} ${benchmark.stage.name}`, to: stagePath(benchmark.stage.id) },
+        { label: t('site.nav.benchmarks'), to: BENCHMARKS_PATH }, { label: `${benchmark.stage.id} ${benchmark.stage.name}`, to: stagePath(benchmark.stage.id) },
         { label: benchmark.name, to: benchmarkPath(benchmark.id) }, { label: t('benchmarks.runRecords') },
       ]} />
       <SearchField className={styles.search} label={t('runs.search')} value={query.q} onChange={q => onQuery(withSearch(query, q))} />
