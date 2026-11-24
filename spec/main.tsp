@@ -27,6 +27,9 @@ model StageRef {
 model Stage {
   ...StageRef;
 
+  /** What the stage asks of an agent */
+  summary: string;
+
   /** Benchmarks published at this stage; empty while the stage is under construction */
   benchmarks: BenchmarkRef[];
 }

@@ -146,6 +146,7 @@ export function benchmarkRef(benchmarkId: string): BenchmarkRef {
 export function stagesWithBenchmarks(locale: Locale): Stage[] {
   return STAGES.map(stage => ({
     ...stageRef(stage.id, locale),
+    summary: stage.summary[locale],
     benchmarks: BENCHMARKS.filter(record => record.stageId === stage.id).map(record => benchmarkRef(record.id)),
   }));
 }
