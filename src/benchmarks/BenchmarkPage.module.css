@@ -1,6 +1,5 @@
 .hero { display: grid; grid-template-columns: minmax(0, var(--measure-intro)) 18.75rem; justify-content: space-between; gap: var(--space-64); padding-top: var(--space-8); padding-bottom: var(--space-8); }
 .heroText { display: grid; gap: var(--space-4); align-content: start; }
-.name { font-family: var(--font-latin); }
 .version { display: flex; align-items: center; gap: var(--space-3); }
 .actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); padding-top: var(--space-1); }
 

@@ -50,7 +50,7 @@ export function BenchmarkHero({ benchmark }: { benchmark: BenchmarkDetail }) {
     <section className={clsx('page', styles.hero)}>
       <div className={styles.heroText}>
         <Breadcrumbs crumbs={[{ label: t('site.nav.benchmarks'), to: BENCHMARKS_PATH }, { label: `${stage.id} ${stage.name}`, to: stagePath(stage.id) }, { label: benchmark.name }]} />
-        <h1 className={clsx('t-display', styles.name)}>{benchmark.name}</h1>
+        <h1 className="t-display">{benchmark.name}</h1>
         <p className="t-lead c-muted">{benchmark.summary}</p>
         <p className={styles.version}><Tag>{benchmark.version}</Tag><span className="t-micro c-faint">{t('benchmarks.updated', { date: benchmark.updatedOn })} · {t(HALF_LABELS[stage.half])} · {stage.id} {stage.name}</span></p>
         <FactList layout="stacked" facts={[

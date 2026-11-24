@@ -7,7 +7,7 @@
   height: var(--badge-size, var(--space-5));
   border-radius: var(--radius-sm);
   color: var(--text-on-inverted);
-  font: 600 calc(var(--badge-size, var(--space-5)) * .55)/1 var(--font-latin);
+  font: 600 calc(var(--badge-size, var(--space-5)) * .55)/1 var(--font-text);
 }
 .vendor[data-slot="A"] { background: var(--series-openai); }
 .vendor[data-slot="B"] { background: var(--series-anthropic); }
