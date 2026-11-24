@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useBenchmarks, type BenchmarkSummary } from '../api/client';
-import { formatScore } from '../components/ui';
+import { formatScore } from '../leaderboard/presentation';
 import markup from './landing.html?raw';
 import stylesheet from './landing.css?inline';
 import { mountLanding } from './landing.js';
@@ -53,12 +53,12 @@ export function LandingPage() {
     };
   }, [navigate]);
   useEffect(() => {
-    if (!benchmarks.data || !root.current) {
+    if (!root.current) {
       return;
     }
-    benchmarks.data.forEach(benchmark => fillLeaders(root.current!, benchmark));
+    benchmarks.forEach(benchmark => fillLeaders(root.current!, benchmark));
     // The cards changed height, so the scroll story re-measures its sections.
     window.dispatchEvent(new Event('resize'));
-  }, [benchmarks.data]);
+  }, [benchmarks]);
   return <div ref={root} dangerouslySetInnerHTML={{ __html: markup }} />;
 }

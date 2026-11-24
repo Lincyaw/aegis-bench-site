@@ -1,8 +1,10 @@
 import type { RecentRun, RunDetail, SubmissionVerdict, Trajectory, TrajectoryStep } from '../api/client';
+import type { Locale } from '../i18n/locales';
 import { agentSteps, markOf } from '../runs/trajectory';
 import { benchmarkById, type TaskKind } from './benchmarks';
+import { RECORD_LOCALE } from './catalog';
 import { hashOf, pickOf } from './hash';
-import { SHOWCASE_RUN_ID, planOf, runDetailOf, taskRunsOf, type RunPlan } from './runs';
+import { SHOWCASE_RUN_ID, planOf, runDetailOf, runIdOf, type RunPlan } from './runs';
 
 /** The tools a generated run cycles through, by task kind. */
 export const TOOL_PLAN: Record<TaskKind, string[]> = {
@@ -86,10 +88,10 @@ export function submissionStepOf(plan: RunPlan, index: number): { message: strin
 const RUN_DAY_START = Date.parse('2026-11-18T09:00:00Z');
 const SECONDS_PER_STEP = 26;
 
-/** The run's trajectory in ATIF-v1.8: the task as the user step, then one agent step per tool call. */
+/** The run's trajectory in ATIF-v1.8, a record in its original language: the task as the user step, then one agent step per tool call. */
 export function trajectoryOf(runId: string): Trajectory | undefined {
   const plan = planOf(runId);
-  const detail = runDetailOf(runId);
+  const detail = runDetailOf(runId, RECORD_LOCALE);
   if (!plan || !detail) {
     return undefined;
   }
@@ -140,34 +142,39 @@ export function trajectoryOf(runId: string): Trajectory | undefined {
 }
 
 /** A recent run's result in its benchmark's own words, such as 检出 3/5. */
-export function resultLabelOf(kind: TaskKind, detail: RunDetail): string {
+export function resultLabelOf(kind: TaskKind, detail: RunDetail, locale: Locale): string {
   const { passCount, total, checks } = detail.grading;
+  const english = locale === 'en';
   switch (kind) {
     case 'testing': {
       const found = checks.filter(check => check.id.startsWith('D') && check.passed).length;
-      return found === 5 ? '全部检出' : `检出 ${found}/5`;
+      return found === 5 ? (english ? 'All found' : '全部检出') : (english ? `Found ${found}/5` : `检出 ${found}/5`);
     }
     case 'rca': {
-      const recalled = checks.filter(check => check.id.startsWith('N') && check.passed).length;
-      return `召回 ${(recalled / 5).toFixed(2)}`;
+      const recall = (checks.filter(check => check.id.startsWith('N') && check.passed).length / 5).toFixed(2);
+      return english ? `Recall ${recall}` : `召回 ${recall}`;
     }
     case 'coding':
     case 'ops':
-      return detail.outcome === 'passed' ? '通过' : detail.outcome === 'failed' ? `未通过 · ${passCount}/${total}` : '执行失败';
+      switch (detail.outcome) {
+        case 'passed': return english ? 'Passed' : '通过';
+        case 'failed': return english ? `Failed · ${passCount}/${total}` : `未通过 · ${passCount}/${total}`;
+        case 'executionFailed': return english ? 'Execution failed' : '执行失败';
+      }
   }
 }
 
-/** The runs a benchmark page lists, with their marks read from their trajectories. */
-export function recentRunsOf(benchmarkId: string): RecentRun[] {
-  const { kind, listedRuns, copy } = benchmarkById(benchmarkId);
+/** The runs a benchmark page lists, each its combination's first attempt, with marks read from their trajectories. */
+export function recentRunsOf(benchmarkId: string, locale: Locale): RecentRun[] {
+  const { kind, listedRuns, timelineLegend } = benchmarkById(benchmarkId);
   return listedRuns.map(([taskId, modelId, harnessId]) => {
-    const first = taskRunsOf(benchmarkId, taskId).find(combination => combination.model.id === modelId && combination.harness.id === harnessId)!.runs[0];
-    const detail = runDetailOf(first.id)!;
-    const trajectory = trajectoryOf(first.id)!;
+    const runId = runIdOf(benchmarkId, taskId, modelId, harnessId, 1);
+    const detail = runDetailOf(runId, locale)!;
+    const trajectory = trajectoryOf(runId)!;
     return {
-      runId: first.id, model: detail.model, task: detail.task, outcome: detail.outcome, resultLabel: resultLabelOf(kind, detail),
+      runId, model: detail.model, task: detail.task, outcome: detail.outcome, resultLabel: resultLabelOf(kind, detail, locale),
       stepCount: detail.metrics.steps, durationMinutes: detail.metrics.durationMinutes,
-      timeline: agentSteps(trajectory).map(step => markOf(step, copy.timelineLegend.changeTools)),
+      timeline: agentSteps(trajectory).map(step => markOf(step, timelineLegend.changeTools)),
     };
   });
 }

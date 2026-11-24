@@ -1,8 +1,7 @@
-import { delay, http, HttpResponse } from 'msw';
-import type {
-  BenchmarkDetail, BenchmarkSummary, LeaderboardEntry, LeaderboardView, ModelProfile, RunDetail, Stage, TaskPage, TaskRuns, Trajectory,
-} from '../api/client';
-import { leaderboardViewValues } from '../api/schema';
+import { delay } from 'msw';
+import { createOpenApiHttp } from 'openapi-msw';
+import type { paths } from '../api/schema';
+import type { Locale } from '../i18n/locales';
 import { BENCHMARKS, benchmarkDetail, benchmarkSummary, hasBenchmark, leaderboardView, stagesWithBenchmarks } from './benchmarks';
 import { RUNS_PER_TASK } from './catalog';
 import { hasModel, modelProfile } from './models';
@@ -10,74 +9,70 @@ import { passRateOf, runDetailOf, taskRunsOf, taskSummariesOf } from './runs';
 import { DEFAULT_TASK_PAGE_SIZE, taskOf } from './tasks';
 import { recentRunsOf, trajectoryOf } from './trajectories';
 
-const API = '/api';
+/** Handlers typed by the API's paths: a path, parameter, status or body the spec does not declare fails to compile. */
+const http = createOpenApiHttp<paths>({ baseUrl: '/api' });
 
-export function notFound(message: string) {
-  return HttpResponse.json({ message }, { status: 404 });
+/** The reader's language from the Accept-Language header the API declares; zh-CN unless it names English. */
+export function localeOf(request: Request): Locale {
+  return request.headers.get('Accept-Language')?.startsWith('en') ? 'en' : 'zh-CN';
 }
 
 export const handlers = [
-  http.get(`${API}/stages`, () => HttpResponse.json<Stage[]>(stagesWithBenchmarks())),
+  http.get('/stages', ({ request, response }) => response(200).json(stagesWithBenchmarks(localeOf(request)))),
 
-  http.get(`${API}/benchmarks`, () => HttpResponse.json<BenchmarkSummary[]>(BENCHMARKS.map(record => benchmarkSummary(record.copy.id)))),
+  http.get('/benchmarks', ({ request, response }) => response(200).json(BENCHMARKS.map(record => benchmarkSummary(record.id, localeOf(request))))),
 
-  http.get(`${API}/benchmarks/:benchmarkId`, async ({ params }) => {
-    const id = String(params.benchmarkId);
-    if (!hasBenchmark(id)) {
-      return notFound(`no benchmark ${id}`);
+  http.get('/benchmarks/{benchmarkId}', async ({ params, request, response }) => {
+    if (!hasBenchmark(params.benchmarkId)) {
+      return response(404).json({ message: `no benchmark ${params.benchmarkId}` });
     }
+    const locale = localeOf(request);
     await delay(120);
-    return HttpResponse.json<BenchmarkDetail>(benchmarkDetail(id, recentRunsOf(id)));
+    return response(200).json(benchmarkDetail(params.benchmarkId, locale, recentRunsOf(params.benchmarkId, locale)));
   }),
 
-  http.get(`${API}/benchmarks/:benchmarkId/leaderboard`, ({ params, request }) => {
-    const id = String(params.benchmarkId);
-    const view = new URL(request.url).searchParams.get('view') ?? 'combination';
-    if (!hasBenchmark(id) || !leaderboardViewValues.includes(view as LeaderboardView)) {
-      return notFound(`no leaderboard ${id} ${view}`);
+  http.get('/benchmarks/{benchmarkId}/leaderboard', ({ params, query, request, response }) => {
+    if (!hasBenchmark(params.benchmarkId)) {
+      return response(404).json({ message: `no benchmark ${params.benchmarkId}` });
     }
-    return HttpResponse.json<LeaderboardEntry[]>(leaderboardView(id, view as LeaderboardView));
+    return response(200).json(leaderboardView(params.benchmarkId, query.get('view') ?? 'combination', localeOf(request)));
   }),
 
-  http.get(`${API}/benchmarks/:benchmarkId/tasks`, async ({ params, request }) => {
-    const id = String(params.benchmarkId);
-    if (!hasBenchmark(id)) {
-      return notFound(`no benchmark ${id}`);
+  http.get('/benchmarks/{benchmarkId}/tasks', async ({ params, query, response }) => {
+    if (!hasBenchmark(params.benchmarkId)) {
+      return response(404).json({ message: `no benchmark ${params.benchmarkId}` });
     }
-    const search = new URL(request.url).searchParams;
-    const q = (search.get('q') ?? '').trim();
-    const offset = Number(search.get('offset') ?? 0);
-    const limit = Number(search.get('limit') ?? DEFAULT_TASK_PAGE_SIZE);
-    const matching = taskSummariesOf(id).filter(task => !q || task.id.includes(q) || task.title.includes(q));
+    const q = (query.get('q') ?? '').trim();
+    const offset = Number(query.get('offset') ?? 0);
+    const limit = Number(query.get('limit') ?? DEFAULT_TASK_PAGE_SIZE);
+    const matching = taskSummariesOf(params.benchmarkId).filter(task => !q || task.id.includes(q) || task.title.includes(q));
     await delay(80);
-    return HttpResponse.json<TaskPage>({ items: matching.slice(offset, offset + limit), total: matching.length });
+    return response(200).json({ items: matching.slice(offset, offset + limit), total: matching.length });
   }),
 
-  http.get(`${API}/benchmarks/:benchmarkId/tasks/:taskId/runs`, async ({ params }) => {
-    const id = String(params.benchmarkId);
-    const task = hasBenchmark(id) ? taskOf(id, String(params.taskId)) : undefined;
+  http.get('/benchmarks/{benchmarkId}/tasks/{taskId}/runs', async ({ params, request, response }) => {
+    const task = hasBenchmark(params.benchmarkId) ? taskOf(params.benchmarkId, params.taskId) : undefined;
     if (!task) {
-      return notFound(`no task ${params.taskId} in ${id}`);
+      return response(404).json({ message: `no task ${params.taskId} in ${params.benchmarkId}` });
     }
-    const combinations = taskRunsOf(id, task.id);
+    const combinations = taskRunsOf(params.benchmarkId, task.id, localeOf(request));
     await delay(80);
-    return HttpResponse.json<TaskRuns>({ task: { id: task.id, title: task.title, passRate: passRateOf(combinations) }, runsPerTask: RUNS_PER_TASK, combinations });
+    return response(200).json({ task: { id: task.id, title: task.title, passRate: passRateOf(combinations) }, runsPerTask: RUNS_PER_TASK, combinations });
   }),
 
-  http.get(`${API}/runs/:runId`, async ({ params }) => {
-    const detail = runDetailOf(String(params.runId));
+  http.get('/runs/{runId}', async ({ params, request, response }) => {
+    const detail = runDetailOf(params.runId, localeOf(request));
     await delay(100);
-    return detail ? HttpResponse.json<RunDetail>(detail) : notFound(`no run ${params.runId}`);
+    return detail ? response(200).json(detail) : response(404).json({ message: `no run ${params.runId}` });
   }),
 
-  http.get(`${API}/runs/:runId/trajectory`, async ({ params }) => {
-    const trajectory = trajectoryOf(String(params.runId));
+  http.get('/runs/{runId}/trajectory', async ({ params, response }) => {
+    const trajectory = trajectoryOf(params.runId);
     await delay(140);
-    return trajectory ? HttpResponse.json<Trajectory>(trajectory) : notFound(`no run ${params.runId}`);
+    return trajectory ? response(200).json(trajectory) : response(404).json({ message: `no run ${params.runId}` });
   }),
 
-  http.get(`${API}/models/:modelId`, ({ params }) => {
-    const id = String(params.modelId);
-    return hasModel(id) ? HttpResponse.json<ModelProfile>(modelProfile(id)) : notFound(`no model ${id}`);
-  }),
+  http.get('/models/{modelId}', ({ params, request, response }) => (
+    hasModel(params.modelId) ? response(200).json(modelProfile(params.modelId, localeOf(request))) : response(404).json({ message: `no model ${params.modelId}` })
+  )),
 ];

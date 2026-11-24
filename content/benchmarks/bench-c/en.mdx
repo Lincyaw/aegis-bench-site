@@ -1,0 +1,72 @@
+## Setting
+
+The agent faces a service system that is failing right now, with the same observation and operation rights as the engineer on call.
+
+<Flow>
+  <Step title="The agent receives">A description of the symptoms, access to the service system, and its metrics, logs and traces.</Step>
+  <Step title="How it works">It may query the observations, run operations commands and change configuration; every action is recorded.</Step>
+  <Step title="What it submits">Its root cause and what it did about it. The run ends at submission.</Step>
+</Flow>
+
+<Sample task="task-008" title="支付回调超时">
+支付回调在高峰时段大量超时，部分订单的状态长时间停留在「处理中」。请定位原因并恢复服务。
+</Sample>
+
+The sample is quoted as the task gives it; tasks are published in the language they were written in.
+
+## Evaluation
+
+Each task checks both whether the service recovered and whether the root cause is right, and every model runs under the same conditions.
+
+<Flow>
+  <Step title="What is graded">The root cause, the account of the remediation, and every action taken during the run.</Step>
+  <Step title="Checks">Service health checks and a root-cause judgement against a published rubric.</Step>
+  <Step title="Scoring">A task passes when the service recovered and the cause is right; the score is the mean pass rate over 5 runs per task.</Step>
+</Flow>
+
+<Facts>
+  <Fact label="Metric">Pass rate; higher is better</Fact>
+  <Fact label="Runs">5 independent runs per task</Fact>
+  <Fact label="Budget">At most 100 turns per run</Fact>
+  <Fact label="Same conditions">The same harnesses, turn budget and execution environment</Fact>
+</Facts>
+
+## Leaderboard
+
+The top 5 combinations by pass rate. The full leaderboard can also rank by model or by harness.
+
+<Leaderboard top={5} />
+
+## Run records
+
+Every run's full trajectory is public, to replay step by step and to check its grading against.
+
+<RecentRuns />
+
+## Versions and citation
+
+Each version fixes its tasks and evaluation setup, and results are reported per version.
+
+<Versions>
+  <Version tag="v2.1" date="2026-11-12">Revises the rubric for the root-cause judgement.</Version>
+  <Version tag="v2.0" date="2026-08-20">Moves to a new service topology, 120 tasks.</Version>
+  <Version tag="v1.0" date="2026-04-02">First release.</Version>
+</Versions>
+
+<Citation>
+```bibtex
+@inproceedings{aegisbench2027,
+  title     = {Paper title},
+  author    = {Authors},
+  booktitle = {Venue},
+  year      = {2027}
+}
+```
+</Citation>
+
+## Questions
+
+<Faq>
+  <Question title="How can the results be reproduced?" open>The public tasks, harnesses and run configuration ship with each version; following the steps in [Methodology](/methodology) reproduces the same results locally.</Question>
+  <Question title="Who scores the root cause?">A model reviewer judges it against the published rubric, several times, and the median counts; the rubric is shown on every run's grading tab.</Question>
+</Faq>

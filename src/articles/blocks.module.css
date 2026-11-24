@@ -1,0 +1,59 @@
+/* A document's own Markdown: second-level headings open sections, prose keeps a readable measure. */
+.document { display: grid; }
+.document > h2 { margin: var(--section-gap, 96px) 0 24px; font: 700 30px/1.22 var(--font-text); }
+.document > h2:first-child { margin-top: 0; }
+.document > h3 { margin: 40px 0 12px; font: 500 18px/1.4 var(--font-text); }
+.document > p { max-width: 760px; margin-bottom: 16px; color: var(--text-muted); }
+.document > h2 + p { margin-top: -8px; margin-bottom: 40px; }
+.document > :is(ul, ol):not([class]) { max-width: 760px; margin: 0 0 16px; padding-left: 20px; color: var(--text-muted); }
+.document > ul:not([class]) { list-style: disc; }
+.document > ol:not([class]) { list-style: decimal; }
+.document li + li { margin-top: 6px; }
+.document > blockquote { max-width: 760px; margin: 0 0 16px; padding-left: 16px; border-left: 2px solid var(--border-emphasis); color: var(--text-muted); }
+.document > pre { margin: 0 0 16px; padding: 16px 18px; border: 1px solid var(--border-hairline); border-radius: var(--radius-md); background: var(--bg-panel); overflow-x: auto; font: 400 12px/1.7 var(--font-mono); }
+.document :not(pre) > code { padding: 1px 5px; border-radius: var(--radius-sm); background: var(--bg-muted); font: 400 12px var(--font-mono); }
+.document > table { width: 100%; margin: 0 0 16px; border-collapse: collapse; font: 400 13px/1.6 var(--font-text); }
+.document th { padding: 10px 12px; border-bottom: 1px solid var(--border-emphasis); color: var(--text-faint); font-weight: 400; text-align: left; }
+.document td { padding: 10px 12px; border-bottom: 1px solid var(--border-hairline); }
+.document strong { color: var(--text-main); font-weight: 500; }
+.document p a, .document li a { color: var(--text-main); text-decoration: underline; text-decoration-color: var(--border-emphasis); text-underline-offset: 3px; }
+
+.flow { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 32px 40px; margin-bottom: 40px; counter-reset: flow; }
+.step { display: grid; gap: 14px; align-content: start; counter-increment: flow; }
+.step::before { content: counter(flow, decimal-leading-zero); order: 1; font: 400 11px/1.5 var(--font-mono); color: var(--text-faint); }
+.step > h3 { order: 2; font: 500 14px/1.4 var(--font-text); }
+.step > div { order: 3; font: 400 13px/1.6 var(--font-text); color: var(--text-muted); }
+.stepLine { position: relative; display: block; height: 10px; order: 0; }
+.stepLine::before { content: ""; position: absolute; left: 0; right: 0; top: 4.5px; height: 1px; background: var(--border-emphasis); }
+.stepLine::after { content: ""; position: absolute; left: 0; top: 1px; width: 8px; height: 8px; border-radius: 50%; background: var(--half-color); }
+
+.sample { gap: 12px; margin-bottom: 40px; padding: 24px; }
+.sampleHead { display: flex; align-items: center; gap: 12px; }
+
+.facts { margin-bottom: 40px; border-top: 1px solid var(--border-hairline); }
+.facts > div { display: grid; grid-template-columns: 200px 1fr; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--border-hairline); }
+
+.versions { margin-bottom: 40px; }
+.versions > li { display: grid; grid-template-columns: 56px 96px 1fr; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--border-hairline); }
+.versions > li:first-child { border-top: 1px solid var(--border-hairline); }
+
+.citation { display: grid; gap: 16px; justify-items: start; margin-bottom: 40px; }
+.citation pre { width: 100%; margin: 0; padding: 18px; border: 1px solid var(--border-hairline); border-radius: var(--radius-md); background: var(--bg-panel); overflow-x: auto; font: 400 12px/1.7 var(--font-mono); color: var(--text-muted); }
+.copyRow { display: flex; align-items: center; gap: 12px; }
+
+.faq { margin-bottom: 40px; border-top: 1px solid var(--border-hairline); }
+.faq details { padding: 18px 0; border-bottom: 1px solid var(--border-hairline); }
+.faq summary { display: flex; justify-content: space-between; cursor: pointer; list-style: none; font: 500 14px/1.4 var(--font-text); }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: "+"; color: var(--text-faint); }
+.faq details[open] summary::after { content: "−"; }
+.faq details > div { margin-top: 10px; font: 400 13px/1.6 var(--font-text); color: var(--text-muted); }
+
+.callout { max-width: 760px; margin-bottom: 16px; border-left: 2px solid var(--half-color, var(--brand-dev)); }
+
+@media (max-width: 760px) {
+  .document > h2 { margin-top: 64px; font-size: 24px; }
+  .facts > div { grid-template-columns: 96px 1fr; }
+  .versions > li { grid-template-columns: 48px 1fr; }
+  .versions > li > :last-child { grid-column: 1 / -1; }
+}

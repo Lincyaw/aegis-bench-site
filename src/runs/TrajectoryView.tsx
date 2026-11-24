@@ -1,0 +1,110 @@
+import { clsx } from 'clsx';
+import { useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useTrajectory, type TimelineLegend, type TrajectoryStep } from '../api/client';
+import { IconButton } from '../ui/controls';
+import { isKnownTool } from './presentation';
+import { RunScrubber, TimelineLegendRow } from './RunTimeline';
+import { agentSteps, markOf, submissionOf, targetOf, textOf } from './trajectory';
+import styles from './TrajectoryView.module.css';
+
+/** The ATIF trajectory as a timeline of marks and a list of steps; selecting either opens that step. */
+export function TrajectoryView({ runId, legend, evidence, selected, onSelect }: {
+  runId: string;
+  legend: TimelineLegend;
+
+  /** Step ids the failure review relies on; they are marked in the list */
+  evidence: number[];
+
+  selected: number | undefined;
+  onSelect: (stepId: number | undefined) => void;
+}) {
+  const { t } = useTranslation();
+  const trajectory = useTrajectory(runId);
+  const selectedRow = useRef<HTMLLIElement>(null);
+  useEffect(() => {
+    selectedRow.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }, [selected]);
+  const steps = agentSteps(trajectory);
+  const stepIds = steps.map(step => step.step_id);
+  const position = stepIds.indexOf(selected ?? -1);
+  const go = (offset: number) => onSelect(stepIds[Math.min(stepIds.length - 1, Math.max(0, (position < 0 ? 0 : position) + offset))]);
+  return (
+    <div className={styles.view}>
+      {steps.length > 0 && (
+        <div className={styles.controls}>
+          <IconButton label={t('runs.previousStep')} onClick={() => go(-1)}><ArrowIcon direction="left" /></IconButton>
+          <IconButton label={t('runs.nextStep')} onClick={() => go(1)}><ArrowIcon direction="right" /></IconButton>
+          <RunScrubber marks={steps.map(step => markOf(step, legend.changeTools))} stepIds={stepIds} current={selected} onSelect={onSelect} />
+          <span className="t-micro c-muted">{selected === undefined ? t('runs.stepCount', { count: trajectory.steps.length }) : t('runs.stepOf', { step: selected, count: trajectory.steps.length })}</span>
+        </div>
+      )}
+      <TimelineLegendRow legend={legend} />
+      <ol className={styles.steps}>
+        {trajectory.steps.map(step => {
+          const open = step.step_id === selected;
+          return (
+            <li key={step.step_id} ref={open ? selectedRow : undefined} className={clsx(styles.step, open && styles.open, evidence.includes(step.step_id) && styles.evidence)}>
+              <StepHead step={step} open={open} onToggle={() => onSelect(open ? undefined : step.step_id)} />
+              {open && (step.source === 'agent' ? <StepDetail step={step} /> : <pre className={clsx(styles.userText, 't-small')}>{textOf(step.message)}</pre>)}
+            </li>
+          );
+        })}
+      </ol>
+      <p className="t-micro c-faint">{t('runs.trajectoryNote', { version: trajectory.schema_version, agent: `${trajectory.agent.name} ${trajectory.agent.version}`, model: trajectory.agent.model_name, count: trajectory.final_metrics?.total_steps, cost: trajectory.final_metrics?.total_cost_usd?.toFixed(2) })}</p>
+    </div>
+  );
+}
+
+export function ArrowIcon({ direction }: { direction: 'left' | 'right' }) {
+  return <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d={direction === 'left' ? 'M7.5 3 4.5 6l3 3' : 'M4.5 3l3 3-3 3'} fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>;
+}
+
+/** A step's row: its number, what kind of step it is, its target and its sentence. */
+export function StepHead({ step, open, onToggle }: { step: TrajectoryStep; open: boolean; onToggle: () => void }) {
+  const { t } = useTranslation();
+  const tool = step.tool_calls?.[0]?.function_name;
+  const submission = submissionOf(step);
+  const kind = step.source === 'agent' ? (tool === undefined ? t('runs.reply') : isKnownTool(tool) ? t(`runs.tools.${tool}`) : tool) : t(`runs.source.${step.source}`);
+  const target = targetOf(step);
+  return (
+    <button type="button" className={styles.stepHead} onClick={onToggle} aria-expanded={open}>
+      <span className="t-mono c-faint">{step.step_id}</span>
+      <span className={clsx(styles.tag, submission && (submission.passed ? styles.passedTag : styles.failedTag), 't-micro')}>{kind}</span>
+      {target && <span className={clsx(styles.target, 't-mono c-muted')}>{target}</span>}
+      <span className={clsx(styles.message, 't-small')}>
+        {step.source === 'user' ? t('runs.taskText') : submission ? textOf(step.observation?.results[0]?.content) : textOf(step.message)}
+      </span>
+    </button>
+  );
+}
+
+/** An agent step opened: its call, what the environment returned, and what the step cost. */
+export function StepDetail({ step }: { step: TrajectoryStep }) {
+  const { t } = useTranslation();
+  const call = step.tool_calls?.[0];
+  const result = step.observation?.results[0];
+  return (
+    <div className={styles.detail}>
+      {call && (
+        <div className={styles.block}>
+          <p className="t-micro c-faint">{t('runs.call', { tool: call.function_name })}</p>
+          <pre className="t-mono">{JSON.stringify(call.arguments, null, 2)}</pre>
+        </div>
+      )}
+      {result?.content !== undefined && (
+        <div className={styles.block}>
+          <p className="t-micro c-faint">{t('runs.result')}</p>
+          <pre className="t-mono">{textOf(result.content)}</pre>
+        </div>
+      )}
+      {step.metrics && (
+        <p className="t-micro c-faint">
+          {t('runs.stepMetrics', { input: step.metrics.prompt_tokens?.toLocaleString(), output: step.metrics.completion_tokens?.toLocaleString() })}
+          {step.metrics.cost_usd !== undefined && ` · $${step.metrics.cost_usd.toFixed(4)}`}
+          {step.timestamp && ` · ${step.timestamp.slice(11, 19)} UTC`}
+        </p>
+      )}
+    </div>
+  );
+}

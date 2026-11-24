@@ -1,0 +1,31 @@
+.tag {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 8px;
+  border: 1px solid var(--border-emphasis);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.dashed { border-style: dashed; }
+
+.sectionHeading { display: grid; gap: 10px; margin-bottom: 40px; }
+
+/* A raised surface for quoted text, code and conclusions inside a page. */
+.panel { display: grid; gap: 12px; padding: 14px 16px; border: 1px solid var(--border-hairline); border-radius: var(--radius-md); background: var(--bg-panel); }
+
+.stacked { display: flex; flex-wrap: wrap; gap: 12px 40px; }
+.stacked > div { display: grid; gap: 2px; }
+
+.rows { border-top: 1px solid var(--border-hairline); }
+.rows > div { display: grid; grid-template-columns: var(--fact-label-width, 200px) 1fr; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--border-hairline); }
+
+.inline { display: flex; flex-wrap: wrap; gap: 4px 24px; }
+.inline > div { display: flex; align-items: baseline; gap: 6px; }
+
+.loading { padding: 40px 0; }
+
+@media (max-width: 760px) {
+  .rows > div { grid-template-columns: 96px 1fr; }
+}

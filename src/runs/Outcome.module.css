@@ -1,0 +1,15 @@
+.dot { display: inline-block; flex: none; width: 7px; height: 7px; border-radius: 50%; }
+.passed { background: var(--accent-success); }
+.failed { border: 1.5px solid var(--accent-warning); }
+.executionFailed { border: 1.5px dashed var(--text-faint); }
+
+/* A run's outcome as a label: tinted for a run that counts, quiet for one that does not. */
+.badge { display: inline-flex; align-items: center; gap: 6px; padding: 2px 8px; border-radius: var(--radius-sm); }
+.badge.passed { background: var(--bg-success-soft); color: var(--accent-success); }
+.badge.failed { border: 0; background: var(--bg-warning-soft); color: var(--accent-warning); }
+.badge.executionFailed { border: 0; background: var(--bg-muted); color: var(--text-muted); }
+
+.text { display: inline-flex; align-items: center; gap: 6px; }
+.text.passed { background: none; color: var(--accent-success); }
+.text.failed { border: 0; color: var(--accent-warning); }
+.text.executionFailed { border: 0; color: var(--text-faint); }

@@ -35,19 +35,18 @@ export function tasksOf(benchmarkId: string): TaskRecord[] {
   if (cached) {
     return cached;
   }
-  const { copy, kind, namedTasks } = benchmarkById(benchmarkId);
+  const { taskCount, kind, namedTasks, sample } = benchmarkById(benchmarkId);
   const named = namedTasks.map(([id, title]) => ({ id, title }));
   const namedIds = new Set(named.map(task => task.id));
   const pool = TITLE_POOL[kind];
   const generated: { id: string; title: string }[] = [];
-  for (let number = 1; named.length + generated.length < copy.taskCount; number++) {
+  for (let number = 1; named.length + generated.length < taskCount; number++) {
     const id = `task-${String(number).padStart(3, '0')}`;
     if (!namedIds.has(id)) {
       generated.push({ id, title: pool[generated.length % pool.length] });
     }
   }
-  const sample = copy.setting.sample;
-  const tasks = [...named, ...generated].map(task => ({ ...task, statement: task.id === sample.task.id ? sample.statement : statementOf(kind, task.title) }));
+  const tasks = [...named, ...generated].map(task => ({ ...task, statement: task.id === sample.taskId ? sample.statement : statementOf(kind, task.title) }));
   taskCache.set(benchmarkId, tasks);
   return tasks;
 }

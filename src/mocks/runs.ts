@@ -1,6 +1,7 @@
-import type { CombinationRuns, GradingCheck, HarnessRef, LabeledValue, ModelRef, RunDetail, RunOutcome, TaskSummary } from '../api/client';
-import { benchmarkById, benchmarkRef, hasBenchmark, leaderboardOf, type TaskKind } from './benchmarks';
-import { HARNESSES, MODELS, PUBLISHED_ON, RUNS_PER_TASK } from './catalog';
+import type { CombinationRuns, GradingCheck, LabeledValue, RunDetail, RunOutcome, TaskSummary } from '../api/client';
+import type { Locale } from '../i18n/locales';
+import { benchmarkById, benchmarkRef, hasBenchmark, rankingEntryOf, type TaskKind } from './benchmarks';
+import { HARNESSES, MODELS, PUBLISHED_ON, RECORD_LOCALE, RUNS_PER_TASK, harnessRef, modelRef } from './catalog';
 import { fractionOf, hashOf, pickOf } from './hash';
 import { taskOf, tasksOf, type TaskRecord } from './tasks';
 
@@ -16,8 +17,8 @@ export function runIdOf(benchmarkId: string, taskId: string, modelId: string, ha
 export interface RunKey {
   benchmarkId: string;
   taskId: string;
-  model: ModelRef;
-  harness: HarnessRef;
+  modelId: string;
+  harnessId: string;
   attempt: number;
 }
 
@@ -25,13 +26,11 @@ export interface RunKey {
 export function parseRunId(runId: string): RunKey | undefined {
   const [benchmarkId, taskId, combination, attemptText] = runId.split('.');
   const [modelId, harnessId] = (combination ?? '').split('-');
-  const model = MODELS.find(candidate => candidate.id === modelId);
-  const harness = HARNESSES.find(candidate => candidate.id === harnessId);
   const attempt = Number(attemptText);
-  if (!hasBenchmark(benchmarkId) || !taskOf(benchmarkId, taskId) || !model || !harness || !(Number.isInteger(attempt) && attempt >= 1 && attempt <= RUNS_PER_TASK)) {
-    return undefined;
-  }
-  return { benchmarkId, taskId, model, harness, attempt };
+  const known = hasBenchmark(benchmarkId) && taskOf(benchmarkId, taskId) !== undefined
+    && MODELS.some(model => model.id === modelId) && HARNESSES.some(harness => harness.id === harnessId)
+    && Number.isInteger(attempt) && attempt >= 1 && attempt <= RUNS_PER_TASK;
+  return known ? { benchmarkId, taskId, modelId, harnessId, attempt } : undefined;
 }
 
 /** The run the design walks through: Bench A task-017, 模型甲 with 框架 X, attempt 4. */
@@ -45,8 +44,8 @@ export const SHOWCASE_OUTCOMES: Record<string, string> = Object.fromEntries(([
 
 /** About one run in eighty fails to execute; the others pass with a chance set by the combination's score and the task. */
 export function outcomeOf(key: RunKey): RunOutcome {
-  const combination = combinationTaskKey(key.benchmarkId, key.taskId, key.model.id, key.harness.id);
-  const runId = runIdOf(key.benchmarkId, key.taskId, key.model.id, key.harness.id, key.attempt);
+  const combination = combinationTaskKey(key.benchmarkId, key.taskId, key.modelId, key.harnessId);
+  const runId = runIdOf(key.benchmarkId, key.taskId, key.modelId, key.harnessId, key.attempt);
   const showcase = SHOWCASE_OUTCOMES[combination];
   if (showcase) {
     return showcase[key.attempt - 1] === 'P' ? 'passed' : 'failed';
@@ -54,18 +53,18 @@ export function outcomeOf(key: RunKey): RunOutcome {
   if (fractionOf(`exec:${runId}`) < 0.012) {
     return 'executionFailed';
   }
-  const entry = leaderboardOf(key.benchmarkId).find(candidate => candidate.model.id === key.model.id && candidate.harness.id === key.harness.id);
+  const entry = rankingEntryOf(key.benchmarkId, key.modelId, key.harnessId);
   const difficulty = (fractionOf(`task:${key.benchmarkId}.${key.taskId}`) - 0.5) * 0.7;
   const chance = Math.min(0.97, Math.max(0.03, (entry?.score ?? 0.3) + difficulty));
   return fractionOf(runId) < chance ? 'passed' : 'failed';
 }
 
-export function taskRunsOf(benchmarkId: string, taskId: string): CombinationRuns[] {
-  return leaderboardOf(benchmarkId).map(({ model, harness }) => ({
-    model, harness,
+export function taskRunsOf(benchmarkId: string, taskId: string, locale: Locale): CombinationRuns[] {
+  return benchmarkById(benchmarkId).ranking.map(([modelId, harnessId]) => ({
+    model: modelRef(modelId, locale), harness: harnessRef(harnessId, locale),
     runs: Array.from({ length: RUNS_PER_TASK }, (_, index) => {
       const attempt = index + 1;
-      return { id: runIdOf(benchmarkId, taskId, model.id, harness.id, attempt), attempt, outcome: outcomeOf({ benchmarkId, taskId, model, harness, attempt }) };
+      return { id: runIdOf(benchmarkId, taskId, modelId, harnessId, attempt), attempt, outcome: outcomeOf({ benchmarkId, taskId, modelId, harnessId, attempt }) };
     }),
   }));
 }
@@ -83,7 +82,7 @@ export function taskSummariesOf(benchmarkId: string): TaskSummary[] {
   if (cached) {
     return cached;
   }
-  const summaries = tasksOf(benchmarkId).map(task => ({ id: task.id, title: task.title, passRate: passRateOf(taskRunsOf(benchmarkId, task.id)) }));
+  const summaries = tasksOf(benchmarkId).map(task => ({ id: task.id, title: task.title, passRate: passRateOf(taskRunsOf(benchmarkId, task.id, RECORD_LOCALE)) }));
   summaryCache.set(benchmarkId, summaries);
   return summaries;
 }
@@ -335,26 +334,28 @@ export function failureOf(plan: RunPlan, grading: RunDetail['grading']): RunDeta
     : { failedChecks };
 }
 
-export function runDetailOf(runId: string): RunDetail | undefined {
+/** A run's record: display names in the reader's locale, everything the run itself produced as it was recorded. */
+export function runDetailOf(runId: string, locale: Locale): RunDetail | undefined {
   const plan = planOf(runId);
   if (!plan) {
     return undefined;
   }
   const { key, kind, task } = plan;
-  const entry = leaderboardOf(key.benchmarkId).find(candidate => candidate.model.id === key.model.id && candidate.harness.id === key.harness.id);
+  const entry = rankingEntryOf(key.benchmarkId, key.modelId, key.harnessId);
   const grading = gradingOf(plan);
   const lastSubmit = plan.submitSteps[plan.submitSteps.length - 1];
+  const harness = harnessRef(key.harnessId, locale);
   return {
     id: runId, benchmark: benchmarkRef(key.benchmarkId), task: { id: task.id, title: task.title },
-    model: key.model, harness: key.harness, attempt: key.attempt, attemptCount: RUNS_PER_TASK, outcome: plan.outcome,
+    model: modelRef(key.modelId, locale), harness, attempt: key.attempt, attemptCount: RUNS_PER_TASK, outcome: plan.outcome,
     metrics: {
       steps: plan.steps, durationMinutes: Math.max(2, Math.round(plan.steps * 0.44)), submissions: plan.submitSteps.length,
       outputTokens: plan.steps * 1460, costUsd: Math.round((entry?.avgCostUsd ?? 0.5) * (plan.steps / 36) * 100) / 100,
-      endReason: plan.outcome === 'executionFailed' ? '执行环境异常' : '提交后结束',
+      endReason: plan.outcome === 'executionFailed' ? 'executionError' : 'submitted',
     },
     input: {
       instruction: `${task.statement}\n\n${INSTRUCTION_TAIL[kind]}`, reportSchema: REPORT_SCHEMA[kind], environment: environmentOf(plan),
-      harness: { ...key.harness, version: '2.1', toolDefinitionsUrl: `https://aegis-bench.org/harness/${key.harness.id}/v2.1/tools.json` },
+      harness: { ...harness, version: '2.1', toolDefinitionsUrl: `https://aegis-bench.org/harness/${key.harnessId}/v2.1/tools.json` },
     },
     output: {
       submission: { attempt: plan.submitSteps.length, step: lastSubmit, files: filesOf(plan) },

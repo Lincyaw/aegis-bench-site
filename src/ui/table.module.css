@@ -1,0 +1,22 @@
+/* Rows of a data table; each table names its columns with --columns. */
+.table { display: grid; }
+.row {
+  display: grid;
+  grid-template-columns: var(--columns);
+  gap: 16px;
+  align-items: center;
+  min-height: 54px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--border-hairline);
+  transition: background-color var(--duration-base);
+}
+.head { min-height: 40px; border-top: 1px solid var(--border-hairline); }
+.link { cursor: pointer; }
+.link:hover { background: var(--bg-muted); }
+.arrow { color: var(--text-faint); transition: transform var(--duration-base), color var(--duration-base); }
+.link:hover .arrow { color: var(--text-main); transform: translateX(4px); }
+
+@media (max-width: 760px) {
+  .row { padding: 12px 0; }
+  .head { display: none; }
+}

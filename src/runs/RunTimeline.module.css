@@ -1,0 +1,11 @@
+.timeline { display: flex; align-items: center; gap: 2px; min-height: 14px; min-width: 0; }
+.mark { flex: none; width: 3px; height: 8px; border-radius: 1px; background: var(--text-faint); opacity: .55; }
+.change { height: 12px; background: var(--half-color); opacity: 1; }
+.submitPassed { height: 12px; background: var(--accent-success); opacity: 1; }
+.submitFailed { height: 12px; background: var(--accent-warning); opacity: 1; }
+button.mark:hover { outline: 1px solid var(--text-muted); outline-offset: 1px; }
+.current { width: 2px; height: 20px; background: var(--text-main); opacity: 1; }
+
+.legend { display: flex; flex-wrap: wrap; gap: 20px; }
+.legend li { display: inline-flex; align-items: center; gap: 6px; }
+.legend .mark { height: 10px; }

@@ -1,0 +1,70 @@
+## Setting
+
+The agent writes tests for one code change, and its tests must pass on the correct code.
+
+<Flow>
+  <Step title="The agent receives">The repository, one code change with its requirement, and a working test environment.</Step>
+  <Step title="How it works">It may read the code, run the existing tests and add test files; it may not change the code under test.</Step>
+  <Step title="What it submits">Its new tests. The run ends at submission.</Step>
+</Flow>
+
+<Sample task="task-033" title="优惠券叠加规则">
+为优惠券叠加规则的修改编写测试，覆盖满减与折扣同时生效、超过上限与使用过期券三种情形。
+</Sample>
+
+The sample is quoted as the task gives it; tasks are published in the language they were written in.
+
+## Evaluation
+
+The tests are tried against defective versions the agent never sees: a defect counts as found when a test fails on it and passes on the correct version.
+
+<Flow>
+  <Step title="What is graded">The agent's tests, which must first all pass on the correct version.</Step>
+  <Step title="Checks">The same tests run on every defective version, recording which defects they catch.</Step>
+  <Step title="Scoring">The share of defects caught; the score is the mean over 5 runs per task.</Step>
+</Flow>
+
+<Facts>
+  <Fact label="Metric">Defect detection rate; higher is better</Fact>
+  <Fact label="Runs">5 independent runs per task</Fact>
+  <Fact label="Budget">At most 100 turns per run</Fact>
+  <Fact label="Same conditions">The same harnesses, turn budget and execution environment</Fact>
+</Facts>
+
+## Leaderboard
+
+The top 5 combinations by defect detection rate. The full leaderboard can also rank by model or by harness.
+
+<Leaderboard top={5} />
+
+## Run records
+
+Every run's full trajectory is public, to replay step by step and to check its grading against.
+
+<RecentRuns />
+
+## Versions and citation
+
+Each version fixes its tasks and evaluation setup, and results are reported per version.
+
+<Versions>
+  <Version tag="v1.0" date="2026-10-08">First release, 180 tasks.</Version>
+</Versions>
+
+<Citation>
+```bibtex
+@inproceedings{aegisbench2027,
+  title     = {Paper title},
+  author    = {Authors},
+  booktitle = {Venue},
+  year      = {2027}
+}
+```
+</Citation>
+
+## Questions
+
+<Faq>
+  <Question title="How can the results be reproduced?" open>The public tasks, harnesses and run configuration ship with each version; following the steps in [Methodology](/methodology) reproduces the same results locally.</Question>
+  <Question title="Are the defective versions public?">No. They only decide what a run caught; what is public is which defects each run caught.</Question>
+</Faq>

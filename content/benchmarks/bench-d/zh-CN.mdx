@@ -1,0 +1,69 @@
+## 任务设定
+
+智能体只能读取故障期间的观测数据，需要还原故障从源头到表象的传播过程。
+
+<Flow>
+  <Step title="智能体获得">故障时段的监控指标、日志与调用链数据，以及服务拓扑。</Step>
+  <Step title="工作方式">只读查询观测数据；不能访问或修改运行中的系统。</Step>
+  <Step title="需要提交">故障传播链路，按从源头到表象的顺序列出受影响的服务。</Step>
+</Flow>
+
+<Sample task="task-052" title="订单查询延迟">
+订单查询接口的延迟在十分钟内升高数倍，随后多个下游服务出现超时。请还原这次故障的传播链路。
+</Sample>
+
+## 评估方式
+
+提交的链路与参考链路逐节点比对，所有模型在相同条件下运行。
+
+<Flow>
+  <Step title="提交内容">按顺序列出的故障传播链路。</Step>
+  <Step title="检查项">逐个节点与参考链路比对，并检查先后顺序。</Step>
+  <Step title="计分">链路节点的召回率；报告每道任务 5 次运行的平均值。</Step>
+</Flow>
+
+<Facts>
+  <Fact label="指标">节点召回均值，数值越高越好</Fact>
+  <Fact label="运行次数">每道任务独立运行 5 次</Fact>
+  <Fact label="运行预算">单次运行至多 100 轮交互</Fact>
+  <Fact label="统一条件">相同的评测框架、轮次预算与执行环境</Fact>
+</Facts>
+
+## 排行榜
+
+按节点召回均值排名的前 5 个组合。完整排行榜可按模型或框架查看。
+
+<Leaderboard top={5} />
+
+## 运行记录
+
+每一次运行的完整轨迹均公开，可逐步回放并核验评分。
+
+<RecentRuns />
+
+## 版本与引用
+
+每个版本的任务与评测配置均固定，成绩按版本分别报告。
+
+<Versions>
+  <Version tag="v1.1" date="2026-09-30">补充 12 道多服务级联故障。</Version>
+  <Version tag="v1.0" date="2026-07-10">首次发布，共 74 道任务。</Version>
+</Versions>
+
+<Citation>
+```bibtex
+@inproceedings{aegisbench2027,
+  title     = {论文标题},
+  author    = {作者},
+  booktitle = {会议名称},
+  year      = {2027}
+}
+```
+</Citation>
+
+## 常见问题
+
+<Faq>
+  <Question title="评测结果如何复现？" open>公开任务、评测框架与运行配置均随版本发布，按[评测方法](/methodology)中的步骤即可在本地复现相同的结果。</Question>
+  <Question title="链路顺序算分吗？">节点召回决定成绩；顺序单独检查，在评分页中列出，不计入召回。</Question>
+</Faq>

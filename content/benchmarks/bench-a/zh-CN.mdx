@@ -1,0 +1,71 @@
+## 任务设定
+
+智能体在隔离的开发环境中工作，获得与工程师完成同一需求时相同的信息与工具。
+
+<Flow>
+  <Step title="智能体获得">需求说明、完整的代码仓库，以及可执行的开发环境。</Step>
+  <Step title="工作方式">可读写仓库、执行命令并运行已有测试；不可访问外部网络。</Step>
+  <Step title="需要提交">对代码仓库的修改。可多次提交，以最后一次提交为准。</Step>
+</Flow>
+
+<Sample task="task-017" title="订单分页查询">
+为订单服务新增按状态筛选的分页查询接口。已有接口的行为与返回格式保持不变，新增接口的鉴权方式与现有接口一致。
+</Sample>
+
+## 评估方式
+
+每道任务以仓库内不向智能体公开的测试判定结果，所有模型在相同条件下运行。
+
+<Flow>
+  <Step title="提交内容">智能体提交的代码修改，在全新环境中重新构建。</Step>
+  <Step title="检查项">功能测试与回归测试，在提交后统一执行。</Step>
+  <Step title="计分">全部测试通过记为通过；报告每道任务 5 次运行的平均通过率。</Step>
+</Flow>
+
+<Facts>
+  <Fact label="指标">通过率，数值越高越好</Fact>
+  <Fact label="运行次数">每道任务独立运行 5 次</Fact>
+  <Fact label="运行预算">单次运行至多 100 轮交互</Fact>
+  <Fact label="统一条件">相同的评测框架、轮次预算与执行环境</Fact>
+</Facts>
+
+## 排行榜
+
+按通过率排名的前 5 个组合。完整排行榜可按模型或框架查看。
+
+<Leaderboard top={5} />
+
+## 运行记录
+
+每一次运行的完整轨迹均公开，可逐步回放并核验评分。
+
+<RecentRuns />
+
+## 版本与引用
+
+每个版本的任务与评测配置均固定，成绩按版本分别报告。
+
+<Versions>
+  <Version tag="v1.2" date="2026-11-20">新增 40 道任务，覆盖并发控制与缓存场景。</Version>
+  <Version tag="v1.1" date="2026-09-02">统一运行预算为每次至多 100 轮交互。</Version>
+  <Version tag="v1.0" date="2026-06-15">首次发布，共 280 道任务。</Version>
+</Versions>
+
+<Citation>
+```bibtex
+@inproceedings{aegisbench2027,
+  title     = {论文标题},
+  author    = {作者},
+  booktitle = {会议名称},
+  year      = {2027}
+}
+```
+</Citation>
+
+## 常见问题
+
+<Faq>
+  <Question title="评测结果如何复现？" open>公开任务、评测框架与运行配置均随版本发布，按[评测方法](/methodology)中的步骤即可在本地复现相同的结果。</Question>
+  <Question title="如何申请评测我的模型？">请通过[联系我们](/about#contact)中的邮箱提交申请，说明模型的访问方式与希望参评的评测基准。</Question>
+  <Question title="评测基准多久更新一次？">评测基准按版本更新，每个版本的任务与评测配置固定；每次更新的内容见版本记录与[更新日志](/changelog)。</Question>
+</Faq>

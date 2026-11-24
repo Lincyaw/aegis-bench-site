@@ -1,0 +1,41 @@
+.root { display: grid; align-content: start; }
+
+.header { display: grid; gap: 4px; padding: 20px 0 12px; }
+.titleRow { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+
+/* The tabs stay at the top of the pane while its content scrolls. */
+.tabs { --tab-gap: 24px; --tab-padding: 10px 0; position: sticky; top: 0; z-index: 1; border-bottom: 1px solid var(--border-hairline); background: var(--bg-page); }
+
+.content { display: grid; gap: 28px; padding-top: 20px; }
+
+.section { display: grid; gap: 10px; }
+.sectionHead { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border-hairline); }
+.prose { white-space: pre-wrap; }
+.code { white-space: pre-wrap; word-break: break-word; }
+
+.files li { border-bottom: 1px solid var(--border-hairline); }
+.files summary { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; cursor: pointer; }
+.files details > p, .files details > pre { margin-bottom: 12px; }
+.diff { display: block; line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
+
+.links { display: flex; flex-wrap: wrap; gap: 20px; }
+.summary { display: flex; align-items: center; gap: 14px; }
+.summary > a { margin-left: auto; }
+
+.checks { --columns: 44px 1fr 150px 72px; }
+.checkRow { width: 100%; padding: 10px 0; text-align: left; }
+.checkRow:not([role="row"]) { cursor: pointer; }
+.checkDetail { display: grid; gap: 8px; padding: 8px 0 14px 56px; border-bottom: 1px solid var(--border-hairline); }
+
+.failedList li { display: grid; grid-template-columns: 8px 1fr auto; gap: 12px; align-items: start; padding: 12px 0; border-bottom: 1px solid var(--border-hairline); }
+.failedList button { white-space: nowrap; }
+.ring { width: 8px; height: 8px; margin-top: 6px; border: 1.5px solid var(--accent-warning); border-radius: 50%; }
+.evidence { display: flex; flex-wrap: wrap; align-items: center; gap: 20px; }
+
+@media (max-width: 760px) {
+  .header { padding-top: 0; }
+  .tabs { top: var(--nav-height); }
+  .checks { --columns: 36px 1fr 64px; }
+  .checks .checkRow > :nth-child(3) { display: none; }
+  .checkDetail { padding-left: 0; }
+}

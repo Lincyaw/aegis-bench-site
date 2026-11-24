@@ -1,0 +1,98 @@
+/* Every clickable control is a pill, so it reads apart from the rectangular cards and panels. */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid var(--border-emphasis);
+  border-radius: var(--radius-full);
+  color: var(--text-main);
+  white-space: nowrap;
+  transition: var(--control-transition);
+}
+.pill:hover, .pill:is([aria-pressed="true"], [aria-current="true"], [aria-expanded="true"], [data-state="open"]) { background: var(--bg-muted); }
+
+.large { height: var(--control-large); padding: 0 20px; font: 500 14px/1 var(--font-text); }
+.medium { height: var(--control-medium); padding: 0 16px; font: 400 13px/1 var(--font-text); }
+.small { height: var(--control-small); padding: 0 9px; gap: 5px; font: 400 12px/1 var(--font-text); color: var(--text-muted); }
+.small:hover, .small[aria-current="true"] { color: var(--text-main); }
+
+.solid { border-color: transparent; background: var(--bg-inverted); color: var(--text-on-inverted); }
+.solid:hover { background: var(--bg-inverted); box-shadow: var(--shadow-glow); }
+.solid::after { content: "→"; transition: transform var(--duration-slow) var(--ease-out); }
+.solid:hover::after { transform: translateX(3px); }
+
+.icon { width: var(--control-icon); height: var(--control-icon); padding: 0; }
+.icon svg { transition: transform var(--duration-slow) var(--ease-out); }
+.icon:hover svg { transform: rotate(180deg); }
+
+.segmented { display: inline-flex; padding: 3px; border: 1px solid var(--border-hairline); border-radius: var(--radius-full); background: var(--bg-muted); }
+.segment { height: var(--control-small); padding: 0 14px; border-radius: var(--radius-full); color: var(--text-muted); font: 400 12px/1 var(--font-text); transition: var(--control-transition); }
+.segment:hover { color: var(--text-main); }
+.segment[aria-pressed="true"] { background: var(--bg-page); color: var(--text-main); }
+
+.field { justify-content: flex-start; width: 240px; padding: 0 14px; color: var(--text-faint); }
+.field input { flex: 1; min-width: 0; border: 0; outline: 0; background: none; color: var(--text-main); font: inherit; }
+.field:focus-within { border-color: var(--text-faint); }
+
+/* Links underline in the ∞ gradient from the left as the pointer arrives. */
+.textLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  padding-bottom: 1px;
+  color: var(--text-main);
+  background: var(--loop-gradient) left bottom / 0 1px no-repeat;
+  transition: color var(--duration-base), background-size var(--duration-slow) var(--ease-out);
+}
+.textLink::after { content: "→"; transition: transform var(--duration-slow) var(--ease-out); }
+.textLink:hover { background-size: 100% 1px; }
+.textLink:hover::after { transform: translateX(4px); }
+
+.trigger { justify-content: space-between; gap: 10px; min-width: 150px; padding: 0 12px 0 16px; }
+.chevron { display: grid; color: var(--text-faint); transition: transform var(--duration-slow) var(--ease-out), color var(--duration-base); }
+.trigger:hover .chevron, .trigger[data-state="open"] .chevron { color: var(--text-main); }
+.trigger[data-state="open"] .chevron { transform: rotate(180deg); }
+
+/* The panel's corners stay concentric with the pill options inside its padding. */
+.menu {
+  z-index: 50;
+  min-width: var(--radix-select-trigger-width);
+  max-height: min(360px, var(--radix-select-content-available-height));
+  padding: 6px;
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-2xl);
+  background: var(--bg-glass-strong);
+  backdrop-filter: blur(var(--blur-glass));
+  -webkit-backdrop-filter: blur(var(--blur-glass));
+  box-shadow: var(--shadow-float);
+  overflow: hidden;
+  transform-origin: var(--radix-select-content-transform-origin);
+  animation: menu-in var(--duration-base) var(--ease-out);
+}
+@keyframes menu-in {
+  from { opacity: 0; transform: translateY(-4px) scale(.97); }
+}
+.options { display: grid; gap: 2px; }
+.option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  height: 32px;
+  padding: 0 12px 0 14px;
+  border-radius: var(--radius-full);
+  color: var(--text-muted);
+  white-space: nowrap;
+  cursor: pointer;
+  outline: none;
+  user-select: none;
+  transition: background-color var(--duration-fast), color var(--duration-fast);
+}
+/* The highlight is the focus indicator, so the global focus ring stays off the options. */
+.option[data-highlighted] { background: var(--bg-muted); color: var(--text-main); }
+.option[data-state="checked"] { color: var(--text-main); font-weight: 500; }
+.check { display: grid; }
+.scroll { display: grid; place-items: center; height: 22px; color: var(--text-faint); cursor: default; }
+.up { display: grid; transform: rotate(180deg); }

@@ -1,0 +1,27 @@
+---
+title: "Why the agent still exported complete results after a rollback"
+date: "2026-10-25"
+summary: "A review of one operations run: the agent rolled a configuration back, yet its export stayed complete, because it read a cache from before the rollback."
+models: ["jia"]
+benchmarks: ["bench-c"]
+---
+
+<Callout>This is a sample report in a design demo; its models and figures are placeholders.</Callout>
+
+## What we saw
+
+In one Bench C task, Model Alpha rolled back a faulty configuration, and the report it exported afterwards matched the one from before the fault exactly. By the task's setup, exports for a while after the rollback should have missed some data.
+
+## Review
+
+We followed the run's trajectory step by step:
+
+1. At step 18 the model rolled back.
+2. At step 21 it did not read the configuration again but reused the query result left from step 9.
+3. The report it exported at step 24 came from that old result.
+
+The run can be opened in the [run records](/benchmarks/bench-c/runs) to compare each step's call and output.
+
+## Conclusion
+
+This is not a grading error but a gap in the task setup: the environment let the agent read a cache from before the rollback. The next version clears that cache on rollback and says so in the task text.

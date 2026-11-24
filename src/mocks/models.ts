@@ -1,38 +1,37 @@
 import type { ModelProfile } from '../api/client';
+import type { Locale } from '../i18n/locales';
 import { BENCHMARKS, benchmarkRef, leaderboardOf } from './benchmarks';
-import { MODELS, PUBLISHED_ON, modelById } from './catalog';
-
-const REPORTS: Record<string, ModelProfile['reports']> = {
-  jia: [
-    { id: 'report-rollback-export', publishedOn: '2026-10-25', kind: '报告', title: '智能体为何在回退后仍能导出完整结果' },
-    { id: 'report-harness-effect', publishedOn: '2026-09-12', kind: '报告', title: '评测框架对编码任务成绩的影响' },
-  ],
-};
+import { MODELS, PUBLISHED_ON, modelRef, stageRef } from './catalog';
 
 export function hasModel(modelId: string): boolean {
   return MODELS.some(model => model.id === modelId);
 }
 
+export function modelSummary(vendor: string, benchmarkCount: number, locale: Locale): string {
+  return locale === 'en'
+    ? `A general-purpose model from ${vendor}, evaluated on ${benchmarkCount} benchmarks. Each benchmark ranks it separately; there is no composite score.`
+    : `${vendor} 发布的通用模型，已在 ${benchmarkCount} 个评测基准上完成评测。各评测基准分别排名，不计算综合分。`;
+}
+
 /** A model's best combination and rank on every benchmark it entered, and its score under each harness. */
-export function modelProfile(modelId: string): ModelProfile {
-  const model = modelById(modelId);
-  const entered = BENCHMARKS.filter(record => record.ranking.some(([rankedModel]) => rankedModel === modelId)).map(record => record.copy);
-  const standings = entered.map(copy => {
-    const board = leaderboardOf(copy.id);
+export function modelProfile(modelId: string, locale: Locale): ModelProfile {
+  const model = modelRef(modelId, locale);
+  const entered = BENCHMARKS.filter(record => record.ranking.some(([rankedModel]) => rankedModel === modelId));
+  const standings = entered.map(record => {
+    const board = leaderboardOf(record.id, locale);
     const best = board.find(entry => entry.model.id === modelId)!;
     return {
-      benchmark: benchmarkRef(copy.id), stage: copy.stage, metric: copy.metric,
+      benchmark: benchmarkRef(record.id), stage: stageRef(record.stageId, locale), metric: { ...record.metric, name: record.metric.name[locale] },
       bestHarness: best.harness, rank: best.rank, entrants: board.length, score: best.score,
     };
   });
-  const harnessComparison = entered.map(copy => ({
-    benchmark: benchmarkRef(copy.id), half: copy.stage.half, metric: copy.metric,
-    scores: leaderboardOf(copy.id).filter(entry => entry.model.id === modelId).map(entry => ({ harness: entry.harness, score: entry.score })),
+  const harnessComparison = entered.map(record => ({
+    benchmark: benchmarkRef(record.id), half: stageRef(record.stageId, locale).half, metric: { ...record.metric, name: record.metric.name[locale] },
+    scores: leaderboardOf(record.id, locale).filter(entry => entry.model.id === modelId).map(entry => ({ harness: entry.harness, score: entry.score })),
   }));
   const harnessIds = new Set(harnessComparison.flatMap(comparison => comparison.scores.map(score => score.harness.id)));
   return {
-    model,
-    summary: `${model.vendor} 发布的通用模型，已在 ${entered.length} 个评测基准上完成评测。各评测基准分别排名，不计算综合分。`,
-    lastEvaluatedOn: PUBLISHED_ON, harnessCount: harnessIds.size, standings, harnessComparison, reports: REPORTS[modelId] ?? [],
+    model, summary: modelSummary(model.vendor, entered.length, locale),
+    lastEvaluatedOn: PUBLISHED_ON, harnessCount: harnessIds.size, standings, harnessComparison,
   };
 }

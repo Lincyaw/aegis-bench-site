@@ -99,11 +99,6 @@ model BenchmarkSummary {
   topThree: LeaderboardEntry[];
 }
 
-model FlowStep {
-  title: string;
-  body: string;
-}
-
 /** How a labelled value is set: running text, or code such as a repository path. */
 enum ValueFormat {
   text,
@@ -121,22 +116,6 @@ model LabeledValue {
 model TaskRef {
   id: string;
   title: string;
-}
-
-model PublicSample {
-  task: TaskRef;
-  statement: string;
-}
-
-model VersionNote {
-  version: string;
-  releasedOn: plainDate;
-  note: string;
-}
-
-model QuestionAnswer {
-  question: string;
-  answer: string;
 }
 
 enum RunOutcome {
@@ -180,24 +159,15 @@ model RecentRun {
   timeline: TimelineMark[];
 }
 
+/**
+ * The data of a benchmark's page. Its prose (setting, evaluation, versions, citation, questions) is editorial
+ * content the site keeps in its own documents, not data the API serves.
+ */
 model BenchmarkDetail {
   ...BenchmarkSummary;
-  setting: {
-    intro: string;
-    flow: FlowStep[];
-    sample: PublicSample;
-  };
-  evaluation: {
-    intro: string;
-    flow: FlowStep[];
-    conditions: LabeledValue[];
-  };
   topFive: LeaderboardEntry[];
   recentRuns: RecentRun[];
   timelineLegend: TimelineLegend;
-  versions: VersionNote[];
-  bibtex: string;
-  faq: QuestionAnswer[];
 }
 
 enum LeaderboardView {
@@ -243,7 +213,15 @@ model RunMetrics {
   submissions: int32;
   outputTokens: int32;
   costUsd: float64;
-  endReason: string;
+  endReason: RunEndReason;
+}
+
+enum RunEndReason {
+  /** The agent submitted and the harness ended the run */
+  submitted,
+
+  /** The execution environment failed before the agent submitted */
+  executionError,
 }
 
 model HarnessInfo {
@@ -399,13 +377,6 @@ model HarnessComparison {
   scores: HarnessScore[];
 }
 
-model ReportRef {
-  id: string;
-  publishedOn: plainDate;
-  kind: string;
-  title: string;
-}
-
 model ModelProfile {
   `model`: ModelRef;
   summary: string;
@@ -413,7 +384,14 @@ model ModelProfile {
   harnessCount: int32;
   standings: BenchmarkStanding[];
   harnessComparison: HarnessComparison[];
-  reports: ReportRef[];
+}
+
+/**
+ * The reader's language, zh-CN or en. Display names, summaries and labels come back in it; evaluation records (task
+ * texts, trajectories, check titles, review conclusions) stay in the language they were made in.
+ */
+model LanguageHeader {
+  @header("Accept-Language") language?: string;
 }
 
 @error
@@ -424,24 +402,26 @@ model NotFoundError {
 
 @route("/stages")
 interface Stages {
-  @get list(): Stage[];
+  @get list(...LanguageHeader): Stage[];
 }
 
 @route("/benchmarks")
 interface Benchmarks {
-  @get list(): BenchmarkSummary[];
+  @get list(...LanguageHeader): BenchmarkSummary[];
 
   @get
   @route("/{benchmarkId}")
-  read(@path benchmarkId: string): BenchmarkDetail | NotFoundError;
+  read(@path benchmarkId: string, ...LanguageHeader): BenchmarkDetail | NotFoundError;
 
   @get
   @route("/{benchmarkId}/leaderboard")
   leaderboard(
     @path benchmarkId: string,
     @query view?: LeaderboardView = LeaderboardView.combination,
+    ...LanguageHeader,
   ): LeaderboardEntry[] | NotFoundError;
 
+  /** Tasks are records: their titles stay in the language the task was written in */
   @get
   @route("/{benchmarkId}/tasks")
   tasks(
@@ -456,16 +436,16 @@ interface Benchmarks {
 
   @get
   @route("/{benchmarkId}/tasks/{taskId}/runs")
-  taskRuns(@path benchmarkId: string, @path taskId: string): TaskRuns | NotFoundError;
+  taskRuns(@path benchmarkId: string, @path taskId: string, ...LanguageHeader): TaskRuns | NotFoundError;
 }
 
 @route("/runs")
 interface Runs {
   @get
   @route("/{runId}")
-  read(@path runId: string): RunDetail | NotFoundError;
+  read(@path runId: string, ...LanguageHeader): RunDetail | NotFoundError;
 
-  /** The run's full trajectory in ATIF */
+  /** The run's full trajectory in ATIF; a record, so it stays in the language it was made in */
   @get
   @route("/{runId}/trajectory")
   trajectory(@path runId: string): ATIF.Trajectory | NotFoundError;
@@ -475,5 +455,5 @@ interface Runs {
 interface Models {
   @get
   @route("/{modelId}")
-  read(@path modelId: string): ModelProfile | NotFoundError;
+  read(@path modelId: string, ...LanguageHeader): ModelProfile | NotFoundError;
 }

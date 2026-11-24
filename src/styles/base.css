@@ -1,5 +1,46 @@
 @import './tokens.css';
 
+/*
+ * Site-level tokens. Colours, radii and spacing come from the Figma variables in tokens.css; motion, composite
+ * effects and the sizes the site's layout depends on live here.
+ */
+:root {
+  --font-text: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  --font-latin: "Hanken Grotesk", "Noto Sans SC", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+
+  --page-gutter: 120px;
+  --content-width: 1200px;
+  --nav-height: 64px;
+
+  /* Headings reached through an anchor stop this far below the nav. */
+  --anchor-gap: 56px;
+  --anchor-offset: calc(var(--nav-height) + var(--anchor-gap));
+
+  --control-large: 40px;
+  --control-medium: 34px;
+  --control-small: 26px;
+  --control-icon: 36px;
+
+  --duration-fast: .15s;
+  --duration-base: .25s;
+  --duration-slow: .4s;
+  --ease-out: cubic-bezier(.3, .8, .2, 1);
+  --control-transition: background-color var(--duration-base), border-color var(--duration-base), color var(--duration-base), box-shadow var(--duration-slow), transform var(--duration-fast);
+
+  --blur-glass: 14px;
+  --shadow-float: 0 14px 36px -16px var(--effect-shadow);
+  --shadow-glow: 0 8px 28px -10px var(--brand-dev), 0 8px 28px -12px var(--brand-ops);
+  --loop-gradient: linear-gradient(90deg, var(--brand-dev), var(--brand-ops));
+}
+
+@media (max-width: 1280px) { :root { --page-gutter: 48px; } }
+@media (max-width: 760px) { :root { --page-gutter: 24px; --nav-height: 56px; } }
+
+/* A container names its half of the loop once; everything inside colours itself from it. */
+[data-half="dev"] { --half-color: var(--brand-dev); --half-color-soft: var(--brand-dev-soft); }
+[data-half="ops"] { --half-color: var(--brand-ops); --half-color-soft: var(--brand-ops-soft); }
+
 *, *::before, *::after { box-sizing: border-box; }
 
 html { -webkit-text-size-adjust: 100%; }
@@ -12,28 +53,15 @@ body {
   font-size: 15px;
   line-height: 1.65;
   -webkit-font-smoothing: antialiased;
-  transition: background-color .3s, color .3s;
+  transition: background-color var(--duration-slow), color var(--duration-slow);
 }
 
-:root {
-  --font-text: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
-  --font-latin: "Hanken Grotesk", "Noto Sans SC", system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
-  --page-gutter: 120px;
-  --content-width: 1200px;
-  --nav-height: 64px;
-  --loop-gradient: linear-gradient(90deg, var(--brand-dev), var(--brand-ops));
-  --ease-out: cubic-bezier(.3, .8, .2, 1);
-}
-
-@media (max-width: 1280px) { :root { --page-gutter: 48px; } }
-@media (max-width: 760px) { :root { --page-gutter: 24px; --nav-height: 56px; } }
-
-h1, h2, h3, h4, p, ol, ul, dl, dd, figure, pre { margin: 0; }
+h1, h2, h3, h4, p, ol, ul, dl, dd, figure, pre, blockquote { margin: 0; }
 ol, ul { padding: 0; list-style: none; }
-button { font: inherit; color: inherit; }
 a { color: inherit; text-decoration: none; }
+button { padding: 0; border: 0; background: none; font: inherit; color: inherit; cursor: pointer; }
 :focus-visible { outline: 2px solid var(--accent-brand); outline-offset: 2px; border-radius: var(--radius-sm); }
+[id] { scroll-margin-top: var(--anchor-offset); }
 
 /* Text styles mirror the Figma Site/* text styles. */
 .t-display { font: 700 48px/1.16 var(--font-text); letter-spacing: -0.01em; }
@@ -68,22 +96,12 @@ a { color: inherit; text-decoration: none; }
   padding-right: var(--page-gutter);
 }
 
-/* Links underline in the ∞ gradient from the left as the pointer arrives. */
-.link-arrow {
-  display: inline-flex;
-  gap: 6px;
-  align-items: center;
-  width: fit-content;
-  padding-bottom: 1px;
-  color: var(--text-main);
-  background: var(--loop-gradient) left bottom / 0 1px no-repeat;
-  transition: color .18s, background-size .35s var(--ease-out);
-}
-.link-arrow::after { content: "→"; transition: transform .3s var(--ease-out); }
-.link-arrow:hover { background-size: 100% 1px; }
-.link-arrow:hover::after { transform: translateX(4px); }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
-/* A control's edge lights up in the ∞ gradient, development blue to operations orange: sweeping on hover, still when selected. */
+/*
+ * A control's edge lights up in the ∞ gradient, development blue to operations orange: sweeping on hover, still
+ * when selected. It is global because the landing page's static markup uses it too.
+ */
 @property --loop-angle { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
 @keyframes loop-sweep { to { --loop-angle: 360deg; } }
 .loop-edge { position: relative; isolation: isolate; }
@@ -100,15 +118,12 @@ a { color: inherit; text-decoration: none; }
   mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
   opacity: 0;
   pointer-events: none;
-  transition: opacity .3s;
+  transition: opacity var(--duration-base);
 }
-.loop-edge:hover { border-color: transparent; }
+.loop-edge:hover, .loop-edge:is([aria-pressed="true"], [aria-current="true"], [aria-expanded="true"]) { border-color: transparent; }
 .loop-edge:hover::before { opacity: 1; animation: loop-sweep 2.4s linear infinite; }
-.loop-edge:is([aria-pressed="true"], [aria-current="true"], [aria-expanded="true"]) { border-color: transparent; }
 .loop-edge:is([aria-pressed="true"], [aria-current="true"], [aria-expanded="true"])::before { opacity: 1; }
 .loop-edge:active { transform: scale(.97); }
-
-.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; }

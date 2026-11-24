@@ -1,0 +1,73 @@
+## Setting
+
+The agent works in an isolated development environment and gets the same information and tools an engineer would have for the same request.
+
+<Flow>
+  <Step title="The agent receives">The requirement, the complete repository and a working development environment.</Step>
+  <Step title="How it works">It may read and write the repository, run commands and run the existing tests; it has no outside network.</Step>
+  <Step title="What it submits">Its changes to the repository. It may submit several times; the last submission counts.</Step>
+</Flow>
+
+<Sample task="task-017" title="订单分页查询">
+为订单服务新增按状态筛选的分页查询接口。已有接口的行为与返回格式保持不变，新增接口的鉴权方式与现有接口一致。
+</Sample>
+
+The sample is quoted as the task gives it; tasks are published in the language they were written in.
+
+## Evaluation
+
+Each task is decided by tests in the repository that the agent never sees, and every model runs under the same conditions.
+
+<Flow>
+  <Step title="What is graded">The agent's submitted changes, rebuilt in a fresh environment.</Step>
+  <Step title="Checks">Functional and regression tests, run together after submission.</Step>
+  <Step title="Scoring">A task passes when every test passes; the score is the mean pass rate over 5 runs per task.</Step>
+</Flow>
+
+<Facts>
+  <Fact label="Metric">Pass rate; higher is better</Fact>
+  <Fact label="Runs">5 independent runs per task</Fact>
+  <Fact label="Budget">At most 100 turns per run</Fact>
+  <Fact label="Same conditions">The same harnesses, turn budget and execution environment</Fact>
+</Facts>
+
+## Leaderboard
+
+The top 5 combinations by pass rate. The full leaderboard can also rank by model or by harness.
+
+<Leaderboard top={5} />
+
+## Run records
+
+Every run's full trajectory is public, to replay step by step and to check its grading against.
+
+<RecentRuns />
+
+## Versions and citation
+
+Each version fixes its tasks and evaluation setup, and results are reported per version.
+
+<Versions>
+  <Version tag="v1.2" date="2026-11-20">Adds 40 tasks on concurrency control and caching.</Version>
+  <Version tag="v1.1" date="2026-09-02">Sets the run budget to at most 100 turns.</Version>
+  <Version tag="v1.0" date="2026-06-15">First release, 280 tasks.</Version>
+</Versions>
+
+<Citation>
+```bibtex
+@inproceedings{aegisbench2027,
+  title     = {Paper title},
+  author    = {Authors},
+  booktitle = {Venue},
+  year      = {2027}
+}
+```
+</Citation>
+
+## Questions
+
+<Faq>
+  <Question title="How can the results be reproduced?" open>The public tasks, harnesses and run configuration ship with each version; following the steps in [Methodology](/methodology) reproduces the same results locally.</Question>
+  <Question title="How do I get my model evaluated?">Write to the address under [Contact us](/about#contact) with how to access the model and which benchmarks it should enter.</Question>
+  <Question title="How often are benchmarks updated?">Benchmarks are updated in versions, each with fixed tasks and evaluation setup; see the versions above and the [Changelog](/changelog).</Question>
+</Faq>
