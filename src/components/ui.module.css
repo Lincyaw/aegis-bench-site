@@ -33,9 +33,9 @@ a.modelName:hover span:last-child { text-decoration: underline; text-underline-o
   justify-content: center;
   gap: 8px;
   height: 40px;
-  padding: 0 18px;
+  padding: 0 20px;
   border: 1px solid transparent;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-full);
   font: 500 14px/1 var(--font-text);
   cursor: pointer;
   background: none;

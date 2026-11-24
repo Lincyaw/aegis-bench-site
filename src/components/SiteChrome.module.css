@@ -27,7 +27,7 @@
   place-items: center;
   height: 38px;
   border: 1px solid var(--border-emphasis);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-full);
   background: none;
   color: var(--text-main);
   cursor: pointer;
@@ -36,7 +36,7 @@
 .iconButton { width: 38px; }
 .iconButton svg { transition: transform .5s var(--ease-out); }
 .iconButton:hover svg { transform: rotate(180deg); }
-.contact { padding: 0 16px; font: 500 14px/1 var(--font-text); }
+.contact { padding: 0 18px; font: 500 14px/1 var(--font-text); }
 .iconButton:hover, .contact:hover { background: var(--bg-muted); }
 .menuButton { display: none; }
 
