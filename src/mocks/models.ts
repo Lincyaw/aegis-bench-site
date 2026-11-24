@@ -19,7 +19,10 @@ export function modelProfile(modelId: string, locale: Locale): ModelProfile {
   const entered = BENCHMARKS.filter(record => record.ranking.some(([rankedModel]) => rankedModel === modelId));
   const standings = entered.map(record => {
     const board = leaderboardOf(record.id, locale);
-    const best = board.find(entry => entry.model.id === modelId)!;
+    const best = board.find(entry => entry.model.id === modelId);
+    if (!best) {
+      throw new Error(`${modelId} is ranked on ${record.id} but missing from its leaderboard`);
+    }
     return {
       benchmark: benchmarkRef(record.id), stage: stageRef(record.stageId, locale), metric: { ...record.metric, name: record.metric.name[locale] },
       bestHarness: best.harness, rank: best.rank, entrants: board.length, score: best.score,

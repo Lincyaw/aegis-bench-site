@@ -7,7 +7,8 @@ const MESSAGES: Record<Locale, Messages> = { 'zh-CN': zh, en };
 
 function i18nOf(locale: Locale): i18n {
   const instance = i18next.createInstance();
-  instance.init({ lng: locale, resources: { [locale]: { translation: MESSAGES[locale] } }, interpolation: { escapeValue: false }, initAsync: false });
+  // With initAsync off the instance is ready when init returns; its promise only repeats that.
+  void instance.init({ lng: locale, resources: { [locale]: { translation: MESSAGES[locale] } }, interpolation: { escapeValue: false }, initAsync: false });
   return instance;
 }
 

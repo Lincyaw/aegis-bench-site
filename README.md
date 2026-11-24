@@ -8,7 +8,14 @@ Aegis Bench 对外站点的前端演示。页面按 Figma 文件 [Aegis Bench](h
 npm install
 npm run dev      # 先由 TypeSpec 生成 OpenAPI 与前端类型，再启动开发服务器
 npm run build    # 生产构建；mock 服务随构建一起发布
+npm run check    # 类型检查、oxlint、样式检查与译文检查
 ```
+
+`npm run check` 包含四项：
+- `tsc -b`：类型检查。
+- oxlint：带类型信息运行，警告也视为失败。
+- Stylelint：组件样式里不得出现原始的颜色、px 与时长，一律引用 `src/styles` 下的令牌；读取的每个 CSS 变量都必须有定义。
+- `check:locale`：中文文案不得与英文相同。确实应当相同的条目，连同理由写在 `scripts/check-locale.ts` 的允许表里。
 
 ## 结构
 

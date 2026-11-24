@@ -33,7 +33,8 @@ export function lapAt(beat: Beat): number {
     case 'stage': return STATION_AT[beat.stage];
     case 'far':
     case 'mark': return LAP_START + 1;
-    default: return LAP_START;
+    case 'smoke':
+    case 'map': return LAP_START;
   }
 }
 

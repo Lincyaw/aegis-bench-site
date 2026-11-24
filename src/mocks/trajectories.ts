@@ -169,8 +169,11 @@ export function recentRunsOf(benchmarkId: string, locale: Locale): RecentRun[] {
   const { kind, listedRuns, timelineLegend } = benchmarkById(benchmarkId);
   return listedRuns.map(([taskId, modelId, harnessId]) => {
     const runId = runIdOf(benchmarkId, taskId, modelId, harnessId, 1);
-    const detail = runDetailOf(runId, locale)!;
-    const trajectory = trajectoryOf(runId)!;
+    const detail = runDetailOf(runId, locale);
+    const trajectory = trajectoryOf(runId);
+    if (!detail || !trajectory) {
+      throw new Error(`${benchmarkId} lists run ${runId}, which has no record`);
+    }
     return {
       runId, model: detail.model, task: detail.task, outcome: detail.outcome, resultLabel: resultLabelOf(kind, detail, locale),
       stepCount: detail.metrics.steps, durationMinutes: detail.metrics.durationMinutes,

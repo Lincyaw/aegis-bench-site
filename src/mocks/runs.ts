@@ -152,7 +152,10 @@ export function planOf(runId: string): RunPlan | undefined {
   if (!key) {
     return undefined;
   }
-  const task = taskOf(key.benchmarkId, key.taskId)!;
+  const task = taskOf(key.benchmarkId, key.taskId);
+  if (!task) {
+    throw new Error(`run ${runId} names no task of ${key.benchmarkId}`);
+  }
   const kind = benchmarkById(key.benchmarkId).kind;
   const outcome = outcomeOf(key);
   const checks = checksOf(kind, task.id);

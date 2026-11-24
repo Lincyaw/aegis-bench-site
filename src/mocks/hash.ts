@@ -5,7 +5,11 @@
 export function hashOf(key: string): number {
   let hash = 0x811c9dc5;
   for (const char of key) {
-    hash ^= char.codePointAt(0)!;
+    const codePoint = char.codePointAt(0);
+    if (codePoint === undefined) {
+      throw new Error('a character of a string has no code point');
+    }
+    hash ^= codePoint;
     hash = Math.imul(hash, 0x01000193);
   }
   hash ^= hash >>> 16;

@@ -7,7 +7,9 @@
     "skipLibCheck": true,
 
     /* Bundler mode */
-    "module": "nodenext",
+    /* The scripts import the site's own modules, which resolve the way the bundler resolves them. */
+    "module": "esnext",
+    "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
     "moduleDetection": "force",
@@ -19,5 +21,5 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["vite.config.ts"]
+  "include": ["vite.config.ts", "scripts"]
 }

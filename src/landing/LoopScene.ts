@@ -280,7 +280,8 @@ export class LoopScene {
       case 'map': return this.fits.map;
       // The mark follows its slot as the footer scrolls into place, so it never rests on the copy above.
       case 'mark': return { ...this.fits.mark, offset: [this.fits.mark.offset[0], this.fits.mark.offset[1] - (this.elements.markSlot.getBoundingClientRect().top - this.fits.markSlotTop)] };
-      default: return this.fits.smoke;
+      case 'smoke':
+      case 'far': return this.fits.smoke;
     }
   }
 
