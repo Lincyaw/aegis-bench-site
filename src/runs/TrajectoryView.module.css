@@ -1,30 +1,32 @@
-.view { display: grid; gap: 16px; }
-.controls { display: flex; align-items: center; gap: 10px; }
+.view { display: grid; gap: var(--space-4); }
+.controls { display: flex; align-items: center; gap: var(--space-3); }
 .controls > :nth-child(3) { flex: 1; overflow-x: auto; scrollbar-width: none; }
 .controls > :last-child { flex: none; }
 
-.steps { display: grid; border-top: 1px solid var(--border-hairline); }
+/* A step's detail lines up under its message, past the head's padding, the number column and the gap. */
+.steps { --step-number: var(--space-8); --step-indent: calc(var(--space-3) * 2 + var(--step-number)); display: grid; border-top: var(--rule-hairline); }
 /* Clears the run detail tabs that stay at the top of the pane. */
-.step { border-bottom: 1px solid var(--border-hairline); scroll-margin-top: 56px; }
-.open { margin: 6px 0; border: 1px solid var(--border-hairline); border-radius: var(--radius-md); background: var(--bg-panel); }
-.evidence { box-shadow: inset 2px 0 0 var(--accent-warning); }
-.stepHead { display: grid; grid-template-columns: 28px auto auto 1fr; align-items: center; gap: 10px; width: 100%; padding: 12px; text-align: left; transition: background-color var(--duration-base); }
+.step { border-bottom: var(--rule-hairline); scroll-margin-top: var(--anchor-gap); }
+.open { margin: var(--space-2) 0; border: var(--rule-hairline); border-radius: var(--radius-md); background: var(--bg-panel); }
+.evidence { box-shadow: inset var(--size-border-thick) 0 0 var(--accent-warning); }
+.stepHead { display: grid; grid-template-columns: var(--step-number) auto auto 1fr; align-items: center; gap: var(--space-3); width: 100%; padding: var(--space-3); text-align: left; transition: background-color var(--duration-base); }
 .stepHead:hover { background: var(--bg-muted); }
 .open .stepHead:hover { background: none; }
-.tag { padding: 1px 7px; border: 1px solid var(--border-emphasis); border-radius: var(--radius-sm); color: var(--text-muted); white-space: nowrap; }
+.tag { padding: var(--size-hairline) var(--space-2); border: var(--rule-emphasis); border-radius: var(--radius-sm); color: var(--text-muted); white-space: nowrap; }
 .passedTag { border-color: var(--accent-success); color: var(--accent-success); }
 .failedTag { border-color: var(--accent-warning); color: var(--accent-warning); }
-.target { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.target { max-width: 13.75rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .message { min-width: 0; }
 
-.detail { display: grid; gap: 10px; padding: 0 12px 14px 50px; }
-.block { padding: 10px 12px; border: 1px solid var(--border-hairline); border-radius: var(--radius-md); background: var(--bg-page); }
-.block pre, .userText { margin-top: 6px; white-space: pre-wrap; word-break: break-word; color: var(--text-muted); }
-.userText { padding: 0 12px 14px 50px; font-family: var(--font-text); }
+.detail { display: grid; gap: var(--space-3); padding: 0 var(--space-3) var(--space-4) var(--step-indent); }
+.block { padding: var(--space-3); border: var(--rule-hairline); border-radius: var(--radius-md); background: var(--bg-page); }
+.block pre, .userText { margin-top: var(--space-2); white-space: pre-wrap; overflow-wrap: anywhere; color: var(--text-muted); }
+.userText { padding: 0 var(--space-3) var(--space-4) var(--step-indent); font-family: var(--font-text); }
 
 @media (max-width: 760px) {
-  .step { scroll-margin-top: calc(var(--nav-height) + 56px); }
-  .stepHead { grid-template-columns: 24px auto 1fr; }
+  .steps { --step-number: var(--space-6); }
+  .step { scroll-margin-top: calc(var(--nav-height) + var(--anchor-gap)); }
+  .stepHead { grid-template-columns: var(--step-number) auto 1fr; }
   .target { display: none; }
-  .detail, .userText { padding-left: 12px; }
+  .detail, .userText { padding-left: var(--space-3); }
 }

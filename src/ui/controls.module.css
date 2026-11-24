@@ -3,8 +3,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  border: 1px solid var(--border-emphasis);
+  gap: var(--space-2);
+  border: var(--rule-emphasis);
   border-radius: var(--radius-full);
   color: var(--text-main);
   white-space: nowrap;
@@ -12,15 +12,15 @@
 }
 .pill:hover, .pill:is([aria-pressed="true"], [aria-current="true"], [aria-expanded="true"], [data-state="open"]) { background: var(--bg-muted); }
 
-.large { height: var(--control-large); padding: 0 20px; font: 500 14px/1 var(--font-text); }
-.medium { height: var(--control-medium); padding: 0 16px; font: 400 13px/1 var(--font-text); }
-.small { height: var(--control-small); padding: 0 9px; gap: 5px; font: 400 12px/1 var(--font-text); color: var(--text-muted); }
+.large { height: var(--control-large); padding: 0 var(--space-5); font: var(--type-label); line-height: 1; }
+.medium { height: var(--control-medium); padding: 0 var(--space-4); font: var(--type-small); line-height: 1; }
+.small { height: var(--control-small); padding: 0 var(--space-2); gap: var(--space-1); font: var(--type-micro); line-height: 1; color: var(--text-muted); }
 .small:hover, .small[aria-current="true"] { color: var(--text-main); }
 
 .solid { border-color: transparent; background: var(--bg-inverted); color: var(--text-on-inverted); }
 .solid:hover { background: var(--bg-inverted); box-shadow: var(--shadow-glow); }
 .solid::after { content: "→"; transition: transform var(--duration-slow) var(--ease-out); }
-.solid:hover::after { transform: translateX(3px); }
+.solid:hover::after { transform: translateX(var(--space-1)); }
 
 .copy { display: inline-flex; align-items: center; gap: var(--space-3); }
 .copied { display: inline-flex; align-items: center; gap: var(--space-1); }
@@ -31,12 +31,12 @@
 .icon svg { transition: transform var(--duration-slow) var(--ease-out); }
 .icon:hover svg { transform: rotate(180deg); }
 
-.segmented { display: inline-flex; padding: 3px; border: 1px solid var(--border-hairline); border-radius: var(--radius-full); background: var(--bg-muted); }
-.segment { height: var(--control-small); padding: 0 14px; border-radius: var(--radius-full); color: var(--text-muted); font: 400 12px/1 var(--font-text); transition: var(--control-transition); }
+.segmented { display: inline-flex; padding: var(--space-px); border: var(--rule-hairline); border-radius: var(--radius-full); background: var(--bg-muted); }
+.segment { height: var(--control-small); padding: 0 var(--space-4); border-radius: var(--radius-full); color: var(--text-muted); font: var(--type-micro); line-height: 1; transition: var(--control-transition); }
 .segment:hover { color: var(--text-main); }
 .segment[aria-pressed="true"] { background: var(--bg-page); color: var(--text-main); }
 
-.field { justify-content: flex-start; width: 240px; padding: 0 14px; color: var(--text-faint); }
+.field { justify-content: flex-start; width: 15rem; padding: 0 var(--space-4); color: var(--text-faint); }
 .field input { flex: 1; min-width: 0; border: 0; outline: 0; background: none; color: var(--text-main); font: inherit; }
 .field:focus-within { border-color: var(--text-faint); }
 
@@ -44,18 +44,18 @@
 .textLink {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-2);
   width: fit-content;
-  padding-bottom: 1px;
+  padding-bottom: var(--size-hairline);
   color: var(--text-main);
-  background: var(--loop-gradient) left bottom / 0 1px no-repeat;
+  background: var(--loop-gradient) left bottom / 0 var(--size-hairline) no-repeat;
   transition: color var(--duration-base), background-size var(--duration-slow) var(--ease-out);
 }
 .textLink::after { content: "→"; transition: transform var(--duration-slow) var(--ease-out); }
-.textLink:hover { background-size: 100% 1px; }
-.textLink:hover::after { transform: translateX(4px); }
+.textLink:hover { background-size: 100% var(--size-hairline); }
+.textLink:hover::after { transform: translateX(var(--space-1)); }
 
-.trigger { justify-content: space-between; gap: 10px; min-width: 150px; padding: 0 12px 0 16px; }
+.trigger { justify-content: space-between; gap: var(--space-3); min-width: 9.5rem; padding: 0 var(--space-3) 0 var(--space-4); }
 .chevron { display: grid; color: var(--text-faint); transition: transform var(--duration-slow) var(--ease-out), color var(--duration-base); }
 .trigger:hover .chevron, .trigger[data-state="open"] .chevron { color: var(--text-main); }
 .trigger[data-state="open"] .chevron { transform: rotate(180deg); }
@@ -64,29 +64,28 @@
 .menu {
   z-index: 50;
   min-width: var(--radix-select-trigger-width);
-  max-height: min(360px, var(--radix-select-content-available-height));
-  padding: 6px;
-  border: 1px solid var(--border-glass);
+  max-height: min(22.5rem, var(--radix-select-content-available-height));
+  padding: var(--space-2);
+  border: var(--size-hairline) solid var(--border-glass);
   border-radius: var(--radius-2xl);
   background: var(--bg-glass-strong);
   backdrop-filter: blur(var(--blur-glass));
-  -webkit-backdrop-filter: blur(var(--blur-glass));
   box-shadow: var(--shadow-float);
   overflow: hidden;
   transform-origin: var(--radix-select-content-transform-origin);
   animation: menu-in var(--duration-base) var(--ease-out);
 }
 @keyframes menu-in {
-  from { opacity: 0; transform: translateY(-4px) scale(.97); }
+  from { opacity: 0; transform: translateY(calc(-1 * var(--space-1))) scale(.97); }
 }
-.options { display: grid; gap: 2px; }
+.options { display: grid; gap: var(--space-px); }
 .option {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  height: 32px;
-  padding: 0 12px 0 14px;
+  gap: var(--space-4);
+  height: var(--space-8);
+  padding: 0 var(--space-3) 0 var(--space-4);
   border-radius: var(--radius-full);
   color: var(--text-muted);
   white-space: nowrap;
@@ -99,5 +98,5 @@
 .option[data-highlighted] { background: var(--bg-muted); color: var(--text-main); }
 .option[data-state="checked"] { color: var(--text-main); font-weight: 500; }
 .check { display: grid; }
-.scroll { display: grid; place-items: center; height: 22px; color: var(--text-faint); cursor: default; }
+.scroll { display: grid; place-items: center; height: var(--space-6); color: var(--text-faint); cursor: default; }
 .up { display: grid; transform: rotate(180deg); }

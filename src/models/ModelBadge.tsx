@@ -1,14 +1,12 @@
 import { clsx } from 'clsx';
-import type { CSSProperties } from 'react';
 import type { ModelRef } from '../api/client';
 import { LocaleLink } from '../i18n/LocaleRouting';
 import { modelPath } from '../site/siteMap';
-import { VENDOR_SLOT_COLORS } from './presentation';
 import styles from './ModelBadge.module.css';
 
 /** The vendor's slot letter on the slot's colour. */
-export function VendorBadge({ model, size = 20 }: { model: ModelRef; size?: number }) {
-  return <span className={styles.vendor} style={{ '--slot-color': `var(${VENDOR_SLOT_COLORS[model.slot]})`, '--badge-size': `${size}px` } as CSSProperties} title={model.vendor}>{model.slot}</span>;
+export function VendorBadge({ model }: { model: ModelRef }) {
+  return <span className={styles.vendor} data-slot={model.slot} title={model.vendor}>{model.slot}</span>;
 }
 
 /** A model's badge and name. */

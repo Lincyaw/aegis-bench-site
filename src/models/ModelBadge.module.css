@@ -1,14 +1,18 @@
+/* The vendor's slot letter on the slot's colour; a badge's container may set --badge-size. */
 .vendor {
   display: inline-grid;
   place-items: center;
   flex: none;
-  width: var(--badge-size);
-  height: var(--badge-size);
+  width: var(--badge-size, var(--space-5));
+  height: var(--badge-size, var(--space-5));
   border-radius: var(--radius-sm);
-  background: var(--slot-color);
   color: var(--text-on-inverted);
-  font: 600 calc(var(--badge-size) * .55)/1 var(--font-latin);
+  font: 600 calc(var(--badge-size, var(--space-5)) * .55)/1 var(--font-latin);
 }
+.vendor[data-slot="A"] { background: var(--series-openai); }
+.vendor[data-slot="B"] { background: var(--series-anthropic); }
+.vendor[data-slot="C"] { background: var(--series-google); }
+.vendor[data-slot="D"] { background: var(--series-moonshot); }
 
-.model { display: inline-flex; align-items: center; gap: 10px; color: var(--text-main); }
-a.model:hover span:last-child { text-decoration: underline; text-underline-offset: 3px; }
+.model { display: inline-flex; align-items: center; gap: var(--space-3); color: var(--text-main); }
+a.model:hover span:last-child { text-decoration: underline; text-underline-offset: var(--space-1); }

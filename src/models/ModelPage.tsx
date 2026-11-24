@@ -26,7 +26,7 @@ export function ModelPage() {
       <Breadcrumbs crumbs={[{ label: t('site.nav.leaderboard'), to: leaderboardPath() }, { label: profile.model.name }]} />
       <section className={styles.hero}>
         <div className={styles.intro}>
-          <h1 className={clsx('t-display', styles.name)}><VendorBadge model={profile.model} size={32} />{profile.model.name}</h1>
+          <h1 className={clsx('t-display', styles.name)}><VendorBadge model={profile.model} />{profile.model.name}</h1>
           <p className="t-lead c-muted">{profile.summary}</p>
           <p className="t-micro c-faint">{t('models.meta', { date: profile.lastEvaluatedOn, count: profile.harnessCount, vendor: profile.model.vendor })}</p>
         </div>

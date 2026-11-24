@@ -1,22 +1,22 @@
-/* Rows of a data table; each table names its columns with --columns. */
+/* Rows of a data table; each table names its columns with --columns, and a table that names none has one. */
 .table { display: grid; }
 .row {
   display: grid;
-  grid-template-columns: var(--columns);
-  gap: 16px;
+  grid-template-columns: var(--columns, minmax(0, 1fr));
+  gap: var(--space-4);
   align-items: center;
-  min-height: 54px;
-  padding: 0 16px;
-  border-bottom: 1px solid var(--border-hairline);
+  min-height: 3.5rem;
+  padding: 0 var(--space-4);
+  border-bottom: var(--rule-hairline);
   transition: background-color var(--duration-base);
 }
-.head { min-height: 40px; border-top: 1px solid var(--border-hairline); }
+.head { min-height: var(--space-10); border-top: var(--rule-hairline); }
 .link { cursor: pointer; }
 .link:hover { background: var(--bg-muted); }
 .arrow { color: var(--text-faint); transition: transform var(--duration-base), color var(--duration-base); }
-.link:hover .arrow { color: var(--text-main); transform: translateX(4px); }
+.link:hover .arrow { color: var(--text-main); transform: translateX(var(--space-1)); }
 
 @media (max-width: 760px) {
-  .row { padding: 12px 0; }
+  .row { padding: var(--space-3) 0; }
   .head { display: none; }
 }

@@ -59,7 +59,7 @@ export function LandingPage() {
     motion.current.scrollToStage(index);
   };
   return (
-    <div ref={root} className={styles.landing}>
+    <div ref={root}>
       <LoopBackdrop stages={stages} onOpenStage={openStage} />
       <SiteNav sections={null} />
       <StageRail stages={stages} current={currentStage} onSelect={scrollToStage} />

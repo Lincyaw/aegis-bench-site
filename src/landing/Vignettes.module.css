@@ -3,13 +3,12 @@
   position: absolute;
   left: 0;
   top: 0;
-  width: 360px;
+  width: 22.5rem;
   opacity: 0;
-  border: 1px solid var(--border-hairline);
+  border: var(--rule-hairline);
   border-radius: var(--radius-lg);
   background: color-mix(in srgb, var(--bg-page) 78%, transparent);
   backdrop-filter: blur(var(--blur-glass));
-  -webkit-backdrop-filter: blur(var(--blur-glass));
   will-change: transform, opacity;
 }
 .covered { cursor: pointer; transition: border-color var(--duration-base) var(--ease-out); }
@@ -31,9 +30,9 @@
 .drawing :global(.status) { fill: var(--accent-warning); stroke: none; }
 .drawing :global(.solid) { fill: var(--bg-page); }
 .drawing :global(.pop) { transform-box: fill-box; transform-origin: center; }
-.drawing text { font: 400 11px/1 var(--font-text); fill: var(--text-faint); stroke: none; }
+.drawing text { font: var(--type-mono); font-family: var(--font-text); fill: var(--text-faint); stroke: none; }
 .drawing text:global(.mono) { font-family: var(--font-mono); }
 
 @media (max-width: 760px) {
-  .card { width: 300px; }
+  .card { width: 18.75rem; }
 }

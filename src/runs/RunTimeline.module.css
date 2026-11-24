@@ -1,11 +1,12 @@
-.timeline { display: flex; align-items: center; gap: 2px; min-height: 14px; min-width: 0; }
-.mark { flex: none; width: 3px; height: 8px; border-radius: 1px; background: var(--text-faint); opacity: .55; }
-.change { height: 12px; background: var(--half-color); opacity: 1; }
-.submitPassed { height: 12px; background: var(--accent-success); opacity: 1; }
-.submitFailed { height: 12px; background: var(--accent-warning); opacity: 1; }
-button.mark:hover { outline: 1px solid var(--text-muted); outline-offset: 1px; }
-.current { width: 2px; height: 20px; background: var(--text-main); opacity: 1; }
+/* One mark per step: a short tick, taller for a change or a submission, and the tallest for the step being read. */
+.timeline { display: flex; align-items: center; gap: var(--space-px); min-height: var(--space-4); min-width: 0; }
+.mark { flex: none; width: calc(var(--space-px) + var(--size-hairline)); height: var(--space-2); border-radius: var(--size-hairline); background: var(--text-faint); opacity: .55; }
+.change { height: var(--space-3); background: var(--half-color); opacity: 1; }
+.submitPassed { height: var(--space-3); background: var(--accent-success); opacity: 1; }
+.submitFailed { height: var(--space-3); background: var(--accent-warning); opacity: 1; }
+button.mark:hover { outline: var(--size-hairline) solid var(--text-muted); outline-offset: var(--size-hairline); }
+.current { width: var(--space-px); height: var(--space-5); background: var(--text-main); opacity: 1; }
 
-.legend { display: flex; flex-wrap: wrap; gap: 20px; }
-.legend li { display: inline-flex; align-items: center; gap: 6px; }
-.legend .mark { height: 10px; }
+.legend { display: flex; flex-wrap: wrap; gap: var(--space-5); }
+.legend li { display: inline-flex; align-items: center; gap: var(--space-2); }
+.legend .mark { height: var(--space-3); }

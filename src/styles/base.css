@@ -1,41 +1,79 @@
-@import './tokens.css';
+@import url("./tokens.css");
 
 /*
  * Site-level tokens. Colours, radii and spacing come from the Figma variables in tokens.css; motion, composite
- * effects and the sizes the site's layout depends on live here.
+ * effects, text styles and the sizes the site's layout depends on live here. Component stylesheets take every
+ * colour, size and duration from these tokens.
  */
 :root {
   --font-text: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
   --font-latin: "Hanken Grotesk", "Noto Sans SC", system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
-
+  --font-mono: "JetBrains Mono", ui-monospace, "Menlo", "Consolas", monospace;
   --page-gutter: 120px;
   --content-width: 1200px;
   --nav-height: 64px;
-
+  /* The measure of running text, and of a page's introduction. */
+  --measure: 760px;
+  --measure-intro: 640px;
   /* Headings reached through an anchor stop this far below the nav. */
   --anchor-gap: 56px;
   --anchor-offset: calc(var(--nav-height) + var(--anchor-gap));
-
   --control-large: 40px;
   --control-medium: 34px;
   --control-small: 26px;
   --control-icon: 36px;
-
+  /* Hairlines divide, strokes outline marks, thick lines carry an accent or an indicator. */
+  --size-hairline: 1px;
+  --size-stroke: 1.5px;
+  --size-border-thick: 2px;
+  --rule-hairline: var(--size-hairline) solid var(--border-hairline);
+  --rule-emphasis: var(--size-hairline) solid var(--border-emphasis);
+  /* Dots mark a status, a stage or a half of the loop. */
+  --size-dot: 8px;
+  --size-dot-sm: 6px;
+  /* Text styles mirror the Figma Site/* text styles; the .t-* classes apply them. */
+  --type-display: 700 48px/1.16 var(--font-text);
+  --type-title: 700 30px/1.22 var(--font-text);
+  --type-heading: 500 18px/1.4 var(--font-text);
+  --type-lead: 400 17px/1.65 var(--font-text);
+  --type-body: 400 15px/1.65 var(--font-text);
+  --type-label: 500 14px/1.4 var(--font-text);
+  --type-small: 400 13px/1.6 var(--font-text);
+  --type-micro: 400 12px/1.5 var(--font-text);
+  --type-mono: 400 11px/1.5 var(--font-mono);
+  --type-code: 400 12px/1.7 var(--font-mono);
+  --type-bench: 600 21px/1.3 var(--font-latin);
+  --type-numeric: 500 14px/1.4 var(--font-latin);
+  --type-wordmark: 600 14px/1 var(--font-latin);
+  /* The landing page's title and section headings grow with the window. */
+  --type-hero: 600 clamp(30px, 4vw, 56px)/1.16 var(--font-text);
+  --type-section: 600 clamp(26px, 3vw, 38px)/1.2 var(--font-text);
   --duration-fast: .15s;
   --duration-base: .25s;
   --duration-slow: .4s;
+  /* One lap of the gradient that runs round a hovered control's edge. */
+  --duration-sweep: 2.4s;
   --ease-out: cubic-bezier(.3, .8, .2, 1);
   --control-transition: background-color var(--duration-base), border-color var(--duration-base), color var(--duration-base), box-shadow var(--duration-slow), transform var(--duration-fast);
-
   --blur-glass: 14px;
   --shadow-float: 0 14px 36px -16px var(--effect-shadow);
   --shadow-glow: 0 8px 28px -10px var(--brand-dev), 0 8px 28px -12px var(--brand-ops);
+  /* Keeps text legible where it lies over a drawing. */
+  --shadow-text-halo: 0 0 6px var(--bg-page), 0 0 12px var(--bg-page);
   --loop-gradient: linear-gradient(90deg, var(--brand-dev), var(--brand-ops));
 }
 
 @media (max-width: 1280px) { :root { --page-gutter: 48px; } }
-@media (max-width: 760px) { :root { --page-gutter: 24px; --nav-height: 56px; } }
+
+@media (max-width: 760px) {
+  :root {
+    --page-gutter: 24px;
+    --nav-height: 56px;
+    --type-display: 700 30px/1.2 var(--font-text);
+    --type-title: 700 24px/1.22 var(--font-text);
+    --type-hero: 600 26px/1.16 var(--font-text);
+  }
+}
 
 /* A container names its half of the loop once; everything inside colours itself from it. */
 [data-half="dev"] { --half-color: var(--brand-dev); --half-color-soft: var(--brand-dev-soft); }
@@ -43,15 +81,15 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 
+/* Safari on iOS still reads only the prefixed property, and enlarges text on rotation without it. */
+/* stylelint-disable-next-line property-no-vendor-prefix */
 html { -webkit-text-size-adjust: 100%; }
 
 body {
   margin: 0;
   background: var(--bg-page);
   color: var(--text-main);
-  font-family: var(--font-text);
-  font-size: 15px;
-  line-height: 1.65;
+  font: var(--type-body);
   -webkit-font-smoothing: antialiased;
   transition: background-color var(--duration-slow), color var(--duration-slow);
 }
@@ -63,27 +101,21 @@ p, li, dd { text-wrap: pretty; }
 ol, ul { padding: 0; list-style: none; }
 a { color: inherit; text-decoration: none; }
 button { padding: 0; border: 0; background: none; font: inherit; color: inherit; cursor: pointer; }
-:focus-visible { outline: 2px solid var(--accent-brand); outline-offset: 2px; border-radius: var(--radius-sm); }
+:focus-visible { outline: var(--size-border-thick) solid var(--accent-brand); outline-offset: var(--size-border-thick); border-radius: var(--radius-sm); }
 [id] { scroll-margin-top: var(--anchor-offset); }
 
-/* Text styles mirror the Figma Site/* text styles. */
-.t-display { font: 700 48px/1.16 var(--font-text); letter-spacing: -0.01em; }
-.t-title { font: 700 30px/1.22 var(--font-text); }
-.t-heading { font: 500 18px/1.4 var(--font-text); }
-.t-lead { font: 400 17px/1.65 var(--font-text); }
-.t-body { font: 400 15px/1.65 var(--font-text); }
-.t-label { font: 500 14px/1.4 var(--font-text); }
-.t-small { font: 400 13px/1.6 var(--font-text); }
-.t-micro { font: 400 12px/1.5 var(--font-text); }
-.t-mono { font: 400 11px/1.5 var(--font-mono); }
-.t-bench { font: 600 21px/1.3 var(--font-latin); }
-.t-numeric { font: 500 14px/1.4 var(--font-latin); font-variant-numeric: tabular-nums; }
-.t-wordmark { font: 600 14px/1 var(--font-latin); letter-spacing: 0.18em; }
-
-@media (max-width: 760px) {
-  .t-display { font-size: 30px; line-height: 1.2; }
-  .t-title { font-size: 24px; }
-}
+.t-display { font: var(--type-display); letter-spacing: -0.01em; }
+.t-title { font: var(--type-title); }
+.t-heading { font: var(--type-heading); }
+.t-lead { font: var(--type-lead); }
+.t-body { font: var(--type-body); }
+.t-label { font: var(--type-label); }
+.t-small { font: var(--type-small); }
+.t-micro { font: var(--type-micro); }
+.t-mono { font: var(--type-mono); }
+.t-bench { font: var(--type-bench); }
+.t-numeric { font: var(--type-numeric); font-variant-numeric: tabular-nums; }
+.t-wordmark { font: var(--type-wordmark); letter-spacing: 0.18em; }
 
 .c-main { color: var(--text-main); }
 .c-muted { color: var(--text-muted); }
@@ -99,7 +131,7 @@ button { padding: 0; border: 0; background: none; font: inherit; color: inherit;
   padding-right: var(--page-gutter);
 }
 
-.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.visually-hidden { position: absolute; width: var(--size-hairline); height: var(--size-hairline); overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 
 /*
  * A control's edge lights up in the ∞ gradient, development blue to operations orange: sweeping on hover, still
@@ -111,20 +143,18 @@ button { padding: 0; border: 0; background: none; font: inherit; color: inherit;
 .loop-edge::before {
   content: "";
   position: absolute;
-  inset: -1px;
+  inset: calc(-1 * var(--size-hairline));
   z-index: -1;
-  padding: 1px;
+  padding: var(--size-hairline);
   border-radius: inherit;
   background: conic-gradient(from var(--loop-angle), var(--brand-dev), var(--brand-ops), var(--brand-dev));
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
   mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
   opacity: 0;
   pointer-events: none;
   transition: opacity var(--duration-base);
 }
 .loop-edge:hover, .loop-edge:is([aria-pressed="true"], [aria-current="true"], [aria-expanded="true"]) { border-color: transparent; }
-.loop-edge:hover::before { opacity: 1; animation: loop-sweep 2.4s linear infinite; }
+.loop-edge:hover::before { opacity: 1; animation: loop-sweep var(--duration-sweep) linear infinite; }
 .loop-edge:is([aria-pressed="true"], [aria-current="true"], [aria-expanded="true"])::before { opacity: 1; }
 .loop-edge:active { transform: scale(.97); }
 

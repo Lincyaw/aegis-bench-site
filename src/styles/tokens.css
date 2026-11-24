@@ -6,6 +6,7 @@
   --radius-xl: 10px;
   --radius-2xl: 22px;
   --radius-full: 999px;
+  --space-px: 2px;
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -77,6 +78,7 @@
   --brand-ops-tint: rgb(176 122 69 / 12%);
   --brand-dev-soft: rgb(90 114 181 / 50%);
   --brand-ops-soft: rgb(176 122 69 / 50%);
+  --smoke-mist: #8a92a6;
 }
 
 :root[data-theme="dark"] {
@@ -135,4 +137,5 @@
   --brand-ops-tint: rgb(226 184 146 / 12%);
   --brand-dev-soft: rgb(163 182 230 / 50%);
   --brand-ops-soft: rgb(226 184 146 / 50%);
+  --smoke-mist: #eef0f5;
 }

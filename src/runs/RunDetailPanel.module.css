@@ -1,41 +1,42 @@
 .root { display: grid; align-content: start; }
 
-.header { display: grid; gap: 4px; padding: 20px 0 12px; }
-.titleRow { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+.header { display: grid; gap: var(--space-1); padding: var(--space-5) 0 var(--space-3); }
+.titleRow { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-3); }
 
 /* The tabs stay at the top of the pane while its content scrolls. */
-.tabs { --tab-gap: 24px; --tab-padding: 10px 0; position: sticky; top: 0; z-index: 1; border-bottom: 1px solid var(--border-hairline); background: var(--bg-page); }
+.tabs { --tab-gap: var(--space-6); --tab-padding: var(--space-3) 0; position: sticky; top: 0; z-index: 1; border-bottom: var(--rule-hairline); background: var(--bg-page); }
 
-.content { display: grid; gap: 28px; padding-top: 20px; }
+.content { display: grid; gap: var(--space-8); padding-top: var(--space-5); }
 
-.section { display: grid; gap: 10px; }
-.sectionHead { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border-hairline); }
+.section { display: grid; gap: var(--space-3); }
+.sectionHead { display: flex; justify-content: space-between; align-items: center; gap: var(--space-3); padding-bottom: var(--space-2); border-bottom: var(--rule-hairline); }
 .prose { white-space: pre-wrap; }
-.code { white-space: pre-wrap; word-break: break-word; }
+.code { white-space: pre-wrap; overflow-wrap: anywhere; }
 
-.files li { border-bottom: 1px solid var(--border-hairline); }
-.files summary { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; cursor: pointer; }
-.files details > p, .files details > pre { margin-bottom: 12px; }
-.diff { display: block; line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
+.files li { border-bottom: var(--rule-hairline); }
+.files summary { display: flex; justify-content: space-between; gap: var(--space-3); padding: var(--space-2) 0; cursor: pointer; }
+.files details > p, .files details > pre { margin-bottom: var(--space-3); }
+.diff { display: block; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; }
 
-.links { display: flex; flex-wrap: wrap; gap: 20px; }
-.summary { display: flex; align-items: center; gap: 14px; }
+.links { display: flex; flex-wrap: wrap; gap: var(--space-5); }
+.summary { display: flex; align-items: center; gap: var(--space-4); }
 .summary > a { margin-left: auto; }
 
-.checks { --columns: 44px 1fr 150px 72px; }
-.checkRow { width: 100%; padding: 10px 0; text-align: left; }
+/* A check's detail lines up under its title, past the number column and the gap. */
+.checks { --check-number: 2.75rem; --columns: var(--check-number) 1fr 9.5rem 4.5rem; }
+.checkRow { width: 100%; padding: var(--space-3) 0; text-align: left; }
 .checkRow:not([role="row"]) { cursor: pointer; }
-.checkDetail { display: grid; gap: 8px; padding: 8px 0 14px 56px; border-bottom: 1px solid var(--border-hairline); }
+.checkDetail { display: grid; gap: var(--space-2); padding: var(--space-2) 0 var(--space-4) calc(var(--check-number) + var(--space-3)); border-bottom: var(--rule-hairline); }
 
-.failedList li { display: grid; grid-template-columns: 8px 1fr auto; gap: 12px; align-items: start; padding: 12px 0; border-bottom: 1px solid var(--border-hairline); }
+.failedList li { display: grid; grid-template-columns: var(--size-dot) 1fr auto; gap: var(--space-3); align-items: start; padding: var(--space-3) 0; border-bottom: var(--rule-hairline); }
 .failedList button { white-space: nowrap; }
-.ring { width: 8px; height: 8px; margin-top: 6px; border: 1.5px solid var(--accent-warning); border-radius: 50%; }
-.evidence { display: flex; flex-wrap: wrap; align-items: center; gap: 20px; }
+.ring { width: var(--size-dot); height: var(--size-dot); margin-top: var(--space-2); border: var(--size-stroke) solid var(--accent-warning); border-radius: var(--radius-full); }
+.evidence { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-5); }
 
 @media (max-width: 760px) {
   .header { padding-top: 0; }
   .tabs { top: var(--nav-height); }
-  .checks { --columns: 36px 1fr 64px; }
+  .checks { --check-number: 2.25rem; --columns: var(--check-number) 1fr 4rem; }
   .checks .checkRow > :nth-child(3) { display: none; }
   .checkDetail { padding-left: 0; }
 }
