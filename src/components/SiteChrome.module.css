@@ -5,13 +5,15 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 64px;
+  height: var(--nav-height);
   padding: 0 16px;
   background: var(--bg-glass);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--border-hairline);
+  transition: transform .3s var(--ease-out);
 }
+:global(:root[data-nav-hidden]) .nav { transform: translateY(-100%); }
 .start, .end { display: flex; align-items: center; gap: 40px; }
 .end { gap: 12px; }
 .brand { display: inline-flex; align-items: center; gap: 12px; color: var(--text-main); }
@@ -20,30 +22,22 @@
 .links a { color: var(--text-muted); transition: color .18s; }
 .links a:hover, .links a.current { color: var(--text-main); }
 
-.iconButton {
+.iconButton, .contact {
   display: grid;
   place-items: center;
-  width: 38px;
   height: 38px;
   border: 1px solid var(--border-emphasis);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   background: none;
   color: var(--text-main);
   cursor: pointer;
-  transition: background-color .18s;
+  transition: background-color .25s, border-color .25s, transform .15s;
 }
-.iconButton:hover { background: var(--bg-muted); }
-.contact {
-  display: inline-flex;
-  align-items: center;
-  height: 38px;
-  padding: 0 16px;
-  border: 1px solid var(--border-emphasis);
-  border-radius: var(--radius-md);
-  font: 500 14px/1 var(--font-text);
-  transition: background-color .18s;
-}
-.contact:hover { background: var(--bg-muted); }
+.iconButton { width: 38px; }
+.iconButton svg { transition: transform .5s var(--ease-out); }
+.iconButton:hover svg { transform: rotate(180deg); }
+.contact { padding: 0 16px; font: 500 14px/1 var(--font-text); }
+.iconButton:hover, .contact:hover { background: var(--bg-muted); }
 .menuButton { display: none; }
 
 .drawer {
@@ -64,7 +58,6 @@
 .footerLinks a:hover { color: var(--text-main); }
 
 @media (max-width: 760px) {
-  .nav { height: 56px; }
   .links, .contact { display: none; }
   .menuButton { display: grid; }
   .footerTop, .footerBottom { flex-direction: column; align-items: flex-start; gap: 12px; }

@@ -10,6 +10,7 @@
   color: var(--text-main);
   font-size: 10px;
   cursor: pointer;
+  transition: background-color .25s, border-color .25s, transform .15s;
 }
 .controls > button:hover { background: var(--bg-muted); }
 .controls > span:first-of-type { flex: 1; justify-content: space-between; overflow-x: auto; scrollbar-width: none; }

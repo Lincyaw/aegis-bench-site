@@ -11,9 +11,8 @@
 
 /* The tabs stay at the top of the pane while its content scrolls. */
 .tabs { position: sticky; top: 0; z-index: 1; display: flex; gap: 24px; border-bottom: 1px solid var(--border-hairline); background: var(--bg-page); overflow-x: auto; scrollbar-width: none; }
-.tabs button { flex: none; padding: 10px 0; border: 0; border-bottom: 2px solid transparent; background: none; color: var(--text-muted); cursor: pointer; }
-.tabs button:hover { color: var(--text-main); }
-.tabs button[aria-selected="true"] { color: var(--text-main); border-bottom-color: var(--text-main); }
+.tabs button { flex: none; padding: 10px 0; border: 0; background: none; color: var(--text-muted); cursor: pointer; transition: color .18s; }
+.tabs button:hover, .tabs button[aria-selected="true"] { color: var(--text-main); }
 
 .content { display: grid; gap: 28px; padding-top: 20px; }
 
@@ -31,7 +30,7 @@
 .diff { display: block; gap: 0; line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
 
 .links { display: flex; flex-wrap: wrap; gap: 20px; }
-.links button { border: 0; padding: 0; background: none; cursor: pointer; }
+.links button { border: 0; padding: 0; cursor: pointer; }
 
 .summary { display: flex; align-items: center; gap: 14px; }
 .summary a { margin-left: auto; }
@@ -56,14 +55,14 @@ button.checkRow:hover { background: var(--bg-muted); }
 .checkDetail pre { white-space: pre-wrap; word-break: break-word; }
 
 .failedList li { display: grid; grid-template-columns: 8px 1fr auto; gap: 12px; align-items: start; padding: 12px 0; border-bottom: 1px solid var(--border-hairline); }
-.failedList button { border: 0; padding: 0; background: none; cursor: pointer; white-space: nowrap; }
+.failedList button { border: 0; padding: 0; cursor: pointer; white-space: nowrap; }
 .ring { width: 8px; height: 8px; margin-top: 6px; border: 1.5px solid var(--accent-warning); border-radius: 50%; }
 .evidence { display: flex; flex-wrap: wrap; align-items: center; gap: 20px; }
-.evidence button { border: 0; padding: 0; background: none; cursor: pointer; }
+.evidence button { border: 0; padding: 0; cursor: pointer; }
 
 @media (max-width: 760px) {
   .header { padding-top: 0; }
-  .tabs { top: 56px; }
+  .tabs { top: var(--nav-shown); transition: top .3s var(--ease-out); }
   .checkRow { grid-template-columns: 36px 1fr 64px; }
   .checkRow > :nth-child(3) { display: none; }
   .checkDetail { padding-left: 0; }

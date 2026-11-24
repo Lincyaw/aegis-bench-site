@@ -21,10 +21,15 @@ body {
   --font-mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
   --page-gutter: 120px;
   --content-width: 1200px;
+  --nav-height: 64px;
+  --nav-shown: var(--nav-height);
+  --loop-gradient: linear-gradient(90deg, var(--brand-dev), var(--brand-ops));
+  --ease-out: cubic-bezier(.3, .8, .2, 1);
 }
+:root[data-nav-hidden] { --nav-shown: 0px; }
 
 @media (max-width: 1280px) { :root { --page-gutter: 48px; } }
-@media (max-width: 760px) { :root { --page-gutter: 24px; } }
+@media (max-width: 760px) { :root { --page-gutter: 24px; --nav-height: 56px; } }
 
 h1, h2, h3, h4, p, ol, ul, dl, dd, figure, pre { margin: 0; }
 ol, ul { padding: 0; list-style: none; }
@@ -65,9 +70,45 @@ a { color: inherit; text-decoration: none; }
   padding-right: var(--page-gutter);
 }
 
-.link-arrow { display: inline-flex; gap: 6px; align-items: center; color: var(--text-main); transition: color .18s; }
-.link-arrow::after { content: "→"; transition: transform .18s; }
+/* Links underline in the ∞ gradient from the left as the pointer arrives. */
+.link-arrow {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  width: fit-content;
+  padding-bottom: 1px;
+  color: var(--text-main);
+  background: var(--loop-gradient) left bottom / 0 1px no-repeat;
+  transition: color .18s, background-size .35s var(--ease-out);
+}
+.link-arrow::after { content: "→"; transition: transform .3s var(--ease-out); }
+.link-arrow:hover { background-size: 100% 1px; }
 .link-arrow:hover::after { transform: translateX(4px); }
+
+/* A control's edge lights up in the ∞ gradient, development blue to operations orange: sweeping on hover, still when selected. */
+@property --loop-angle { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
+@keyframes loop-sweep { to { --loop-angle: 360deg; } }
+.loop-edge { position: relative; isolation: isolate; }
+.loop-edge::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  padding: 1px;
+  border-radius: inherit;
+  background: conic-gradient(from var(--loop-angle), var(--brand-dev), var(--brand-ops), var(--brand-dev));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .3s;
+}
+.loop-edge:hover { border-color: transparent; }
+.loop-edge:hover::before { opacity: 1; animation: loop-sweep 2.4s linear infinite; }
+.loop-edge:is([aria-pressed="true"], [aria-current="true"]) { border-color: transparent; }
+.loop-edge:is([aria-pressed="true"], [aria-current="true"])::before { opacity: 1; }
+.loop-edge:active { transform: scale(.97); }
 
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 

@@ -103,7 +103,7 @@ export function RunRecordsPage() {
                 <button
                   key={run.id}
                   type="button"
-                  className={`${styles.chip} ${run.id === runId ? styles.chipSelected : ''} ${filter !== 'all' && run.outcome !== filter ? styles.dimmed : ''}`}
+                  className={`${styles.chip} loop-edge ${filter !== 'all' && run.outcome !== filter ? styles.dimmed : ''}`}
                   onClick={() => update({ run: run.id }, ['tab', 'step', 'check'])}
                   aria-label={`${item.model.name} · ${item.harness.name} 第 ${run.attempt} 次`}
                   aria-current={run.id === runId}

@@ -5,7 +5,7 @@ import { LeaderboardTable } from '../components/LeaderboardTable';
 import { LifecycleMap } from '../components/LifecycleMap';
 import { RunTimeline, TimelineLegendRow } from '../components/RunTimeline';
 import { StageScene, hasScene } from '../components/StageScene';
-import { Breadcrumbs, Button, ButtonLink, LoadError, Loading, OutcomeDot, SectionHeading, Tag, VendorBadge } from '../components/ui';
+import { Breadcrumbs, Button, ButtonLink, LoadError, Loading, OutcomeDot, SectionHeading, TabIndicator, Tag, VendorBadge } from '../components/ui';
 import styles from './BenchmarkPage.module.css';
 
 const SECTIONS = [
@@ -127,7 +127,8 @@ export function BenchmarkPage() {
       <Hero benchmark={data} />
       <nav className={styles.sectionBar} aria-label="本页分区">
         <div className="page">
-          {SECTIONS.map(section => <a key={section.id} href={`#${section.id}`} className={`t-small ${current === section.id ? styles.currentSection : ''}`}>{section.label}</a>)}
+          {SECTIONS.map(section => <a key={section.id} href={`#${section.id}`} className="t-small" aria-current={current === section.id ? 'true' : undefined}>{section.label}</a>)}
+          <TabIndicator selected={current} />
         </div>
       </nav>
       <div className={`page ${styles.sections}`}>

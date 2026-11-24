@@ -32,22 +32,34 @@ a.modelName:hover span:last-child { text-decoration: underline; text-underline-o
   align-items: center;
   justify-content: center;
   gap: 8px;
-  height: 38px;
-  padding: 0 16px;
+  height: 40px;
+  padding: 0 18px;
   border: 1px solid transparent;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   font: 500 14px/1 var(--font-text);
   cursor: pointer;
   background: none;
   white-space: nowrap;
-  transition: background-color .18s, border-color .18s, color .18s;
+  transition: background-color .25s, border-color .25s, color .18s, box-shadow .35s, transform .15s;
 }
+.button::after { transition: transform .3s var(--ease-out); }
+.button:hover::after { transform: translateX(3px); }
 .solid { background: var(--bg-inverted); color: var(--text-on-inverted); }
-.solid:hover { opacity: .88; }
+.solid:hover { box-shadow: 0 8px 28px -10px var(--brand-dev), 0 8px 28px -12px var(--brand-ops); }
+.solid::after { content: "→"; }
 .line { border-color: var(--border-emphasis); color: var(--text-main); }
 .line:hover { background: var(--bg-muted); }
-.ghost { color: var(--text-muted); padding: 0 4px; }
-.ghost:hover { color: var(--text-main); }
+
+.indicator {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--loop-gradient);
+  pointer-events: none;
+  transition: transform .35s var(--ease-out), width .35s var(--ease-out), opacity .2s;
+}
 
 .dot { display: inline-block; flex: none; border-radius: 50%; }
 .passed { background: var(--accent-success); }

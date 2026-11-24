@@ -11,18 +11,18 @@
 
 .sectionBar {
   position: sticky;
-  top: 64px;
+  top: var(--nav-shown);
   z-index: 20;
+  transition: top .3s var(--ease-out);
   background: var(--bg-glass-strong);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border-top: 1px solid var(--border-hairline);
   border-bottom: 1px solid var(--border-hairline);
 }
-.sectionBar :global(.page) { display: flex; gap: 32px; overflow-x: auto; scrollbar-width: none; }
-.sectionBar a { padding: 9px 0 7px; border-bottom: 2px solid transparent; color: var(--text-muted); white-space: nowrap; transition: color .18s; }
-.sectionBar a:hover { color: var(--text-main); }
-.sectionBar a.currentSection { color: var(--text-main); border-bottom-color: var(--text-main); }
+.sectionBar :global(.page) { position: relative; display: flex; gap: 32px; overflow-x: auto; scrollbar-width: none; }
+.sectionBar a { padding: 9px 0; color: var(--text-muted); white-space: nowrap; transition: color .18s; }
+.sectionBar a:hover, .sectionBar a[aria-current="true"] { color: var(--text-main); }
 
 .sections { display: grid; gap: 96px; padding-top: 48px; }
 .sections section { display: grid; }
@@ -85,7 +85,6 @@ a.runRow:hover { background: var(--bg-muted); }
   .stagePanel { max-width: 205px; }
   .position { flex-direction: column; align-items: flex-start; }
   .miniMap { width: 160px; }
-  .sectionBar { top: 56px; }
   .sections { gap: 64px; padding-top: 48px; }
   .flow { grid-template-columns: 1fr; gap: 24px; }
   .conditions div { grid-template-columns: 96px 1fr; }

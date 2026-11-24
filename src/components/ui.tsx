@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useLayoutEffect, useRef, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import type { Metric, ModelRef, RunOutcome } from '../api/client';
 import { lobePath } from './loop';
@@ -41,14 +41,38 @@ export function Tag({ children, dashed = false }: { children: ReactNode; dashed?
   return <span className={`${styles.tag} ${dashed ? styles.dashed : ''} t-micro`}>{children}</span>;
 }
 
-type ButtonStyle = 'solid' | 'line' | 'ghost';
+type ButtonStyle = 'solid' | 'line';
 
 export function ButtonLink({ to, children, look = 'line' }: { to: string; children: ReactNode; look?: ButtonStyle }) {
-  return <Link className={`${styles.button} ${styles[look]}`} to={to}>{children}</Link>;
+  return <Link className={`${styles.button} ${styles[look]} loop-edge`} to={to}>{children}</Link>;
 }
 
 export function Button({ children, look = 'line', onClick, label }: { children: ReactNode; look?: ButtonStyle; onClick: () => void; label?: string }) {
-  return <button type="button" className={`${styles.button} ${styles[look]}`} onClick={onClick} aria-label={label}>{children}</button>;
+  return <button type="button" className={`${styles.button} ${styles[look]} loop-edge`} onClick={onClick} aria-label={label}>{children}</button>;
+}
+
+/** The ∞ gradient bar under the selected tab among its siblings; it slides when the selection changes. */
+export function TabIndicator({ selected }: { selected: string }) {
+  const bar = useRef<HTMLSpanElement>(null);
+  useLayoutEffect(() => {
+    const element = bar.current;
+    const row = element?.parentElement;
+    if (!element || !row) {
+      throw new Error('TabIndicator needs to sit inside its row of tabs');
+    }
+    const place = () => {
+      const tab = row.querySelector<HTMLElement>('[aria-selected="true"], [aria-current="true"]');
+      element.style.opacity = tab ? '1' : '0';
+      element.style.width = `${tab?.offsetWidth ?? 0}px`;
+      element.style.transform = `translateX(${tab?.offsetLeft ?? 0}px)`;
+    };
+    place();
+    // Tab labels change width when fonts or counts arrive.
+    const observer = new ResizeObserver(place);
+    Array.from(row.children).forEach(child => observer.observe(child));
+    return () => observer.disconnect();
+  }, [selected]);
+  return <span ref={bar} className={styles.indicator} aria-hidden="true" />;
 }
 
 export function OutcomeDot({ outcome, size = 7 }: { outcome: RunOutcome; size?: number }) {

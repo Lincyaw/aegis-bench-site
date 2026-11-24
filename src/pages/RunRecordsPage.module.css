@@ -1,5 +1,5 @@
-/* The page fills the window below the 64px nav; only its panes scroll. */
-.workspace { display: flex; flex-direction: column; height: calc(100dvh - 64px); padding: 0 24px 16px; }
+/* The page fills the window below the nav; only its panes scroll. */
+.workspace { display: flex; flex-direction: column; height: calc(100dvh - var(--nav-height)); padding: 0 24px 16px; }
 
 .toolbar { display: flex; flex: none; align-items: center; gap: 12px; padding: 12px 0; }
 .toolbar nav { margin-right: 12px; white-space: nowrap; }
@@ -34,9 +34,9 @@
 .stacked button { border: 0; padding: 0 0 6px; background: none; cursor: pointer; }
 .scroll { flex: 1; overflow-y: auto; overscroll-behavior: contain; }
 
-.task { display: grid; gap: 2px; width: 100%; padding: 10px 16px; border: 0; background: none; text-align: left; cursor: pointer; }
+.task { display: grid; gap: 2px; width: 100%; padding: 10px 16px; border: 0; background: none; text-align: left; cursor: pointer; transition: background-color .2s; }
 .task:hover { background: var(--bg-muted); }
-.task.selected { background: var(--bg-muted); box-shadow: inset 2px 0 0 var(--text-main); }
+.task.selected { background: linear-gradient(var(--brand-dev), var(--brand-ops)) left / 2px 100% no-repeat, var(--bg-muted); }
 .taskTop { display: flex; justify-content: space-between; align-items: center; }
 .empty { padding: 16px; }
 .more { padding: 12px; border: 0; border-top: 1px solid var(--border-hairline); background: none; cursor: pointer; }
@@ -56,9 +56,10 @@
   background: none;
   color: var(--text-muted);
   cursor: pointer;
+  transition: transform .15s, background-color .2s, color .2s;
 }
-.chip:hover { border-color: var(--border-emphasis); }
-.chipSelected { border-color: var(--text-main); background: var(--bg-muted); color: var(--text-main); }
+.chip:hover { transform: translateY(-1px); color: var(--text-main); }
+.chip[aria-current="true"] { background: var(--bg-muted); color: var(--text-main); }
 .dimmed { opacity: .35; }
 
 .detail { overflow-y: auto; overscroll-behavior: contain; padding: 0 28px 20px; }
@@ -84,6 +85,6 @@
   .column { border-right: 0; }
   .columnHead { padding: 12px 0; }
   .task, .combination { padding-left: 0; padding-right: 0; }
-  .task.selected { box-shadow: none; }
+  .task.selected { background: var(--bg-muted); }
   .detail { padding: 8px 0 0; overflow: visible; }
 }

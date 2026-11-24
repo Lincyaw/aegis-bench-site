@@ -67,8 +67,8 @@ export function TrajectoryView({ trajectory, error, legend, evidence, selected, 
   return (
     <div className={styles.view}>
       <div className={styles.controls}>
-        <button type="button" onClick={() => go(-1)} aria-label="上一步">◀</button>
-        <button type="button" onClick={() => go(1)} aria-label="下一步">▶</button>
+        <button type="button" className="loop-edge" onClick={() => go(-1)} aria-label="上一步">◀</button>
+        <button type="button" className="loop-edge" onClick={() => go(1)} aria-label="下一步">▶</button>
         <RunTimeline marks={marks} current={currentIndex < 0 ? undefined : currentIndex} onSelect={index => onSelect(steps[index].step_id)} />
         <span className="t-micro c-muted">{currentIndex < 0 ? `共 ${trajectory.steps.length} 步` : `第 ${selected} / ${trajectory.steps.length} 步`}</span>
       </div>

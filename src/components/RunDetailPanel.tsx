@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { useRun, useTrajectory, type CheckMethod, type RunDetail, type TimelineLegend } from '../api/client';
 import { TrajectoryView } from './TrajectoryView';
-import { LoadError, Loading, OUTCOME_LABELS, OutcomeDot, VendorBadge } from './ui';
+import { LoadError, Loading, OUTCOME_LABELS, OutcomeDot, TabIndicator, VendorBadge } from './ui';
 import styles from './RunDetailPanel.module.css';
 
 export type RunTab = 'input' | 'output' | 'grading' | 'failure' | 'trajectory';
@@ -224,6 +224,7 @@ export function RunDetailPanel({ runId, legend, tab, step, check, onChange }: Ru
             {item.label}{counts[item.tab] !== undefined && <span className="t-micro c-faint"> {counts[item.tab]}</span>}
           </button>
         ))}
+        <TabIndicator selected={active} />
       </nav>
       <div className={styles.content} role="tabpanel">
         {active === 'input' && <InputTab run={data} />}

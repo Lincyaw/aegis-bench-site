@@ -37,7 +37,7 @@ export function LeaderboardPage() {
               <p className="t-micro c-faint"><span className={stage.half === 'dev' ? styles.dotDev : styles.dotOps} />{stage.id} {stage.name}</p>
               <div className={styles.pills}>
                 {stage.benchmarkIds.map(id => (
-                  <button key={id} type="button" aria-pressed={id === benchmark.id} className={`${styles.pill} t-small`} onClick={() => choose({ bench: id })}>
+                  <button key={id} type="button" aria-pressed={id === benchmark.id} className={`${styles.pill} loop-edge t-small`} onClick={() => choose({ bench: id })}>
                     {benchmarks.data.find(item => item.id === id)?.name}
                   </button>
                 ))}
@@ -54,7 +54,7 @@ export function LeaderboardPage() {
         </div>
         <div className={styles.tools}>
           <div className={styles.segmented} role="group" aria-label="排行方式">
-            {VIEWS.map(item => <button key={item.view} type="button" aria-pressed={item.view === view} className="t-micro" onClick={() => choose({ view: item.view })}>{item.label}</button>)}
+            {VIEWS.map(item => <button key={item.view} type="button" aria-pressed={item.view === view} className="loop-edge t-micro" onClick={() => choose({ view: item.view })}>{item.label}</button>)}
           </div>
           <Link className="link-arrow t-small" to={`/benchmarks/${benchmark.id}`}>评测基准详情</Link>
         </div>

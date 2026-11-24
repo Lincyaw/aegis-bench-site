@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { Mark, Wordmark } from './ui';
 import styles from './SiteChrome.module.css';
@@ -24,7 +24,7 @@ function toggleTheme() {
 
 function ThemeToggle() {
   return (
-    <button type="button" className={styles.iconButton} onClick={toggleTheme} aria-label="切换深色或浅色主题">
+    <button type="button" className={`${styles.iconButton} loop-edge`} onClick={toggleTheme} aria-label="切换深色或浅色主题">
       <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
         <circle cx="8" cy="8" r="6.25" fill="none" stroke="currentColor" strokeWidth="1.5" />
         <path d="M8 1.75a6.25 6.25 0 0 1 0 12.5z" fill="currentColor" />
@@ -34,6 +34,23 @@ function ThemeToggle() {
 }
 
 export function SiteNav() {
+  // Scrolling down a page hides the nav and scrolling up brings it back, through `data-nav-hidden` on the root that the sticky bars also follow.
+  useEffect(() => {
+    const root = document.documentElement;
+    let lastY = scrollY;
+    const onScroll = () => {
+      // Small moves, such as the bounce at the end of a page, leave the nav as it is.
+      if (Math.abs(scrollY - lastY) >= 6) {
+        root.toggleAttribute('data-nav-hidden', scrollY > lastY && scrollY > root.clientHeight / 4);
+        lastY = scrollY;
+      }
+    };
+    addEventListener('scroll', onScroll, { passive: true });
+    return () => {
+      removeEventListener('scroll', onScroll);
+      root.removeAttribute('data-nav-hidden');
+    };
+  }, []);
   const [open, setOpen] = useState(false);
   const { pathname } = useLocation();
   const [openedAt, setOpenedAt] = useState(pathname);
@@ -52,8 +69,8 @@ export function SiteNav() {
       </div>
       <div className={styles.end}>
         <ThemeToggle />
-        <Link className={styles.contact} to="/about#contact">联系我们</Link>
-        <button type="button" className={`${styles.iconButton} ${styles.menuButton}`} aria-expanded={open} aria-label="打开导航" onClick={() => { setOpen(!open); setOpenedAt(pathname); }}>
+        <Link className={`${styles.contact} loop-edge`} to="/about#contact">联系我们</Link>
+        <button type="button" className={`${styles.iconButton} ${styles.menuButton} loop-edge`} aria-expanded={open} aria-label="打开导航" onClick={() => { setOpen(!open); setOpenedAt(pathname); }}>
           <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M2 4.5h12M2 8h12M2 11.5h12" stroke="currentColor" strokeWidth="1.5" /></svg>
         </button>
       </div>
