@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { createContext, useEffect, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
-import { Mark, Wordmark } from './ui';
+import { Mark, TabIndicator, Wordmark } from './ui';
 import styles from './SiteChrome.module.css';
 
 const SECTIONS = [
@@ -33,23 +33,19 @@ function ThemeToggle() {
   );
 }
 
-export function SiteNav() {
-  // Scrolling down a page hides the nav and scrolling up brings it back, through `data-nav-hidden` on the root that the sticky bars also follow.
+/** The section links of the page being read, which the floating nav shows once the page's own section bar has scrolled away. */
+export interface PageSections { items: { id: string; label: string }[]; current: string }
+
+export const NavSectionsContext = createContext<(sections: PageSections | null) => void>(() => undefined);
+
+/** Flush with the top edge at the top of a page; once the page scrolls it floats as a pill, always in reach. */
+export function SiteNav({ sections }: { sections: PageSections | null }) {
+  const [floating, setFloating] = useState(false);
   useEffect(() => {
-    const root = document.documentElement;
-    let lastY = scrollY;
-    const onScroll = () => {
-      // Small moves, such as the bounce at the end of a page, leave the nav as it is.
-      if (Math.abs(scrollY - lastY) >= 6) {
-        root.toggleAttribute('data-nav-hidden', scrollY > lastY && scrollY > root.clientHeight / 4);
-        lastY = scrollY;
-      }
-    };
+    const onScroll = () => setFloating(scrollY > 8);
+    onScroll();
     addEventListener('scroll', onScroll, { passive: true });
-    return () => {
-      removeEventListener('scroll', onScroll);
-      root.removeAttribute('data-nav-hidden');
-    };
+    return () => removeEventListener('scroll', onScroll);
   }, []);
   const [open, setOpen] = useState(false);
   const { pathname } = useLocation();
@@ -58,21 +54,30 @@ export function SiteNav() {
     setOpen(false);
   }
   return (
-    <header className={styles.nav}>
-      <div className={styles.start}>
-        <Link className={styles.brand} to="/" aria-label="Aegis Bench 首页"><Mark /><Wordmark /></Link>
-        <nav className={styles.links} aria-label="主导航">
-          {SECTIONS.map(section => (
-            <NavLink key={section.to} to={section.to} className={({ isActive }) => (isActive ? styles.current : undefined)}>{section.label}</NavLink>
-          ))}
-        </nav>
-      </div>
-      <div className={styles.end}>
-        <ThemeToggle />
-        <Link className={`${styles.contact} loop-edge`} to="/about#contact">联系我们</Link>
-        <button type="button" className={`${styles.iconButton} ${styles.menuButton} loop-edge`} aria-expanded={open} aria-label="打开导航" onClick={() => { setOpen(!open); setOpenedAt(pathname); }}>
-          <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M2 4.5h12M2 8h12M2 11.5h12" stroke="currentColor" strokeWidth="1.5" /></svg>
-        </button>
+    <header className={`${styles.nav} ${floating ? styles.floating : ''}`}>
+      <div className={styles.bar}>
+        <div className={styles.start}>
+          <Link className={styles.brand} to="/" aria-label="Aegis Bench 首页"><Mark />{!sections && <Wordmark />}</Link>
+          {sections ? (
+            <nav className={`${styles.sections} t-small`} aria-label="本页分区">
+              {sections.items.map(item => <a key={item.id} href={`#${item.id}`} aria-current={item.id === sections.current ? 'true' : undefined}>{item.label}</a>)}
+              <TabIndicator selected={sections.current} />
+            </nav>
+          ) : (
+            <nav className={styles.links} aria-label="主导航">
+              {SECTIONS.map(section => (
+                <NavLink key={section.to} to={section.to} className={({ isActive }) => (isActive ? styles.current : undefined)}>{section.label}</NavLink>
+              ))}
+            </nav>
+          )}
+        </div>
+        <div className={styles.end}>
+          <ThemeToggle />
+          <Link className={`${styles.contact} loop-edge`} to="/about#contact">联系我们</Link>
+          <button type="button" className={`${styles.iconButton} ${styles.menuButton} loop-edge`} aria-expanded={open} aria-label="打开导航" onClick={() => { setOpen(!open); setOpenedAt(pathname); }}>
+            <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M2 4.5h12M2 8h12M2 11.5h12" stroke="currentColor" strokeWidth="1.5" /></svg>
+          </button>
+        </div>
       </div>
       {open && (
         <nav className={styles.drawer} aria-label="主导航">

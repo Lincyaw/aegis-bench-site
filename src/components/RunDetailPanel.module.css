@@ -62,7 +62,7 @@ button.checkRow:hover { background: var(--bg-muted); }
 
 @media (max-width: 760px) {
   .header { padding-top: 0; }
-  .tabs { top: var(--nav-shown); transition: top .3s var(--ease-out); }
+  .tabs { top: var(--nav-height); }
   .checkRow { grid-template-columns: 36px 1fr 64px; }
   .checkRow > :nth-child(3) { display: none; }
   .checkDetail { padding-left: 0; }

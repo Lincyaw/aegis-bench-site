@@ -1,9 +1,10 @@
-import { useEffect, useState, type CSSProperties } from 'react';
+import { useContext, useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useBenchmark, useBenchmarks, useStages, type BenchmarkDetail, type FlowStep } from '../api/client';
 import { LeaderboardTable } from '../components/LeaderboardTable';
 import { LifecycleMap } from '../components/LifecycleMap';
 import { RunTimeline, TimelineLegendRow } from '../components/RunTimeline';
+import { NavSectionsContext } from '../components/SiteChrome';
 import { StageScene, hasScene } from '../components/StageScene';
 import { Breadcrumbs, Button, ButtonLink, LoadError, Loading, OutcomeDot, SectionHeading, TabIndicator, Tag, VendorBadge } from '../components/ui';
 import styles from './BenchmarkPage.module.css';
@@ -30,6 +31,33 @@ function useCurrentSection(): string {
     return () => observer.disconnect();
   });
   return current;
+}
+
+/** The section links under the hero; once they scroll under the nav, the floating nav carries them instead. */
+function SectionBar({ current }: { current: string }) {
+  const handToNav = useContext(NavSectionsContext);
+  const bar = useRef<HTMLElement>(null);
+  const [scrolledPast, setScrolledPast] = useState(false);
+  useEffect(() => {
+    const element = bar.current;
+    if (!element) {
+      throw new Error('The section bar is rendered before its effect runs');
+    }
+    const navHeight = parseFloat(getComputedStyle(element).getPropertyValue('--nav-height'));
+    const observer = new IntersectionObserver(([entry]) => setScrolledPast(!entry.isIntersecting && entry.boundingClientRect.top < navHeight), { rootMargin: `-${navHeight}px 0px 0px 0px` });
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+  useEffect(() => handToNav(scrolledPast ? { items: SECTIONS, current } : null), [handToNav, scrolledPast, current]);
+  useEffect(() => () => handToNav(null), [handToNav]);
+  return (
+    <nav ref={bar} className={styles.sectionBar} aria-label="本页分区">
+      <div className="page">
+        {SECTIONS.map(section => <a key={section.id} href={`#${section.id}`} className="t-small" aria-current={current === section.id ? 'true' : undefined}>{section.label}</a>)}
+        <TabIndicator selected={current} />
+      </div>
+    </nav>
+  );
 }
 
 function Flow({ steps, half }: { steps: FlowStep[]; half: 'dev' | 'ops' }) {
@@ -125,12 +153,7 @@ export function BenchmarkPage() {
   return (
     <div style={{ '--half-colour': half === 'dev' ? 'var(--brand-dev)' : 'var(--brand-ops)' } as CSSProperties}>
       <Hero benchmark={data} />
-      <nav className={styles.sectionBar} aria-label="本页分区">
-        <div className="page">
-          {SECTIONS.map(section => <a key={section.id} href={`#${section.id}`} className="t-small" aria-current={current === section.id ? 'true' : undefined}>{section.label}</a>)}
-          <TabIndicator selected={current} />
-        </div>
-      </nav>
+      <SectionBar current={current} />
       <div className={`page ${styles.sections}`}>
         <section>
           <SectionHeading id="setting" title="任务设定" intro={data.setting.intro} />

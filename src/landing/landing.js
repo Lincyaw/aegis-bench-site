@@ -61,6 +61,11 @@ function openStage(stage, anchor) {
 document.addEventListener('click', e => { if (chooserAnchor && !chooser.contains(e.target) && !chooserAnchor.contains(e.target)) closeChooser(); }, { signal });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeChooser(); }, { signal });
 window.addEventListener('scroll', closeChooser, { passive: true, signal });
+// Flush with the top edge at the top of the page; once the page scrolls the nav floats as a pill, as on the inner pages.
+const nav = document.querySelector('.nav');
+const floatNav = () => nav.classList.toggle('is-floating', scrollY > 8);
+floatNav();
+window.addEventListener('scroll', floatNav, { passive: true, signal });
 // Position of each stage along the loop, as a share of one lap; the development half spans .25 to .75.
 const STATION_AT = [0.35, 0.45, 0.55, 0.65, 0.85, 0.95, 1.05, 1.15];
 const LAP_START = STATION_AT[0];

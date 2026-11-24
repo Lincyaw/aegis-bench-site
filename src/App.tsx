@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { Outlet, ScrollRestoration, createBrowserRouter, useMatches } from 'react-router-dom';
-import { SiteFooter, SiteNav } from './components/SiteChrome';
+import { NavSectionsContext, SiteFooter, SiteNav, type PageSections } from './components/SiteChrome';
 import { BenchmarkPage } from './pages/BenchmarkPage';
 import { BenchmarksPage } from './pages/BenchmarksPage';
 import { LeaderboardPage } from './pages/LeaderboardPage';
@@ -12,13 +13,14 @@ interface RouteHandle { fillsWindow?: boolean }
 
 function Layout() {
   const fillsWindow = useMatches().some(match => (match.handle as RouteHandle | undefined)?.fillsWindow);
+  const [sections, setSections] = useState<PageSections | null>(null);
   return (
-    <>
-      <SiteNav />
+    <NavSectionsContext.Provider value={setSections}>
+      <SiteNav sections={sections} />
       <main><Outlet /></main>
       {!fillsWindow && <SiteFooter />}
       <ScrollRestoration />
-    </>
+    </NavSectionsContext.Provider>
   );
 }
 

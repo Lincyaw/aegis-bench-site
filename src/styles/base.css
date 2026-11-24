@@ -22,11 +22,9 @@ body {
   --page-gutter: 120px;
   --content-width: 1200px;
   --nav-height: 64px;
-  --nav-shown: var(--nav-height);
   --loop-gradient: linear-gradient(90deg, var(--brand-dev), var(--brand-ops));
   --ease-out: cubic-bezier(.3, .8, .2, 1);
 }
-:root[data-nav-hidden] { --nav-shown: 0px; }
 
 @media (max-width: 1280px) { :root { --page-gutter: 48px; } }
 @media (max-width: 760px) { :root { --page-gutter: 24px; --nav-height: 56px; } }
