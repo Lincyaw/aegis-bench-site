@@ -1,14 +1,17 @@
 import { clsx } from 'clsx';
-import { useEffect, useRef } from 'react';
+import { useDeferredValue, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useTrajectory, type TimelineLegend, type TimelineStep, type TrajectoryStep } from '../api/client';
+import { useTrajectoryPage, type TimelineLegend, type TimelineStep, type TrajectoryStep } from '../api/client';
 import { IconButton } from '../ui/controls';
-import { isKnownTool } from './presentation';
+import { TRAJECTORY_PAGE_SIZE, isKnownTool, trajectoryPageStartOf } from './presentation';
 import { RunScrubber, TimelineLegendRow } from './RunTimeline';
 import { submissionOf, targetOf, textOf } from './trajectory';
 import styles from './TrajectoryView.module.css';
 
-/** The ATIF trajectory as the run's timeline of marks and a list of steps; selecting either opens that step. */
+/**
+ * The ATIF trajectory as the run's timeline of marks and a list of its steps a page at a time; selecting either opens
+ * that step, turning the list to its page.
+ */
 export function TrajectoryView({ runId, timeline, legend, evidence, selected, onSelect }: {
   runId: string;
 
@@ -24,14 +27,30 @@ export function TrajectoryView({ runId, timeline, legend, evidence, selected, on
   onSelect: (stepId: number | undefined) => void;
 }) {
   const { t } = useTranslation();
-  const trajectory = useTrajectory(runId);
+  // The list turns to the page holding a newly selected step, and stays there when the step closes.
+  const [pageStart, setPageStart] = useState(selected === undefined ? 0 : trajectoryPageStartOf(selected));
+  const [followed, setFollowed] = useState(selected);
+  if (selected !== followed) {
+    setFollowed(selected);
+    if (selected !== undefined) {
+      setPageStart(trajectoryPageStartOf(selected));
+    }
+  }
+  // The page in view stays until the next one arrives.
+  const page = useTrajectoryPage(runId, useDeferredValue(pageStart), TRAJECTORY_PAGE_SIZE);
+  const firstShown = page.items[0]?.step_id;
+  const lastShown = page.items.at(-1)?.step_id;
   const selectedRow = useRef<HTMLLIElement>(null);
   useEffect(() => {
     selectedRow.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-  }, [selected]);
+  }, [selected, firstShown]);
   const stepIds = timeline.map(step => step.stepId);
   const position = stepIds.indexOf(selected ?? -1);
   const go = (offset: number) => onSelect(stepIds[Math.min(stepIds.length - 1, Math.max(0, (position < 0 ? 0 : position) + offset))]);
+  const turnTo = (start: number) => {
+    setPageStart(start);
+    onSelect(undefined);
+  };
   return (
     <div className={styles.view}>
       {timeline.length > 0 && (
@@ -39,12 +58,12 @@ export function TrajectoryView({ runId, timeline, legend, evidence, selected, on
           <IconButton label={t('runs.previousStep')} onClick={() => go(-1)}><ArrowIcon direction="left" /></IconButton>
           <IconButton label={t('runs.nextStep')} onClick={() => go(1)}><ArrowIcon direction="right" /></IconButton>
           <RunScrubber timeline={timeline} current={selected} onSelect={onSelect} />
-          <span className="t-micro c-muted">{selected === undefined ? t('runs.stepCount', { count: trajectory.steps.length }) : t('runs.stepOf', { step: selected, count: trajectory.steps.length })}</span>
+          <span className="t-micro c-muted">{selected === undefined ? t('runs.stepCount', { count: page.total }) : t('runs.stepOf', { step: selected, count: page.total })}</span>
         </div>
       )}
       <TimelineLegendRow legend={legend} />
       <ol className={styles.steps}>
-        {trajectory.steps.map(step => {
+        {page.items.map(step => {
           const open = step.step_id === selected;
           return (
             <li key={step.step_id} ref={open ? selectedRow : undefined} className={clsx(styles.step, open && styles.open, evidence.includes(step.step_id) && styles.evidence)}>
@@ -54,7 +73,14 @@ export function TrajectoryView({ runId, timeline, legend, evidence, selected, on
           );
         })}
       </ol>
-      <p className="t-micro c-faint">{t('runs.trajectoryNote', { version: trajectory.schema_version, agent: `${trajectory.agent.name} ${trajectory.agent.version}`, model: trajectory.agent.model_name, count: trajectory.final_metrics?.total_steps, cost: trajectory.final_metrics?.total_cost_usd?.toFixed(2) })}</p>
+      {page.total > TRAJECTORY_PAGE_SIZE && (
+        <div className={styles.pager}>
+          <IconButton label={t('runs.previousPage')} disabled={pageStart === 0} onClick={() => turnTo(pageStart - TRAJECTORY_PAGE_SIZE)}><ArrowIcon direction="left" /></IconButton>
+          <span className="t-micro c-muted">{t('runs.stepRange', { from: firstShown, to: lastShown, total: page.total })}</span>
+          <IconButton label={t('runs.nextPage')} disabled={pageStart + TRAJECTORY_PAGE_SIZE >= page.total} onClick={() => turnTo(pageStart + TRAJECTORY_PAGE_SIZE)}><ArrowIcon direction="right" /></IconButton>
+        </div>
+      )}
+      <p className="t-micro c-faint">{t('runs.trajectoryNote', { version: page.schema_version, agent: `${page.agent.name} ${page.agent.version}`, model: page.agent.model_name, count: page.final_metrics?.total_steps, cost: page.final_metrics?.total_cost_usd?.toFixed(2) })}</p>
     </div>
   );
 }

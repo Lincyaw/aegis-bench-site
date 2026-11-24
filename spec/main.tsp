@@ -391,6 +391,12 @@ model RunDetail {
   failure?: RunFailure;
 }
 
+/** A run's trajectory read a page of steps at a time: the trajectory's own fields, and one page of its steps in step order. */
+model TrajectoryPage {
+  ...OmitProperties<ATIF.Trajectory, "steps">;
+  ...Page<ATIF.Step>;
+}
+
 model BenchmarkStanding {
   benchmark: BenchmarkRef;
   stage: StageRef;
@@ -500,10 +506,15 @@ interface Runs {
   @route("/{runId}")
   read(@path runId: string, ...LanguageHeader): Localized<RunDetail> | NotFoundError;
 
-  /** The run's full trajectory in ATIF; a record, so it stays in the language it was made in */
+  /** The run's full trajectory in ATIF, for export; a record, so it stays in the language it was made in */
   @get
   @route("/{runId}/trajectory")
   trajectory(@path runId: string): ATIF.Trajectory | NotFoundError;
+
+  /** The run's trajectory a page of steps at a time, for reading it without fetching it whole */
+  @get
+  @route("/{runId}/trajectory/steps")
+  trajectorySteps(@path runId: string, ...PageQuery<25>): TrajectoryPage | NotFoundError;
 }
 
 @route("/models")

@@ -30,6 +30,8 @@
 .icon { width: var(--control-icon); height: var(--control-icon); padding: 0; }
 .icon svg { transition: transform var(--duration-slow) var(--ease-out); }
 .icon:hover svg { transform: rotate(180deg); }
+.icon:disabled { color: var(--text-faint); background: none; cursor: default; }
+.icon:disabled svg { transform: none; }
 
 .segmented { display: inline-flex; padding: var(--space-px); border: var(--rule-hairline); border-radius: var(--radius-full); background: var(--bg-muted); }
 .segment { height: var(--control-small); padding: 0 var(--space-4); border-radius: var(--radius-full); color: var(--text-muted); font: var(--type-micro); line-height: 1; transition: var(--control-transition); }

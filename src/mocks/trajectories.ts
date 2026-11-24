@@ -83,6 +83,9 @@ export function submissionStepOf(plan: RunPlan, index: number): { message: strin
   };
 }
 
+/** Trajectory steps per page when a request names no limit, as the spec declares. */
+export const DEFAULT_TRAJECTORY_PAGE_SIZE = 25;
+
 const RUN_DAY_START = Date.parse('2026-11-18T09:00:00Z');
 const SECONDS_PER_STEP = 26;
 

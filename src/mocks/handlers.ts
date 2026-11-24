@@ -9,7 +9,7 @@ import { RUNS_PER_TASK } from './catalog';
 import { hasModel, modelProfile } from './models';
 import { passRateOf, taskRunsOf, taskSummariesOf } from './runs';
 import { DEFAULT_TASK_PAGE_SIZE, taskOf } from './tasks';
-import { recentRunsOf, runDetailOf, trajectoryOf } from './trajectories';
+import { DEFAULT_TRAJECTORY_PAGE_SIZE, recentRunsOf, runDetailOf, trajectoryOf } from './trajectories';
 
 /*
  * The mock server's implementation of each operation the spec declares. The handlers' types follow the spec, and
@@ -110,6 +110,16 @@ export const handlers = [
     const trajectory = trajectoryOf(params.runId);
     await delay(140);
     return trajectory ? response(200).json(trajectory) : response(404).json({ message: `no run ${params.runId}` });
+  }),
+
+  http.get('/runs/{runId}/trajectory/steps', async ({ params, query, response }) => {
+    const trajectory = trajectoryOf(params.runId);
+    if (!trajectory) {
+      return response(404).json({ message: `no run ${params.runId}` });
+    }
+    const { steps, ...header } = trajectory;
+    await delay(80);
+    return response(200).json({ ...header, ...pageOf(steps, query, DEFAULT_TRAJECTORY_PAGE_SIZE) });
   }),
 
   http.get('/models/{modelId}', ({ params, request, response }) => {

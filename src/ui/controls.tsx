@@ -36,9 +36,9 @@ export function CopyButton({ label, text }: { label: string; text: () => string 
   );
 }
 
-/** A round button whose icon turns when hovered. */
-export function IconButton({ label, onClick, expanded, children }: { label: string; onClick: () => void; expanded?: boolean; children: ReactNode }) {
-  return <button type="button" className={clsx(styles.pill, styles.icon, 'loop-edge')} aria-label={label} aria-expanded={expanded} onClick={onClick}>{children}</button>;
+/** A round button whose icon turns when hovered; a disabled one stays still and faint. */
+export function IconButton({ label, onClick, expanded, disabled, children }: { label: string; onClick: () => void; expanded?: boolean; disabled?: boolean; children: ReactNode }) {
+  return <button type="button" className={clsx(styles.pill, styles.icon, !disabled && 'loop-edge')} aria-label={label} aria-expanded={expanded} disabled={disabled} onClick={onClick}>{children}</button>;
 }
 
 /** Appends a list's next page; its label says how much is shown, and it waits while the page loads. */

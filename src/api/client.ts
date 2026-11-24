@@ -101,11 +101,11 @@ export function useRun(runId: string) {
   }).data;
 }
 
-/** A trajectory is a record, so it is the same in every language. */
-export function useTrajectory(runId: string) {
+/** One page of a run's trajectory. A trajectory is a record, so it is the same in every language. */
+export function useTrajectoryPage(runId: string, offset: number, pageSize: number) {
   return useSuspenseQuery({
-    queryKey: ['trajectory', runId],
-    queryFn: () => responseBody(api.GET('/runs/{runId}/trajectory', { params: { path: { runId } } })),
+    queryKey: ['trajectory', runId, offset, pageSize],
+    queryFn: () => responseBody(api.GET('/runs/{runId}/trajectory/steps', { params: { path: { runId }, query: { offset, limit: pageSize } } })),
   }).data;
 }
 
