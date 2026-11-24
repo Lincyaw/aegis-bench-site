@@ -2,10 +2,13 @@ import { useState, useSyncExternalStore } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { useBenchmark, useLeaderboard, useTaskRuns, useTasks, type CombinationRuns, type RunOutcome } from '../api/client';
 import { RunDetailPanel, type RunTab } from '../components/RunDetailPanel';
+import { Select } from '../components/Select';
 import { Breadcrumbs, LoadError, Loading, OutcomeDot, VendorBadge } from '../components/ui';
 import styles from './RunRecordsPage.module.css';
 
 const PAGE_SIZE = 14;
+/** The filter value that shows everything; select options cannot use an empty value. */
+const ALL = 'all';
 const NARROW = '(max-width: 760px)';
 
 function useNarrow(): boolean {
@@ -15,7 +18,7 @@ function useNarrow(): boolean {
   );
 }
 
-type OutcomeFilter = 'all' | 'failed' | 'passed';
+type OutcomeFilter = typeof ALL | 'failed' | 'passed';
 
 /** A wide window shows all three panes; a narrow one shows one level at a time. */
 function levelOf(params: URLSearchParams, narrow: boolean): 'all' | 'tasks' | 'runs' | 'detail' {
@@ -36,7 +39,7 @@ export function RunRecordsPage() {
   const [limit, setLimit] = useState(PAGE_SIZE);
   const q = search.get('q') ?? '';
   const combination = search.get('model') ?? '';
-  const filter = (search.get('outcome') ?? 'all') as OutcomeFilter;
+  const filter = (search.get('outcome') ?? ALL) as OutcomeFilter;
   const benchmark = useBenchmark(benchmarkId);
   const board = useLeaderboard(benchmarkId, 'combination');
   const tasks = useTasks(benchmarkId, q, limit);
@@ -103,7 +106,7 @@ export function RunRecordsPage() {
                 <button
                   key={run.id}
                   type="button"
-                  className={`${styles.chip} loop-edge ${filter !== 'all' && run.outcome !== filter ? styles.dimmed : ''}`}
+                  className={`${styles.chip} loop-edge ${filter !== ALL && run.outcome !== filter ? styles.dimmed : ''}`}
                   onClick={() => update({ run: run.id }, ['tab', 'step', 'check'])}
                   aria-label={`${item.model.name} · ${item.harness.name} 第 ${run.attempt} 次`}
                   aria-current={run.id === runId}
@@ -143,15 +146,18 @@ export function RunRecordsPage() {
           <span aria-hidden="true">⌕</span>
           <input type="search" placeholder="搜索任务编号或名称" value={q} onChange={event => update({ q: event.target.value }, ['task', 'run', 'tab', 'step', 'check'])} />
         </label>
-        <select aria-label="组合" value={combination} onChange={event => update({ model: event.target.value }, ['run', 'tab', 'step', 'check'])}>
-          <option value="">全部组合</option>
-          {board.data?.map(entry => <option key={`${entry.model.id}-${entry.harness.id}`} value={`${entry.model.id}-${entry.harness.id}`}>{entry.model.name} · {entry.harness.name}</option>)}
-        </select>
-        <select aria-label="结果" value={filter} onChange={event => update({ outcome: event.target.value === 'all' ? undefined : event.target.value }, ['run', 'tab', 'step', 'check'])}>
-          <option value="all">全部结果</option>
-          <option value="failed">只看未通过</option>
-          <option value="passed">只看通过</option>
-        </select>
+        <Select
+          label="组合"
+          value={combination || ALL}
+          options={[{ value: ALL, label: '全部组合' }, ...(board.data ?? []).map(entry => ({ value: `${entry.model.id}-${entry.harness.id}`, label: `${entry.model.name} · ${entry.harness.name}` }))]}
+          onChange={value => update({ model: value === ALL ? undefined : value }, ['run', 'tab', 'step', 'check'])}
+        />
+        <Select
+          label="结果"
+          value={filter}
+          options={[{ value: ALL, label: '全部结果' }, { value: 'failed', label: '只看未通过' }, { value: 'passed', label: '只看通过' }]}
+          onChange={value => update({ outcome: value === ALL ? undefined : value }, ['run', 'tab', 'step', 'check'])}
+        />
         <span className={`${styles.legend} t-micro c-faint`}><span><OutcomeDot outcome="passed" />通过</span><span><OutcomeDot outcome="failed" />未通过</span><span><OutcomeDot outcome="executionFailed" />执行失败（不计入成绩）</span></span>
       </header>
       <div className={styles.browser} data-level={level}>

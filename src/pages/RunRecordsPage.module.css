@@ -5,16 +5,6 @@
 .toolbar nav { margin-right: 12px; white-space: nowrap; }
 .search { display: flex; align-items: center; gap: 8px; width: 240px; height: 34px; padding: 0 14px; border: 1px solid var(--border-emphasis); border-radius: var(--radius-full); color: var(--text-faint); }
 .search input { flex: 1; min-width: 0; border: 0; outline: 0; background: none; color: var(--text-main); font: 400 13px var(--font-text); }
-.toolbar select {
-  height: 34px;
-  min-width: 150px;
-  padding: 0 14px;
-  border: 1px solid var(--border-emphasis);
-  border-radius: var(--radius-full);
-  background: var(--bg-page);
-  color: var(--text-main);
-  font: 400 13px var(--font-text);
-}
 .legend { display: inline-flex; gap: 14px; margin-left: auto; }
 .legend span { display: inline-flex; align-items: center; gap: 6px; }
 
@@ -80,7 +70,7 @@
   .toolbar { flex-wrap: wrap; gap: 10px; padding: 16px 0; }
   .toolbar nav { margin: 0; white-space: normal; }
   .search { width: 100%; }
-  .toolbar select { flex: 1; min-width: 0; }
+  .toolbar > button { flex: 1; min-width: 0; }
   .browser { display: block; height: auto; border: 0; border-radius: 0; overflow: visible; }
   .column { border-right: 0; }
   .columnHead { padding: 12px 0; }
