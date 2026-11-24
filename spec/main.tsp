@@ -212,6 +212,52 @@ model Page<Item> {
 
 model TaskPage is Page<TaskSummary>;
 
+enum TaskEntryKind {
+  file,
+  directory,
+}
+
+/** Why a public task lists an entry without publishing its content. */
+enum WithheldReason {
+  /** The reference solution under solution/ */
+  solution,
+
+  /** An answer the grading compares a submission with, such as the reference causal chain */
+  referenceAnswer,
+}
+
+/** One entry of a task's Harbor directory. */
+model TaskEntry {
+  /** Path from the task's root, such as "tests/test.sh" */
+  path: string;
+
+  kind: TaskEntryKind;
+
+  /** Bytes in a published file */
+  size?: int32;
+
+  /** Present when the entry is listed but not published: a withheld file cannot be read, nor a withheld directory listed */
+  withheld?: WithheldReason;
+}
+
+model TaskEntryPage is Page<TaskEntry>;
+
+/** A published file of a task's Harbor directory; no response carries more than its first 256 KiB of text. */
+model TaskFile {
+  path: string;
+
+  /** Bytes in the whole file */
+  size: int32;
+
+  mediaType: string;
+
+  /** The file's text, cut at 256 KiB; absent for a binary file */
+  text?: string;
+
+  /** Whether text holds only the start of the file */
+  truncated: boolean;
+}
+
 model LeaderboardPage is Page<LeaderboardEntry>;
 
 model RunRef {
@@ -455,6 +501,14 @@ model NotFoundError {
   message: string;
 }
 
+/** The entry exists but is not published. */
+@error
+model WithheldError {
+  @statusCode _: 403;
+  message: string;
+  reason: WithheldReason;
+}
+
 @route("/stages")
 interface Stages {
   @get list(...LanguageHeader): Localized<Stage[]>;
@@ -494,6 +548,37 @@ interface Benchmarks {
 
     ...PageQuery<14>,
   ): TaskPage | NotFoundError;
+
+  @get
+  @route("/{benchmarkId}/tasks/{taskId}")
+  task(@path benchmarkId: string, @path taskId: string): TaskSummary | NotFoundError;
+
+  /**
+   * One directory of the task's Harbor directory, a page of entries at a time, directories first. Every public task
+   * publishes its directory except the reference solution and reference answers, which are listed as withheld.
+   */
+  @get
+  @route("/{benchmarkId}/tasks/{taskId}/files")
+  taskEntries(
+    @path benchmarkId: string,
+    @path taskId: string,
+
+    /** Path of the directory from the task's root; the root itself when empty */
+    @query(#{ explode: true }) dir?: string = "",
+
+    ...PageQuery<50>,
+  ): TaskEntryPage | NotFoundError | WithheldError;
+
+  /** One file of the task's Harbor directory */
+  @get
+  @route("/{benchmarkId}/tasks/{taskId}/file")
+  taskFile(
+    @path benchmarkId: string,
+    @path taskId: string,
+
+    /** Path of the file from the task's root, such as "tests/test.sh" */
+    @query(#{ explode: true }) path: string,
+  ): TaskFile | NotFoundError | WithheldError;
 
   @get
   @route("/{benchmarkId}/tasks/{taskId}/runs")

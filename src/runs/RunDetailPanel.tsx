@@ -2,7 +2,9 @@ import { clsx } from 'clsx';
 import { Suspense, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRun, type RunDetail, type TimelineLegend } from '../api/client';
+import { LocaleLink } from '../i18n/LocaleRouting';
 import { VendorBadge } from '../models/ModelBadge';
+import { INSTRUCTION_PATH, taskFilesPath } from '../tasks/taskFiles';
 import { FactList, Loading } from '../ui/content';
 import content from '../ui/content.module.css';
 import controls from '../ui/controls.module.css';
@@ -97,6 +99,7 @@ export function InputTab({ run }: { run: RunDetail }) {
           <p className={clsx(styles.prose, 't-body')}>{input.instruction}</p>
           {input.reportSchema && <pre className={clsx(styles.code, 't-mono c-muted')}>{input.reportSchema}</pre>}
         </div>
+        <LocaleLink className={clsx(controls.textLink, 't-micro')} to={taskFilesPath(run.benchmark.id, run.task.id, INSTRUCTION_PATH)}>{t('tasks.viewFile')}</LocaleLink>
       </DetailSection>
       <DetailSection title={t('runs.input.environment')}>
         <FactList layout="rows" facts={input.environment} />
@@ -182,7 +185,12 @@ export function GradingTab({ run, check, onCheck }: { run: RunDetail; check: str
               {open && (
                 <div className={styles.checkDetail}>
                   {item.rubric && <p className="t-small c-muted">{t('runs.grading.rubric', { rubric: item.rubric })}</p>}
-                  {item.code && <><p className="t-mono c-faint">{item.code.path}</p><pre className={clsx(content.panel, styles.code, 't-mono c-muted')}>{item.code.source}</pre></>}
+                  {item.code && (
+                    <>
+                      <LocaleLink className={clsx(controls.textLink, 't-mono')} to={taskFilesPath(run.benchmark.id, run.task.id, item.code.path)}>{item.code.path}</LocaleLink>
+                      <pre className={clsx(content.panel, styles.code, 't-mono c-muted')}>{item.code.source}</pre>
+                    </>
+                  )}
                   {!item.code && !item.rubric && <p className="t-micro c-faint">{t('runs.grading.codeInPackage')}</p>}
                   {item.observed && <p className={clsx('t-micro', item.passed ? 'c-muted' : 'c-bad')}>{t('runs.grading.observed', { observed: item.observed })}</p>}
                 </div>

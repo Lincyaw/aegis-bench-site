@@ -8,7 +8,7 @@
 
 | 目录 | 职责 |
 |---|---|
-| `src/benchmarks`、`src/leaderboard`、`src/runs`、`src/models`、`src/reports`、`src/lifecycle`、`src/landing` | 各业务领域 |
+| `src/benchmarks`、`src/leaderboard`、`src/runs`、`src/tasks`、`src/models`、`src/reports`、`src/lifecycle`、`src/landing` | 各业务领域 |
 | `src/ui` | 设计系统：令牌、全局样式、通用组件，不依赖任何业务领域 |
 | `src/site` | 站点框架：导航、页脚、站点地图（所有路径）、主题切换 |
 | `src/i18n` | 语言路由与界面文案 |

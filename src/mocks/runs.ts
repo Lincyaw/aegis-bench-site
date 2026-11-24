@@ -88,6 +88,11 @@ export function taskSummariesOf(benchmarkId: string): TaskSummary[] {
 
 const MODULES = ['orders', 'users', 'billing', 'search', 'files', 'notifications'];
 
+/** The service module a task's repository work centres on; task-017 follows the design. */
+export function moduleOf(taskId: string): string {
+  return taskId === 'task-017' ? 'orders' : pickOf(MODULES, taskId);
+}
+
 /** Everything a generated run needs to stay consistent across its detail and its trajectory. */
 export interface RunPlan {
   key: RunKey;
@@ -169,7 +174,7 @@ export function planOf(runId: string): RunPlan | undefined {
   const failingIds = candidates
     .map(check => ({ id: check.id, order: fractionOf(`fail:${runId}.${check.id}`) }))
     .sort((a, b) => a.order - b.order).slice(0, failCount).map(check => check.id);
-  return { key, runId, task, kind, outcome, steps, submitSteps, checks, failingIds, module: task.id === 'task-017' ? 'orders' : pickOf(MODULES, task.id) };
+  return { key, runId, task, kind, outcome, steps, submitSteps, checks, failingIds, module: moduleOf(task.id) };
 }
 
 export function environmentOf(plan: RunPlan): LabeledValue[] {

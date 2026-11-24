@@ -85,6 +85,30 @@ export function useTaskPages(benchmarkId: string, q: string, pageSize: number) {
   });
 }
 
+export function useTask(benchmarkId: string, taskId: string) {
+  return useSuspenseQuery({
+    queryKey: ['task', benchmarkId, taskId],
+    queryFn: () => responseBody(api.GET('/benchmarks/{benchmarkId}/tasks/{taskId}', { params: { path: { benchmarkId, taskId } } })),
+  }).data;
+}
+
+/** One directory of a task's Harbor directory, a page of entries at a time; the root when dir is empty. */
+export function useTaskEntryPages(benchmarkId: string, taskId: string, dir: string, pageSize: number) {
+  return useSuspenseInfiniteQuery({
+    queryKey: ['taskEntries', benchmarkId, taskId, dir, pageSize],
+    queryFn: ({ pageParam }) => responseBody(api.GET('/benchmarks/{benchmarkId}/tasks/{taskId}/files', { params: { path: { benchmarkId, taskId }, query: { dir, offset: pageParam, limit: pageSize } } })),
+    initialPageParam: 0,
+    getNextPageParam: nextPageOffset,
+  });
+}
+
+export function useTaskFile(benchmarkId: string, taskId: string, path: string) {
+  return useSuspenseQuery({
+    queryKey: ['taskFile', benchmarkId, taskId, path],
+    queryFn: () => responseBody(api.GET('/benchmarks/{benchmarkId}/tasks/{taskId}/file', { params: { path: { benchmarkId, taskId }, query: { path } } })),
+  }).data;
+}
+
 export function useTaskRuns(benchmarkId: string, taskId: string) {
   const locale = useLocale();
   return useSuspenseQuery({

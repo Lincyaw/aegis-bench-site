@@ -9,6 +9,7 @@ import { ReportPage, ReportsPage } from './reports/ReportsPage';
 import { RunRecordsPage } from './runs/RunRecordsPage';
 import { SiteLayout, type RouteHandle } from './site/SiteLayout';
 import { PageError, PendingPage } from './site/SitePages';
+import { TaskFilesPage } from './tasks/TaskFilesPage';
 
 /** The site's pages, built afresh for each locale's root so that no route object has two parents. */
 export function sitePages(): RouteObject[] {
@@ -27,6 +28,7 @@ export function sitePages(): RouteObject[] {
           { path: 'benchmarks', element: <BenchmarksPage /> },
           { path: 'benchmarks/:benchmarkId', element: <BenchmarkPage /> },
           { path: 'benchmarks/:benchmarkId/runs', element: <RunRecordsPage />, handle: { fillsWindow: true } satisfies RouteHandle },
+          { path: 'benchmarks/:benchmarkId/tasks/:taskId', element: <TaskFilesPage />, handle: { fillsWindow: true } satisfies RouteHandle },
           { path: 'leaderboard', element: <LeaderboardPage /> },
           { path: 'models/:modelId', element: <ModelPage /> },
           { path: 'reports', element: <ReportsPage /> },

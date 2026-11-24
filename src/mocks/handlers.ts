@@ -8,6 +8,7 @@ import { BENCHMARKS, DEFAULT_LEADERBOARD_PAGE_SIZE, benchmarkDetail, benchmarkSu
 import { RUNS_PER_TASK } from './catalog';
 import { hasModel, modelProfile } from './models';
 import { passRateOf, taskRunsOf, taskSummariesOf } from './runs';
+import { DEFAULT_ENTRY_PAGE_SIZE, directoryEntriesOf, taskFileOf, taskFilesOf, withheldUnder } from './taskFiles';
 import { DEFAULT_TASK_PAGE_SIZE, taskOf } from './tasks';
 import { DEFAULT_TRAJECTORY_PAGE_SIZE, recentRunsOf, runDetailOf, trajectoryOf } from './trajectories';
 
@@ -86,6 +87,39 @@ export const handlers = [
     const matching = taskSummariesOf(params.benchmarkId).filter(task => !q || task.id.includes(q) || task.title.includes(q));
     await delay(80);
     return response(200).json(pageOf(matching, query, DEFAULT_TASK_PAGE_SIZE));
+  }),
+
+  http.get('/benchmarks/{benchmarkId}/tasks/{taskId}', ({ params, response }) => {
+    const task = hasBenchmark(params.benchmarkId) ? taskSummariesOf(params.benchmarkId).find(summary => summary.id === params.taskId) : undefined;
+    return task ? response(200).json(task) : response(404).json({ message: `no task ${params.taskId} in ${params.benchmarkId}` });
+  }),
+
+  http.get('/benchmarks/{benchmarkId}/tasks/{taskId}/files', async ({ params, query, response }) => {
+    const files = hasBenchmark(params.benchmarkId) ? taskFilesOf(params.benchmarkId, params.taskId) : undefined;
+    const directory = query.get('dir') ?? '';
+    const entries = files && directoryEntriesOf(files, directory);
+    if (!files || !entries) {
+      return response(404).json({ message: `no directory "${directory}" in ${params.taskId} of ${params.benchmarkId}` });
+    }
+    const withheld = directory === '' ? undefined : withheldUnder(files, directory);
+    if (withheld) {
+      return response(403).json({ message: `${directory} is not published`, reason: withheld });
+    }
+    await delay(60);
+    return response(200).json(pageOf(entries, query, DEFAULT_ENTRY_PAGE_SIZE));
+  }),
+
+  http.get('/benchmarks/{benchmarkId}/tasks/{taskId}/file', async ({ params, query, response }) => {
+    const path = query.get('path');
+    const file = (hasBenchmark(params.benchmarkId) ? taskFilesOf(params.benchmarkId, params.taskId) : undefined)?.find(candidate => candidate.path === path);
+    if (!file) {
+      return response(404).json({ message: `no file "${path}" in ${params.taskId} of ${params.benchmarkId}` });
+    }
+    if (file.withheld) {
+      return response(403).json({ message: `${file.path} is not published`, reason: file.withheld });
+    }
+    await delay(60);
+    return response(200).json(taskFileOf(file));
   }),
 
   http.get('/benchmarks/{benchmarkId}/tasks/{taskId}/runs', async ({ params, request, response }) => {

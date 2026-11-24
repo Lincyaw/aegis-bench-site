@@ -265,4 +265,16 @@ export const en: Messages = {
     trajectoryNote_one: 'The trajectory is published in ATIF ({{version}}): {{agent}} · {{model}}, {{count}} step, ${{cost}}. Steps a failure review cites carry a red line.',
     trajectoryNote_other: 'The trajectory is published in ATIF ({{version}}): {{agent}} · {{model}}, {{count}} steps, ${{cost}}. Steps a failure review cites carry a red line.',
   },
+  tasks: {
+    files: 'Task files',
+    pageTitle: 'Files of {{task}}',
+    tree: 'Task directory',
+    file: 'File content',
+    harbor: 'The directory follows the Harbor task format: instruction.md is the task text the model receives, task.toml the run configuration, environment/ builds the execution environment and tests/ holds the grading code. The reference solution and reference answers are not published.',
+    withheld: { solution: 'Solution · withheld', referenceAnswer: 'Answer · withheld' },
+    loadMore: 'Showing {{shown}} of {{total}} · load more',
+    truncated: 'The file is over 256 KB; only its beginning is shown.',
+    binary: 'Binary file; no preview.',
+    viewFile: 'View in the task files',
+  },
 };

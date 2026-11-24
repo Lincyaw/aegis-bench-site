@@ -264,6 +264,18 @@ export const zh = {
     trajectoryNote_one: '轨迹以 ATIF（{{version}}）格式公开：{{agent}} · {{model}}，共 {{count}} 步，成本 ${{cost}}。失败原因引用的步骤以红线标出。',
     trajectoryNote_other: '轨迹以 ATIF（{{version}}）格式公开：{{agent}} · {{model}}，共 {{count}} 步，成本 ${{cost}}。失败原因引用的步骤以红线标出。',
   },
+  tasks: {
+    files: '任务文件',
+    pageTitle: '{{task}} 的任务文件',
+    tree: '任务目录',
+    file: '文件内容',
+    harbor: '目录按 Harbor 任务格式组织：instruction.md 是给模型的任务原文，task.toml 是运行配置，environment/ 构建执行环境，tests/ 是评分代码。参考解法与参考答案不公开。',
+    withheld: { solution: '参考解法 · 不公开', referenceAnswer: '参考答案 · 不公开' },
+    loadMore: '显示 {{shown}} / {{total}} 项 · 继续加载',
+    truncated: '文件超过 256 KB，只显示开头部分。',
+    binary: '二进制文件，不提供预览。',
+    viewFile: '在任务文件中查看',
+  },
 };
 
 export type Messages = typeof zh;

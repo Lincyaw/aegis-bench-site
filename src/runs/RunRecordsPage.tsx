@@ -3,8 +3,10 @@ import { Suspense, useDeferredValue } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { useBenchmark, useCombinations, useTaskPages, useTaskRuns, type BenchmarkDetail, type CombinationRuns, type TaskPage } from '../api/client';
+import { LocaleLink } from '../i18n/LocaleRouting';
 import { VendorBadge } from '../models/ModelBadge';
 import { BENCHMARKS_PATH, benchmarkPath, stagePath } from '../site/siteMap';
+import { taskFilesPath } from '../tasks/taskFiles';
 import { Loading } from '../ui/content';
 import { MoreButton, SearchField, Select } from '../ui/controls';
 import controls from '../ui/controls.module.css';
@@ -125,6 +127,7 @@ export function TaskRunsArea({ benchmark, taskId, query, level, onQuery }: { ben
             {level === 'runs' && <button type="button" className={clsx(styles.back, 't-micro c-muted')} onClick={() => onQuery(withTask(query, undefined))}>‹ {t('runs.allTasks')}</button>}
             <span className="t-label">{taskRuns.task.id} {taskRuns.task.title}</span>
             <span className="t-micro c-faint">{t('runs.taskSummary', { combinations: taskRuns.combinations.length, runs: taskRuns.runsPerTask, rate: Math.round(taskRuns.task.passRate * 100) })}</span>
+            <LocaleLink className={clsx(controls.textLink, styles.taskFiles, 't-micro')} to={taskFilesPath(benchmark.id, taskRuns.task.id)}>{t('tasks.files')}</LocaleLink>
           </div>
           <ol className={styles.scroll}>
             {combinations.map(combination => <CombinationRow key={combinationKey(combination.model.id, combination.harness.id)} combination={combination} runId={runId} query={query} onRun={run => onQuery(withRun(query, run))} />)}
