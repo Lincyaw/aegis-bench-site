@@ -1,6 +1,7 @@
 import * as RadixSelect from '@radix-ui/react-select';
 import { clsx } from 'clsx';
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { LocaleLink } from '../i18n/LocaleRouting';
 import styles from './controls.module.css';
 
@@ -13,6 +14,26 @@ export function ButtonLink({ to, variant, children }: { to: string; variant: But
 
 export function Button({ variant, onClick, children }: { variant: ButtonVariant; onClick: () => void; children: ReactNode }) {
   return <button type="button" className={clsx(styles.pill, styles.large, variant === 'solid' && styles.solid, 'loop-edge')} onClick={onClick}>{children}</button>;
+}
+
+/** Copies a text and confirms beside the button, drawing a check, once the text is on the clipboard. */
+export function CopyButton({ label, text }: { label: string; text: () => string }) {
+  const { t } = useTranslation();
+  const [copied, setCopied] = useState(false);
+  return (
+    <span className={styles.copy}>
+      <Button variant="line" onClick={() => void navigator.clipboard.writeText(text()).then(() => setCopied(true))}>
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2" /><path d="M5 15V6a2 2 0 0 1 2-2h8" /></svg>
+        {label}
+      </Button>
+      {copied && (
+        <span className={clsx(styles.copied, 't-micro c-ok')} role="status">
+          <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M2.5 6.2 5 8.5 9.5 3.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" pathLength="1" /></svg>
+          {t('ui.copied')}
+        </span>
+      )}
+    </span>
+  );
 }
 
 /** A round button whose icon turns when hovered. */

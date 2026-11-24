@@ -1,8 +1,8 @@
 import { clsx } from 'clsx';
-import { useRef, useState, type ComponentProps, type ReactNode } from 'react';
+import { useRef, type ComponentProps, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LocaleLink } from '../i18n/LocaleRouting';
-import { Button } from '../ui/controls';
+import { CopyButton } from '../ui/controls';
 import { Tag } from '../ui/content';
 import { CITATION_ANCHOR } from './library';
 import content from '../ui/content.module.css';
@@ -66,14 +66,16 @@ export function Question({ title, open = false, children }: { title: string; ope
 export function Citation({ children }: { children: ReactNode }) {
   const { t } = useTranslation();
   const entry = useRef<HTMLDivElement>(null);
-  const [copied, setCopied] = useState(false);
+  const entryText = () => {
+    if (!entry.current) {
+      throw new Error('The citation is not rendered');
+    }
+    return entry.current.textContent;
+  };
   return (
     <div className={styles.citation} id={CITATION_ANCHOR}>
       <div ref={entry}>{children}</div>
-      <p className={styles.copyRow}>
-        <Button variant="line" onClick={() => navigator.clipboard.writeText(entry.current?.textContent ?? '').then(() => setCopied(true))}>{t('articles.copyBibtex')}</Button>
-        {copied && <span className="t-micro c-ok" role="status">{t('articles.copied')}</span>}
-      </p>
+      <CopyButton label={t('ui.copyBibtex')} text={entryText} />
     </div>
   );
 }

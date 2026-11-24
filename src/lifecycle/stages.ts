@@ -10,10 +10,15 @@ export interface StageLabel {
   secondary: string;
 }
 
+/** The names of a stage's benchmarks, in one line. */
+export function benchmarkNames(stage: Stage): string {
+  return stage.benchmarks.map(benchmark => benchmark.name).join(' · ');
+}
+
 /** On the benchmarks page each covered stage is labelled with its benchmarks' names. */
 export function benchmarkStageLabels(stages: Stage[]): Record<string, StageLabel> {
   return Object.fromEntries(stages.filter(stage => stage.benchmarks.length > 0).map(stage => [
-    stage.id, { primary: stage.benchmarks.map(benchmark => benchmark.name).join(' · '), secondary: `${stage.id} ${stage.name}` },
+    stage.id, { primary: benchmarkNames(stage), secondary: `${stage.id} ${stage.name}` },
   ]));
 }
 

@@ -1,0 +1,39 @@
+/* The scene motion places each card every frame, so a card starts hidden at the origin. */
+.card {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 360px;
+  opacity: 0;
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--bg-page) 78%, transparent);
+  backdrop-filter: blur(var(--blur-glass));
+  -webkit-backdrop-filter: blur(var(--blur-glass));
+  will-change: transform, opacity;
+}
+.covered { cursor: pointer; transition: border-color var(--duration-base) var(--ease-out); }
+.covered:hover { border-color: var(--half-color); }
+.go { position: absolute; right: var(--space-3); bottom: var(--space-2); color: var(--text-faint); }
+
+.drawing { display: block; width: 100%; height: auto; fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.5; }
+.drawing :global(.c) { stroke: var(--half-color); }
+.drawing :global(.dim) { stroke: var(--text-faint); }
+.drawing :global(.ink) { stroke: var(--text-muted); }
+.drawing :global(.ok) { stroke: var(--accent-success); }
+.drawing :global(.bad) { stroke: var(--accent-warning); }
+.drawing :global(.fc) { fill: var(--half-color); stroke: none; }
+.drawing :global(.fdim) { fill: color-mix(in srgb, var(--text-main) 16%, transparent); stroke: none; }
+.drawing :global(.fink) { fill: color-mix(in srgb, var(--text-main) 42%, transparent); stroke: none; }
+.drawing :global(.fok) { fill: color-mix(in srgb, var(--accent-success) 16%, transparent); stroke: none; }
+.drawing :global(.fbad) { fill: color-mix(in srgb, var(--accent-warning) 16%, transparent); stroke: none; }
+.drawing :global(.baseline) { stroke: color-mix(in srgb, var(--text-main) 8%, transparent); }
+.drawing :global(.status) { fill: var(--accent-warning); stroke: none; }
+.drawing :global(.solid) { fill: var(--bg-page); }
+.drawing :global(.pop) { transform-box: fill-box; transform-origin: center; }
+.drawing text { font: 400 11px/1 var(--font-text); fill: var(--text-faint); stroke: none; }
+.drawing text:global(.mono) { font-family: var(--font-mono); }
+
+@media (max-width: 760px) {
+  .card { width: 300px; }
+}
