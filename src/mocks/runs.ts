@@ -1,4 +1,4 @@
-import type { CombinationRuns, GradingCheck, LabeledValue, Locale, RunDetail, RunOutcome, TaskSummary } from '../api/client';
+import type { CombinationRuns, GradingCheck, LabeledValue, Locale, RunDetail, RunOutcome, TaskSummary } from '../api/types';
 import { benchmarkById, benchmarkRef, hasBenchmark, rankingEntryOf, type TaskKind } from './benchmarks';
 import { HARNESSES, MODELS, PUBLISHED_ON, RECORD_LOCALE, RUNS_PER_TASK, harnessRef, modelRef } from './catalog';
 import { fractionOf, hashOf, pickOf } from './hash';

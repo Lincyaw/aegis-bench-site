@@ -2,5 +2,7 @@ emit:
   - "@typespec/openapi3"
 options:
   "@typespec/openapi3":
-    emitter-output-dir: "{project-root}/../generated"
-    output-file: openapi.yaml
+    # The OpenAPI document sits beside the types generated from it: the client and the mock server both read it.
+    emitter-output-dir: "{project-root}/../src/api"
+    output-file: openapi.json
+    file-type: json

@@ -5,7 +5,7 @@ using Http;
 
 /** Public read API of the Aegis Bench site: benchmarks, leaderboards, run records and models. */
 @service(#{ title: "Aegis Bench Public API" })
-@server("/api", "Served by the demo's mock service worker")
+@server("/api", "Served by the demo's mock server: in the browser's service worker, or locally with npm run mock")
 namespace AegisBench;
 
 /** The two halves of the lifecycle loop: development and operations. */
@@ -406,11 +406,18 @@ enum Locale {
 }
 
 /**
- * The reader's language, zh-CN when absent. Display names, summaries and labels come back in it; evaluation records
- * (task texts, trajectories, check titles, review conclusions) stay in the language they were made in.
+ * The reader's languages, in standard HTTP negotiation form such as "en-US,en;q=0.9". The server answers in the best
+ * match among the locales it serves, zh-CN when none matches. Display names, summaries and labels come back in it;
+ * evaluation records (task texts, trajectories, check titles, review conclusions) stay in the language they were made in.
  */
 model LanguageHeader {
-  @header("Accept-Language") language?: Locale;
+  @header("Accept-Language") language?: string;
+}
+
+/** A response written in one of the API's locales, which Content-Language names. */
+model Localized<T> {
+  @header("Content-Language") language: Locale;
+  @body body: T;
 }
 
 @error
@@ -421,24 +428,25 @@ model NotFoundError {
 
 @route("/stages")
 interface Stages {
-  @get list(...LanguageHeader): Stage[];
+  @get list(...LanguageHeader): Localized<Stage[]>;
 }
 
 @route("/benchmarks")
 interface Benchmarks {
-  @get list(...LanguageHeader): BenchmarkSummary[];
+  @get list(...LanguageHeader): Localized<BenchmarkSummary[]>;
 
   @get
   @route("/{benchmarkId}")
-  read(@path benchmarkId: string, ...LanguageHeader): BenchmarkDetail | NotFoundError;
+  read(@path benchmarkId: string, ...LanguageHeader): Localized<BenchmarkDetail> | NotFoundError;
 
   @get
   @route("/{benchmarkId}/leaderboard")
   leaderboard(
     @path benchmarkId: string,
-    @query view?: LeaderboardView = LeaderboardView.combination,
+    // Query parameters are exploded, OpenAPI's default; the mock's validator reads a non-exploded one as a list.
+    @query(#{ explode: true }) view?: LeaderboardView = LeaderboardView.combination,
     ...LanguageHeader,
-  ): LeaderboardEntry[] | NotFoundError;
+  ): Localized<LeaderboardEntry[]> | NotFoundError;
 
   /** Tasks are records: their titles stay in the language the task was written in */
   @get
@@ -447,22 +455,22 @@ interface Benchmarks {
     @path benchmarkId: string,
 
     /** Matches the task id or title */
-    @query q?: string,
+    @query(#{ explode: true }) q?: string,
 
-    @query offset?: int32 = 0,
-    @query limit?: int32 = 14,
+    @query(#{ explode: true }) offset?: int32 = 0,
+    @query(#{ explode: true }) limit?: int32 = 14,
   ): TaskPage | NotFoundError;
 
   @get
   @route("/{benchmarkId}/tasks/{taskId}/runs")
-  taskRuns(@path benchmarkId: string, @path taskId: string, ...LanguageHeader): TaskRuns | NotFoundError;
+  taskRuns(@path benchmarkId: string, @path taskId: string, ...LanguageHeader): Localized<TaskRuns> | NotFoundError;
 }
 
 @route("/runs")
 interface Runs {
   @get
   @route("/{runId}")
-  read(@path runId: string, ...LanguageHeader): RunDetail | NotFoundError;
+  read(@path runId: string, ...LanguageHeader): Localized<RunDetail> | NotFoundError;
 
   /** The run's full trajectory in ATIF; a record, so it stays in the language it was made in */
   @get
@@ -474,5 +482,5 @@ interface Runs {
 interface Models {
   @get
   @route("/{modelId}")
-  read(@path modelId: string, ...LanguageHeader): ModelProfile | NotFoundError;
+  read(@path modelId: string, ...LanguageHeader): Localized<ModelProfile> | NotFoundError;
 }

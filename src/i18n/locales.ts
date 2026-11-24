@@ -1,4 +1,4 @@
-import type { Locale } from '../api/client';
+import type { Locale } from '../api/types';
 import { localeValues } from '../api/schema';
 
 export type { Locale };

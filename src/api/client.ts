@@ -1,42 +1,13 @@
 import { useSuspenseQuery } from '@tanstack/react-query';
 import createClient from 'openapi-fetch';
 import { useLocale } from '../i18n/localeContext';
-import type { components, paths } from './schema';
+import type { paths } from './schema';
+import { API_ROOT } from './server';
+import type { LeaderboardView, Locale } from './types';
 
-type Schemas = components['schemas'];
-export type Locale = Schemas['Locale'];
-export type Stage = Schemas['Stage'];
-export type StageRef = Schemas['StageRef'];
-export type Half = Schemas['Half'];
-export type Metric = Schemas['Metric'];
-export type LabeledValue = Schemas['LabeledValue'];
-export type TimelineLegend = Schemas['TimelineLegend'];
-export type VendorSlot = Schemas['VendorSlot'];
-export type ModelRef = Schemas['ModelRef'];
-export type HarnessRef = Schemas['HarnessRef'];
-export type LeaderboardEntry = Schemas['LeaderboardEntry'];
-export type LeaderboardView = Schemas['LeaderboardView'];
-export type BenchmarkRef = Schemas['BenchmarkRef'];
-export type BenchmarkSummary = Schemas['BenchmarkSummary'];
-export type BenchmarkDetail = Schemas['BenchmarkDetail'];
-export type RecentRun = Schemas['RecentRun'];
-export type TimelineMark = Schemas['TimelineMark'];
-export type TimelineStep = Schemas['TimelineStep'];
-export type TaskSummary = Schemas['TaskSummary'];
-export type TaskPage = Schemas['TaskPage'];
-export type TaskRuns = Schemas['TaskRuns'];
-export type CombinationRuns = Schemas['CombinationRuns'];
-export type RunOutcome = Schemas['RunOutcome'];
-export type RunEndReason = Schemas['RunEndReason'];
-export type SubmissionVerdict = Schemas['SubmissionVerdict'];
-export type RunDetail = Schemas['RunDetail'];
-export type GradingCheck = Schemas['GradingCheck'];
-export type CheckMethod = Schemas['CheckMethod'];
-export type ModelProfile = Schemas['ModelProfile'];
-export type Trajectory = Schemas['ATIF.Trajectory'];
-export type TrajectoryStep = Schemas['ATIF.Step'];
+export type * from './types';
 
-export const api = createClient<paths>({ baseUrl: '/api' });
+export const api = createClient<paths>({ baseUrl: API_ROOT });
 
 /** The body of an openapi-fetch response; an API error becomes a thrown error, which the route's error boundary shows. */
 export async function responseBody<T>(request: Promise<{ data?: T; error?: unknown; response: Response }>): Promise<T> {

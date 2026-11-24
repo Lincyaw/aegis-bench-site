@@ -1,4 +1,4 @@
-import type { BenchmarkDetail, BenchmarkRef, BenchmarkSummary, LeaderboardEntry, LeaderboardView, Locale, Metric, RecentRun, Stage, TimelineLegend } from '../api/client';
+import type { BenchmarkDetail, BenchmarkRef, BenchmarkSummary, LeaderboardEntry, LeaderboardView, Locale, Metric, RecentRun, Stage, TimelineLegend } from '../api/types';
 import { EVALUATED_IN, RUNS_PER_TASK, STAGES, harnessRef, modelRef, stageRef, type Text } from './catalog';
 
 /** The kind of work a benchmark's tasks ask for; it decides how their tasks, runs and trajectories are generated. */

@@ -13,7 +13,7 @@
 | `src/site` | 站点框架：导航、页脚、站点地图（所有路径）、主题切换 |
 | `src/i18n` | 语言路由与界面文案 |
 | `src/articles`、`content` | MD/MDX 文档的编译、自定义块和正文 |
-| `src/api` | 由接口生成的类型与请求客户端 |
+| `src/api` | 由 spec 生成的 OpenAPI 文档与类型、模型类型（`types.ts`）、接口路径（`server.ts`）与请求客户端（`client.ts`） |
 | `src/mocks` | mock 服务端，实现接口声明的全部操作 |
 
 依赖方向：
@@ -25,8 +25,8 @@
 ## 接口先行
 
 接口以 `spec/main.tsp`（TypeSpec）为唯一来源：
-1. 修改接口时先改 spec，再运行 `npm run gen`（`dev` 和 `build` 会自动运行）。它会生成 `generated/openapi.yaml` 和 `src/api/schema.ts`，这两个文件不入库。
-2. 前端只通过 `src/api/client.ts` 的查询函数取数据。查询函数基于 `openapi-fetch`，路径、参数和响应体都按 spec 做类型检查。
+1. 修改接口时先改 spec，再运行 `npm run gen`（`dev`、`build` 和 `mock` 会自动运行）。它会生成 OpenAPI 文档 `src/api/openapi.json` 和类型 `src/api/schema.ts`，两者都不入库。
+2. 前端只通过 `src/api/client.ts` 的查询函数取数据。查询函数基于 `openapi-fetch`，路径、参数和响应体都按 spec 做类型检查。模型类型在 `src/api/types.ts`，站点和 mock 共用；接口挂载的路径取自 spec 的 `@server`。
 3. 闭集合（视图、运行结果、时间线标记、语言等）在 spec 中声明为枚举，前端使用生成的 `*Values` 数组，不再另写一份。
 
 ### mock 只通过接口交互
@@ -36,8 +36,22 @@ mock 服务端的作用除了提供演示数据，还在于检验接口设计是
 - **处理函数受 spec 约束**：处理函数用 `openapi-msw` 按 spec 类型编写，返回 spec 未声明的路径、参数、状态码或响应体都无法通过编译。
 - **业务规则在服务端**：例如时间线上每一步的标记由服务端判定，前端只负责显示；同一条规则不在两端各写一遍。
 - **缺口回到 spec**：前端需要但接口不提供的数据，先补进 spec，再由 mock 实现，不让前端从别的数据里自行推算。
-- **请求按 spec 校验**：mock 对请求同样严格，比如 `Accept-Language` 只接受 spec 声明的语言。
+- **运行时契约**：`src/mocks/contract.ts` 是 mock 的唯一入口，用 openapi-backend 按 OpenAPI 文档检查每一次交互：
+  - 请求不合 spec 时返回 400；
+  - 访问 spec 未声明的操作时返回 404；
+  - mock 自己的响应不合 spec 时返回 500，包括响应体、日期等格式和响应头。
+
+  这三种错误都会写明是哪个操作、哪一项不合规。站点里一旦出现这类错误，就说明接口或 mock 有问题，要先查清原因再改。
 - **数据可复现**：mock 数据按编号确定性生成，每次加载都相同。
+
+### 直接调用接口
+
+`npm run mock` 会在本地启动同一套 mock：同样的处理函数、同样的契约检查。
+- 接口地址：`http://127.0.0.1:4010/api`，可以用 curl 直接调用。
+- 接口文档：`http://127.0.0.1:4010/docs`，可以在页面上逐个操作试用。
+- OpenAPI 文档：`http://127.0.0.1:4010/openapi.json`。
+
+设计接口时，先用它把新操作调用一遍，确认请求、响应和错误都符合预期，再写前端。
 
 ## 语言
 
@@ -45,7 +59,10 @@ mock 服务端的作用除了提供演示数据，还在于检验接口设计是
 - 站点支持的语言就是 spec 中 `Locale` 枚举声明的语言。新增语言时先改 spec，类型检查会列出所有需要补齐的地方。
 - 界面文案放在 `src/i18n/zh.ts` 和 `en.ts`。`zh.ts` 决定文案结构，`en.ts` 必须与之结构相同（检查）；表示数量的文案用 `_one` 和 `_other` 两个键。
 - 中文文案不得与英文相同；确实应当相同的条目连同理由列入 `scripts/check-locale.ts` 的允许表。（检查）
-- 名称、简介、标签由接口根据 `Accept-Language` 返回对应语言；评测记录（任务原文、轨迹、检查项标题、复核结论）保持产生时的语言。
+- 名称、简介、标签由接口按 `Accept-Language` 返回对应语言；评测记录（任务原文、轨迹、检查项标题、复核结论）保持产生时的语言。
+  - `Accept-Language` 按 HTTP 标准协商，例如 `en-US,en;q=0.9`；
+  - 服务端在 `Locale` 中选最匹配的语言，都不匹配时用 zh-CN；
+  - 响应用 `Content-Language` 标明实际使用的语言。
 
 ## 内容
 

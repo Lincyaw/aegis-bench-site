@@ -1,0 +1,35 @@
+import type { components } from './schema';
+
+/** The API's models under the names the spec gives them; both the site and the mock server use these. */
+type Schemas = components['schemas'];
+export type Locale = Schemas['Locale'];
+export type Stage = Schemas['Stage'];
+export type StageRef = Schemas['StageRef'];
+export type Half = Schemas['Half'];
+export type Metric = Schemas['Metric'];
+export type LabeledValue = Schemas['LabeledValue'];
+export type TimelineLegend = Schemas['TimelineLegend'];
+export type VendorSlot = Schemas['VendorSlot'];
+export type ModelRef = Schemas['ModelRef'];
+export type HarnessRef = Schemas['HarnessRef'];
+export type LeaderboardEntry = Schemas['LeaderboardEntry'];
+export type LeaderboardView = Schemas['LeaderboardView'];
+export type BenchmarkRef = Schemas['BenchmarkRef'];
+export type BenchmarkSummary = Schemas['BenchmarkSummary'];
+export type BenchmarkDetail = Schemas['BenchmarkDetail'];
+export type RecentRun = Schemas['RecentRun'];
+export type TimelineMark = Schemas['TimelineMark'];
+export type TimelineStep = Schemas['TimelineStep'];
+export type TaskSummary = Schemas['TaskSummary'];
+export type TaskPage = Schemas['TaskPage'];
+export type TaskRuns = Schemas['TaskRuns'];
+export type CombinationRuns = Schemas['CombinationRuns'];
+export type RunOutcome = Schemas['RunOutcome'];
+export type RunEndReason = Schemas['RunEndReason'];
+export type SubmissionVerdict = Schemas['SubmissionVerdict'];
+export type RunDetail = Schemas['RunDetail'];
+export type GradingCheck = Schemas['GradingCheck'];
+export type CheckMethod = Schemas['CheckMethod'];
+export type ModelProfile = Schemas['ModelProfile'];
+export type Trajectory = Schemas['ATIF.Trajectory'];
+export type TrajectoryStep = Schemas['ATIF.Step'];

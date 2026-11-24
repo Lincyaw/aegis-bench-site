@@ -1,4 +1,4 @@
-import type { Locale, RecentRun, RunDetail, SubmissionVerdict, TimelineMark, TimelineStep, Trajectory, TrajectoryStep } from '../api/client';
+import type { Locale, RecentRun, RunDetail, SubmissionVerdict, TimelineMark, TimelineStep, Trajectory, TrajectoryStep } from '../api/types';
 import { benchmarkById, type TaskKind } from './benchmarks';
 import { RECORD_LOCALE } from './catalog';
 import { hashOf, pickOf } from './hash';

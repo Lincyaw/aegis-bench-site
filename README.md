@@ -9,6 +9,7 @@ npm install
 npm run dev      # 先由 TypeSpec 生成 OpenAPI 与前端类型，再启动开发服务器
 npm run build    # 生产构建；mock 服务随构建一起发布
 npm run check    # 类型检查、oxlint、样式检查与译文检查
+npm run mock     # 在本地启动 mock 服务：接口 http://127.0.0.1:4010/api，接口文档 http://127.0.0.1:4010/docs
 ```
 
 ## 规范
