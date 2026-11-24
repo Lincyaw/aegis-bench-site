@@ -1,5 +1,4 @@
-import type { ModelProfile } from '../api/client';
-import type { Locale } from '../i18n/locales';
+import type { Locale, ModelProfile } from '../api/client';
 import { BENCHMARKS, benchmarkRef, leaderboardOf } from './benchmarks';
 import { MODELS, PUBLISHED_ON, modelRef, stageRef } from './catalog';
 

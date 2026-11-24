@@ -1,5 +1,4 @@
-import type { CombinationRuns, GradingCheck, LabeledValue, RunDetail, RunOutcome, TaskSummary } from '../api/client';
-import type { Locale } from '../i18n/locales';
+import type { CombinationRuns, GradingCheck, LabeledValue, Locale, RunDetail, RunOutcome, TaskSummary } from '../api/client';
 import { benchmarkById, benchmarkRef, hasBenchmark, rankingEntryOf, type TaskKind } from './benchmarks';
 import { HARNESSES, MODELS, PUBLISHED_ON, RECORD_LOCALE, RUNS_PER_TASK, harnessRef, modelRef } from './catalog';
 import { fractionOf, hashOf, pickOf } from './hash';
@@ -337,8 +336,11 @@ export function failureOf(plan: RunPlan, grading: RunDetail['grading']): RunDeta
     : { failedChecks };
 }
 
+/** A run as the evaluation recorded it, before the server marks the steps of its trajectory. */
+export type RunRecord = Omit<RunDetail, 'timeline'>;
+
 /** A run's record: display names in the reader's locale, everything the run itself produced as it was recorded. */
-export function runDetailOf(runId: string, locale: Locale): RunDetail | undefined {
+export function runRecordOf(runId: string, locale: Locale): RunRecord | undefined {
   const plan = planOf(runId);
   if (!plan) {
     return undefined;

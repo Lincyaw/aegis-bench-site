@@ -1,5 +1,4 @@
-import type { Half, HarnessRef, ModelRef, StageRef, VendorSlot } from '../api/client';
-import type { Locale } from '../i18n/locales';
+import type { Half, HarnessRef, Locale, ModelRef, StageRef, VendorSlot } from '../api/client';
 
 /** A display string in each of the site's languages. */
 export type Text = Record<Locale, string>;

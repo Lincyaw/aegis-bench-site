@@ -143,9 +143,14 @@ model TimelineLegend {
   change: string;
   submitPassed: string;
   submitFailed: string;
+}
 
-  /** Tool names whose calls leave the change mark */
-  changeTools: string[];
+/** One agent step of a run as its timeline marks it. The server decides each step's mark by the benchmark's rules. */
+model TimelineStep {
+  /** The trajectory step the mark stands for */
+  stepId: int32;
+
+  mark: TimelineMark;
 }
 
 model RecentRun {
@@ -159,7 +164,9 @@ model RecentRun {
 
   stepCount: int32;
   durationMinutes: int32;
-  timeline: TimelineMark[];
+
+  /** One entry per agent step, in step order */
+  timeline: TimelineStep[];
 }
 
 /**
@@ -354,6 +361,9 @@ model RunDetail {
   output: RunOutput;
   grading: RunGrading;
 
+  /** One entry per agent step of the run's trajectory, in step order */
+  timeline: TimelineStep[];
+
   /** Present when the run failed; absent for passed runs and execution failures */
   failure?: RunFailure;
 }
@@ -389,12 +399,18 @@ model ModelProfile {
   harnessComparison: HarnessComparison[];
 }
 
+/** The languages the API serves; the site offers exactly these. */
+enum Locale {
+  zhCN: "zh-CN",
+  en: "en",
+}
+
 /**
- * The reader's language, zh-CN or en. Display names, summaries and labels come back in it; evaluation records (task
- * texts, trajectories, check titles, review conclusions) stay in the language they were made in.
+ * The reader's language, zh-CN when absent. Display names, summaries and labels come back in it; evaluation records
+ * (task texts, trajectories, check titles, review conclusions) stay in the language they were made in.
  */
 model LanguageHeader {
-  @header("Accept-Language") language?: string;
+  @header("Accept-Language") language?: Locale;
 }
 
 @error

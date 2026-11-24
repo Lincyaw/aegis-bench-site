@@ -1,5 +1,10 @@
-export const LOCALES = ['zh-CN', 'en'] as const;
-export type Locale = (typeof LOCALES)[number];
+import type { Locale } from '../api/client';
+import { localeValues } from '../api/schema';
+
+export type { Locale };
+
+/** The site offers exactly the languages the API serves, as the spec declares them. */
+export const LOCALES = localeValues;
 export const DEFAULT_LOCALE: Locale = 'zh-CN';
 
 export function isLocale(value: string | undefined): value is Locale {

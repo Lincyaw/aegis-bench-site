@@ -1,5 +1,4 @@
-import type { BenchmarkDetail, BenchmarkRef, BenchmarkSummary, LeaderboardEntry, LeaderboardView, Metric, RecentRun, Stage, TimelineLegend } from '../api/client';
-import type { Locale } from '../i18n/locales';
+import type { BenchmarkDetail, BenchmarkRef, BenchmarkSummary, LeaderboardEntry, LeaderboardView, Locale, Metric, RecentRun, Stage, TimelineLegend } from '../api/client';
 import { EVALUATED_IN, RUNS_PER_TASK, STAGES, harnessRef, modelRef, stageRef, type Text } from './catalog';
 
 /** The kind of work a benchmark's tasks ask for; it decides how their tasks, runs and trajectories are generated. */
@@ -16,7 +15,10 @@ export interface BenchmarkRecord {
   taskCount: number;
   updatedOn: string;
   metric: Omit<Metric, 'name'> & { name: Text };
-  timelineLegend: Record<Exclude<keyof TimelineLegend, 'changeTools'>, Text> & { changeTools: string[] };
+  timelineLegend: Record<keyof TimelineLegend, Text>;
+
+  /** The server's rule for the change mark: the tools whose calls count as the benchmark's key action. */
+  changeTools: string[];
   kind: TaskKind;
 
   /** Ranked combinations as [model, harness, score, average cost in USD]. */
@@ -43,8 +45,8 @@ export const BENCHMARKS: BenchmarkRecord[] = [
     timelineLegend: {
       action: { 'zh-CN': '一步操作', en: 'A step' }, change: { 'zh-CN': '修改代码', en: 'Code change' },
       submitPassed: { 'zh-CN': '提交并通过', en: 'Submitted, passed' }, submitFailed: { 'zh-CN': '提交未通过', en: 'Submitted, failed' },
-      changeTools: ['edit_file'],
     },
+    changeTools: ['edit_file'],
     ranking: [
       ['jia', 'x', 0.724, 1.2], ['yi', 'x', 0.681, 0.94], ['bing', 'y', 0.617, 0.52], ['jia', 'y', 0.602, 1.05],
       ['ding', 'x', 0.559, 0.31], ['yi', 'z', 0.513, 0.88], ['bing', 'x', 0.47, 0.47], ['wu', 'y', 0.416, 0.22],
@@ -70,8 +72,8 @@ export const BENCHMARKS: BenchmarkRecord[] = [
     timelineLegend: {
       action: { 'zh-CN': '一步操作', en: 'A step' }, change: { 'zh-CN': '编写测试', en: 'Test written' },
       submitPassed: { 'zh-CN': '全部检出', en: 'All defects found' }, submitFailed: { 'zh-CN': '部分检出', en: 'Some defects found' },
-      changeTools: ['write_test'],
     },
+    changeTools: ['write_test'],
     ranking: [
       ['yi', 'x', 0.64, 1.2], ['bing', 'y', 0.612, 0.94], ['jia', 'x', 0.587, 0.52], ['ding', 'x', 0.523, 1.05],
       ['jia', 'y', 0.499, 0.31], ['yi', 'y', 0.471, 0.83], ['bing', 'x', 0.446, 0.49], ['wu', 'x', 0.402, 0.26],
@@ -91,8 +93,8 @@ export const BENCHMARKS: BenchmarkRecord[] = [
     timelineLegend: {
       action: { 'zh-CN': '一步操作', en: 'A step' }, change: { 'zh-CN': '执行处置', en: 'Remediation' },
       submitPassed: { 'zh-CN': '恢复且根因正确', en: 'Recovered, cause right' }, submitFailed: { 'zh-CN': '未通过', en: 'Failed' },
-      changeTools: ['run_ops_command', 'edit_config'],
     },
+    changeTools: ['run_ops_command', 'edit_config'],
     ranking: [
       ['jia', 'x', 0.575, 1.2], ['ding', 'x', 0.492, 0.94], ['yi', 'x', 0.468, 0.52], ['bing', 'y', 0.44, 1.05],
       ['jia', 'y', 0.413, 0.31], ['yi', 'y', 0.382, 0.77], ['bing', 'x', 0.345, 0.58], ['wu', 'x', 0.291, 0.27],
@@ -112,8 +114,8 @@ export const BENCHMARKS: BenchmarkRecord[] = [
     timelineLegend: {
       action: { 'zh-CN': '一步操作', en: 'A step' }, change: { 'zh-CN': '查询数据', en: 'Data query' },
       submitPassed: { 'zh-CN': '召回较高', en: 'High recall' }, submitFailed: { 'zh-CN': '召回较低', en: 'Low recall' },
-      changeTools: ['query_metrics', 'query_logs', 'query_traces'],
     },
+    changeTools: ['query_metrics', 'query_logs', 'query_traces'],
     ranking: [
       ['bing', 'y', 0.71, 1.2], ['jia', 'x', 0.68, 0.94], ['yi', 'x', 0.63, 0.52], ['ding', 'x', 0.57, 1.05],
       ['jia', 'y', 0.52, 0.31], ['yi', 'y', 0.48, 0.74], ['wu', 'x', 0.43, 0.3], ['ji', 'y', 0.37, 0.36],
@@ -185,9 +187,9 @@ export function benchmarkSummary(benchmarkId: string, locale: Locale): Benchmark
 }
 
 export function benchmarkDetail(benchmarkId: string, locale: Locale, recentRuns: RecentRun[]): BenchmarkDetail {
-  const { action, change, submitPassed, submitFailed, changeTools } = benchmarkById(benchmarkId).timelineLegend;
+  const { action, change, submitPassed, submitFailed } = benchmarkById(benchmarkId).timelineLegend;
   return {
     ...benchmarkSummary(benchmarkId, locale), topFive: leaderboardOf(benchmarkId, locale).slice(0, 5), recentRuns,
-    timelineLegend: { action: action[locale], change: change[locale], submitPassed: submitPassed[locale], submitFailed: submitFailed[locale], changeTools },
+    timelineLegend: { action: action[locale], change: change[locale], submitPassed: submitPassed[locale], submitFailed: submitFailed[locale] },
   };
 }

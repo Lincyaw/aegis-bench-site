@@ -1,16 +1,20 @@
 import { clsx } from 'clsx';
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useTrajectory, type TimelineLegend, type TrajectoryStep } from '../api/client';
+import { useTrajectory, type TimelineLegend, type TimelineStep, type TrajectoryStep } from '../api/client';
 import { IconButton } from '../ui/controls';
 import { isKnownTool } from './presentation';
 import { RunScrubber, TimelineLegendRow } from './RunTimeline';
-import { agentSteps, markOf, submissionOf, targetOf, textOf } from './trajectory';
+import { submissionOf, targetOf, textOf } from './trajectory';
 import styles from './TrajectoryView.module.css';
 
-/** The ATIF trajectory as a timeline of marks and a list of steps; selecting either opens that step. */
-export function TrajectoryView({ runId, legend, evidence, selected, onSelect }: {
+/** The ATIF trajectory as the run's timeline of marks and a list of steps; selecting either opens that step. */
+export function TrajectoryView({ runId, timeline, legend, evidence, selected, onSelect }: {
   runId: string;
+
+  /** The run's agent steps as the server marked them */
+  timeline: TimelineStep[];
+
   legend: TimelineLegend;
 
   /** Step ids the failure review relies on; they are marked in the list */
@@ -25,17 +29,16 @@ export function TrajectoryView({ runId, legend, evidence, selected, onSelect }: 
   useEffect(() => {
     selectedRow.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }, [selected]);
-  const steps = agentSteps(trajectory);
-  const stepIds = steps.map(step => step.step_id);
+  const stepIds = timeline.map(step => step.stepId);
   const position = stepIds.indexOf(selected ?? -1);
   const go = (offset: number) => onSelect(stepIds[Math.min(stepIds.length - 1, Math.max(0, (position < 0 ? 0 : position) + offset))]);
   return (
     <div className={styles.view}>
-      {steps.length > 0 && (
+      {timeline.length > 0 && (
         <div className={styles.controls}>
           <IconButton label={t('runs.previousStep')} onClick={() => go(-1)}><ArrowIcon direction="left" /></IconButton>
           <IconButton label={t('runs.nextStep')} onClick={() => go(1)}><ArrowIcon direction="right" /></IconButton>
-          <RunScrubber marks={steps.map(step => markOf(step, legend.changeTools))} stepIds={stepIds} current={selected} onSelect={onSelect} />
+          <RunScrubber timeline={timeline} current={selected} onSelect={onSelect} />
           <span className="t-micro c-muted">{selected === undefined ? t('runs.stepCount', { count: trajectory.steps.length }) : t('runs.stepOf', { step: selected, count: trajectory.steps.length })}</span>
         </div>
       )}

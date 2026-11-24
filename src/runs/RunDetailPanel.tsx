@@ -43,7 +43,7 @@ export function RunDetailPanel({ runId, legend, view, onView }: { runId: string;
         {tab === 'output' && <OutputTab run={run} onStep={step => onView({ tab: 'trajectory', step })} />}
         {tab === 'grading' && <GradingTab run={run} check={view.check} onCheck={check => onView({ tab: 'grading', check })} />}
         {tab === 'failure' && <FailureTab run={run} onCheck={check => onView({ tab: 'grading', check })} onStep={step => onView({ tab: 'trajectory', step })} />}
-        {tab === 'trajectory' && <TrajectoryView runId={runId} legend={legend} evidence={run.failure?.review?.evidenceSteps ?? []} selected={view.step} onSelect={step => onView({ tab: 'trajectory', step })} />}
+        {tab === 'trajectory' && <TrajectoryView runId={runId} timeline={run.timeline} legend={legend} evidence={run.failure?.review?.evidenceSteps ?? []} selected={view.step} onSelect={step => onView({ tab: 'trajectory', step })} />}
       </div>
     </div>
   );

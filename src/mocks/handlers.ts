@@ -1,20 +1,30 @@
 import { delay } from 'msw';
 import { createOpenApiHttp } from 'openapi-msw';
-import type { paths } from '../api/schema';
-import type { Locale } from '../i18n/locales';
+import type { Locale } from '../api/client';
+import { localeValues, type paths } from '../api/schema';
 import { BENCHMARKS, benchmarkDetail, benchmarkSummary, hasBenchmark, leaderboardView, stagesWithBenchmarks } from './benchmarks';
 import { RUNS_PER_TASK } from './catalog';
 import { hasModel, modelProfile } from './models';
-import { passRateOf, runDetailOf, taskRunsOf, taskSummariesOf } from './runs';
+import { passRateOf, taskRunsOf, taskSummariesOf } from './runs';
 import { DEFAULT_TASK_PAGE_SIZE, taskOf } from './tasks';
-import { recentRunsOf, trajectoryOf } from './trajectories';
+import { recentRunsOf, runDetailOf, trajectoryOf } from './trajectories';
+
+/*
+ * The mock server: it implements the API the spec declares and nothing else, so the site talks to it exactly as it
+ * will talk to the real server, and anything the site needs but the spec lacks shows up as a gap in the spec.
+ */
 
 /** Handlers typed by the API's paths: a path, parameter, status or body the spec does not declare fails to compile. */
 const http = createOpenApiHttp<paths>({ baseUrl: '/api' });
 
-/** The reader's language from the Accept-Language header the API declares; zh-CN unless it names English. */
+/** The reader's language from the Accept-Language header the API declares: one of its locales, zh-CN when absent. */
 export function localeOf(request: Request): Locale {
-  return request.headers.get('Accept-Language')?.startsWith('en') ? 'en' : 'zh-CN';
+  const header = request.headers.get('Accept-Language') ?? 'zh-CN';
+  const locale = localeValues.find(candidate => candidate === header);
+  if (!locale) {
+    throw new Error(`Accept-Language ${header} is not a locale the API serves`);
+  }
+  return locale;
 }
 
 export const handlers = [

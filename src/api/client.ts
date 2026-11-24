@@ -1,10 +1,10 @@
 import { useSuspenseQuery } from '@tanstack/react-query';
 import createClient from 'openapi-fetch';
 import { useLocale } from '../i18n/localeContext';
-import type { Locale } from '../i18n/locales';
 import type { components, paths } from './schema';
 
 type Schemas = components['schemas'];
+export type Locale = Schemas['Locale'];
 export type Stage = Schemas['Stage'];
 export type StageRef = Schemas['StageRef'];
 export type Half = Schemas['Half'];
@@ -21,6 +21,7 @@ export type BenchmarkSummary = Schemas['BenchmarkSummary'];
 export type BenchmarkDetail = Schemas['BenchmarkDetail'];
 export type RecentRun = Schemas['RecentRun'];
 export type TimelineMark = Schemas['TimelineMark'];
+export type TimelineStep = Schemas['TimelineStep'];
 export type TaskSummary = Schemas['TaskSummary'];
 export type TaskPage = Schemas['TaskPage'];
 export type TaskRuns = Schemas['TaskRuns'];

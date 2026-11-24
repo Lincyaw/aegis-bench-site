@@ -1,10 +1,8 @@
-import type { RecentRun, RunDetail, SubmissionVerdict, Trajectory, TrajectoryStep } from '../api/client';
-import type { Locale } from '../i18n/locales';
-import { agentSteps, markOf } from '../runs/trajectory';
+import type { Locale, RecentRun, RunDetail, SubmissionVerdict, TimelineMark, TimelineStep, Trajectory, TrajectoryStep } from '../api/client';
 import { benchmarkById, type TaskKind } from './benchmarks';
 import { RECORD_LOCALE } from './catalog';
 import { hashOf, pickOf } from './hash';
-import { SHOWCASE_RUN_ID, planOf, runDetailOf, runIdOf, type RunPlan } from './runs';
+import { SHOWCASE_RUN_ID, planOf, runIdOf, runRecordOf, type RunPlan, type RunRecord } from './runs';
 
 /** The tools a generated run cycles through, by task kind. */
 export const TOOL_PLAN: Record<TaskKind, string[]> = {
@@ -91,7 +89,7 @@ const SECONDS_PER_STEP = 26;
 /** The run's trajectory in ATIF-v1.8, a record in its original language: the task as the user step, then one agent step per tool call. */
 export function trajectoryOf(runId: string): Trajectory | undefined {
   const plan = planOf(runId);
-  const detail = runDetailOf(runId, RECORD_LOCALE);
+  const detail = runRecordOf(runId, RECORD_LOCALE);
   if (!plan || !detail) {
     return undefined;
   }
@@ -130,8 +128,8 @@ export function trajectoryOf(runId: string): Trajectory | undefined {
     agent: { name: detail.harness.name, version: detail.input.harness.version, model_name: detail.model.name },
     steps,
   };
-  const agent = agentSteps(trajectory);
-  const total = (field: 'prompt_tokens' | 'completion_tokens' | 'cached_tokens' | 'cost_usd') => agent.reduce((sum, step) => sum + (step.metrics?.[field] ?? 0), 0);
+  const agent = trajectory.steps.filter(step => step.source === 'agent');
+  const total =(field: 'prompt_tokens' | 'completion_tokens' | 'cached_tokens' | 'cost_usd') => agent.reduce((sum, step) => sum + (step.metrics?.[field] ?? 0), 0);
   return {
     ...trajectory,
     final_metrics: {
@@ -142,7 +140,7 @@ export function trajectoryOf(runId: string): Trajectory | undefined {
 }
 
 /** A recent run's result in its benchmark's own words, such as 检出 3/5. */
-export function resultLabelOf(kind: TaskKind, detail: RunDetail, locale: Locale): string {
+export function resultLabelOf(kind: TaskKind, detail: RunRecord, locale: Locale): string {
   const { passCount, total, checks } = detail.grading;
   const english = locale === 'en';
   switch (kind) {
@@ -164,20 +162,43 @@ export function resultLabelOf(kind: TaskKind, detail: RunDetail, locale: Locale)
   }
 }
 
-/** The runs a benchmark page lists, each its combination's first attempt, with marks read from their trajectories. */
+/** The server's marking rule for a step: a submission by its verdict, a call to one of the benchmark's change tools as a change, any other step as an action. */
+export function markOf(step: TrajectoryStep, changeTools: string[]): TimelineMark {
+  const submission = (step.observation?.results[0]?.extra as { submission?: SubmissionVerdict } | undefined)?.submission;
+  if (submission) {
+    return submission.passed ? 'submitPassed' : 'submitFailed';
+  }
+  const tool = step.tool_calls?.[0]?.function_name;
+  return tool !== undefined && changeTools.includes(tool) ? 'change' : 'action';
+}
+
+/** Every agent step of a trajectory with its mark, in step order. */
+export function timelineOf(trajectory: Trajectory, changeTools: string[]): TimelineStep[] {
+  return trajectory.steps.filter(step => step.source === 'agent').map(step => ({ stepId: step.step_id, mark: markOf(step, changeTools) }));
+}
+
+/** A run's detail: its record, with each step of its trajectory marked by the benchmark's rules. */
+export function runDetailOf(runId: string, locale: Locale): RunDetail | undefined {
+  const record = runRecordOf(runId, locale);
+  const trajectory = trajectoryOf(runId);
+  if (!record || !trajectory) {
+    return undefined;
+  }
+  return { ...record, timeline: timelineOf(trajectory, benchmarkById(record.benchmark.id).changeTools) };
+}
+
+/** The runs a benchmark page lists, each its combination's first attempt. */
 export function recentRunsOf(benchmarkId: string, locale: Locale): RecentRun[] {
-  const { kind, listedRuns, timelineLegend } = benchmarkById(benchmarkId);
+  const { kind, listedRuns } = benchmarkById(benchmarkId);
   return listedRuns.map(([taskId, modelId, harnessId]) => {
     const runId = runIdOf(benchmarkId, taskId, modelId, harnessId, 1);
     const detail = runDetailOf(runId, locale);
-    const trajectory = trajectoryOf(runId);
-    if (!detail || !trajectory) {
+    if (!detail) {
       throw new Error(`${benchmarkId} lists run ${runId}, which has no record`);
     }
     return {
       runId, model: detail.model, task: detail.task, outcome: detail.outcome, resultLabel: resultLabelOf(kind, detail, locale),
-      stepCount: detail.metrics.steps, durationMinutes: detail.metrics.durationMinutes,
-      timeline: agentSteps(trajectory).map(step => markOf(step, timelineLegend.changeTools)),
+      stepCount: detail.metrics.steps, durationMinutes: detail.metrics.durationMinutes, timeline: detail.timeline,
     };
   });
 }

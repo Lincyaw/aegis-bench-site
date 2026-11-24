@@ -42,7 +42,7 @@ export function RecentRunsBlock() {
           <LocaleLink key={run.runId} role="row" className={clsx(table.row, table.link)} to={runRecordsPath(benchmark.id, { task: run.task.id, run: run.runId, tab: 'trajectory' })}>
             <span role="cell"><ModelLabel model={run.model} /></span>
             <span role="cell" className={styles.cell}><span className="t-mono c-faint">{run.task.id}</span><span className="t-small">{run.task.title}</span></span>
-            <span role="cell"><RunTimeline marks={run.timeline} /></span>
+            <span role="cell"><RunTimeline timeline={run.timeline} /></span>
             <span role="cell" className="t-small"><OutcomeText outcome={run.outcome}>{run.resultLabel}</OutcomeText></span>
             <span role="cell" className="t-numeric c-muted">{t('benchmarks.steps', { count: run.stepCount })}</span>
             <span role="cell" className="t-numeric c-muted">{t('benchmarks.minutes', { count: run.durationMinutes })}</span>

@@ -9,5 +9,19 @@
     "typescript/consistent-type-imports": "error",
     "typescript/no-non-null-assertion": "error",
     "typescript/switch-exhaustiveness-check": "error"
-  }
+  },
+  "overrides": [
+    {
+      "files": ["src/*/**"],
+      "rules": {
+        "no-restricted-imports": ["error", { "patterns": [{ "group": ["**/mocks/*"], "message": "The site reaches data only through the API client; the mock server answers its requests." }] }]
+      }
+    },
+    {
+      "files": ["src/mocks/**"],
+      "rules": {
+        "no-restricted-imports": ["error", { "patterns": [{ "group": ["../**", "!../api/**"], "message": "The mock server implements the API: it imports only the API's types and its own modules." }] }]
+      }
+    }
+  ]
 }
