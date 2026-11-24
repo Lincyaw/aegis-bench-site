@@ -1,8 +1,8 @@
 import { clsx } from 'clsx';
-import { Suspense, useDeferredValue, useState } from 'react';
+import { Suspense, useDeferredValue } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { useBenchmark, useLeaderboard, useTaskRuns, useTasks, type BenchmarkDetail, type CombinationRuns, type TaskPage } from '../api/client';
+import { useBenchmark, useLeaderboard, useTaskPages, useTaskRuns, type BenchmarkDetail, type CombinationRuns, type TaskPage } from '../api/client';
 import { VendorBadge } from '../models/ModelBadge';
 import { BENCHMARKS_PATH, benchmarkPath, stagePath } from '../site/siteMap';
 import { Loading } from '../ui/content';
@@ -26,9 +26,12 @@ export function RunRecordsPage() {
   const benchmark = useBenchmark(benchmarkId);
   const query = parseRunRecordsQuery(search);
   const level = runRecordsLevel(query, narrow);
-  const [limit, setLimit] = useState(TASK_PAGE_SIZE);
-  // The list keeps showing the last results while a new search or page loads.
-  const tasks = useTasks(benchmark.id, useDeferredValue(query.q), useDeferredValue(limit));
+  // The list keeps showing the last results while a new search loads.
+  const taskPages = useTaskPages(benchmark.id, useDeferredValue(query.q), TASK_PAGE_SIZE);
+  if (taskPages.isFetchNextPageError) {
+    throw taskPages.error;
+  }
+  const tasks: TaskPage = { items: taskPages.data.pages.flatMap(page => page.items), total: taskPages.data.pages[0].total };
   const taskId = query.task ?? (level === 'threePanes' ? tasks.items[0]?.id : undefined);
   const update = (next: RunRecordsQuery) => {
     // Only a narrow window replacing one level with another starts again from the top.
@@ -39,7 +42,7 @@ export function RunRecordsPage() {
       <RunToolbar benchmark={benchmark} query={query} onQuery={update} />
       <div className={styles.browser}>
         {(level === 'threePanes' || level === 'tasks') && (
-          <TaskColumn tasks={tasks} currentTask={taskId} onTask={task => update(withTask(query, task))} onMore={() => setLimit(limit + TASK_PAGE_SIZE)} />
+          <TaskColumn tasks={tasks} currentTask={taskId} onTask={task => update(withTask(query, task))} loadingMore={taskPages.isFetchingNextPage} onMore={() => void taskPages.fetchNextPage()} />
         )}
         {level !== 'tasks' && taskId && (
           <Suspense fallback={<div className={styles.column}><Loading /></div>}>
@@ -85,7 +88,7 @@ export function RunToolbar({ benchmark, query, onQuery }: { benchmark: Benchmark
   );
 }
 
-export function TaskColumn({ tasks, currentTask, onTask, onMore }: { tasks: TaskPage; currentTask: string | undefined; onTask: (task: string) => void; onMore: () => void }) {
+export function TaskColumn({ tasks, currentTask, onTask, loadingMore, onMore }: { tasks: TaskPage; currentTask: string | undefined; onTask: (task: string) => void; loadingMore: boolean; onMore: () => void }) {
   const { t } = useTranslation();
   return (
     <div className={styles.column} aria-label={t('runs.tasks')}>
@@ -102,7 +105,7 @@ export function TaskColumn({ tasks, currentTask, onTask, onMore }: { tasks: Task
         {tasks.items.length === 0 && <li className={clsx(styles.empty, 't-small c-faint')}>{t('runs.noTasks')}</li>}
       </ol>
       {tasks.items.length < tasks.total && (
-        <button type="button" className={clsx(styles.more, 't-micro c-muted')} onClick={onMore}>{t('runs.loadMore', { shown: tasks.items.length, total: tasks.total })}</button>
+        <button type="button" className={clsx(styles.more, 't-micro c-muted')} disabled={loadingMore} aria-busy={loadingMore} onClick={onMore}>{t('runs.loadMore', { shown: tasks.items.length, total: tasks.total })}</button>
       )}
     </div>
   );

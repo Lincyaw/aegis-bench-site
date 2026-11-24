@@ -1,4 +1,4 @@
-import { useSuspenseQuery } from '@tanstack/react-query';
+import { useSuspenseInfiniteQuery, useSuspenseQuery } from '@tanstack/react-query';
 import createClient from 'openapi-fetch';
 import { useLocale } from '../i18n/localeContext';
 import type { paths } from './schema';
@@ -55,12 +55,20 @@ export function useLeaderboard(benchmarkId: string, view: LeaderboardView) {
   }).data;
 }
 
-/** Tasks are records, so their list is the same in every language. */
-export function useTasks(benchmarkId: string, q: string, limit: number) {
-  return useSuspenseQuery({
-    queryKey: ['tasks', benchmarkId, q, limit],
-    queryFn: () => responseBody(api.GET('/benchmarks/{benchmarkId}/tasks', { params: { path: { benchmarkId }, query: { q, limit } } })),
-  }).data;
+/**
+ * The tasks matching a search, a page at a time: each further page asks only for the tasks after those already
+ * loaded. Tasks are records, so their list is the same in every language.
+ */
+export function useTaskPages(benchmarkId: string, q: string, pageSize: number) {
+  return useSuspenseInfiniteQuery({
+    queryKey: ['tasks', benchmarkId, q, pageSize],
+    queryFn: ({ pageParam }) => responseBody(api.GET('/benchmarks/{benchmarkId}/tasks', { params: { path: { benchmarkId }, query: { q, offset: pageParam, limit: pageSize } } })),
+    initialPageParam: 0,
+    getNextPageParam: (last, pages) => {
+      const loaded = pages.reduce((count, page) => count + page.items.length, 0);
+      return loaded < last.total ? loaded : undefined;
+    },
+  });
 }
 
 export function useTaskRuns(benchmarkId: string, taskId: string) {

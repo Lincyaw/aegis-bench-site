@@ -457,8 +457,11 @@ interface Benchmarks {
     /** Matches the task id or title */
     @query(#{ explode: true }) q?: string,
 
-    @query(#{ explode: true }) offset?: int32 = 0,
-    @query(#{ explode: true }) limit?: int32 = 14,
+    /** Position of the page's first task among the matches */
+    @query(#{ explode: true }) @minValue(0) offset?: int32 = 0,
+
+    /** Tasks per page; a page never holds more than 50, so no request carries a benchmark's whole task list */
+    @query(#{ explode: true }) @minValue(1) @maxValue(50) limit?: int32 = 14,
   ): TaskPage | NotFoundError;
 
   @get
