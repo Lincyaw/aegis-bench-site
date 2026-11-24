@@ -1,0 +1,98 @@
+# 工程规范
+
+本文规定在本仓库中如何组织代码、设计接口、处理语言与内容，以及提交前怎样检查和验证。视觉与组件规范见 [`src/ui/README.md`](src/ui/README.md)。标注“检查”的规则由 `npm run check` 强制执行。
+
+## 目录与依赖
+
+代码按业务领域分目录，每个领域目录放该领域的页面、组件、样式和展示规则：
+
+| 目录 | 职责 |
+|---|---|
+| `src/benchmarks`、`src/leaderboard`、`src/runs`、`src/models`、`src/reports`、`src/lifecycle`、`src/landing` | 各业务领域 |
+| `src/ui` | 设计系统：令牌、全局样式、通用组件，不依赖任何业务领域 |
+| `src/site` | 站点框架：导航、页脚、站点地图（所有路径）、主题切换 |
+| `src/i18n` | 语言路由与界面文案 |
+| `src/articles`、`content` | MD/MDX 文档的编译、自定义块和正文 |
+| `src/api` | 由接口生成的类型与请求客户端 |
+| `src/mocks` | mock 服务端，实现接口声明的全部操作 |
+
+依赖方向：
+- 业务领域可以依赖 `ui`、`site`、`i18n`、`api`、`articles`。
+- 领域之间可以使用对方导出的组件和展示规则（例如 `models` 的 `ModelLink`），但不使用对方的页面。
+- 站点的任何代码都不得引用 `src/mocks`，入口文件启动 mock 服务除外。（检查）
+- `src/mocks` 只能引用 `src/api` 生成的类型和它自己的模块。（检查）
+
+## 接口先行
+
+接口以 `spec/main.tsp`（TypeSpec）为唯一来源：
+1. 修改接口时先改 spec，再运行 `npm run gen`（`dev` 和 `build` 会自动运行）。它会生成 `generated/openapi.yaml` 和 `src/api/schema.ts`，这两个文件不入库。
+2. 前端只通过 `src/api/client.ts` 的查询函数取数据。查询函数基于 `openapi-fetch`，路径、参数和响应体都按 spec 做类型检查。
+3. 闭集合（视图、运行结果、时间线标记、语言等）在 spec 中声明为枚举，前端使用生成的 `*Values` 数组，不再另写一份。
+
+### mock 只通过接口交互
+
+mock 服务端的作用除了提供演示数据，还在于检验接口设计是否合理：
+- **只在接口层交互**：站点与 mock 之间只走 HTTP 请求。mock 运行在 Service Worker 中，站点的请求和对接真实服务端时完全一样。
+- **处理函数受 spec 约束**：处理函数用 `openapi-msw` 按 spec 类型编写，返回 spec 未声明的路径、参数、状态码或响应体都无法通过编译。
+- **业务规则在服务端**：例如时间线上每一步的标记由服务端判定，前端只负责显示；同一条规则不在两端各写一遍。
+- **缺口回到 spec**：前端需要但接口不提供的数据，先补进 spec，再由 mock 实现，不让前端从别的数据里自行推算。
+- **请求按 spec 校验**：mock 对请求同样严格，比如 `Accept-Language` 只接受 spec 声明的语言。
+- **数据可复现**：mock 数据按编号确定性生成，每次加载都相同。
+
+## 语言
+
+- 中文页面在根路径，英文页面在 `/en`。站内链接和跳转一律通过 `LocaleLink`、`LocaleNavLink` 和 `useLocalizedNavigate`，保持读者当前的语言。
+- 站点支持的语言就是 spec 中 `Locale` 枚举声明的语言。新增语言时先改 spec，类型检查会列出所有需要补齐的地方。
+- 界面文案放在 `src/i18n/zh.ts` 和 `en.ts`。`zh.ts` 决定文案结构，`en.ts` 必须与之结构相同（检查）；表示数量的文案用 `_one` 和 `_other` 两个键。
+- 中文文案不得与英文相同；确实应当相同的条目连同理由列入 `scripts/check-locale.ts` 的允许表。（检查）
+- 名称、简介、标签由接口根据 `Accept-Language` 返回对应语言；评测记录（任务原文、轨迹、检查项标题、复核结论）保持产生时的语言。
+
+## 内容
+
+- 评测基准介绍页放在 `content/benchmarks/<评测基准 id>/<语言>.mdx`，研究报告放在 `content/reports/<slug>/<语言>.md` 或 `.mdx`。
+- 报告的 frontmatter 包含 `title`、`date`、`summary`、`models`、`benchmarks`，由 zod 在加载时校验。
+- `##` 标题会成为页面的分区导航。站内链接写成以 `/` 开头的路径，会自动保持当前语言。
+- 可以直接使用的块：`Flow`/`Step`、`Sample`、`Facts`/`Fact`、`Versions`/`Version`、`Faq`/`Question`、`Citation`、`Callout`。评测基准页另有 `Leaderboard` 和 `RecentRuns`，数据取自接口。
+
+## 代码规则
+
+- **一个文件一个概念**，文件名和函数名直接说明用途。文件超过约 400 行、函数超过约 50 行时，检查能否沿自然边界拆分；但不为凑行数拆开本属一体的内容。
+- **不写私有辅助函数**：只有一处调用的就内联；多处调用的给出有含义的名字并导出。只转发参数的包装函数一律内联。
+- **命名常量**：有含义的字面量用命名常量；路径一律由 `src/site/siteMap.ts` 的常量和函数生成；闭集合只定义一次。
+- **不用布尔参数切换函数的行为**，需要两种行为时写两个函数。
+- **快速失败**：
+  - 不吞异常，不设兜底值；
+  - 类型收窄用 `instanceof` 或判空，不满足就抛错；
+  - 不用非空断言 `!`（检查）；
+  - `switch` 必须覆盖所有情况（检查）。
+- **组件只负责呈现**：数据由页面用 `useSuspenseQuery` 取得，再传给组件。
+- **命令式代码与 React 的分工**：three.js、anime.js 这类命令式代码不直接写 DOM 结构。React 渲染全部元素；命令式代码通过 `data-part` 约定取得元素（见 `src/landing/landingMarkup.ts`）。
+- **库优先**：有成熟库的就用库（Radix、i18next、MDX、zod、openapi-fetch、openapi-msw），不自己手写解析器。
+- **注释**只写代码表达不了的意图，用英文书写，不记录修改经过。
+
+## 检查与验证
+
+`npm run check` 包含以下几项：
+- 类型检查；
+- oxlint：带类型信息运行，警告也视为失败；
+- Stylelint：见设计规范；
+- 中文文案检查。
+
+提交前它和 `npm run build` 都必须通过。
+
+功能改动还要在浏览器中验证：
+1. 运行 `npm run build`，再用 `npx vite preview` 打开生产构建。
+2. 按“中文和英文 × 深色和浅色 × 1440 和 390 宽度”的组合查看改动涉及的页面。
+3. 确认控制台没有报错，页面没有横向滚动，交互结果符合预期。
+
+## 设计稿
+
+- 颜色、圆角、间距先在 Figma 文件 `Aegis Bench` 的变量中修改，再同步到 `src/ui/tokens.css`。
+- 新的视觉样式也要画进 Figma。
+- Figma 中使用占位名称，不出现真实评测基准的名称。
+
+## 提交
+
+- 小步提交，每次只包含一项独立的改动，并且这次提交本身能通过检查和构建。
+- 提交信息的标题用一句话说明做了什么，正文说明为什么这样做。
+- 只暂存自己改动的文件。

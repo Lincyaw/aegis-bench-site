@@ -1,15 +1,14 @@
 /**
  * Tokens are the only source of visual truth: component CSS takes every colour, size and duration from the tokens
- * in src/styles, and every custom property it reads must be defined somewhere.
+ * in src/ui, and every custom property it reads must be defined somewhere.
  */
-const TOKEN_FILES = ['src/styles/tokens.css', 'src/styles/base.css'];
+const TOKEN_FILES = ['src/ui/tokens.css', 'src/ui/base.css'];
 
 /** Properties a library sets on the elements it renders, for the stylesheet to read. */
 const LIBRARY_PROPERTIES = {
   customProperties: {
     '--radix-select-trigger-width': '',
     '--radix-select-content-available-height': '',
-    '--radix-select-content-transform-origin': '',
   },
 };
 
