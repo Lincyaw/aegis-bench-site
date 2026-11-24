@@ -36,7 +36,7 @@ mock 服务端的作用除了提供演示数据，还在于检验接口设计是
 - **处理函数受 spec 约束**：处理函数用 `openapi-msw` 按 spec 类型编写，返回 spec 未声明的路径、参数、状态码或响应体都无法通过编译。
 - **业务规则在服务端**：例如时间线上每一步的标记由服务端判定，前端只负责显示；同一条规则不在两端各写一遍。
 - **缺口回到 spec**：前端需要但接口不提供的数据，先补进 spec，再由 mock 实现，不让前端从别的数据里自行推算。
-- **运行时契约**：`src/mocks/contract.ts` 是 mock 的唯一入口，用 openapi-backend 按 OpenAPI 文档检查每一次交互：
+- **运行时契约**：本地开发（`npm run dev`）和本地 mock 服务（`npm run mock`）中，`src/mocks/contract.ts` 是 mock 的唯一入口。线上发布的构建不做这项检查，校验库也不打进发布包。它用 openapi-backend 按 OpenAPI 文档检查每一次交互：
   - 请求不合 spec 时返回 400；
   - 访问 spec 未声明的操作时返回 404；
   - mock 自己的响应不合 spec 时返回 500，包括响应体、日期等格式和响应头。

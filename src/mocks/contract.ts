@@ -1,18 +1,21 @@
 import addFormats from 'ajv-formats';
-import dereferenceJsonSchema from 'dereference-json-schema';
+import { dereferenceSync } from 'dereference-json-schema/dereference.js';
 import { getResponse, http, HttpResponse, type RequestHandler } from 'msw';
-import { OpenAPIRouter, OpenAPIValidator, SetMatchType, type Document, type Request as ApiRequest } from 'openapi-backend';
+import { SetMatchType, type Document } from 'openapi-backend/backend';
+import { OpenAPIRouter, type Request as ApiRequest } from 'openapi-backend/router';
+import { OpenAPIValidator } from 'openapi-backend/validation';
 import openapi from '../api/openapi.json';
 import { API_ROOT } from '../api/server';
 
 /*
  * The contract the mock server keeps: openapi-backend's router and validator over the spec's document. They are built
- * directly rather than through OpenAPIBackend, whose start-up parses the document with a Node-only reference parser.
+ * directly rather than through OpenAPIBackend, whose start-up parses the document with a Node-only reference parser,
+ * and imported from the modules that define them, since the packages' index modules re-export them in a form only
+ * Node can import by name.
  */
 
 /** The spec's document with every reference resolved; TypeSpec wrote it, and its JSON module types widen enums to string. */
-// The package is CommonJS and re-exports its functions in a form Node's ESM loader cannot import by name.
-export const DEFINITION = dereferenceJsonSchema.dereferenceSync(openapi) as Document;
+export const DEFINITION = dereferenceSync(openapi) as Document;
 
 /** Matches a request to the operation the spec declares for it. */
 export const router = new OpenAPIRouter({ definition: DEFINITION, apiRoot: API_ROOT });

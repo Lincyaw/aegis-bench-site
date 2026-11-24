@@ -1,5 +1,8 @@
 import { setupWorker } from 'msw/browser';
-import { contractHandler } from './contract';
 import { handlers } from './handlers';
 
-export const worker = setupWorker(contractHandler(handlers));
+/*
+ * During development every exchange is checked against the spec; the published demo answers without the check, so
+ * the validator stays out of its bundle.
+ */
+export const worker = setupWorker(...(import.meta.env.DEV ? [(await import('./contract')).contractHandler(handlers)] : handlers));
