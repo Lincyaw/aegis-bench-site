@@ -8,8 +8,8 @@ const HALF_NAMES = { dev: '研发', ops: '运维' } as const;
 
 function stageLabels(stages: Stage[], benchmarks: BenchmarkSummary[]): Record<string, StageLabel> {
   const names = Object.fromEntries(benchmarks.map(item => [item.id, item.name]));
-  return Object.fromEntries(stages.filter(stage => stage.benchmarkIds.length > 0).map(stage => [
-    stage.id, { primary: stage.benchmarkIds.map(id => names[id]).join(' · '), secondary: `${stage.id} ${stage.name}` },
+  return Object.fromEntries(stages.filter(stage => stage.benchmarks.length > 0).map(stage => [
+    stage.id, { primary: stage.benchmarks.map(({ id }) => names[id]).join(' · '), secondary: `${stage.id} ${stage.name}` },
   ]));
 }
 
@@ -48,8 +48,8 @@ export function BenchmarksPage() {
     return <div className="page"><Loading /></div>;
   }
   const byId = Object.fromEntries(benchmarks.data.map(item => [item.id, item]));
-  const covered = stages.data.filter(stage => stage.benchmarkIds.length > 0);
-  const building = stages.data.filter(stage => stage.benchmarkIds.length === 0);
+  const covered = stages.data.filter(stage => stage.benchmarks.length > 0);
+  const building = stages.data.filter(stage => stage.benchmarks.length === 0);
   return (
     <div className={`page ${styles.page}`}>
       <section className={styles.hero}>
@@ -75,9 +75,9 @@ export function BenchmarksPage() {
                 <span className="t-mono c-faint">{stage.id}</span>
                 <span className="t-heading">{stage.name}</span>
               </h2>
-              <span className="t-micro c-faint">{HALF_NAMES[stage.half]} · {stage.benchmarkIds.length} 个评测基准</span>
+              <span className="t-micro c-faint">{HALF_NAMES[stage.half]} · {stage.benchmarks.length} 个评测基准</span>
             </header>
-            {stage.benchmarkIds.map(id => <BenchRow key={id} benchmark={byId[id]} />)}
+            {stage.benchmarks.map(({ id }) => <BenchRow key={id} benchmark={byId[id]} />)}
           </section>
         ))}
         <p className={styles.building}>

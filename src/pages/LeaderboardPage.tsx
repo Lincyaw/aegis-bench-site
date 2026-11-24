@@ -32,11 +32,11 @@ export function LeaderboardPage() {
       </header>
       <div className={styles.picker}>
         <div className={styles.groups}>
-          {stages.data.filter(stage => stage.benchmarkIds.length > 0).map(stage => (
+          {stages.data.filter(stage => stage.benchmarks.length > 0).map(stage => (
             <div key={stage.id} className={styles.group}>
               <p className="t-micro c-faint"><span className={stage.half === 'dev' ? styles.dotDev : styles.dotOps} />{stage.id} {stage.name}</p>
               <div className={styles.pills}>
-                {stage.benchmarkIds.map(id => (
+                {stage.benchmarks.map(({ id }) => (
                   <button key={id} type="button" aria-pressed={id === benchmark.id} className={`${styles.pill} loop-edge t-small`} onClick={() => choose({ bench: id })}>
                     {benchmarks.data.find(item => item.id === id)?.name}
                   </button>

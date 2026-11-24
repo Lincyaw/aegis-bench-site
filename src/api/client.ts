@@ -14,6 +14,7 @@ export type ModelRef = Schemas['ModelRef'];
 export type HarnessRef = Schemas['HarnessRef'];
 export type LeaderboardEntry = Schemas['LeaderboardEntry'];
 export type LeaderboardView = Schemas['LeaderboardView'];
+export type BenchmarkRef = Schemas['BenchmarkRef'];
 export type BenchmarkSummary = Schemas['BenchmarkSummary'];
 export type BenchmarkDetail = Schemas['BenchmarkDetail'];
 export type RecentRun = Schemas['RecentRun'];
@@ -22,15 +23,14 @@ export type TaskSummary = Schemas['TaskSummary'];
 export type TaskPage = Schemas['TaskPage'];
 export type TaskRuns = Schemas['TaskRuns'];
 export type CombinationRuns = Schemas['CombinationRuns'];
-export type RunRef = Schemas['RunRef'];
 export type RunOutcome = Schemas['RunOutcome'];
+export type SubmissionVerdict = Schemas['SubmissionVerdict'];
 export type RunDetail = Schemas['RunDetail'];
 export type GradingCheck = Schemas['GradingCheck'];
 export type CheckMethod = Schemas['CheckMethod'];
 export type ModelProfile = Schemas['ModelProfile'];
 export type Trajectory = Schemas['ATIF.Trajectory'];
 export type TrajectoryStep = Schemas['ATIF.Step'];
-export type ToolCall = Schemas['ATIF.ToolCall'];
 
 export const api = createClient<paths>({ baseUrl: '/api' });
 

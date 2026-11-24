@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import type { TimelineLegend, Trajectory, TrajectoryStep } from '../api/client';
-import { TOOL_LABELS, agentSteps, markOf, submissionOf, targetOf, textOf } from '../trajectory';
+import { TOOL_LABELS } from '../runs/presentation';
+import { agentSteps, markOf, submissionOf, targetOf, textOf } from '../runs/trajectory';
 import { RunTimeline, TimelineLegendRow } from './RunTimeline';
 import { LoadError, Loading } from './ui';
 import styles from './TrajectoryView.module.css';

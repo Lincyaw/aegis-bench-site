@@ -25,4 +25,4 @@ dist-ssr
 
 # Generated from spec/ by npm run gen
 generated
-src/api/schema.d.ts
+src/api/schema.ts

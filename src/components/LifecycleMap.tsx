@@ -43,8 +43,8 @@ export function LifecycleMap({ stages, benchmarkNames, labels = {}, current, com
   const [choosing, setChoosing] = useState<string | undefined>();
   const [hinting, setHinting] = useState<string | undefined>();
   const open = (stage: Stage) => {
-    if (stage.benchmarkIds.length === 1) {
-      navigate(`/benchmarks/${stage.benchmarkIds[0]}`);
+    if (stage.benchmarks.length === 1) {
+      navigate(`/benchmarks/${stage.benchmarks[0].id}`);
     } else {
       setChoosing(choosing === stage.id ? undefined : stage.id);
     }
@@ -64,7 +64,7 @@ export function LifecycleMap({ stages, benchmarkNames, labels = {}, current, com
       </svg>
       {stages.map(stage => {
         const [x, y] = nodePosition(stage.id, CX, CY, A);
-        const covered = stage.benchmarkIds.length > 0;
+        const covered = stage.benchmarks.length > 0;
         const label = labels[stage.id];
         const { above, towardLeft } = labelPlacement(stage.id);
         const name = `${stage.id} ${stage.name}`;
@@ -74,8 +74,8 @@ export function LifecycleMap({ stages, benchmarkNames, labels = {}, current, com
               <button
                 type="button"
                 className={`${styles.node} ${styles[stage.half]} ${current === stage.id ? styles.selected : ''}`}
-                aria-label={`${name}：${stage.benchmarkIds.map(id => benchmarkNames[id]).join('、')}`}
-                aria-expanded={stage.benchmarkIds.length > 1 ? choosing === stage.id : undefined}
+                aria-label={`${name}：${stage.benchmarks.map(({ id }) => benchmarkNames[id]).join('、')}`}
+                aria-expanded={stage.benchmarks.length > 1 ? choosing === stage.id : undefined}
                 onClick={() => open(stage)}
               />
             ) : (
@@ -101,8 +101,8 @@ export function LifecycleMap({ stages, benchmarkNames, labels = {}, current, com
             {hinting === stage.id && <span className={`${styles.hint} t-micro`} role="tooltip">{name} · 评测基准建设中</span>}
             {choosing === stage.id && (
               <div className={styles.chooser} role="menu">
-                <p className="t-micro c-faint">{name} · {stage.benchmarkIds.length} 个评测基准</p>
-                {stage.benchmarkIds.map(id => <Link key={id} role="menuitem" to={`/benchmarks/${id}`} className="t-label">{benchmarkNames[id]}</Link>)}
+                <p className="t-micro c-faint">{name} · {stage.benchmarks.length} 个评测基准</p>
+                {stage.benchmarks.map(({ id }) => <Link key={id} role="menuitem" to={`/benchmarks/${id}`} className="t-label">{benchmarkNames[id]}</Link>)}
               </div>
             )}
           </div>

@@ -8,7 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "gen": "tsp compile spec && openapi-typescript generated/openapi.yaml -o src/api/schema.d.ts",
+    "gen": "tsp compile spec && openapi-typescript generated/openapi.yaml --enum-values -o src/api/schema.ts",
     "predev": "npm run gen",
     "prebuild": "npm run gen"
   },

@@ -10,7 +10,7 @@ function rankLabels(profile: ModelProfile): Record<string, StageLabel> {
   profile.standings.forEach(standing => byStage.set(standing.stage.id, [...(byStage.get(standing.stage.id) ?? []), standing]));
   return Object.fromEntries([...byStage].map(([stageId, standings]) => [stageId, standings.length === 1
     ? { primary: `第 ${standings[0].rank} 名 · ${formatScore(standings[0].score, standings[0].metric)}`, secondary: `${standings[0].benchmark.name} · ${stageId}` }
-    : { primary: standings.map(item => `${item.benchmark.name.replace('Bench ', '')} 第 ${item.rank}`).join(' · '), secondary: `Bench ${standings.map(item => item.benchmark.name.replace('Bench ', '')).join(' · ')} · ${stageId}` },
+    : { primary: standings.map(item => `${item.benchmark.shortName} 第 ${item.rank}`).join(' · '), secondary: `Bench ${standings.map(item => item.benchmark.shortName).join(' · ')} · ${stageId}` },
   ]));
 }
 

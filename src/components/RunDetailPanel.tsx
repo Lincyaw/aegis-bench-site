@@ -181,7 +181,7 @@ function FailureTab({ run, onCheck, onStep }: { run: RunDetail; onCheck: (id: st
 
 function Header({ run }: { run: RunDetail }) {
   const metrics: [string, string][] = [
-    ['步数', `${run.metrics.turns}`], ['用时', `${run.metrics.durationMinutes} 分钟`], ['提交', `${run.metrics.submissions} 次`],
+    ['步数', `${run.metrics.steps}`], ['用时', `${run.metrics.durationMinutes} 分钟`], ['提交', `${run.metrics.submissions} 次`],
     ['输出 tokens', `${Math.round(run.metrics.outputTokens / 1000)}K`], ['成本', `$${run.metrics.costUsd.toFixed(2)}`], ['结束原因', run.metrics.endReason],
   ];
   return (

@@ -19,13 +19,16 @@ model StageRef {
   id: string;
   name: string;
   half: Half;
+
+  /** Order along the loop, 1 to 8 */
+  position: int32;
 }
 
 model Stage {
   ...StageRef;
 
   /** Benchmarks published at this stage; empty while the stage is under construction */
-  benchmarkIds: string[];
+  benchmarks: BenchmarkRef[];
 }
 
 enum MetricUnit {
@@ -78,6 +81,9 @@ model LeaderboardEntry {
 model BenchmarkRef {
   id: string;
   name: string;
+
+  /** The name without the series prefix, such as "A" for "Bench A" */
+  shortName: string;
 }
 
 model BenchmarkSummary {
@@ -98,9 +104,18 @@ model FlowStep {
   body: string;
 }
 
+/** How a labelled value is set: running text, or code such as a repository path. */
+enum ValueFormat {
+  text,
+  code,
+}
+
 model LabeledValue {
   label: string;
   value: string;
+
+  /** Running text unless stated */
+  format?: ValueFormat;
 }
 
 model TaskRef {
@@ -221,7 +236,9 @@ model TaskRuns {
 }
 
 model RunMetrics {
-  turns: int32;
+  /** Steps in the run's trajectory */
+  steps: int32;
+
   durationMinutes: int32;
   submissions: int32;
   outputTokens: int32;
@@ -274,6 +291,16 @@ model RunOutput {
   };
   artifacts: Artifact[];
   patchUrl: url;
+}
+
+/**
+ * The grading verdict of one submission. A trajectory carries it as `extra.submission` on the observation result
+ * of the submit call, since ATIF leaves `extra` open.
+ */
+model SubmissionVerdict {
+  passed: boolean;
+  passedChecks: int32;
+  totalChecks: int32;
 }
 
 enum CheckMethod {

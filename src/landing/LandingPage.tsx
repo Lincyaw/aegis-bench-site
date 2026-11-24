@@ -10,7 +10,7 @@ const SLOT_TOKENS = { A: '--v-openai', B: '--v-anthropic', C: '--v-google', D: '
 
 /** Fills a stage's benchmark card with the benchmark's top three from the API. */
 function fillLeaders(root: HTMLElement, benchmark: BenchmarkSummary) {
-  const card = root.querySelector(`[data-bench="${benchmark.name.replace('Bench ', '')}"]`);
+  const card = root.querySelector(`[data-bench="${benchmark.shortName}"]`);
   if (!card) {
     return;
   }
