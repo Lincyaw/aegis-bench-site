@@ -1,9 +1,9 @@
 import { clsx } from 'clsx';
-import type { ReactNode } from 'react';
+import { Suspense, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useRun, useTrajectory, type RunDetail, type TimelineLegend } from '../api/client';
+import { useRun, type RunDetail, type TimelineLegend } from '../api/client';
 import { VendorBadge } from '../models/ModelBadge';
-import { FactList } from '../ui/content';
+import { FactList, Loading } from '../ui/content';
 import content from '../ui/content.module.css';
 import controls from '../ui/controls.module.css';
 import navigation from '../ui/navigation.module.css';
@@ -21,13 +21,15 @@ export interface RunView {
   check?: string;
 }
 
-/** One run's five views: what the model received, what it produced, how it was graded, why it failed and its trajectory. */
+/**
+ * One run's five views: what the model received, what it produced, how it was graded, why it failed and its
+ * trajectory. The trajectory is the run's largest record, so it is fetched only when its tab opens.
+ */
 export function RunDetailPanel({ runId, legend, view, onView }: { runId: string; legend: TimelineLegend; view: Partial<RunView>; onView: (view: RunView) => void }) {
   const { t } = useTranslation();
   const run = useRun(runId);
-  const trajectory = useTrajectory(runId);
   const tab = view.tab ?? defaultRunTab(run);
-  const counts: Partial<Record<RunTab, number>> = { grading: run.grading.total, failure: run.failure?.failedChecks.length, trajectory: trajectory.steps.length };
+  const counts: Partial<Record<RunTab, number>> = { grading: run.grading.total, failure: run.failure?.failedChecks.length, trajectory: run.metrics.steps };
   return (
     <div className={styles.root}>
       <RunHeader run={run} />
@@ -43,7 +45,11 @@ export function RunDetailPanel({ runId, legend, view, onView }: { runId: string;
         {tab === 'output' && <OutputTab run={run} onStep={step => onView({ tab: 'trajectory', step })} />}
         {tab === 'grading' && <GradingTab run={run} check={view.check} onCheck={check => onView({ tab: 'grading', check })} />}
         {tab === 'failure' && <FailureTab run={run} onCheck={check => onView({ tab: 'grading', check })} onStep={step => onView({ tab: 'trajectory', step })} />}
-        {tab === 'trajectory' && <TrajectoryView runId={runId} timeline={run.timeline} legend={legend} evidence={run.failure?.review?.evidenceSteps ?? []} selected={view.step} onSelect={step => onView({ tab: 'trajectory', step })} />}
+        {tab === 'trajectory' && (
+          <Suspense fallback={<Loading />}>
+            <TrajectoryView runId={runId} timeline={run.timeline} legend={legend} evidence={run.failure?.review?.evidenceSteps ?? []} selected={view.step} onSelect={step => onView({ tab: 'trajectory', step })} />
+          </Suspense>
+        )}
       </div>
     </div>
   );
