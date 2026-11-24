@@ -1,5 +1,5 @@
 import { useState, useSyncExternalStore } from 'react';
-import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { useBenchmark, useLeaderboard, useTaskRuns, useTasks, type CombinationRuns, type RunOutcome } from '../api/client';
 import { RunDetailPanel, type RunTab } from '../components/RunDetailPanel';
 import { Breadcrumbs, LoadError, Loading, OutcomeDot, VendorBadge } from '../components/ui';
@@ -16,6 +16,11 @@ function useNarrow(): boolean {
 }
 
 type OutcomeFilter = 'all' | 'failed' | 'passed';
+
+/** A wide window shows all three panes; a narrow one shows one level at a time. */
+function levelOf(params: URLSearchParams, narrow: boolean): 'all' | 'tasks' | 'runs' | 'detail' {
+  return !narrow ? 'all' : params.get('run') ? 'detail' : params.get('task') ? 'runs' : 'tasks';
+}
 
 /** The run a task opens on: the first failed run of the first shown combination, else its first run. */
 function defaultRun(combinations: CombinationRuns[], filter: OutcomeFilter): string | undefined {
@@ -42,7 +47,8 @@ export function RunRecordsPage() {
     const next = new URLSearchParams(search);
     reset.forEach(key => next.delete(key));
     Object.entries(changes).forEach(([key, value]) => (value ? next.set(key, value) : next.delete(key)));
-    setSearch(next, { replace: !('task' in changes || 'run' in changes) });
+    // Only a narrow window replacing one level with another starts again from the top.
+    setSearch(next, { replace: !('task' in changes || 'run' in changes), preventScrollReset: levelOf(next, narrow) === levelOf(search, narrow) });
   };
 
   if (benchmark.error) {
@@ -54,7 +60,7 @@ export function RunRecordsPage() {
   const data = benchmark.data;
   const combinations = (taskRuns.data?.combinations ?? []).filter(item => !combination || `${item.model.id}-${item.harness.id}` === combination);
   const runId = search.get('run') ?? (narrow ? undefined : defaultRun(combinations, filter));
-  const level = !narrow ? 'all' : runId ? 'detail' : taskId ? 'runs' : 'tasks';
+  const level = levelOf(search, narrow);
   const half = data.stage.half === 'dev' ? 'var(--brand-dev)' : 'var(--brand-ops)';
 
   const taskColumn = (
@@ -129,13 +135,10 @@ export function RunRecordsPage() {
   );
 
   return (
-    <div className={`page ${styles.page}`} style={{ '--half-colour': half } as React.CSSProperties}>
-      <header className={styles.head}>
+    <div className={styles.workspace} style={{ '--half-colour': half } as React.CSSProperties}>
+      <header className={styles.toolbar}>
+        <h1 className="visually-hidden">{data.name} 运行记录</h1>
         <Breadcrumbs items={[{ label: '评测基准', to: '/benchmarks' }, { label: `${data.stage.id} ${data.stage.name}`, to: `/benchmarks#stage-${data.stage.id}` }, { label: data.name, to: `/benchmarks/${data.id}` }, { label: '运行记录' }]} />
-        <h1 className="t-display">{data.name} 运行记录</h1>
-        <p className="t-lead c-muted">全部公开任务的运行记录。选择任务与运行，即可查看给模型的输入、模型的输出、评分方式、失败原因与执行轨迹。</p>
-      </header>
-      <div className={styles.filters}>
         <label className={styles.search}>
           <span aria-hidden="true">⌕</span>
           <input type="search" placeholder="搜索任务编号或名称" value={q} onChange={event => update({ q: event.target.value }, ['task', 'run', 'tab', 'step', 'check'])} />
@@ -149,16 +152,13 @@ export function RunRecordsPage() {
           <option value="failed">只看未通过</option>
           <option value="passed">只看通过</option>
         </select>
-        <span className={`${styles.legend} t-micro c-faint`}><span><OutcomeDot outcome="passed" />通过</span><span><OutcomeDot outcome="failed" />未通过</span><span><OutcomeDot outcome="executionFailed" />执行失败</span></span>
-      </div>
+        <span className={`${styles.legend} t-micro c-faint`}><span><OutcomeDot outcome="passed" />通过</span><span><OutcomeDot outcome="failed" />未通过</span><span><OutcomeDot outcome="executionFailed" />执行失败（不计入成绩）</span></span>
+      </header>
       <div className={styles.browser} data-level={level}>
         {(level === 'all' || level === 'tasks') && taskColumn}
         {(level === 'all' || level === 'runs') && runColumn}
         {(level === 'all' || level === 'detail') && detailColumn}
       </div>
-      <p className={`${styles.footnote} t-micro c-faint`}>
-        执行失败的运行不计入成绩。完整排行榜见 <Link className="c-muted" to={`/leaderboard?bench=${data.id}`}>{data.name} 排行榜</Link>。
-      </p>
     </div>
   );
 }

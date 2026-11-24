@@ -16,7 +16,8 @@
 .controls > span:last-child { flex: none; }
 
 .steps { display: grid; border-top: 1px solid var(--border-hairline); }
-.step { border-bottom: 1px solid var(--border-hairline); }
+/* Clears the run detail tabs that stay at the top of the pane. */
+.step { border-bottom: 1px solid var(--border-hairline); scroll-margin-top: 56px; }
 .step.open { margin: 6px 0; border: 1px solid var(--border-hairline); border-radius: var(--radius-md); background: var(--bg-panel); }
 .step.evidence { box-shadow: inset 2px 0 0 var(--accent-warning); }
 .stepHead {
@@ -45,6 +46,7 @@
 .userText { padding: 0 12px 14px 50px; font-family: var(--font-text); }
 
 @media (max-width: 760px) {
+  .step { scroll-margin-top: 112px; }
   .stepHead { grid-template-columns: 24px auto 1fr; }
   .target { display: none; }
   .detail, .userText { padding-left: 12px; }
