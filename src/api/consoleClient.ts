@@ -1,7 +1,7 @@
-import { useMutation, useQueryClient, useSuspenseQuery, type QueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient, useSuspenseInfiniteQuery, useSuspenseQuery, type QueryClient } from '@tanstack/react-query';
 import { useLocale } from '../i18n/localeContext';
-import { api, languageHeader, responseBody } from './client';
-import type { SessionState, SignInRequest } from './types';
+import { api, languageHeader, nextPageOffset, responseBody } from './client';
+import type { SessionState, SignInRequest, TaskOrder, TaskSpread } from './types';
 
 /** Every console query key starts with this, so signing in or out can drop what the previous session read. */
 export const CONSOLE_QUERY = 'console';
@@ -47,6 +47,98 @@ export function useConsoleBenchmarks() {
   return useSuspenseQuery({
     queryKey: [CONSOLE_QUERY, 'benchmarks', locale],
     queryFn: () => responseBody(api.GET('/console/benchmarks', { params: { header: languageHeader(locale) } })),
+  }).data;
+}
+
+/** One benchmark of the console's list; an id the list lacks fails the page. */
+export function useConsoleBenchmark(benchmarkId: string) {
+  const benchmark = useConsoleBenchmarks().find(candidate => candidate.id === benchmarkId);
+  if (!benchmark) {
+    throw new Error(`no benchmark ${benchmarkId}`);
+  }
+  return benchmark;
+}
+
+/** What the console's task list asks for: the filters and the page. */
+export interface ConsoleTaskQuery {
+  q: string;
+  tag: string;
+  spread?: TaskSpread;
+  order: TaskOrder;
+  offset: number;
+}
+
+/** One page of a benchmark's tasks; the page stays the same in every language, but its combination names do not. */
+export function useConsoleTaskPage(benchmarkId: string, query: ConsoleTaskQuery, pageSize: number) {
+  const locale = useLocale();
+  return useSuspenseQuery({
+    queryKey: [CONSOLE_QUERY, 'tasks', benchmarkId, query, pageSize, locale],
+    queryFn: () => responseBody(api.GET('/console/benchmarks/{benchmarkId}/tasks', {
+      params: { path: { benchmarkId }, query: { q: query.q, tag: query.tag, spread: query.spread, order: query.order, offset: query.offset, limit: pageSize }, header: languageHeader(locale) },
+    })),
+  }).data;
+}
+
+export function useConsoleTask(benchmarkId: string, taskId: string) {
+  const locale = useLocale();
+  return useSuspenseQuery({
+    queryKey: [CONSOLE_QUERY, 'task', benchmarkId, taskId, locale],
+    queryFn: () => responseBody(api.GET('/console/benchmarks/{benchmarkId}/tasks/{taskId}', { params: { path: { benchmarkId, taskId }, header: languageHeader(locale) } })),
+  }).data;
+}
+
+/** A task's grading is a record, so it is the same in every language. */
+export function useTaskGrading(benchmarkId: string, taskId: string) {
+  return useSuspenseQuery({
+    queryKey: [CONSOLE_QUERY, 'taskGrading', benchmarkId, taskId],
+    queryFn: () => responseBody(api.GET('/console/benchmarks/{benchmarkId}/tasks/{taskId}/grading', { params: { path: { benchmarkId, taskId } } })),
+  }).data;
+}
+
+export function useTaskReference(benchmarkId: string, taskId: string) {
+  return useSuspenseQuery({
+    queryKey: [CONSOLE_QUERY, 'taskReference', benchmarkId, taskId],
+    queryFn: () => responseBody(api.GET('/console/benchmarks/{benchmarkId}/tasks/{taskId}/reference', { params: { path: { benchmarkId, taskId } } })),
+  }).data;
+}
+
+export function useTaskResults(benchmarkId: string, taskId: string) {
+  const locale = useLocale();
+  return useSuspenseQuery({
+    queryKey: [CONSOLE_QUERY, 'taskResults', benchmarkId, taskId, locale],
+    queryFn: () => responseBody(api.GET('/console/benchmarks/{benchmarkId}/tasks/{taskId}/results', { params: { path: { benchmarkId, taskId }, header: languageHeader(locale) } })),
+  }).data;
+}
+
+export function useTaskCheckResults(benchmarkId: string, taskId: string) {
+  const locale = useLocale();
+  return useSuspenseQuery({
+    queryKey: [CONSOLE_QUERY, 'taskCheckResults', benchmarkId, taskId, locale],
+    queryFn: () => responseBody(api.GET('/console/benchmarks/{benchmarkId}/tasks/{taskId}/check-results', { params: { path: { benchmarkId, taskId }, header: languageHeader(locale) } })),
+  }).data;
+}
+
+export function useTaskRevisions(benchmarkId: string, taskId: string) {
+  return useSuspenseQuery({
+    queryKey: [CONSOLE_QUERY, 'taskRevisions', benchmarkId, taskId],
+    queryFn: () => responseBody(api.GET('/console/benchmarks/{benchmarkId}/tasks/{taskId}/revisions', { params: { path: { benchmarkId, taskId } } })),
+  }).data;
+}
+
+/** One directory of a task's Harbor directory as the console reads it, every file included, a page of entries at a time. */
+export function useConsoleTaskEntryPages(benchmarkId: string, taskId: string, dir: string, pageSize: number) {
+  return useSuspenseInfiniteQuery({
+    queryKey: [CONSOLE_QUERY, 'taskEntries', benchmarkId, taskId, dir, pageSize],
+    queryFn: ({ pageParam }) => responseBody(api.GET('/console/benchmarks/{benchmarkId}/tasks/{taskId}/files', { params: { path: { benchmarkId, taskId }, query: { dir, offset: pageParam, limit: pageSize } } })),
+    initialPageParam: 0,
+    getNextPageParam: nextPageOffset,
+  });
+}
+
+export function useConsoleTaskFile(benchmarkId: string, taskId: string, path: string) {
+  return useSuspenseQuery({
+    queryKey: [CONSOLE_QUERY, 'taskFile', benchmarkId, taskId, path],
+    queryFn: () => responseBody(api.GET('/console/benchmarks/{benchmarkId}/tasks/{taskId}/file', { params: { path: { benchmarkId, taskId }, query: { path } } })),
   }).data;
 }
 

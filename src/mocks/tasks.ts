@@ -1,4 +1,5 @@
 import { benchmarkById, type TaskKind } from './benchmarks';
+import { hashOf } from './hash';
 
 /** The page size the task list answers with when the request names none, as the API declares. */
 export const DEFAULT_TASK_PAGE_SIZE = 14;
@@ -9,6 +10,24 @@ export interface TaskRecord {
 
   /** The user's question as the task text gives it */
   statement: string;
+
+  /** Labels the task's authors gave it, for choosing tasks to compare models on */
+  tags: string[];
+}
+
+const TAG_POOL: Record<TaskKind, string[]> = {
+  coding: ['接口', '数据', '并发', '配置', '鉴权', '迁移'],
+  testing: ['规则', '金额', '并发', '边界'],
+  ops: ['容量', '配置', '依赖', '网络'],
+  rca: ['数据库', '缓存', '消息', '网关'],
+};
+
+/** One or two tags from the kind's pool, drawn from the task id. */
+export function tagsOf(kind: TaskKind, taskId: string): string[] {
+  const pool = TAG_POOL[kind];
+  const first = hashOf(`tag:${taskId}`) % pool.length;
+  const second = hashOf(`tag2:${taskId}`) % pool.length;
+  return second === first || hashOf(`tags:${taskId}`) % 3 > 0 ? [pool[first]] : [pool[first], pool[second]];
 }
 
 const TITLE_POOL: Record<TaskKind, string[]> = {
@@ -46,7 +65,9 @@ export function tasksOf(benchmarkId: string): TaskRecord[] {
       generated.push({ id, title: pool[generated.length % pool.length] });
     }
   }
-  const tasks = [...named, ...generated].map(task => ({ ...task, statement: task.id === sample.taskId ? sample.statement : statementOf(kind, task.title) }));
+  const tasks = [...named, ...generated].map(task => ({
+    ...task, statement: task.id === sample.taskId ? sample.statement : statementOf(kind, task.title), tags: tagsOf(kind, task.id),
+  }));
   taskCache.set(benchmarkId, tasks);
   return tasks;
 }

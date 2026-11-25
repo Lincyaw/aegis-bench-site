@@ -13,7 +13,9 @@ import { ReportPage, ReportsPage } from './reports/ReportsPage';
 import { RunRecordsPage } from './runs/RunRecordsPage';
 import { SiteLayout, type RouteHandle } from './site/SiteLayout';
 import { PageError, PendingPage } from './site/SitePages';
+import { TaskDetailPage } from './tasks/TaskDetailPage';
 import { TaskFilesPage } from './tasks/TaskFilesPage';
+import { TaskListPage } from './tasks/TaskListPage';
 
 /** The site's pages, built afresh for each locale's root so that no route object has two parents. */
 export function sitePages(): RouteObject[] {
@@ -50,6 +52,8 @@ export function sitePages(): RouteObject[] {
         children: [
           { index: true, element: <ConsoleHome /> },
           { path: 'benchmarks/:benchmarkId', element: <BenchmarkOverviewPage /> },
+          { path: 'benchmarks/:benchmarkId/tasks', element: <TaskListPage /> },
+          { path: 'benchmarks/:benchmarkId/tasks/:taskId', element: <TaskDetailPage /> },
           { path: '*', element: <ConsoleNotFound /> },
         ],
       }],

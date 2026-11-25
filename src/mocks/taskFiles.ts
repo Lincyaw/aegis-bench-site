@@ -6,7 +6,7 @@ import { taskOf, type TaskRecord } from './tasks';
 /*
  * Each public task's Harbor directory, built from the same records as the task's runs, so that the task text, the
  * check code and the rubrics read the same here as in a run's detail. The reference solution and the reference
- * answers are part of the directory but withheld.
+ * answers are part of the directory: the public site withholds them, the console shows them whole.
  */
 
 /** Entries per page of a directory when a request names no limit, as the spec declares. */
@@ -75,6 +75,33 @@ export function environmentFilesOf(kind: TaskKind, module: string): TaskFileReco
   }
 }
 
+/** The reference solution the oracle runs, which the public site withholds. */
+export function solutionFilesOf(kind: TaskKind, module: string): TaskFileRecord[] {
+  const solve = (...lines: string[]) => ({ path: 'solution/solve.sh', text: ['#!/usr/bin/env bash', 'set -euo pipefail', ...lines, ''].join('\n'), withheld: 'solution' as const });
+  switch (kind) {
+    case 'coding': return [
+      solve('cd /workspace', 'git apply /solution/reference.patch'),
+      {
+        path: 'solution/reference.patch', withheld: 'solution',
+        text: [
+          `--- a/src/${module}/api.py`, `+++ b/src/${module}/api.py`, '@@ -9,3 +9,12 @@', ` @router.get("/${module}/{item_id}", dependencies=[Depends(require_session)])`, ' def get_item(item_id: int):',
+          '     return repo.get(item_id)', '+', `+@router.get("/${module}", dependencies=[Depends(require_session)])`, '+def list_items(status: str, cursor: str | None = None):',
+          '+    if not status or status not in Status.values():', '+        raise HTTPException(400, "unknown status")', '+    return repo.page(status, cursor, limit=settings.page_limit)', '',
+        ].join('\n'),
+      },
+    ];
+    case 'testing': return [
+      solve('cp /solution/test_reference.py /workspace/tests/'),
+      {
+        path: 'solution/test_reference.py', withheld: 'solution',
+        text: `import pytest\n\n\n@pytest.mark.parametrize("case", load_cases("${module}"))\ndef test_${module}_rules(case):\n    assert apply_rules(case.cart, case.rules).total == case.expected\n`,
+      },
+    ];
+    case 'ops': return [solve('yq -i ".callback.pool_size = 32" /workspace/config/payment-callback.yaml', 'opsctl restart payment-callback', 'cp /solution/report.json /workspace/report.json'), { path: 'solution/report.json', withheld: 'solution', text: '{ "root_cause": "回调线程池容量不足，高峰时请求排队超时", "actions": ["pool_size 8 → 32", "重启 payment-callback"], "recovered": true }\n' }];
+    case 'rca': return [solve('cp /solution/report.json /workspace/report.json'), { path: 'solution/report.json', withheld: 'solution', text: '{ "chain": [ { "service": "order-db", "symptom": "连接数达到上限" }, { "service": "order-api", "symptom": "查询延迟升高" }, { "service": "gateway", "symptom": "下游超时" } ] }\n' }];
+  }
+}
+
 /** A check's code, or for a model-review check its rubric; task-017's failing checks carry the code the design shows. */
 export function checkFileOf(check: Omit<GradingCheck, 'passed'>, taskId: string): TaskFileRecord {
   const showcase = taskId === 'task-017' ? SHOWCASE_CHECK_CODE[check.id] : undefined;
@@ -98,6 +125,21 @@ export function checkFileOf(check: Omit<GradingCheck, 'passed'>, taskId: string)
   }
 }
 
+/** The defects a testing task hides in the change, one per defect version its tests must catch. */
+export const MUTANT_DEFECTS = [
+  { title: '满减与折扣的叠加顺序颠倒', from: '    total = apply_discount(apply_reduction(cart))', to: '    total = apply_reduction(apply_discount(cart))' },
+  { title: '上限判断少了等号', from: '    if total >= cap:', to: '    if total > cap:' },
+  { title: '过期券未被拒绝', from: '    if coupon.expired(now): raise Expired()', to: '    pass' },
+  { title: '金额向下取整', from: '    return total.quantize(CENT, ROUND_HALF_UP)', to: '    return total.quantize(CENT, ROUND_DOWN)' },
+  { title: '同一张券可重复使用', from: '    used.add(coupon.id)', to: '    pass' },
+];
+
+/** The reference causal chain an operations or diagnosis task's grading compares the report with. */
+export const GROUND_TRUTH: Record<'ops' | 'rca', object> = {
+  ops: { root_cause: { component: 'payment-callback', mechanism: '回调线程池容量不足' }, recovery: { metric: 'callback_error_rate', baseline: 0.01 }, accepted_actions: ['调大 pool_size', '扩容 payment-callback'] },
+  rca: { chain: [{ service: 'order-db', state: '连接数耗尽' }, { service: 'order-api', state: '查询延迟升高' }, { service: 'gateway', state: '下游超时' }], required_nodes: ['order-db', 'order-api', 'gateway'] },
+};
+
 /** What the verifier runs, and the reference answers it compares against, which are withheld. */
 export function testFilesOf(kind: TaskKind, taskId: string): TaskFileRecord[] {
   const checks = checksOf(kind, taskId).map(check => checkFileOf(check, taskId));
@@ -110,13 +152,16 @@ export function testFilesOf(kind: TaskKind, taskId: string): TaskFileRecord[] {
     case 'testing': return [
       { path: 'tests/test.sh', text: [...run, 'for mutant in tests/mutants/*.patch; do', '  python -m mutants run "$mutant" >> /logs/verifier/mutants.jsonl', 'done', ''].join('\n') },
       ...checks,
-      ...[1, 2, 3, 4, 5].map(number => ({ path: `tests/mutants/d${number}.patch`, text: `--- a/src\n+++ b/src\n@@ defect ${number} @@\n`, withheld: 'referenceAnswer' as const })),
+      ...MUTANT_DEFECTS.map((defect, index) => ({
+        path: `tests/mutants/d${index + 1}.patch`, withheld: 'referenceAnswer' as const,
+        text: `# ${defect.title}\n--- a/src/rules.py\n+++ b/src/rules.py\n@@ -${20 + index * 7},1 +${20 + index * 7},1 @@\n-${defect.from}\n+${defect.to}\n`,
+      })),
     ];
     case 'ops':
     case 'rca': return [
       { path: 'tests/test.sh', text: [...run, 'python -m checks tests/checks tests/review --reference tests/ground_truth.json > /logs/verifier/checks.json', ''].join('\n') },
       ...checks,
-      { path: 'tests/ground_truth.json', text: '{}\n', withheld: 'referenceAnswer' },
+      { path: 'tests/ground_truth.json', text: `${JSON.stringify(GROUND_TRUTH[kind], null, 2)}\n`, withheld: 'referenceAnswer' },
     ];
   }
 }
@@ -139,7 +184,7 @@ export function taskFilesOf(benchmarkId: string, taskId: string): TaskFileRecord
     { path: 'instruction.md', text: `${task.statement}\n\n${INSTRUCTION_TAIL[kind]}\n\n${REPORT_SCHEMA[kind]}\n` },
     { path: 'task.toml', text: taskTomlOf(benchmarkId, task, kind) },
     ...environmentFilesOf(kind, moduleOf(task.id)),
-    { path: 'solution/solve.sh', text: '#!/usr/bin/env bash\n', withheld: 'solution' },
+    ...solutionFilesOf(kind, moduleOf(task.id)),
     ...testFilesOf(kind, task.id),
   ];
   directoryCache.set(key, files);

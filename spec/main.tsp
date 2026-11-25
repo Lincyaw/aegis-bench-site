@@ -2,6 +2,7 @@ import "@typespec/http";
 import "./atif.tsp";
 import "./console/session.tsp";
 import "./console/results.tsp";
+import "./console/tasks.tsp";
 
 using Http;
 

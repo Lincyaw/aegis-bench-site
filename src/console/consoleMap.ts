@@ -41,7 +41,16 @@ export function benchmarkSectionOf(path: string): string {
   return path.split('/')[4] ?? '';
 }
 
-/** A benchmark's sections in the sidebar, in order; labels are message keys. */
-export const BENCHMARK_SECTIONS: { section: string; label: 'console.nav.overview'; icon: NavIcon }[] = [
+/** A section of a benchmark in the sidebar; the label is a message key, and the count names the benchmark's figure the item shows. */
+export interface BenchmarkSection {
+  section: string;
+  label: 'console.nav.overview' | 'console.nav.tasks';
+  icon: NavIcon;
+  count?: 'taskCount' | 'runCount' | 'entrantCount';
+}
+
+/** A benchmark's sections in the sidebar, in order. */
+export const BENCHMARK_SECTIONS: BenchmarkSection[] = [
   { section: '', label: 'console.nav.overview', icon: 'overview' },
+  { section: 'tasks', label: 'console.nav.tasks', icon: 'tasks', count: 'taskCount' },
 ];

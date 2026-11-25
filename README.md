@@ -22,7 +22,7 @@ npm run mock     # 在本地启动 mock 服务：接口 http://127.0.0.1:4010/ap
 | 位置 | 内容 |
 |---|---|
 | `spec/main.tsp` | 接口入口与对外接口：环节、评测基准、排行榜、任务、运行、模型、语言 |
-| `spec/console/` | 中台接口，按领域分文件：登录会话、汇总结果、运行 |
+| `spec/console/` | 中台接口，按领域分文件：登录会话、汇总结果、任务、运行 |
 | `spec/atif.tsp` | 运行轨迹的格式，ATIF-v1.8，按 Harbor 的参考模型（`harbor.models.trajectories`）声明 |
 | `src/` | 按业务领域组织的站点代码，各目录的职责见工程规范 |
 | `content/` | 各评测基准的介绍页与研究报告（MD/MDX） |

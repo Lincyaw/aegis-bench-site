@@ -6,9 +6,9 @@ import type { EntrantResult, PendingWork, RunRow } from '../api/types';
 import { ConsoleHeader } from '../console/ConsoleHeader';
 import { useLocale } from '../i18n/localeContext';
 import { dateTimeOf, groupedNumber } from '../i18n/locales';
-import { ScoreBar } from '../leaderboard/ScoreBar';
 import { ModelLabel } from '../models/ModelBadge';
 import { FailureClassTag } from '../results/FailureClassTag';
+import { PassRate } from '../results/PassRate';
 import { formatCost, formatRate } from '../results/presentation';
 import { StatTile, StatTiles } from '../ui/content';
 import content from '../ui/content.module.css';
@@ -70,7 +70,7 @@ export function EntrantTable({ entrants }: { entrants: EntrantResult[] }) {
       {entrants.map(({ model, harness, result }) => (
         <div key={`${model.id}-${harness.id}`} className={table.row} role="row">
           <span role="cell" className={styles.entrant}><ModelLabel model={model} /><span className="t-small c-muted">{harness.name}</span></span>
-          <span role="cell" className={styles.rate}>{result.passRate !== undefined && <><ScoreBar score={result.passRate} /><span className="t-numeric">{formatRate(result.passRate)}</span></>}</span>
+          <span role="cell"><PassRate rate={result.passRate} /></span>
           <span role="cell" className="t-numeric c-muted">{t('console.overview.tasksOf', { solved: result.solvedEveryTime, total: result.tasks })}</span>
           <span role="cell" className="t-numeric c-muted">{t('console.overview.tasksOf', { solved: result.solvedOnce, total: result.tasks })}</span>
           <span role="cell" className="t-numeric c-muted">{result.meanCostUsd === undefined ? '—' : formatCost(result.meanCostUsd)}</span>

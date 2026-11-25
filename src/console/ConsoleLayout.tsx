@@ -7,7 +7,7 @@ import { useConsoleBenchmarks, useConsoleSession, useSignOut } from '../api/cons
 import type { ConsoleUser } from '../api/types';
 import { LocaleLink } from '../i18n/LocaleRouting';
 import { useLocale, useLocalizedNavigate } from '../i18n/localeContext';
-import { localizedPath, sitePath } from '../i18n/locales';
+import { groupedNumber, localizedPath, sitePath } from '../i18n/locales';
 import { BrandMark, LanguageSwitch, MenuIcon, ThemeIcon } from '../site/SiteLayout';
 import { benchmarkPath } from '../site/siteMap';
 import { toggleTheme } from '../site/theme';
@@ -93,6 +93,7 @@ export function ConsoleSidebar({ benchmarkId, open, onNavigate }: { benchmarkId:
   const navigate = useLocalizedNavigate();
   const path = sitePath(locale, useLocation().pathname);
   const current = benchmarkSectionOf(path);
+  const benchmark = benchmarks.find(candidate => candidate.id === benchmarkId);
   return (
     <nav className={clsx(styles.sidebar, open && styles.open)} aria-label={t('console.mainNav')}>
       {benchmarkId && (
@@ -110,6 +111,7 @@ export function ConsoleSidebar({ benchmarkId, open, onNavigate }: { benchmarkId:
                 <LocaleLink className={styles.item} to={benchmarkSectionPath(benchmarkId, item.section)} aria-current={item.section === current ? 'page' : undefined} onClick={onNavigate}>
                   <NavIconOf icon={item.icon} />
                   <span className="t-label">{t(item.label)}</span>
+                  {item.count && benchmark && <span className="t-micro c-faint">{groupedNumber(locale, benchmark[item.count])}</span>}
                 </LocaleLink>
               </li>
             ))}

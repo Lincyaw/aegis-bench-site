@@ -41,7 +41,10 @@ export const SHOWCASE_OUTCOMES: Record<string, string> = Object.fromEntries(([
   ['ding', 'x', 'PPPPF'], ['yi', 'z', 'PPFFF'], ['bing', 'x', 'PPPPF'], ['wu', 'y', 'PPPFF'],
 ] as const).map(([modelId, harnessId, outcomes]) => [combinationTaskKey('bench-a', 'task-017', modelId, harnessId), outcomes]));
 
-/** About one run in eighty fails to execute; the others pass with a chance set by the combination's score and the task. */
+/**
+ * About one run in eighty fails to execute. A few tasks defeat every combination and a few none; on the rest a run
+ * passes with a chance set by the combination's score and the task.
+ */
 export function outcomeOf(key: RunKey): RunOutcome {
   const combination = combinationTaskKey(key.benchmarkId, key.taskId, key.modelId, key.harnessId);
   const runId = runIdOf(key.benchmarkId, key.taskId, key.modelId, key.harnessId, key.attempt);
@@ -51,6 +54,10 @@ export function outcomeOf(key: RunKey): RunOutcome {
   }
   if (fractionOf(`exec:${runId}`) < 0.012) {
     return 'executionFailed';
+  }
+  const extreme = fractionOf(`extreme:${key.benchmarkId}.${key.taskId}`);
+  if (extreme < 0.04 || extreme > 0.975) {
+    return extreme < 0.04 ? 'failed' : 'passed';
   }
   const entry = rankingEntryOf(key.benchmarkId, key.modelId, key.harnessId);
   const difficulty = (fractionOf(`task:${key.benchmarkId}.${key.taskId}`) - 0.5) * 0.7;
@@ -215,18 +222,19 @@ export function planOf(runId: string): RunPlan | undefined {
   return { key, runId, task, kind, outcome, steps, submitSteps, checks, failingIds, module: moduleOf(task.id) };
 }
 
-export function environmentOf(plan: RunPlan): LabeledValue[] {
-  const repository: LabeledValue = { label: '代码仓库', value: `${plan.module}-service @ ${(hashOf(plan.task.id) >>> 4).toString(16).slice(0, 7).padStart(7, '0')}`, format: 'code' };
+/** What the agent works in on a task, the same for every run of it. */
+export function environmentOf(kind: TaskKind, task: TaskRecord): LabeledValue[] {
+  const repository: LabeledValue = { label: '代码仓库', value: `${moduleOf(task.id)}-service @ ${(hashOf(task.id) >>> 4).toString(16).slice(0, 7).padStart(7, '0')}`, format: 'code' };
   const budget = { label: '轮次上限', value: '100 轮' };
   const singleSubmission = { label: '提交', value: '一次，提交后运行结束' };
-  switch (plan.kind) {
+  switch (kind) {
     case 'coding': return [
       repository, { label: '语言与依赖', value: 'Python 3.12 · FastAPI · SQLAlchemy' },
       { label: '可用工具', value: '读取文件、修改文件、运行命令、提交' }, { label: '网络', value: '不可访问外网' },
       budget, { label: '提交', value: '次数不限，以最后一次提交为准' },
     ];
     case 'testing': return [
-      repository, { label: '被测变更', value: `变更 #${hashOf(plan.task.id) % 900 + 100}` },
+      repository, { label: '被测变更', value: `变更 #${hashOf(task.id) % 900 + 100}` },
       { label: '可用工具', value: '读取文件、新增测试文件、运行测试、提交' }, { label: '网络', value: '不可访问外网' },
       budget, singleSubmission,
     ];
@@ -408,7 +416,7 @@ export function runRecordOf(runId: string, locale: Locale): RunRecord | undefine
       endReason: plan.outcome === 'executionFailed' ? 'executionError' : 'submitted',
     },
     input: {
-      instruction: `${task.statement}\n\n${INSTRUCTION_TAIL[kind]}`, reportSchema: REPORT_SCHEMA[kind], environment: environmentOf(plan),
+      instruction: `${task.statement}\n\n${INSTRUCTION_TAIL[kind]}`, reportSchema: REPORT_SCHEMA[kind], environment: environmentOf(kind, task),
       harness: { ...harness, version: '2.1', toolDefinitionsUrl: `https://aegis-bench.org/harness/${key.harnessId}/v2.1/tools.json` },
     },
     output: {
