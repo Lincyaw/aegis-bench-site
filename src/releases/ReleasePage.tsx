@@ -1,5 +1,5 @@
 import { clsx } from 'clsx';
-import { useState, type FormEvent } from 'react';
+import { useId, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import { useConsoleBenchmark, useDiscardDraft, usePublishRelease, useRelease, useRestoreRelease, useUpdateDraft } from '../api/consoleClient';
@@ -86,28 +86,32 @@ export function ReleaseContentView({ benchmark, shown }: { benchmark: ConsoleBen
 }
 
 /**
- * A draft's content being edited. Saving sends it whole; publishing publishes what was saved, so it waits until no
- * change is left unsaved.
+ * A draft's content being edited. Saving sends it whole, once the browser finds every summary filled; publishing
+ * publishes what was saved, so it waits until no change is left unsaved. The run id field has a form of its own, so the
+ * save button joins the draft's form by its id.
  */
 export function DraftEditor({ benchmark, release }: { benchmark: ConsoleBenchmark; release: ReleaseDetail }) {
   const { t } = useTranslation();
+  const formId = useId();
   const [draft, setDraft] = useState(release.content);
   const update = useUpdateDraft(release.id);
   const publish = usePublishRelease(release.id);
   const unsaved = JSON.stringify(draft) !== JSON.stringify(release.content);
   return (
     <>
-      <section className={styles.section}>
-        <h2 className="t-heading">{t('console.release.summary')}</h2>
-        <div className={styles.summaries}>
-          <TextArea label={t('console.release.summaryZh')} rows={3} value={draft.summary['zh-CN']} onChange={text => setDraft({ ...draft, summary: { ...draft.summary, 'zh-CN': text } })} />
-          <TextArea label={t('console.release.summaryEn')} rows={3} value={draft.summary.en} onChange={text => setDraft({ ...draft, summary: { ...draft.summary, en: text } })} />
-        </div>
-      </section>
-      <EntrantChoice entrants={benchmark.entrants} chosen={draft.entrants} onChange={entrants => setDraft({ ...draft, entrants })} />
+      <form id={formId} className={styles.form} onSubmit={event => { event.preventDefault(); update.mutate(draft); }}>
+        <section className={styles.section}>
+          <h2 className="t-heading">{t('console.release.summary')}</h2>
+          <div className={styles.summaries}>
+            <TextArea label={t('console.release.summaryZh')} rows={3} value={draft.summary['zh-CN']} onChange={text => setDraft({ ...draft, summary: { ...draft.summary, 'zh-CN': text } })} />
+            <TextArea label={t('console.release.summaryEn')} rows={3} value={draft.summary.en} onChange={text => setDraft({ ...draft, summary: { ...draft.summary, en: text } })} />
+          </div>
+        </section>
+        <EntrantChoice entrants={benchmark.entrants} chosen={draft.entrants} onChange={entrants => setDraft({ ...draft, entrants })} />
+      </form>
       <ReplayEditor benchmarkId={benchmark.id} replays={draft.replays} onChange={replays => setDraft({ ...draft, replays })} />
       <div className={styles.buttons}>
-        <Button variant="solid" onClick={() => update.mutate(draft)}>{t('console.release.save')}</Button>
+        <SubmitButton variant="solid" pending={update.isPending} form={formId}>{t('console.release.save')}</SubmitButton>
         {unsaved ? <p className="t-small c-muted">{t('console.release.unsaved')}</p> : update.isSuccess && <p className="t-small c-muted" role="status">{t('console.release.saved')}</p>}
       </div>
       <ReleaseFailure error={update.error} />

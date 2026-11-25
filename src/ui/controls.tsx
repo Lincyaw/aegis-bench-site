@@ -16,9 +16,12 @@ export function Button({ variant, onClick, children }: { variant: ButtonVariant;
   return <button type="button" className={clsx(styles.pill, styles.large, variant === 'solid' && styles.solid, 'loop-edge')} onClick={onClick}>{children}</button>;
 }
 
-/** A button that submits its form; it waits, faint, while the submission is under way. */
-export function SubmitButton({ variant, pending, children }: { variant: ButtonVariant; pending: boolean; children: ReactNode }) {
-  return <button type="submit" className={clsx(styles.pill, styles.large, variant === 'solid' && styles.solid, 'loop-edge')} disabled={pending} aria-busy={pending}>{children}</button>;
+/**
+ * A button that submits its form, the one it sits in or the one its form id names; it waits, faint, while the
+ * submission is under way.
+ */
+export function SubmitButton({ variant, pending, form, children }: { variant: ButtonVariant; pending: boolean; form?: string; children: ReactNode }) {
+  return <button type="submit" form={form} className={clsx(styles.pill, styles.large, variant === 'solid' && styles.solid, 'loop-edge')} disabled={pending} aria-busy={pending}>{children}</button>;
 }
 
 /**
