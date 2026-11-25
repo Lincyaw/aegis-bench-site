@@ -1,5 +1,5 @@
 /** The console sidebar's icons: 16px line drawings in the text colour. */
-export type NavIcon = 'overview' | 'tasks' | 'runs' | 'models' | 'analysis' | 'collections';
+export type NavIcon = 'overview' | 'tasks' | 'runs' | 'models' | 'analysis' | 'collections' | 'releases' | 'workbench' | 'changelog';
 
 export function NavIconOf({ icon }: { icon: NavIcon }) {
   switch (icon) {
@@ -15,5 +15,11 @@ export function NavIconOf({ icon }: { icon: NavIcon }) {
       return <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M1.75 8h2.5l2-4.5 3.5 9 2-4.5h2.5" /></svg>;
     case 'collections':
       return <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" aria-hidden="true"><path d="M8 2 14 5 8 8 2 5z" /><path d="m2 8 6 3 6-3M2 11l6 3 6-3" /></svg>;
+    case 'releases':
+      return <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M8 10.5V2.5M4.75 5.75 8 2.5l3.25 3.25M2.5 10.5v2a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1v-2" /></svg>;
+    case 'workbench':
+      return <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" aria-hidden="true"><path d="M2.5 7 8 2.5 13.5 7v6a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5z" /><path d="M6.5 13.5V9.5h3v4" /></svg>;
+    case 'changelog':
+      return <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" aria-hidden="true"><circle cx="8" cy="8" r="5.75" /><path d="M8 4.75V8l2.25 1.5" /></svg>;
   }
 }

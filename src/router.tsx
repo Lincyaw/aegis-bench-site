@@ -4,7 +4,7 @@ import { HuntPage } from './analysis/HuntPage';
 import { BenchmarkOverviewPage } from './benchmarks/BenchmarkOverviewPage';
 import { BenchmarkPage } from './benchmarks/BenchmarkPage';
 import { ConsoleLayout } from './console/ConsoleLayout';
-import { ConsoleError, ConsoleHome, ConsoleNotFound } from './console/ConsolePages';
+import { ConsoleError, ConsoleNotFound } from './console/ConsolePages';
 import { SignInPage } from './console/SignInPage';
 import { BenchmarksPage } from './benchmarks/BenchmarksPage';
 import { CollectionListPage } from './collections/CollectionListPage';
@@ -15,6 +15,9 @@ import { LeaderboardPage } from './leaderboard/LeaderboardPage';
 import { ModelDetailPage } from './models/ModelDetailPage';
 import { ModelListPage } from './models/ModelListPage';
 import { ModelPage } from './models/ModelPage';
+import { BenchmarkReleasesPage } from './releases/BenchmarkReleasesPage';
+import { ReleaseLogPage } from './releases/ReleaseLogPage';
+import { ReleasePage } from './releases/ReleasePage';
 import { ReportPage, ReportsPage } from './reports/ReportsPage';
 import { RunDetailPage } from './runs/RunDetailPage';
 import { RunListPage } from './runs/RunListPage';
@@ -24,6 +27,8 @@ import { PageError, PendingPage } from './site/SitePages';
 import { TaskDetailPage } from './tasks/TaskDetailPage';
 import { TaskFilesPage } from './tasks/TaskFilesPage';
 import { TaskListPage } from './tasks/TaskListPage';
+import { ChangelogPage } from './workspace/ChangelogPage';
+import { WorkbenchPage } from './workspace/WorkbenchPage';
 
 /** The site's pages, built afresh for each locale's root so that no route object has two parents. */
 export function sitePages(): RouteObject[] {
@@ -58,7 +63,9 @@ export function sitePages(): RouteObject[] {
       children: [{
         errorElement: <ConsoleError />,
         children: [
-          { index: true, element: <ConsoleHome /> },
+          { index: true, element: <WorkbenchPage /> },
+          { path: 'releases', element: <ReleaseLogPage /> },
+          { path: 'changelog', element: <ChangelogPage /> },
           { path: 'benchmarks/:benchmarkId', element: <BenchmarkOverviewPage /> },
           { path: 'benchmarks/:benchmarkId/tasks', element: <TaskListPage /> },
           { path: 'benchmarks/:benchmarkId/tasks/:taskId', element: <TaskDetailPage /> },
@@ -70,6 +77,8 @@ export function sitePages(): RouteObject[] {
           { path: 'benchmarks/:benchmarkId/analysis/:huntId', element: <HuntPage /> },
           { path: 'benchmarks/:benchmarkId/collections', element: <CollectionListPage /> },
           { path: 'benchmarks/:benchmarkId/collections/:tag', element: <CollectionPage /> },
+          { path: 'benchmarks/:benchmarkId/releases', element: <BenchmarkReleasesPage /> },
+          { path: 'benchmarks/:benchmarkId/releases/:releaseId', element: <ReleasePage /> },
           { path: '*', element: <ConsoleNotFound /> },
         ],
       }],

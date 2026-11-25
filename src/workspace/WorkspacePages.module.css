@@ -1,0 +1,19 @@
+.page { display: grid; gap: var(--space-6); }
+.page > header { margin-bottom: 0; }
+
+.workbench { --columns: minmax(12rem, 1.4fr) minmax(10rem, 1fr) minmax(8rem, .8fr) 5rem 6rem 5rem; }
+.stacked { display: grid; gap: var(--space-px); min-width: 0; }
+.workbench a:hover, .changelog a:hover { text-decoration: underline; text-underline-offset: var(--space-1); }
+
+.filters { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+.changelog { --columns: 9rem minmax(14rem, 1.6fr) 4rem 6rem minmax(12rem, 1.6fr) 6rem; }
+.task { display: grid; gap: var(--space-px); min-width: 0; }
+.task a { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pager { justify-self: end; }
+
+@media (max-width: 760px) {
+  .workbench { --columns: minmax(0, 1fr) auto; }
+  .workbench [role="row"] > :is(:nth-child(3), :nth-child(4), :nth-child(5), :nth-child(6)) { display: none; }
+  .changelog { --columns: minmax(0, 1fr) auto; }
+  .changelog [role="row"] > :is(:nth-child(1), :nth-child(4), :nth-child(5), :nth-child(6)) { display: none; }
+}

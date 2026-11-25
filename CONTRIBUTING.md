@@ -8,7 +8,7 @@
 
 | 目录 | 职责 |
 |---|---|
-| `src/benchmarks`、`src/leaderboard`、`src/runs`、`src/tasks`、`src/models`、`src/results`、`src/collections`、`src/analysis`、`src/reports`、`src/lifecycle`、`src/landing` | 各业务领域；对外站点与中台的页面都按领域放在这里 |
+| `src/benchmarks`、`src/leaderboard`、`src/runs`、`src/tasks`、`src/models`、`src/results`、`src/collections`、`src/analysis`、`src/releases`、`src/workspace`、`src/reports`、`src/lifecycle`、`src/landing` | 各业务领域；对外站点与中台的页面都按领域放在这里 |
 | `src/ui` | 设计系统：令牌、全局样式、通用组件，不依赖任何业务领域 |
 | `src/site` | 对外站点框架：导航、页脚、站点地图（所有路径）、主题切换 |
 | `src/console` | 中台框架：顶栏、侧栏、登录、中台的路径 |

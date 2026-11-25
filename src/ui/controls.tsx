@@ -16,9 +16,9 @@ export function Button({ variant, onClick, children }: { variant: ButtonVariant;
   return <button type="button" className={clsx(styles.pill, styles.large, variant === 'solid' && styles.solid, 'loop-edge')} onClick={onClick}>{children}</button>;
 }
 
-/** A solid button that submits its form; it waits, faint, while the submission is under way. */
-export function SubmitButton({ pending, children }: { pending: boolean; children: ReactNode }) {
-  return <button type="submit" className={clsx(styles.pill, styles.large, styles.solid, 'loop-edge')} disabled={pending} aria-busy={pending}>{children}</button>;
+/** A button that submits its form; it waits, faint, while the submission is under way. */
+export function SubmitButton({ variant, pending, children }: { variant: ButtonVariant; pending: boolean; children: ReactNode }) {
+  return <button type="submit" className={clsx(styles.pill, styles.large, variant === 'solid' && styles.solid, 'loop-edge')} disabled={pending} aria-busy={pending}>{children}</button>;
 }
 
 /**
@@ -37,6 +37,28 @@ export function TextField({ label, type, autoComplete, value, onChange, pattern 
       />
       {pattern && <span className="t-micro c-faint">{pattern.hint}</span>}
     </label>
+  );
+}
+
+/** A labelled field for a few lines of text, which a form needs filled; the label sits above it. */
+export function TextArea({ label, value, onChange, rows }: { label: string; value: string; onChange: (value: string) => void; rows: number }) {
+  return (
+    <label className={styles.textField}>
+      <span className="t-micro c-muted">{label}</span>
+      <textarea className={styles.area} rows={rows} required value={value} onChange={event => onChange(event.target.value)} />
+    </label>
+  );
+}
+
+/** A pill that is on or off, such as one choice among many that can each be chosen; it carries a check while on. */
+export function ToggleChip({ pressed, onToggle, disabled = false, children }: { pressed: boolean; onToggle: () => void; disabled?: boolean; children: ReactNode }) {
+  return (
+    <button type="button" className={clsx(styles.pill, styles.medium, styles.chip, 'loop-edge')} aria-pressed={pressed} disabled={disabled} onClick={onToggle}>
+      <span className={styles.chipCheck} aria-hidden="true">
+        <svg viewBox="0 0 12 12" width="12" height="12"><path d="M2.5 6.2 5 8.5 9.5 3.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+      </span>
+      {children}
+    </button>
   );
 }
 

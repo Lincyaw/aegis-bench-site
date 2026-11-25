@@ -40,7 +40,7 @@ export function SignInPage() {
         />
         <TextField label={t('console.signIn.password')} type="password" autoComplete="current-password" value={password} onChange={setPassword} />
         {signIn.error && <p className="t-small c-bad" role="alert">{t('console.signIn.failed')}</p>}
-        <SubmitButton pending={signIn.isPending}>{t('console.signIn.submit')}</SubmitButton>
+        <SubmitButton variant="solid" pending={signIn.isPending}>{t('console.signIn.submit')}</SubmitButton>
         <p className="t-micro c-faint">{t('console.signIn.demo', { password: DEMO_PASSWORD })}</p>
       </form>
     </main>

@@ -1,19 +1,11 @@
 import { useTranslation } from 'react-i18next';
 import { Navigate, useLocation, useRouteError } from 'react-router-dom';
 import { ApiError } from '../api/client';
-import { useConsoleBenchmarks } from '../api/consoleClient';
 import { useLocale } from '../i18n/localeContext';
 import { localizedPath, sitePath } from '../i18n/locales';
 import { ButtonLink } from '../ui/controls';
 import { ConsoleHeader } from './ConsoleHeader';
-import { CONSOLE_PATH, consoleBenchmarkPath, signInPath } from './consoleMap';
-
-/** The console's address alone opens the first benchmark's overview. */
-export function ConsoleHome() {
-  const locale = useLocale();
-  const [first] = useConsoleBenchmarks();
-  return <Navigate replace to={localizedPath(locale, consoleBenchmarkPath(first.id))} />;
-}
+import { CONSOLE_PATH, signInPath } from './consoleMap';
 
 /** A console page whose data cannot be loaded: an ended session signs in again, any other failure is shown. */
 export function ConsoleError() {

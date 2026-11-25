@@ -15,7 +15,7 @@ import { Loading } from '../ui/content';
 import { Button, IconButton, Select } from '../ui/controls';
 import controls from '../ui/controls.module.css';
 import { NavIconOf } from './ConsoleIcons';
-import { BENCHMARK_NAV, benchmarkSectionOf, benchmarkSectionPath, signInPath } from './consoleMap';
+import { BENCHMARK_NAV, CONSOLE_PATH, WORKSPACE_CHOICE, WORKSPACE_NAV, benchmarkSectionOf, benchmarkSectionPath, signInPath } from './consoleMap';
 import styles from './ConsoleLayout.module.css';
 
 /**
@@ -83,7 +83,7 @@ export function AccountMenu({ user }: { user: ConsoleUser }) {
 }
 
 /**
- * The benchmark being read, which another can replace in the same section, and that benchmark's sections. On a narrow
+ * The workspace or the benchmark being read, which another can replace in the same section, and its pages. On a narrow
  * screen it is a drawer, which any choice closes.
  */
 export function ConsoleSidebar({ benchmarkId, open, onNavigate }: { benchmarkId: string | undefined; open: boolean; onNavigate: () => void }) {
@@ -96,15 +96,27 @@ export function ConsoleSidebar({ benchmarkId, open, onNavigate }: { benchmarkId:
   const benchmark = benchmarks.find(candidate => candidate.id === benchmarkId);
   return (
     <nav className={clsx(styles.sidebar, open && styles.open)} aria-label={t('console.mainNav')}>
+      <Select
+        label={t('console.context')}
+        className={styles.context}
+        choices={[{ value: WORKSPACE_CHOICE, label: t('console.nav.workspace') }, ...benchmarks.map(entry => ({ value: entry.id, label: `${entry.name} · ${entry.stage.name}` }))]}
+        value={benchmarkId ?? WORKSPACE_CHOICE}
+        onChange={next => { navigate(next === WORKSPACE_CHOICE ? CONSOLE_PATH : benchmarkSectionPath(next, benchmarkId ? current : '')); onNavigate(); }}
+      />
+      {!benchmarkId && (
+        <ul className={styles.items}>
+          {WORKSPACE_NAV.map(item => (
+            <li key={item.path}>
+              <LocaleLink className={styles.item} to={item.path} aria-current={item.path === path ? 'page' : undefined} onClick={onNavigate}>
+                <NavIconOf icon={item.icon} />
+                <span className="t-label">{t(item.label)}</span>
+              </LocaleLink>
+            </li>
+          ))}
+        </ul>
+      )}
       {benchmarkId && (
         <>
-          <Select
-            label={t('console.context')}
-            className={styles.context}
-            choices={benchmarks.map(benchmark => ({ value: benchmark.id, label: `${benchmark.name} · ${benchmark.stage.name}` }))}
-            value={benchmarkId}
-            onChange={next => { navigate(benchmarkSectionPath(next, current)); onNavigate(); }}
-          />
           {BENCHMARK_NAV.map(group => (
             <div key={group.label ?? ''} className={styles.group}>
               {group.label && <span className={clsx(styles.groupLabel, 't-micro c-faint')}>{t(group.label)}</span>}

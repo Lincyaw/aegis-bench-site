@@ -31,6 +31,19 @@ export function nextPathOf(search: URLSearchParams): string {
   return next;
 }
 
+export const RELEASE_LOG_PATH = `${CONSOLE_PATH}/releases`;
+export const CHANGELOG_PATH = `${CONSOLE_PATH}/changelog`;
+
+/** The sidebar's choice for the workspace, beside the benchmarks; no benchmark id is spelt this way. */
+export const WORKSPACE_CHOICE = 'workspace';
+
+/** The workspace's pages in the sidebar, in order; the workbench is the console's home. */
+export const WORKSPACE_NAV: { path: string; label: 'console.nav.workbench' | 'console.nav.releaseLog' | 'console.nav.changelog'; icon: NavIcon }[] = [
+  { path: CONSOLE_PATH, label: 'console.nav.workbench', icon: 'workbench' },
+  { path: RELEASE_LOG_PATH, label: 'console.nav.releaseLog', icon: 'releases' },
+  { path: CHANGELOG_PATH, label: 'console.nav.changelog', icon: 'changelog' },
+];
+
 export function consoleBenchmarkPath(benchmarkId: string): string {
   return `${CONSOLE_PATH}/benchmarks/${benchmarkId}`;
 }
@@ -48,7 +61,7 @@ export function benchmarkSectionOf(path: string): string {
 /** A section of a benchmark in the sidebar; the label is a message key, and the count is the benchmark's figure the item shows. */
 export interface BenchmarkSection {
   section: string;
-  label: 'console.nav.overview' | 'console.nav.tasks' | 'console.nav.runs' | 'console.nav.models' | 'console.nav.analysis' | 'console.nav.collections';
+  label: 'console.nav.overview' | 'console.nav.tasks' | 'console.nav.runs' | 'console.nav.models' | 'console.nav.analysis' | 'console.nav.collections' | 'console.nav.releases';
   icon: NavIcon;
   count?: (benchmark: ConsoleBenchmark) => number;
 }
@@ -66,6 +79,9 @@ export const BENCHMARK_NAV: { label?: 'console.nav.publication'; sections: Bench
   },
   {
     label: 'console.nav.publication',
-    sections: [{ section: 'collections', label: 'console.nav.collections', icon: 'collections' }],
+    sections: [
+      { section: 'collections', label: 'console.nav.collections', icon: 'collections' },
+      { section: 'releases', label: 'console.nav.releases', icon: 'releases' },
+    ],
   },
 ];

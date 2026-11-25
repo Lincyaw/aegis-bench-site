@@ -47,6 +47,16 @@
 .input:hover { background: none; }
 .input:focus { border-color: var(--text-faint); }
 
+/* A text area is a field, not a control, so it keeps a panel's corners. */
+.area { width: 100%; padding: var(--space-3) var(--space-4); border: var(--rule-emphasis); border-radius: var(--radius-lg); background: none; color: var(--text-main); font: var(--type-body); resize: vertical; outline: 0; transition: border-color var(--duration-base); }
+.area:focus { border-color: var(--text-faint); }
+
+.chip { gap: var(--space-2); color: var(--text-muted); }
+.chip[aria-pressed="true"] { color: var(--text-main); }
+.chip:disabled { cursor: default; opacity: .6; }
+.chipCheck { display: grid; place-items: center; width: var(--space-4); height: var(--space-4); border: var(--rule-emphasis); border-radius: var(--radius-full); color: transparent; transition: var(--control-transition); }
+.chip[aria-pressed="true"] .chipCheck { border-color: transparent; background: var(--bg-inverted); color: var(--text-on-inverted); }
+
 .field { justify-content: flex-start; width: 15rem; padding: 0 var(--space-4); color: var(--text-faint); }
 .field input { flex: 1; min-width: 0; border: 0; outline: 0; background: none; color: var(--text-main); font: inherit; }
 .field:focus-within { border-color: var(--text-faint); }
