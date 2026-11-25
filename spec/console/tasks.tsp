@@ -257,7 +257,7 @@ interface ConsoleTasks {
 
   @get
   @route("/{taskId}/grading")
-  grading(@path benchmarkId: string, @path taskId: string): TaskGrading | SignInRequiredError | NotFoundError;
+  grading(@path benchmarkId: string, @path taskId: string): TaskGrading | SignInRequiredError | NotFoundError | HuggingFaceUnreachableError;
 
   /** The reference solution and reference answers, which the public site withholds */
   @get
@@ -299,5 +299,5 @@ interface ConsoleTasks {
 
     /** Path of the file from the task's root */
     @query(#{ explode: true }) path: string,
-  ): TaskFile | SignInRequiredError | NotFoundError;
+  ): TaskFile | SignInRequiredError | NotFoundError | HuggingFaceUnreachableError;
 }

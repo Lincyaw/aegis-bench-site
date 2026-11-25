@@ -3,7 +3,7 @@ import createClient from 'openapi-fetch';
 import { useLocale } from '../i18n/localeContext';
 import type { paths } from './schema';
 import { API_ROOT } from './server';
-import type { LeaderboardView, Locale } from './types';
+import type { HuggingFaceUnreachableAnswer, LeaderboardView, Locale } from './types';
 
 export type * from './types';
 
@@ -23,11 +23,27 @@ export class ApiError extends Error {
   }
 }
 
-/** The body of an openapi-fetch response; an API error becomes a thrown ApiError, which the route's error boundary shows. */
+/** The status the spec's HuggingFaceUnreachableError answers with. */
+export const HUGGING_FACE_UNREACHABLE_STATUS = 502;
+
+/** The records an operation needs are kept on Hugging Face and could not be read from it; the reader can open them there. */
+export class HuggingFaceUnreachableError extends ApiError {
+  readonly huggingFaceUrl: string;
+
+  constructor(response: Response, body: HuggingFaceUnreachableAnswer) {
+    super(response, body);
+    this.huggingFaceUrl = body.huggingFaceUrl;
+  }
+}
+
+/**
+ * The body of an openapi-fetch response; an API error becomes a thrown ApiError, which the route's error boundary shows,
+ * or, for records kept on Hugging Face that could not be read, a HuggingFaceUnreachableError the page shows in place.
+ */
 export async function responseBody<T>(request: Promise<{ data?: T; error?: unknown; response: Response }>): Promise<T> {
   const { data, error, response } = await request;
   if (data === undefined) {
-    throw new ApiError(response, error);
+    throw response.status === HUGGING_FACE_UNREACHABLE_STATUS ? new HuggingFaceUnreachableError(response, error as HuggingFaceUnreachableAnswer) : new ApiError(response, error);
   }
   return data;
 }
@@ -68,6 +84,15 @@ export function useBenchmark(benchmarkId: string) {
   return useSuspenseQuery({
     queryKey: ['benchmark', benchmarkId, locale],
     queryFn: () => responseBody(api.GET('/benchmarks/{benchmarkId}', { params: { path: { benchmarkId }, header: languageHeader(locale) } })),
+  }).data;
+}
+
+/** The runs a benchmark's page shows as examples. */
+export function useRecentRuns(benchmarkId: string) {
+  const locale = useLocale();
+  return useSuspenseQuery({
+    queryKey: ['recentRuns', benchmarkId, locale],
+    queryFn: () => responseBody(api.GET('/benchmarks/{benchmarkId}/recent-runs', { params: { path: { benchmarkId }, header: languageHeader(locale) } })),
   }).data;
 }
 

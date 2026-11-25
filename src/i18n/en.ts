@@ -36,6 +36,8 @@ export const en: Messages = {
     previousPage: 'Previous page',
     nextPage: 'Next page',
     openOnHuggingFace: 'Open on Hugging Face',
+    huggingFaceUnreachable: 'These records could not be read from Hugging Face; this network may not reach it.',
+    huggingFaceUnreachableNote: 'They can still be viewed on Hugging Face directly.',
   },
   landing: {
     updated: 'Updated {{date, datetime}} · Edition 3',
@@ -160,6 +162,7 @@ export const en: Messages = {
       loading: 'Reading the run…',
       empty: 'The run cited here has no id yet.',
       missing: 'No run {{run}}.',
+      unreachable: "This run's record is kept on Hugging Face, which this network could not reach.",
     },
   },
   runs: {

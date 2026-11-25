@@ -13,6 +13,7 @@ import { TabRow } from '../ui/navigation';
 import navigation from '../ui/navigation.module.css';
 import { TASK_TABS, consoleTaskPath, consoleTasksPath, parseTaskPageView, type TaskPageView, type TaskTab } from './consoleTaskQuery';
 import { TaskContentTab, TaskGradingTab, TaskReferenceTab } from './TaskDefinitionTabs';
+import { HuggingFaceBoundary } from '../runs/HuggingFace';
 import { TaskFileBrowser, type TaskFileSource } from './TaskFileBrowser';
 import { TaskRevisionsTab } from './TaskRevisionsTab';
 import { TaskRunsTab } from './TaskRunsTab';
@@ -53,9 +54,11 @@ export function TaskDetailPage() {
           </LocaleLink>
         ))}
       </TabRow>
-      <Suspense fallback={<Loading />}>
-        <TaskTabContent task={task} view={view} />
-      </Suspense>
+      <HuggingFaceBoundary resetKey={view.tab}>
+        <Suspense fallback={<Loading />}>
+          <TaskTabContent task={task} view={view} />
+        </Suspense>
+      </HuggingFaceBoundary>
     </div>
   );
 }

@@ -208,5 +208,5 @@ interface ConsoleHunts {
 @useAuth(SessionCookie)
 interface ConsoleRunHunts {
   /** What every hunt of the run's benchmark found in the run; a hunt that neither marked nor read it is left out */
-  @get list(@path runId: string): RunHuntFinding[] | SignInRequiredError | NotFoundError;
+  @get list(@path runId: string): RunHuntFinding[] | SignInRequiredError | NotFoundError | HuggingFaceUnreachableError;
 }

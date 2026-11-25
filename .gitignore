@@ -26,6 +26,7 @@ dist-ssr
 # Generated from spec/ by npm run gen
 src/api/openapi.json
 src/api/schema.ts
+public/schema/
 
 # Intermediate results of manual checks
 .scratch/

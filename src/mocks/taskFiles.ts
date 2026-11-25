@@ -1,6 +1,6 @@
-import type { TaskEntry, TaskFile, WithheldReason } from '../api/types';
+import type { TaskEntry, TaskFile, TaskFileRecord, WithheldReason } from '../api/types';
 import { benchmarkOf } from './benchmarks';
-import { readTaskFile, type TaskFileEntry } from './records';
+import { readTaskFile } from './records';
 
 /*
  * Each task's Harbor directory. The reference solution and the reference answers are part of it: the public site
@@ -31,14 +31,14 @@ export function mediaTypeOf(path: string): string {
 }
 
 /** Why everything under a directory is withheld, when every file there is withheld for the same reason. */
-export function withheldUnder(files: TaskFileEntry[], directory: string): WithheldReason | undefined {
+export function withheldUnder(files: TaskFileRecord[], directory: string): WithheldReason | undefined {
   const reasons = new Set(files.filter(file => file.path.startsWith(`${directory}/`)).map(file => file.withheld));
   const [reason] = reasons;
   return reasons.size === 1 ? reason : undefined;
 }
 
 /** A directory's entries, directories first and each group by name, or nothing when the task has no such directory. */
-export function directoryEntriesOf(files: TaskFileEntry[], directory: string): TaskEntry[] | undefined {
+export function directoryEntriesOf(files: TaskFileRecord[], directory: string): TaskEntry[] | undefined {
   const prefix = directory === '' ? '' : `${directory}/`;
   const inside = files.filter(file => file.path.startsWith(prefix));
   if (inside.length === 0) {
@@ -56,7 +56,7 @@ export function directoryEntriesOf(files: TaskFileEntry[], directory: string): T
 }
 
 /** A task's file as the API serves it, its text cut where it passes the limit. */
-export async function taskFileOf(benchmarkId: string, taskId: string, file: TaskFileEntry): Promise<TaskFile> {
+export async function taskFileOf(benchmarkId: string, taskId: string, file: TaskFileRecord): Promise<TaskFile> {
   const text = await readTaskFile(benchmarkOf(benchmarkId).record, taskId, file);
   const bytes = new TextEncoder().encode(text);
   const truncated = bytes.length > MAX_FILE_TEXT_BYTES;

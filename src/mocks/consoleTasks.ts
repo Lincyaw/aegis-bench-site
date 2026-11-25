@@ -1,11 +1,11 @@
 import type {
-  ConsoleTaskDetail, ConsoleTaskEntry, ConsoleTaskRow, EntrantMark, Locale, ReferenceFile, ResultCounts, TagCount, TaskCheckResults, TaskGrading,
-  TaskOrder, TaskResults, TaskRevision, TaskSpread,
+  ConsoleTaskDetail, ConsoleTaskEntry, ConsoleTaskRow, EntrantMark, Locale, ReferenceFile, ResultCounts, RunFact, TagCount, TaskCheckResults, TaskGrading,
+  TaskOrder, TaskRecord, TaskResults, TaskRevision, TaskSpread,
 } from '../api/types';
 import { benchmarkOf, benchmarkRef, hasBenchmark, taskOf } from './benchmarks';
 import { harnessRef, modelRef } from './catalog';
 import { runRowOf } from './consoleRuns';
-import { huggingFacePageOf, readTaskFile, taskDirectoryOf, type RunFact, type TaskRecord } from './records';
+import { huggingFacePageOf, readTaskFile, taskDirectoryOf } from './records';
 import { rankingOf, resultCountsOf } from './results';
 import { directoryEntriesOf, taskFileOf } from './taskFiles';
 

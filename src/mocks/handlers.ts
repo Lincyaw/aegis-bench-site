@@ -2,7 +2,7 @@ import { delay } from 'msw';
 import { DEFAULT_LEADERBOARD_PAGE_SIZE, benchmarkDetail, benchmarkOf, benchmarkSummary, hasBenchmark, leaderboardView, stagesWithBenchmarks, taskOf } from './benchmarks';
 import { consoleHandlers } from './consoleHandlers';
 import { hasModel, modelProfile } from './models';
-import { http, localeOf, pageOf, writtenIn } from './protocol';
+import { answeringUnreachableRecords, http, localeOf, pageOf, writtenIn } from './protocol';
 import { publishedEntriesOf, publishedRecentRunsOf, publishedShowingOf, publishedTaskRuns } from './published';
 import { openedIndexes } from './records';
 import { reportHandlers } from './reportHandlers';
@@ -38,9 +38,18 @@ export const publicHandlers = [
       return response(404).json({ message: `no benchmark ${params.benchmarkId}` });
     }
     const locale = localeOf(request);
-    const recentRuns = await publishedRecentRunsOf(params.benchmarkId, locale);
     await delay(120);
-    return response(200).json(benchmarkDetail(params.benchmarkId, publishedShowingOf(params.benchmarkId, locale), recentRuns, locale), writtenIn(locale));
+    return response(200).json(benchmarkDetail(params.benchmarkId, publishedShowingOf(params.benchmarkId, locale), locale), writtenIn(locale));
+  }),
+
+  http.get('/benchmarks/{benchmarkId}/recent-runs', async ({ params, request, response }) => {
+    if (!hasBenchmark(params.benchmarkId)) {
+      return response(404).json({ message: `no benchmark ${params.benchmarkId}` });
+    }
+    const locale = localeOf(request);
+    const recentRuns = await publishedRecentRunsOf(params.benchmarkId, locale);
+    await delay(80);
+    return response(200).json(recentRuns, writtenIn(locale));
   }),
 
   http.get('/benchmarks/{benchmarkId}/leaderboard', ({ params, query, request, response }) => {
@@ -149,4 +158,5 @@ export const publicHandlers = [
   }),
 ];
 
-export const handlers = [...publicHandlers, ...workspaceHandlers, ...reportHandlers, ...consoleHandlers];
+/** Every operation the spec declares, answering 502 with the records' page when records kept on Hugging Face cannot be read. */
+export const handlers = [answeringUnreachableRecords([...publicHandlers, ...workspaceHandlers, ...reportHandlers, ...consoleHandlers])];

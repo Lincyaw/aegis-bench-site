@@ -36,6 +36,8 @@ export const zh = {
     previousPage: '上一页',
     nextPage: '下一页',
     openOnHuggingFace: '在 Hugging Face 打开',
+    huggingFaceUnreachable: '无法从 Hugging Face 读取这部分记录，可能是当前网络访问不了 Hugging Face。',
+    huggingFaceUnreachableNote: '记录仍可以直接在 Hugging Face 上查看。',
   },
   landing: {
     updated: '最近更新：{{date, datetime}} · 第 3 版',
@@ -160,6 +162,7 @@ export const zh = {
       loading: '正在读取运行……',
       empty: '这里引用的运行还没有填写编号。',
       missing: '找不到运行 {{run}}。',
+      unreachable: '这次运行的记录存放在 Hugging Face，当前网络读取不到。',
     },
   },
   runs: {

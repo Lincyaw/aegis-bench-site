@@ -10,7 +10,7 @@ Aegis Bench 的前端演示，包括对外站点和内部的评测中台。对�
 npm install
 npm run dev      # 先由 TypeSpec 生成 OpenAPI 与前端类型，再启动开发服务器
 npm run build    # 生产构建；mock 服务随构建一起发布
-npm run check    # 类型检查、oxlint、样式检查与译文检查
+npm run check    # 类型检查、oxlint、样式检查、译文检查与数据检查
 npm run mock     # 在本地启动 mock 服务：接口 http://127.0.0.1:4010/api，接口文档 http://127.0.0.1:4010/docs
 ```
 
@@ -26,10 +26,11 @@ npm run mock     # 在本地启动 mock 服务：接口 http://127.0.0.1:4010/ap
 | `spec/main.tsp` | 接口入口与对外接口：环节、评测基准、排行榜、任务、运行、模型、语言 |
 | `spec/console/` | 中台接口，按领域分文件：登录会话、汇总结果、任务、运行、模型、展示集、轨迹分析、发布、工作区、成员、设置、报告 |
 | `spec/atif.tsp` | 运行轨迹的格式，ATIF-v1.8，按 Harbor 的参考模型（`harbor.models.trajectories`）声明 |
+| `spec/data.tsp` | 数据目录里每种文件的格式，生成发布用的 JSON Schema 和 mock 的类型 |
 | `src/` | 按业务领域组织的站点代码，各目录的职责见工程规范 |
 | `content/` | 各评测基准的介绍页与研究报告（MD/MDX） |
 | `public/data/` | mock 服务端读取的评测记录：评测基准、任务、运行、轨迹、轨迹分析与发布记录 |
-| `scripts/` | 仓库自带的检查脚本 |
+| `scripts/` | 仓库自带的检查脚本（译文、数据）与本地 mock 服务 |
 
 ## 运行记录
 
@@ -71,11 +72,21 @@ public/data/
     releases.json                       已发布的各个版本，其中一个是当前版本
 ```
 
-每种文件的字段在 `src/mocks/records.ts` 中声明。接入真实数据时注意：
+### 数据格式
+
+每种文件的格式在 `spec/data.tsp` 中声明，与接口共用同一套模型，例如运行的评分、输出和 ATIF 轨迹。`npm run gen` 由它生成两样东西：
+- **JSON Schema**：`public/schema/data-files.json`，随站点发布在 `<站点>/schema/data-files.json`，供准备数据的人和工具使用。每种文件是其中 `$id` 为 `<模型名>.json` 的一份 schema，例如 `RunFile.json`。
+- **mock 的类型**：mock 读文件时用的类型由它生成，不另写一份。
+
+`npm run check:data` 按 schema 检查数据目录里的每个文件，再检查文件之间的引用：运行指向的任务、模型和框架是否存在，未通过的检查是否属于这道任务，轨迹的步数是否与索引一致，任务文件的大小是否与清单一致，轨迹分析和发布记录引用的运行是否存在，是否恰好有一个当前版本。它是 `npm run check` 的一部分。
+- `npm run check:data -- <目录>` 检查另一个按同样结构组织的数据目录，适合在放进仓库或上传到 Hugging Face 之前先检查。
+- 加上 `--hugging-face` 时，放在 Hugging Face 上的文件也逐个下载检查。遇到限流会按 `Retry-After` 等待后继续，所以可能要几分钟。
+
+接入真实数据时注意：
 - **只记录事实，汇总由服务端计算。** 排行榜的分数和成本是各组合计入运行的 `score` 与 `costUsd` 的均值，任务数、通过率、各类计数也都从 `runs.json` 和 `tasks.json` 算出，不另存汇总值。一次运行的记录分在 `runs.json` 的一项和它的 `run.json` 里，同一个字段只出现在一处。
 - **文件全部公开。** 仓库是公开的，`public/` 下的文件发布后任何人都能直接下载，包括中台才显示的参考解法、参考答案和复核结论。不能公开的数据不要放进来。
 - **控制体积。** GitHub 拒收超过 100 MiB 的单个文件，Pages 站点总共不超过 1 GB。现有占位数据在仓库里约 5 MB，放在 Hugging Face 上的约 25 MB。
-- **发现格式错误靠契约检查。** mock 读文件时不逐项校验，但 `npm run dev` 和 `npm run mock` 会按 spec 检查每个响应；数据缺字段或类型不对时，相应的请求会返回 500 并写明哪一项不合规。
+- **先检查再发布。** mock 读文件时不逐项校验，格式由 `npm run check:data` 把关；`npm run dev` 和 `npm run mock` 另外按接口检查每个响应，数据有误时相应的请求返回 500 并写明哪一项不合规。
 
 ### 放在 Hugging Face 上的记录
 
@@ -83,5 +94,5 @@ public/data/
 - 用提交号而不是分支名，记录就固定在那个版本，链接也不会随仓库更新而变。更新数据时上传新的提交，再改 `benchmark.json` 里的提交号。
 - 参考解法和参考答案这类不公开的文件不上传，仍留在 `public/data/` 的任务目录里，只供中台读取。
 - 数据集仓库必须公开：静态站点里放不了访问令牌，私有或受限的仓库读不到。
-- 读者访问不了 huggingface.co 时，这些评测基准的运行详情和任务文件就打不开。匿名访问时，每个 IP 每 5 分钟最多下载 3,000 个文件。
+- 读者访问不了 huggingface.co 时，接口对需要这些记录的请求返回 502，并给出记录在 Hugging Face 上的页面。页面在原本显示记录的位置说明读取不到，并给出链接；评测基准页和运行记录页的其余部分照常显示。匿名访问时，每个 IP 每 5 分钟最多下载 3,000 个文件。
 - 现在 Bench A、B、C 的运行与任务文件放在 [PolarBear2026/agent-eval-demo](https://huggingface.co/datasets/PolarBear2026/agent-eval-demo)，Bench D 全部在仓库里。

@@ -1,6 +1,6 @@
-import type { ReleaseChanges, ReleaseContent, ReleaseDetail, ReleaseStatus, ReleaseSummary } from '../api/types';
+import type { PublishedRelease, ReleaseChanges, ReleaseContent, ReleaseDetail, ReleaseStatus, ReleaseSummary } from '../api/types';
 import { benchmarkOf, benchmarkRef } from './benchmarks';
-import { openedIndexes, type PublishedRelease } from './records';
+import { openedIndexes } from './records';
 import { rankingOf } from './results';
 
 /*

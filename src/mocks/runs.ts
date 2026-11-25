@@ -1,7 +1,7 @@
 import type { Locale, RecentRun, RunDetail } from '../api/types';
 import { benchmarkOf, benchmarkRef, taskRefOf } from './benchmarks';
 import { harnessRef, modelRef } from './catalog';
-import { huggingFacePageOf, openedIndexes, readRunRecord, readTrajectory, recordedRunOf, runDirectoryOf } from './records';
+import { huggingFacePageOf, openedIndexes, readRunFile, readTrajectory, recordedRunOf, runDirectoryOf } from './records';
 import { timelineOf } from './trajectories';
 
 /** A run's detail: its record, with each step of its trajectory marked by the benchmark's rules, or nothing when there is no such run. */
@@ -12,7 +12,7 @@ export async function runDetailOf(runId: string, locale: Locale): Promise<RunDet
   }
   const { benchmarkId, fact } = located;
   const { record } = benchmarkOf(benchmarkId);
-  const [run, trajectory] = await Promise.all([readRunRecord(record, runId), readTrajectory(record, runId)]);
+  const [run, trajectory] = await Promise.all([readRunFile(record, runId), readTrajectory(record, runId)]);
   const harness = harnessRef(fact.harnessId, locale);
   const huggingFaceUrl = huggingFacePageOf(record, runDirectoryOf(runId));
   return {
@@ -29,7 +29,7 @@ export async function runDetailOf(runId: string, locale: Locale): Promise<RunDet
 export function recentRunsOf(runIds: string[], locale: Locale): Promise<RecentRun[]> {
   return Promise.all(runIds.map(async runId => {
     const { benchmarkId } = recordedRunOf(runId);
-    const [detail, run] = await Promise.all([runDetailOf(runId, locale), readRunRecord(benchmarkOf(benchmarkId).record, runId)]);
+    const [detail, run] = await Promise.all([runDetailOf(runId, locale), readRunFile(benchmarkOf(benchmarkId).record, runId)]);
     if (!detail) {
       throw new Error(`run ${runId} has no detail`);
     }

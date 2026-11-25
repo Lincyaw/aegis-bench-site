@@ -31,6 +31,7 @@
 2. 前端只通过 `src/api/client.ts`（对外站点）和 `src/api/consoleClient.ts`（中台）的查询函数取数据。查询函数基于 `openapi-fetch`，路径、参数和响应体都按 spec 做类型检查。模型类型在 `src/api/types.ts`，站点和 mock 共用；接口挂载的路径取自 spec 的 `@server`。
 3. 闭集合（视图、运行结果、时间线标记、语言等）在 spec 中声明为枚举，前端使用生成的 `*Values` 数组，不再另写一份。
 4. 对外站点的接口无需登录。中台的接口都在 `/console` 下：登录后由会话 cookie 维持身份，没有会话的请求一律返回 401，中台页面随即转到登录页，登录后回到原页面。
+5. mock 读取的数据文件也以 spec 为准：`spec/data.tsp` 声明每种文件的格式，并复用接口的模型。`npm run gen` 由它生成发布用的 JSON Schema `public/schema/data-files.json`（不入库），文件的类型随 `src/api/schema.ts` 一起生成，在 `src/api/types.ts` 中命名。改数据格式时先改 `spec/data.tsp`，再用 `npm run check:data` 检查现有数据。
 
 ### mock 只通过接口交互
 
@@ -96,7 +97,8 @@ mock 服务端的作用除了提供演示数据，还在于检验接口设计是
 - 类型检查；
 - oxlint：带类型信息运行，警告也视为失败；
 - Stylelint：见设计规范；
-- 中文文案检查。
+- 中文文案检查；
+- 数据检查：数据目录的文件按 `spec/data.tsp` 的格式和彼此的引用检查，放在 Hugging Face 上的文件另用 `npm run check:data -- --hugging-face` 检查。
 
 提交前它和 `npm run build` 都必须通过。
 

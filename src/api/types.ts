@@ -129,3 +129,15 @@ export type ReportDraft = Schemas['Console.ReportDraft'];
 export type NewReport = Schemas['Console.NewReport'];
 export type ReportEdit = Schemas['Console.ReportEdit'];
 export type ReviewRequest = Schemas['Console.ReviewRequest'];
+export type HuggingFaceUnreachableAnswer = Schemas['HuggingFaceUnreachableError'];
+
+/* The data files' formats, as spec/data.tsp declares them; only the mock server reads them. */
+export type Catalog = Schemas['Data.Catalog'];
+export type BenchmarkFile = Schemas['Data.BenchmarkFile'];
+export type TaskRecord = Schemas['Data.TaskRecord'];
+export type TaskFileRecord = Schemas['Data.TaskFileRecord'];
+export type RunFact = Schemas['Data.RunFact'];
+export type RunFile = Schemas['Data.RunFile'];
+export type HuntRecord = Schemas['Data.HuntRecord'];
+export type TrialRecord = Schemas['Data.TrialRecord'];
+export type PublishedRelease = Schemas['Data.PublishedRelease'];

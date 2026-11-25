@@ -2,7 +2,7 @@ import { clsx } from 'clsx';
 import { Suspense, type ReactNode } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { useTranslation } from 'react-i18next';
-import { useBenchmarks, useRun } from '../api/client';
+import { HuggingFaceUnreachableError, useBenchmarks, useRun } from '../api/client';
 import type { RunDetail } from '../api/types';
 import { LocaleLink } from '../i18n/LocaleRouting';
 import { useLocale } from '../i18n/localeContext';
@@ -17,8 +17,8 @@ import styles from './runBlocks.module.css';
 
 /*
  * The blocks a report cites its runs with, each reading the run from the public API: a run's replay as a card, and one
- * of its figures inside a sentence. A run id that names no run is said where the block stands, so the rest of the
- * report still reads.
+ * of its figures inside a sentence. A run id that names no run, or a run whose record cannot be read from Hugging Face,
+ * is said where the block stands, so the rest of the report still reads.
  */
 
 /** The figures of a run a report can quote. */
@@ -41,7 +41,12 @@ export function RunBlock({ run, children }: { run: string; children: (detail: Ru
   return run === ''
     ? <span className="t-small c-bad">{t('reports.run.empty')}</span>
     : (
-      <ErrorBoundary resetKeys={[run]} fallback={<span className="t-small c-bad">{t('reports.run.missing', { run })}</span>}>
+      <ErrorBoundary
+        resetKeys={[run]}
+        fallbackRender={({ error }) => (error instanceof HuggingFaceUnreachableError
+          ? <span className="t-small c-faint">{t('reports.run.unreachable')} <a className="c-main" href={error.huggingFaceUrl} target="_blank" rel="noreferrer">{t('ui.openOnHuggingFace')}</a></span>
+          : <span className="t-small c-bad">{t('reports.run.missing', { run })}</span>)}
+      >
         <Suspense fallback={<span className="t-small c-faint">{t('reports.run.loading')}</span>}><RunOf run={run}>{children}</RunOf></Suspense>
       </ErrorBoundary>
     );

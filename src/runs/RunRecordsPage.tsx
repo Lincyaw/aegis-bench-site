@@ -12,6 +12,7 @@ import { MoreButton, SearchField, Select } from '../ui/controls';
 import controls from '../ui/controls.module.css';
 import { NARROW_QUERY, useMediaQuery } from '../ui/media';
 import { Breadcrumbs } from '../ui/navigation';
+import { HuggingFaceBoundary } from './HuggingFace';
 import { OutcomeDot } from './Outcome';
 import { RunDetailPanel } from './RunDetailPanel';
 import {
@@ -138,9 +139,11 @@ export function TaskRunsArea({ benchmark, taskId, query, level, onQuery }: { ben
         <div className={clsx(styles.column, styles.detail)} aria-label={t('runs.detailLabel')}>
           {level === 'detail' && <button type="button" className={clsx(styles.detailBack, 't-micro c-muted')} onClick={() => onQuery(withRun(query, undefined))}>‹ {t('runs.allRunsOf', { task: taskRuns.task.id })}</button>}
           {runId ? (
-            <Suspense fallback={<Loading />}>
-              <RunDetailPanel runId={runId} legend={benchmark.timelineLegend} view={{ tab: query.tab, step: query.step, check: query.check }} onView={view => onQuery(withView(query, view))} />
-            </Suspense>
+            <HuggingFaceBoundary resetKey={runId}>
+              <Suspense fallback={<Loading />}>
+                <RunDetailPanel runId={runId} legend={benchmark.timelineLegend} view={{ tab: query.tab, step: query.step, check: query.check }} onView={view => onQuery(withView(query, view))} />
+              </Suspense>
+            </HuggingFaceBoundary>
           ) : <p className="t-small c-faint">{t('runs.chooseRun')}</p>}
         </div>
       )}

@@ -1,8 +1,14 @@
 emit:
   - "@typespec/openapi3"
+  - "@typespec/json-schema"
 options:
   "@typespec/openapi3":
     # The OpenAPI document sits beside the types generated from it: the client and the mock server both read it.
     emitter-output-dir: "{project-root}/../src/api"
     output-file: openapi.json
+    file-type: json
+  "@typespec/json-schema":
+    # The data files' formats, published with the site for whoever prepares data, in one document.
+    emitter-output-dir: "{project-root}/../public/schema"
+    bundleId: data-files.json
     file-type: json

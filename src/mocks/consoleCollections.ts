@@ -1,8 +1,7 @@
-import type { CollectionModelResult, CollectionSummary, Locale, MatrixRow, ModelRef, TaskOrder } from '../api/types';
+import type { CollectionModelResult, CollectionSummary, Locale, MatrixRow, ModelRef, TaskOrder, TaskRecord } from '../api/types';
 import { benchmarkOf, hasBenchmark } from './benchmarks';
 import { modelResultsOver } from './consoleModels';
 import { runFactsByTask, sortedTasks, tagCountsOf, taskResultCountsOf } from './consoleTasks';
-import type { TaskRecord } from './records';
 import { resultCountsOf } from './results';
 
 /*

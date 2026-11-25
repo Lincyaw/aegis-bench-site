@@ -11,6 +11,7 @@ import controls from '../ui/controls.module.css';
 import navigation from '../ui/navigation.module.css';
 import { TabRow } from '../ui/navigation';
 import table from '../ui/table.module.css';
+import { HuggingFaceBoundary, HuggingFaceNote } from './HuggingFace';
 import { OutcomeBadge, OutcomeText } from './Outcome';
 import { RUN_TABS, defaultRunTab, type RunTab } from './presentation';
 import { TrajectoryView } from './TrajectoryView';
@@ -50,12 +51,14 @@ export function RunDetailPanel({ runId, legend, view, onView }: { runId: string;
         {tab === 'grading' && <GradingTab run={run} filePath={filePath} check={view.check} onCheck={check => onView({ tab: 'grading', check })} />}
         {tab === 'failure' && <FailureTab run={run} onCheck={check => onView({ tab: 'grading', check })} onStep={step => onView({ tab: 'trajectory', step })} />}
         {tab === 'trajectory' && (
-          <Suspense fallback={<Loading />}>
-            <TrajectoryView
-              usePage={usePublicTrajectoryPage} timeline={run.timeline} legend={legend}
-              evidence={run.failure?.review?.evidenceSteps ?? []} selected={view.step} onSelect={step => onView({ tab: 'trajectory', step })}
-            />
-          </Suspense>
+          <HuggingFaceBoundary resetKey={runId}>
+            <Suspense fallback={<Loading />}>
+              <TrajectoryView
+                usePage={usePublicTrajectoryPage} timeline={run.timeline} legend={legend}
+                evidence={run.failure?.review?.evidenceSteps ?? []} selected={view.step} onSelect={step => onView({ tab: 'trajectory', step })}
+              />
+            </Suspense>
+          </HuggingFaceBoundary>
         )}
       </div>
     </div>
@@ -81,12 +84,7 @@ export function RunHeader({ run }: { run: RunDetail }) {
         { label: t('runs.metrics.cost'), value: `$${run.metrics.costUsd.toFixed(2)}` },
         { label: t('runs.metrics.endReason'), value: t(`runs.endReason.${run.metrics.endReason}`) },
       ]} />
-      {run.huggingFaceUrl && (
-        <p className={clsx(styles.hosted, 't-micro c-faint')}>
-          {t('runs.huggingFace')}
-          <a className={clsx(controls.textLink, 't-micro')} href={run.huggingFaceUrl} target="_blank" rel="noreferrer">{t('ui.openOnHuggingFace')}</a>
-        </p>
-      )}
+      {run.huggingFaceUrl && <HuggingFaceNote text={t('runs.huggingFace')} url={run.huggingFaceUrl} />}
     </header>
   );
 }

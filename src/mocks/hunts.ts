@@ -1,7 +1,7 @@
-import type { Hunt, HuntFacet, HuntProbe, HuntTrial, HuntVerdict, Locale, RunEventKind, RunHuntFinding, TrajectoryStep } from '../api/types';
+import type { Hunt, HuntFacet, HuntProbe, HuntRecord, HuntTrial, HuntVerdict, Locale, RunEventKind, RunHuntFinding, TrajectoryStep, TrialRecord } from '../api/types';
 import { benchmarkOf } from './benchmarks';
 import { runRowOf } from './consoleRuns';
-import { openedIndexes, readTrajectory, recordedRunOf, type HuntRecord, type TrialRecord } from './records';
+import { openedIndexes, readTrajectory, recordedRunOf } from './records';
 
 /*
  * The hunts recorded over each benchmark's trajectories. Probes mark trajectories per facet; readers read some of the

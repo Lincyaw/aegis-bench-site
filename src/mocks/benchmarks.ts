@@ -1,6 +1,6 @@
-import type { BenchmarkDetail, BenchmarkRef, BenchmarkSummary, LeaderboardEntry, LeaderboardView, Locale, RecentRun, Stage, TaskRef } from '../api/types';
+import type { BenchmarkDetail, BenchmarkRef, BenchmarkSummary, LeaderboardEntry, LeaderboardView, Locale, Stage, TaskRecord, TaskRef } from '../api/types';
 import { stageRef } from './catalog';
-import { openedIndexes, type BenchmarkIndexes, type TaskRecord } from './records';
+import { openedIndexes, type BenchmarkIndexes } from './records';
 
 export function hasBenchmark(benchmarkId: string): boolean {
   return openedIndexes().benchmarks.some(benchmark => benchmark.record.id === benchmarkId);
@@ -72,10 +72,10 @@ export function benchmarkSummary(benchmarkId: string, showing: BenchmarkShowing,
   };
 }
 
-export function benchmarkDetail(benchmarkId: string, showing: BenchmarkShowing, recentRuns: RecentRun[], locale: Locale): BenchmarkDetail {
+export function benchmarkDetail(benchmarkId: string, showing: BenchmarkShowing, locale: Locale): BenchmarkDetail {
   const { action, change, submitPassed, submitFailed } = benchmarkOf(benchmarkId).record.timelineLegend;
   return {
-    ...benchmarkSummary(benchmarkId, showing, locale), topFive: showing.entries.slice(0, 5), recentRuns,
+    ...benchmarkSummary(benchmarkId, showing, locale), topFive: showing.entries.slice(0, 5),
     timelineLegend: { action: action[locale], change: change[locale], submitPassed: submitPassed[locale], submitFailed: submitFailed[locale] },
   };
 }

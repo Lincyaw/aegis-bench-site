@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Navigate, useLocation, useRouteError } from 'react-router-dom';
-import { ApiError } from '../api/client';
+import { ApiError, HuggingFaceUnreachableError } from '../api/client';
+import { UnreachableRecords } from '../runs/HuggingFace';
 import { useLocale } from '../i18n/localeContext';
 import { localizedPath, sitePath } from '../i18n/locales';
 import { ButtonLink } from '../ui/controls';
@@ -18,7 +19,8 @@ export function ConsoleError() {
   }
   return (
     <div role="alert">
-      <ConsoleHeader title={t('console.error.title')} lead={error instanceof Error ? error.message : String(error)} />
+      <ConsoleHeader title={t('console.error.title')} lead={error instanceof HuggingFaceUnreachableError ? undefined : error instanceof Error ? error.message : String(error)} />
+      {error instanceof HuggingFaceUnreachableError && <UnreachableRecords error={error} />}
       <ButtonLink to={CONSOLE_PATH} variant="line">{t('console.error.toConsole')}</ButtonLink>
     </div>
   );

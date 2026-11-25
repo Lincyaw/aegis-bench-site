@@ -1,8 +1,7 @@
-import type { ConsoleModelDetail, ConsoleModelResult, Locale, ModelTaskRow, ResultCounts, TaskOrder, TaskSpread } from '../api/types';
+import type { ConsoleModelDetail, ConsoleModelResult, Locale, ModelTaskRow, ResultCounts, RunFact, TaskOrder, TaskSpread } from '../api/types';
 import { benchmarkOf, benchmarkRef, taskRefOf } from './benchmarks';
 import { harnessRef, modelRef } from './catalog';
 import { matchesTaskSearch, sortedTasks, spreadOf } from './consoleTasks';
-import type { RunFact } from './records';
 import { rankingOf, resultCountsOf } from './results';
 
 /*

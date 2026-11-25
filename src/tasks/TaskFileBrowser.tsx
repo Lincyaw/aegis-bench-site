@@ -4,8 +4,8 @@ import { useTranslation } from 'react-i18next';
 import type { TaskEntryKind, TaskFile } from '../api/types';
 import { Loading, Tag } from '../ui/content';
 import content from '../ui/content.module.css';
+import { HuggingFaceBoundary, HuggingFaceNote } from '../runs/HuggingFace';
 import { ChevronIcon, MoreButton } from '../ui/controls';
-import controls from '../ui/controls.module.css';
 import { directoriesHolding, formatSize, nameOf } from './taskFiles';
 import styles from './TaskFileBrowser.module.css';
 
@@ -72,18 +72,15 @@ export function TaskFileBrowser({ source, open, onOpen, note, huggingFaceUrl, cl
         </div>
         <div className={clsx(styles.note, 't-micro c-faint')}>
           <p>{note}</p>
-          {huggingFaceUrl && (
-            <p className={styles.hosted}>
-              {t('tasks.huggingFace')}
-              <a className={clsx(controls.textLink, 't-micro')} href={huggingFaceUrl} target="_blank" rel="noreferrer">{t('ui.openOnHuggingFace')}</a>
-            </p>
-          )}
+          {huggingFaceUrl && <HuggingFaceNote text={t('tasks.huggingFace')} url={huggingFaceUrl} />}
         </div>
       </nav>
       <section className={styles.viewer} aria-label={t('tasks.file')}>
-        <Suspense fallback={<Loading />}>
-          <FileView source={source} path={shown} />
-        </Suspense>
+        <HuggingFaceBoundary resetKey={shown}>
+          <Suspense fallback={<Loading />}>
+            <FileView source={source} path={shown} />
+          </Suspense>
+        </HuggingFaceBoundary>
       </section>
     </div>
   );

@@ -11,6 +11,7 @@ import "./console/workspace.tsp";
 import "./console/members.tsp";
 import "./console/settings.tsp";
 import "./console/reports.tsp";
+import "./data.tsp";
 
 using Http;
 
@@ -190,7 +191,6 @@ model RecentRun {
 model BenchmarkDetail {
   ...BenchmarkSummary;
   topFive: LeaderboardEntry[];
-  recentRuns: RecentRun[];
   timelineLegend: TimelineLegend;
 }
 
@@ -529,6 +529,19 @@ model WithheldError {
   reason: WithheldReason;
 }
 
+/**
+ * The records the operation needs are kept on Hugging Face and could not be read from it, as when the reader's network
+ * does not reach Hugging Face. The reader can still open them there.
+ */
+@error
+model HuggingFaceUnreachableError {
+  @statusCode _: 502;
+  message: string;
+
+  /** The page on Hugging Face that holds the records */
+  huggingFaceUrl: url;
+}
+
 /** What the site says about the people behind it; the console's settings decide it. */
 model SiteInfo {
   contactEmail: Console.EmailAddress;
@@ -551,6 +564,11 @@ interface Benchmarks {
   @get
   @route("/{benchmarkId}")
   read(@path benchmarkId: string, ...LanguageHeader): Localized<BenchmarkDetail> | NotFoundError;
+
+  /** The runs the benchmark's page shows as examples, in the order shown; read apart from the page, since their records may be kept on Hugging Face */
+  @get
+  @route("/{benchmarkId}/recent-runs")
+  recentRuns(@path benchmarkId: string, ...LanguageHeader): Localized<RecentRun[]> | NotFoundError | HuggingFaceUnreachableError;
 
   /** The ranking a page at a time, best first */
   @get
@@ -608,7 +626,7 @@ interface Benchmarks {
 
     /** Path of the file from the task's root, such as "tests/test.sh" */
     @query(#{ explode: true }) path: string,
-  ): TaskFile | NotFoundError | WithheldError;
+  ): TaskFile | NotFoundError | WithheldError | HuggingFaceUnreachableError;
 
   @get
   @route("/{benchmarkId}/tasks/{taskId}/runs")
@@ -619,17 +637,17 @@ interface Benchmarks {
 interface Runs {
   @get
   @route("/{runId}")
-  read(@path runId: string, ...LanguageHeader): Localized<RunDetail> | NotFoundError;
+  read(@path runId: string, ...LanguageHeader): Localized<RunDetail> | NotFoundError | HuggingFaceUnreachableError;
 
   /** The run's full trajectory in ATIF, for export; a record, so it stays in the language it was made in */
   @get
   @route("/{runId}/trajectory")
-  trajectory(@path runId: string): ATIF.Trajectory | NotFoundError;
+  trajectory(@path runId: string): ATIF.Trajectory | NotFoundError | HuggingFaceUnreachableError;
 
   /** The run's trajectory a page of steps at a time, for reading it without fetching it whole */
   @get
   @route("/{runId}/trajectory/steps")
-  trajectorySteps(@path runId: string, ...PageQuery<25>): TrajectoryPage | NotFoundError;
+  trajectorySteps(@path runId: string, ...PageQuery<25>): TrajectoryPage | NotFoundError | HuggingFaceUnreachableError;
 }
 
 @route("/models")

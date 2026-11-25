@@ -1,8 +1,7 @@
-import type { BenchmarkOverview, ConsoleBenchmark, EntrantKey, EntrantResult, LeaderboardEntry, Locale, PendingWork, ResultCounts } from '../api/types';
+import type { BenchmarkOverview, ConsoleBenchmark, EntrantKey, EntrantResult, LeaderboardEntry, Locale, PendingWork, ResultCounts, RunFact } from '../api/types';
 import { benchmarkOf, benchmarkRef } from './benchmarks';
 import { harnessRef, modelRef, stageRef } from './catalog';
 import { runRowOf } from './consoleRuns';
-import type { RunFact } from './records';
 
 /** Failed runs the overview lists, newest first. */
 export const RECENT_FAILURE_COUNT = 5;

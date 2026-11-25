@@ -139,12 +139,12 @@ interface ConsoleRuns {
 @route("/console/runs/{runId}")
 @useAuth(SessionCookie)
 interface ConsoleRunRecords {
-  @get read(@path runId: string, ...LanguageHeader): Localized<ConsoleRunDetail> | SignInRequiredError | NotFoundError;
+  @get read(@path runId: string, ...LanguageHeader): Localized<ConsoleRunDetail> | SignInRequiredError | NotFoundError | HuggingFaceUnreachableError;
 
   /** The run's trajectory a page of steps at a time */
   @get
   @route("/trajectory/steps")
-  trajectorySteps(@path runId: string, ...PageQuery<25>): TrajectoryPage | SignInRequiredError | NotFoundError;
+  trajectorySteps(@path runId: string, ...PageQuery<25>): TrajectoryPage | SignInRequiredError | NotFoundError | HuggingFaceUnreachableError;
 
   /** The events of the run's trajectory, a page at a time */
   @get
@@ -157,5 +157,5 @@ interface ConsoleRunRecords {
     @query(#{ explode: true }) q?: string = "",
 
     ...PageQuery<50>,
-  ): RunEventPage | SignInRequiredError | NotFoundError;
+  ): RunEventPage | SignInRequiredError | NotFoundError | HuggingFaceUnreachableError;
 }

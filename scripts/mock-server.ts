@@ -2,12 +2,12 @@ import { serve } from '@hono/node-server';
 import { swaggerUI } from '@hono/swagger-ui';
 import { Hono } from 'hono';
 import { getResponse } from 'msw';
-import { readFile } from 'node:fs/promises';
 import openapi from '../src/api/openapi.json';
 import { API_ROOT } from '../src/api/server';
 import { contractHandler } from '../src/mocks/contract';
 import { handlers } from '../src/mocks/handlers';
 import { DATA_DIRECTORY, openRecords } from '../src/mocks/records';
+import { dataReaderAt } from './dataReader';
 
 /*
  * The mock server outside the browser: the same handlers behind the same contract, reachable with curl or from the
@@ -19,19 +19,8 @@ export const MOCK_PORT = 4010;
 export const OPENAPI_PATH = '/openapi.json';
 export const DOCS_PATH = '/docs';
 
-// The site's public directory holds the data directory the build publishes; a file kept elsewhere is named by its URL.
-const dataDirectory = new URL(`../public/${DATA_DIRECTORY}/`, import.meta.url);
-await openRecords(async path => {
-  const url = new URL(path, dataDirectory);
-  if (url.protocol === 'file:') {
-    return readFile(url, 'utf8');
-  }
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`${url.href} answered ${response.status}`);
-  }
-  return response.text();
-});
+// The site's public directory holds the data directory the build publishes.
+await openRecords(dataReaderAt(new URL(`../public/${DATA_DIRECTORY}/`, import.meta.url)));
 
 const mockServer = [contractHandler(handlers)];
 const app = new Hono();

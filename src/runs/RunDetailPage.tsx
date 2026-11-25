@@ -17,6 +17,7 @@ import { ButtonLink } from '../ui/controls';
 import { TabRow } from '../ui/navigation';
 import navigation from '../ui/navigation.module.css';
 import { CONSOLE_RUN_TABS, consoleRunsPath, parseConsoleRunView, runQuerySearch, type ConsoleRunView } from './consoleRunQuery';
+import { HuggingFaceBoundary, HuggingFaceNote } from './HuggingFace';
 import { OutcomeBadge } from './Outcome';
 import { defaultRunTab } from './presentation';
 import { FailureTab, GradingTab, InputTab, OutputTab } from './RunDetailPanel';
@@ -73,10 +74,13 @@ export function RunDetailPage() {
           </button>
         ))}
       </TabRow>
+      {run.huggingFaceUrl && <HuggingFaceNote text={t('runs.huggingFace')} url={run.huggingFaceUrl} />}
       <div className={styles.panel} role="tabpanel">
-        <Suspense fallback={<Loading />}>
-          <RunTabContent benchmark={benchmark} run={run} view={view} onView={onView} />
-        </Suspense>
+        <HuggingFaceBoundary resetKey={view.tab}>
+          <Suspense fallback={<Loading />}>
+            <RunTabContent benchmark={benchmark} run={run} view={view} onView={onView} />
+          </Suspense>
+        </HuggingFaceBoundary>
       </div>
     </div>
   );

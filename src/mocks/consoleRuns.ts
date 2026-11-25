@@ -1,7 +1,7 @@
-import type { ConsoleRunDetail, Locale, ReviewFilter, RunEvent, RunEventKind, RunOutcome, RunRow, RunUsage, Trajectory } from '../api/types';
+import type { ConsoleRunDetail, Locale, ReviewFilter, RunEvent, RunEventKind, RunFact, RunOutcome, RunRow, RunUsage, Trajectory } from '../api/types';
 import { benchmarkOf, taskRefOf } from './benchmarks';
 import { harnessRef, modelRef } from './catalog';
-import { openedIndexes, readRunRecord, readTrajectory, type RunFact } from './records';
+import { openedIndexes, readRunFile, readTrajectory } from './records';
 import { runDetailOf } from './runs';
 
 /*
@@ -83,7 +83,7 @@ export async function consoleRunOf(runId: string, locale: Locale): Promise<Conso
   }
   const { benchmarkId, fact } = located;
   const { record } = benchmarkOf(benchmarkId);
-  const [detail, run, trajectory] = await Promise.all([runDetailOf(runId, locale), readRunRecord(record, runId), readTrajectory(record, runId)]);
+  const [detail, run, trajectory] = await Promise.all([runDetailOf(runId, locale), readRunFile(record, runId), readTrajectory(record, runId)]);
   if (!detail) {
     throw new Error(`run ${runId} has no detail`);
   }
