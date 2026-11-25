@@ -17,6 +17,7 @@
     "prebuild": "npm run gen"
   },
   "dependencies": {
+    "@mdx-js/mdx": "^3.1.1",
     "@radix-ui/react-popover": "^1.3.1",
     "@radix-ui/react-select": "^2.4.1",
     "@tanstack/react-query": "^5.108.4",
@@ -31,9 +32,13 @@
     "openapi-fetch": "^0.17.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
+    "react-error-boundary": "^6.1.6",
     "react-i18next": "^18.0.3",
     "react-router-dom": "^7.18.6",
+    "remark-parse": "^11.0.0",
     "three": "^0.187.0",
+    "unified": "^11.0.5",
+    "yaml": "^2.9.1",
     "zod": "^4.6.7"
   },
   "devDependencies": {

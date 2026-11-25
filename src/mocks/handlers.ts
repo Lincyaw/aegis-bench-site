@@ -5,6 +5,7 @@ import { RUNS_PER_TASK } from './catalog';
 import { consoleHandlers } from './consoleHandlers';
 import { hasModel, modelProfile } from './models';
 import { http, localeOf, pageOf, writtenIn } from './protocol';
+import { reportHandlers } from './reportHandlers';
 import { passRateOf, taskRunsOf, taskSummariesOf } from './runs';
 import { currentSettings } from './settings';
 import { DEFAULT_ENTRY_PAGE_SIZE, directoryEntriesOf, taskFileOf, taskFilesOf, withheldUnder } from './taskFiles';
@@ -144,4 +145,4 @@ export const publicHandlers = [
   }),
 ];
 
-export const handlers = [...publicHandlers, ...workspaceHandlers, ...consoleHandlers];
+export const handlers = [...publicHandlers, ...workspaceHandlers, ...reportHandlers, ...consoleHandlers];

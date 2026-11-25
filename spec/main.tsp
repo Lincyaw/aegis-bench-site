@@ -10,6 +10,7 @@ import "./console/releases.tsp";
 import "./console/workspace.tsp";
 import "./console/members.tsp";
 import "./console/settings.tsp";
+import "./console/reports.tsp";
 
 using Http;
 
