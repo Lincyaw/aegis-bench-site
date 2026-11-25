@@ -1,6 +1,9 @@
-/* One mark per step: a short tick, taller for a change or a submission, and the tallest for the step being read. */
-.timeline { display: flex; align-items: center; gap: var(--space-px); min-height: var(--space-4); min-width: 0; }
-.mark { flex: none; width: calc(var(--space-px) + var(--size-hairline)); height: var(--space-2); border-radius: var(--size-hairline); background: var(--text-faint); opacity: .55; }
+/*
+ * One mark per step: a short tick, taller for a change or a submission, and the tallest for the step being read. A long
+ * run narrows its marks to fit the row, down to a hairline each, and never runs into the next column.
+ */
+.timeline { display: flex; align-items: center; gap: var(--space-px); min-height: var(--space-4); min-width: 0; overflow: hidden; }
+.mark { flex: 0 1 calc(var(--space-px) + var(--size-hairline)); min-width: var(--size-hairline); height: var(--space-2); border-radius: var(--size-hairline); background: var(--text-faint); opacity: .55; }
 .change { height: var(--space-3); background: var(--half-color); opacity: 1; }
 .submitPassed { height: var(--space-3); background: var(--accent-success); opacity: 1; }
 .submitFailed { height: var(--space-3); background: var(--accent-warning); opacity: 1; }
