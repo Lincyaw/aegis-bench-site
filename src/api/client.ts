@@ -13,9 +13,13 @@ export const api = createClient<paths>({ baseUrl: API_ROOT });
 export class ApiError extends Error {
   readonly status: number;
 
+  /** The API's own account of the failure: its error body's message, else the whole body */
+  readonly reason: string;
+
   constructor(response: Response, body: unknown) {
     super(`${response.status} ${response.url}: ${JSON.stringify(body)}`);
     this.status = response.status;
+    this.reason = typeof body === 'object' && body !== null && 'message' in body && typeof body.message === 'string' ? body.message : JSON.stringify(body);
   }
 }
 

@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient, useSuspenseInfiniteQuery, useSuspenseQuery, type QueryClient } from '@tanstack/react-query';
 import { useLocale } from '../i18n/localeContext';
 import { api, languageHeader, nextPageOffset, responseBody } from './client';
-import type { HuntVerdict, ReviewFilter, RunEventKind, RunOutcome, SessionState, SignInRequest, TaskOrder, TaskSpread } from './types';
+import type { HuntVerdict, ReleaseContent, ReviewFilter, RevisionChange, RunEventKind, RunOutcome, SessionState, SignInRequest, TaskOrder, TaskSpread } from './types';
 
 /** Every console query key starts with this, so signing in or out can drop what the previous session read. */
 export const CONSOLE_QUERY = 'console';
@@ -291,6 +291,102 @@ export function useRunHunts(runId: string) {
     queryKey: [CONSOLE_QUERY, 'runHunts', runId],
     queryFn: () => responseBody(api.GET('/console/runs/{runId}/hunts', { params: { path: { runId } } })),
   }).data;
+}
+
+export function useWorkbench() {
+  const locale = useLocale();
+  return useSuspenseQuery({
+    queryKey: [CONSOLE_QUERY, 'workbench', locale],
+    queryFn: () => responseBody(api.GET('/console/workbench', { params: { header: languageHeader(locale) } })),
+  }).data;
+}
+
+/** What the changelog asks for: one benchmark or all, one kind of change or all, and the page. */
+export interface ChangelogQuery {
+  benchmarkId: string;
+  change?: RevisionChange;
+  offset: number;
+}
+
+/** Task versions are records, the same in every language. */
+export function useChangelog(query: ChangelogQuery, pageSize: number) {
+  return useSuspenseQuery({
+    queryKey: [CONSOLE_QUERY, 'changelog', query, pageSize],
+    queryFn: () => responseBody(api.GET('/console/changelog', { params: { query: { benchmarkId: query.benchmarkId, change: query.change, offset: query.offset, limit: pageSize } } })),
+  }).data;
+}
+
+export function useReleaseOverview() {
+  return useSuspenseQuery({
+    queryKey: [CONSOLE_QUERY, 'releases'],
+    queryFn: () => responseBody(api.GET('/console/releases')),
+  }).data;
+}
+
+export function useBenchmarkReleases(benchmarkId: string) {
+  return useSuspenseQuery({
+    queryKey: [CONSOLE_QUERY, 'releases', benchmarkId],
+    queryFn: () => responseBody(api.GET('/console/benchmarks/{benchmarkId}/releases', { params: { path: { benchmarkId } } })),
+  }).data;
+}
+
+export function useRelease(releaseId: string) {
+  return useSuspenseQuery({
+    queryKey: [CONSOLE_QUERY, 'release', releaseId],
+    queryFn: () => responseBody(api.GET('/console/releases/{releaseId}', { params: { path: { releaseId } } })),
+  }).data;
+}
+
+/**
+ * After a release changes, everything that shows releases is read again, and so is every public page, which shows the
+ * current releases.
+ */
+export function refreshAfterRelease(queryClient: QueryClient) {
+  void queryClient.invalidateQueries({ predicate: query => query.queryKey[0] !== CONSOLE_QUERY || ['releases', 'release', 'workbench'].includes(String(query.queryKey[1])) });
+}
+
+export function useCreateDraft(benchmarkId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => responseBody(api.POST('/console/benchmarks/{benchmarkId}/releases', { params: { path: { benchmarkId } } })),
+    onSuccess: () => refreshAfterRelease(queryClient),
+  });
+}
+
+export function useUpdateDraft(releaseId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (content: ReleaseContent) => responseBody(api.PUT('/console/releases/{releaseId}', { params: { path: { releaseId } }, body: content })),
+    onSuccess: () => refreshAfterRelease(queryClient),
+  });
+}
+
+export function usePublishRelease(releaseId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (note: string) => responseBody(api.POST('/console/releases/{releaseId}/publish', { params: { path: { releaseId } }, body: { note } })),
+    onSuccess: () => refreshAfterRelease(queryClient),
+  });
+}
+
+export function useRestoreRelease(releaseId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (note: string) => responseBody(api.POST('/console/releases/{releaseId}/restore', { params: { path: { releaseId } }, body: { note } })),
+    onSuccess: () => refreshAfterRelease(queryClient),
+  });
+}
+
+/** A discarded draft no longer exists, so it is dropped rather than read again. */
+export function useDiscardDraft(releaseId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => responseBody(api.DELETE('/console/releases/{releaseId}', { params: { path: { releaseId } } })),
+    onSuccess: () => {
+      queryClient.removeQueries({ queryKey: [CONSOLE_QUERY, 'release', releaseId], exact: true });
+      refreshAfterRelease(queryClient);
+    },
+  });
 }
 
 export function useBenchmarkOverview(benchmarkId: string) {

@@ -1,5 +1,6 @@
 import { delay } from 'msw';
 import { BENCHMARKS, DEFAULT_LEADERBOARD_PAGE_SIZE, benchmarkDetail, benchmarkSummary, hasBenchmark, leaderboardView, stagesWithBenchmarks } from './benchmarks';
+import { publishedEntriesOf, publishedRecentRunsOf, publishedShowingOf, publishedTaskRuns } from './published';
 import { RUNS_PER_TASK } from './catalog';
 import { consoleHandlers } from './consoleHandlers';
 import { hasModel, modelProfile } from './models';
@@ -7,7 +8,7 @@ import { http, localeOf, pageOf, writtenIn } from './protocol';
 import { passRateOf, taskRunsOf, taskSummariesOf } from './runs';
 import { DEFAULT_ENTRY_PAGE_SIZE, directoryEntriesOf, taskFileOf, taskFilesOf, withheldUnder } from './taskFiles';
 import { DEFAULT_TASK_PAGE_SIZE, taskOf } from './tasks';
-import { DEFAULT_TRAJECTORY_PAGE_SIZE, recentRunsOf, runDetailOf, trajectoryOf } from './trajectories';
+import { DEFAULT_TRAJECTORY_PAGE_SIZE, runDetailOf, trajectoryOf } from './trajectories';
 
 /*
  * The mock server's implementation of each operation the spec declares. The handlers' types follow the spec, and
@@ -24,7 +25,7 @@ export const publicHandlers = [
 
   http.get('/benchmarks', ({ request, response }) => {
     const locale = localeOf(request);
-    return response(200).json(BENCHMARKS.map(record => benchmarkSummary(record.id, locale)), writtenIn(locale));
+    return response(200).json(BENCHMARKS.map(record => benchmarkSummary(record.id, publishedShowingOf(record.id, locale), locale)), writtenIn(locale));
   }),
 
   http.get('/benchmarks/{benchmarkId}', async ({ params, request, response }) => {
@@ -33,7 +34,7 @@ export const publicHandlers = [
     }
     const locale = localeOf(request);
     await delay(120);
-    return response(200).json(benchmarkDetail(params.benchmarkId, locale, recentRunsOf(params.benchmarkId, locale)), writtenIn(locale));
+    return response(200).json(benchmarkDetail(params.benchmarkId, publishedShowingOf(params.benchmarkId, locale), publishedRecentRunsOf(params.benchmarkId, locale), locale), writtenIn(locale));
   }),
 
   http.get('/benchmarks/{benchmarkId}/leaderboard', ({ params, query, request, response }) => {
@@ -41,7 +42,7 @@ export const publicHandlers = [
       return response(404).json({ message: `no benchmark ${params.benchmarkId}` });
     }
     const locale = localeOf(request);
-    const entries = leaderboardView(params.benchmarkId, query.get('view') ?? 'combination', locale);
+    const entries = leaderboardView(publishedEntriesOf(params.benchmarkId, locale), query.get('view') ?? 'combination');
     return response(200).json(pageOf(entries, query, DEFAULT_LEADERBOARD_PAGE_SIZE), writtenIn(locale));
   }),
 
@@ -50,7 +51,7 @@ export const publicHandlers = [
       return response(404).json({ message: `no benchmark ${params.benchmarkId}` });
     }
     const locale = localeOf(request);
-    return response(200).json(leaderboardView(params.benchmarkId, 'combination', locale).map(entry => ({ model: entry.model, harness: entry.harness })), writtenIn(locale));
+    return response(200).json(publishedEntriesOf(params.benchmarkId, locale).map(entry => ({ model: entry.model, harness: entry.harness })), writtenIn(locale));
   }),
 
   http.get('/benchmarks/{benchmarkId}/tasks', async ({ params, query, response }) => {
@@ -102,7 +103,7 @@ export const publicHandlers = [
       return response(404).json({ message: `no task ${params.taskId} in ${params.benchmarkId}` });
     }
     const locale = localeOf(request);
-    const combinations = taskRunsOf(params.benchmarkId, task.id, locale);
+    const combinations = publishedTaskRuns(params.benchmarkId, taskRunsOf(params.benchmarkId, task.id, locale));
     await delay(80);
     return response(200).json({ task: { id: task.id, title: task.title, passRate: passRateOf(combinations) }, runsPerTask: RUNS_PER_TASK, combinations }, writtenIn(locale));
   }),

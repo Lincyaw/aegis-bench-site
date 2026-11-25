@@ -2,7 +2,7 @@ import type { Locale, RecentRun, RunDetail, SubmissionVerdict, TimelineMark, Tim
 import { benchmarkById, type TaskKind } from './benchmarks';
 import { RECORD_LOCALE } from './catalog';
 import { fractionOf, hashOf, pickOf } from './hash';
-import { SHOWCASE_RUN_ID, completionTokensOf, planOf, runIdOf, runRecordOf, stepTimeOf, type RunPlan, type RunRecord } from './runs';
+import { SHOWCASE_RUN_ID, completionTokensOf, planOf, runRecordOf, stepTimeOf, type RunPlan, type RunRecord } from './runs';
 
 /** The tools a generated run cycles through, by task kind. */
 export const TOOL_PLAN: Record<TaskKind, string[]> = {
@@ -196,11 +196,10 @@ export function runDetailOf(runId: string, locale: Locale): RunDetail | undefine
   return { ...record, timeline: timelineOf(trajectory, benchmarkById(record.benchmark.id).changeTools) };
 }
 
-/** The runs a benchmark page lists, each its combination's first attempt. */
-export function recentRunsOf(benchmarkId: string, locale: Locale): RecentRun[] {
-  const { kind, listedRuns } = benchmarkById(benchmarkId);
-  return listedRuns.map(([taskId, modelId, harnessId]) => {
-    const runId = runIdOf(benchmarkId, taskId, modelId, harnessId, 1);
+/** The runs a benchmark page lists, as its benchmark words their results. */
+export function recentRunsOf(benchmarkId: string, runIds: string[], locale: Locale): RecentRun[] {
+  const { kind } = benchmarkById(benchmarkId);
+  return runIds.map(runId => {
     const detail = runDetailOf(runId, locale);
     if (!detail) {
       throw new Error(`${benchmarkId} lists run ${runId}, which has no record`);

@@ -1,4 +1,4 @@
-import type { BenchmarkDetail, BenchmarkRef, BenchmarkSummary, LeaderboardEntry, LeaderboardView, Locale, Metric, RecentRun, Stage, TimelineLegend } from '../api/types';
+import type { BenchmarkDetail, BenchmarkRef, BenchmarkSummary, EntrantKey, LeaderboardEntry, LeaderboardView, Locale, Metric, RecentRun, Stage, TimelineLegend } from '../api/types';
 import { EVALUATED_IN, RUNS_PER_TASK, STAGES, harnessRef, modelRef, stageRef, type Text } from './catalog';
 
 /** The kind of work a benchmark's tasks ask for; it decides how their tasks, runs and trajectories are generated. */
@@ -30,7 +30,7 @@ export interface BenchmarkRecord {
   /** The public sample task and its text, which the benchmark's page quotes. */
   sample: { taskId: string; statement: string };
 
-  /** The runs the benchmark page lists, as [task, model, harness]; each shows that combination's first attempt. */
+  /** The runs the first releases show on the benchmark page, as [task, model, harness]; each is that combination's first attempt. */
   listedRuns: [string, string, string][];
 }
 
@@ -159,18 +159,20 @@ export function rankingEntryOf(benchmarkId: string, modelId: string, harnessId: 
   return entry && { score: entry[2], avgCostUsd: entry[3] };
 }
 
-export function leaderboardOf(benchmarkId: string, locale: Locale): LeaderboardEntry[] {
-  return benchmarkById(benchmarkId).ranking.map(([modelId, harnessId, score, avgCostUsd], index) => ({
-    rank: index + 1, model: modelRef(modelId, locale), harness: harnessRef(harnessId, locale), score, runsPerTask: RUNS_PER_TASK, avgCostUsd, evaluatedIn: EVALUATED_IN,
-  }));
+/** The given combinations ranked by their results on the benchmark, best first. */
+export function leaderboardOf(benchmarkId: string, entrants: EntrantKey[], locale: Locale): LeaderboardEntry[] {
+  return benchmarkById(benchmarkId).ranking
+    .filter(([modelId, harnessId]) => entrants.some(entrant => entrant.modelId === modelId && entrant.harnessId === harnessId))
+    .map(([modelId, harnessId, score, avgCostUsd], index) => ({
+      rank: index + 1, model: modelRef(modelId, locale), harness: harnessRef(harnessId, locale), score, runsPerTask: RUNS_PER_TASK, avgCostUsd, evaluatedIn: EVALUATED_IN,
+    }));
 }
 
 /** Leaderboard entries per page when a request names no limit, as the spec declares. */
 export const DEFAULT_LEADERBOARD_PAGE_SIZE = 20;
 
 /** The combination view, or each model's (or harness's) best combination, re-ranked. */
-export function leaderboardView(benchmarkId: string, view: LeaderboardView, locale: Locale): LeaderboardEntry[] {
-  const entries = leaderboardOf(benchmarkId, locale);
+export function leaderboardView(entries: LeaderboardEntry[], view: LeaderboardView): LeaderboardEntry[] {
   if (view === 'combination') {
     return entries;
   }
@@ -179,20 +181,26 @@ export function leaderboardView(benchmarkId: string, view: LeaderboardView, loca
   return best.map((entry, index) => ({ ...entry, rank: index + 1 }));
 }
 
-export function benchmarkSummary(benchmarkId: string, locale: Locale): BenchmarkSummary {
+/** What the public site shows of a benchmark beyond its record: its summary and its ranked combinations. */
+export interface BenchmarkShowing {
+  summary: string;
+  entries: LeaderboardEntry[];
+}
+
+export function benchmarkSummary(benchmarkId: string, showing: BenchmarkShowing, locale: Locale): BenchmarkSummary {
   const record = benchmarkById(benchmarkId);
   return {
-    ...benchmarkRef(benchmarkId), version: record.version, stage: stageRef(record.stageId, locale), summary: record.summary[locale],
-    taskCount: record.taskCount, combinationCount: record.ranking.length, runsPerTask: RUNS_PER_TASK,
+    ...benchmarkRef(benchmarkId), version: record.version, stage: stageRef(record.stageId, locale), summary: showing.summary,
+    taskCount: record.taskCount, combinationCount: showing.entries.length, runsPerTask: RUNS_PER_TASK,
     metric: { ...record.metric, name: record.metric.name[locale] }, updatedOn: record.updatedOn,
-    topThree: leaderboardOf(benchmarkId, locale).slice(0, 3),
+    topThree: showing.entries.slice(0, 3),
   };
 }
 
-export function benchmarkDetail(benchmarkId: string, locale: Locale, recentRuns: RecentRun[]): BenchmarkDetail {
+export function benchmarkDetail(benchmarkId: string, showing: BenchmarkShowing, recentRuns: RecentRun[], locale: Locale): BenchmarkDetail {
   const { action, change, submitPassed, submitFailed } = benchmarkById(benchmarkId).timelineLegend;
   return {
-    ...benchmarkSummary(benchmarkId, locale), topFive: leaderboardOf(benchmarkId, locale).slice(0, 5), recentRuns,
+    ...benchmarkSummary(benchmarkId, showing, locale), topFive: showing.entries.slice(0, 5), recentRuns,
     timelineLegend: { action: action[locale], change: change[locale], submitPassed: submitPassed[locale], submitFailed: submitFailed[locale] },
   };
 }

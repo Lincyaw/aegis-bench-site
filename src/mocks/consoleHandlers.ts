@@ -9,6 +9,8 @@ import {
 } from './consoleTasks';
 import { DEFAULT_HUNT_TRIAL_PAGE_SIZE, HUNTS, filteredTrialsOf, huntById, huntOf, huntTrialOf, runHuntFindingsOf } from './hunts';
 import { http, localeOf, pageOf, writtenIn } from './protocol';
+import { contentProblemOf, createDraft, discardDraft, draftOf, makeCurrent, releaseById, releaseDetailOf, releaseSummaryOf, releasesOf, restoreRelease, updateDraft } from './releases';
+import { DEFAULT_CHANGELOG_PAGE_SIZE, changelogOf, releaseOverview, workbenchOf } from './workspace';
 import { consoleBenchmarkOf, overviewOf } from './results';
 import { runFactsOf, runRowOf } from './runIndex';
 import { DEFAULT_ENTRY_PAGE_SIZE, taskFileOf, taskFilesOf } from './taskFiles';
@@ -254,6 +256,140 @@ export const consoleHandlers = [
     const findings = runHuntFindingsOf(params.runId);
     await delay(80);
     return findings ? response(200).json(findings) : response(404).json({ message: `no run ${params.runId}` });
+  }),
+
+  http.get('/console/workbench', async ({ cookies, request, response }) => {
+    if (!sessionUserOf(cookies)) {
+      return response(401).json(SIGN_IN_REQUIRED);
+    }
+    const locale = localeOf(request);
+    await delay(120);
+    return response(200).json(workbenchOf(locale), writtenIn(locale));
+  }),
+
+  http.get('/console/changelog', async ({ cookies, query, response }) => {
+    if (!sessionUserOf(cookies)) {
+      return response(401).json(SIGN_IN_REQUIRED);
+    }
+    const benchmarkId = query.get('benchmarkId') ?? '';
+    if (benchmarkId && !hasBenchmark(benchmarkId)) {
+      return response(404).json({ message: `no benchmark ${benchmarkId}` });
+    }
+    const entries = changelogOf(benchmarkId ? [benchmarkId] : BENCHMARKS.map(benchmark => benchmark.id), query.get('change') ?? undefined);
+    await delay(100);
+    return response(200).json(pageOf(entries, query, DEFAULT_CHANGELOG_PAGE_SIZE));
+  }),
+
+  http.get('/console/releases', async ({ cookies, response }) => {
+    if (!sessionUserOf(cookies)) {
+      return response(401).json(SIGN_IN_REQUIRED);
+    }
+    await delay(80);
+    return response(200).json(releaseOverview());
+  }),
+
+  http.get('/console/releases/{releaseId}', ({ cookies, params, response }) => {
+    if (!sessionUserOf(cookies)) {
+      return response(401).json(SIGN_IN_REQUIRED);
+    }
+    const release = releaseById(params.releaseId);
+    return release ? response(200).json(releaseDetailOf(release)) : response(404).json({ message: `no release ${params.releaseId}` });
+  }),
+
+  http.put('/console/releases/{releaseId}', async ({ cookies, params, request, response }) => {
+    const user = sessionUserOf(cookies);
+    if (!user) {
+      return response(401).json(SIGN_IN_REQUIRED);
+    }
+    const release = releaseById(params.releaseId);
+    if (!release) {
+      return response(404).json({ message: `no release ${params.releaseId}` });
+    }
+    if (release.status !== 'draft') {
+      return response(409).json({ message: `release ${release.id} is ${release.status}; only a draft changes` });
+    }
+    const content = await request.json();
+    const problem = contentProblemOf(release.benchmarkId, content);
+    if (problem) {
+      return response(422).json({ message: problem });
+    }
+    await delay(160);
+    return response(200).json(releaseDetailOf(updateDraft(release, content, user.account)));
+  }),
+
+  http.delete('/console/releases/{releaseId}', async ({ cookies, params, response }) => {
+    if (!sessionUserOf(cookies)) {
+      return response(401).json(SIGN_IN_REQUIRED);
+    }
+    const release = releaseById(params.releaseId);
+    if (!release) {
+      return response(404).json({ message: `no release ${params.releaseId}` });
+    }
+    if (release.status !== 'draft') {
+      return response(409).json({ message: `release ${release.id} is ${release.status}; only a draft is discarded` });
+    }
+    discardDraft(release);
+    await delay(120);
+    return response(200).json(releasesOf(release.benchmarkId).map(releaseSummaryOf));
+  }),
+
+  http.post('/console/releases/{releaseId}/publish', async ({ cookies, params, request, response }) => {
+    const user = sessionUserOf(cookies);
+    if (!user) {
+      return response(401).json(SIGN_IN_REQUIRED);
+    }
+    const release = releaseById(params.releaseId);
+    if (!release) {
+      return response(404).json({ message: `no release ${params.releaseId}` });
+    }
+    if (release.status !== 'draft') {
+      return response(409).json({ message: `release ${release.id} is ${release.status}; only a draft is published` });
+    }
+    const { note } = await request.json();
+    await delay(240);
+    return response(200).json(releaseDetailOf(makeCurrent(release, note, user.account)));
+  }),
+
+  http.post('/console/releases/{releaseId}/restore', async ({ cookies, params, request, response }) => {
+    const user = sessionUserOf(cookies);
+    if (!user) {
+      return response(401).json(SIGN_IN_REQUIRED);
+    }
+    const release = releaseById(params.releaseId);
+    if (!release) {
+      return response(404).json({ message: `no release ${params.releaseId}` });
+    }
+    if (release.status !== 'superseded') {
+      return response(409).json({ message: `release ${release.id} is ${release.status}; only a superseded release is restored` });
+    }
+    const { note } = await request.json();
+    await delay(240);
+    return response(200).json(releaseDetailOf(restoreRelease(release, note, user.account)));
+  }),
+
+  http.get('/console/benchmarks/{benchmarkId}/releases', ({ cookies, params, response }) => {
+    if (!sessionUserOf(cookies)) {
+      return response(401).json(SIGN_IN_REQUIRED);
+    }
+    return hasBenchmark(params.benchmarkId)
+      ? response(200).json(releasesOf(params.benchmarkId).map(releaseSummaryOf))
+      : response(404).json({ message: `no benchmark ${params.benchmarkId}` });
+  }),
+
+  http.post('/console/benchmarks/{benchmarkId}/releases', async ({ cookies, params, response }) => {
+    const user = sessionUserOf(cookies);
+    if (!user) {
+      return response(401).json(SIGN_IN_REQUIRED);
+    }
+    if (!hasBenchmark(params.benchmarkId)) {
+      return response(404).json({ message: `no benchmark ${params.benchmarkId}` });
+    }
+    const existing = draftOf(params.benchmarkId);
+    if (existing) {
+      return response(409).json({ message: `${params.benchmarkId} already has draft ${existing.id}` });
+    }
+    await delay(160);
+    return response(200).json(releaseDetailOf(createDraft(params.benchmarkId, user.account)));
   }),
 
   http.get('/console/benchmarks/{benchmarkId}/runs', async ({ cookies, params, query, request, response }) => {

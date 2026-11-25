@@ -6,6 +6,8 @@ import "./console/tasks.tsp";
 import "./console/models.tsp";
 import "./console/collections.tsp";
 import "./console/analysis.tsp";
+import "./console/releases.tsp";
+import "./console/workspace.tsp";
 
 using Http;
 

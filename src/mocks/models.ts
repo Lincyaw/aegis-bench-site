@@ -1,6 +1,7 @@
 import type { Locale, ModelProfile } from '../api/types';
-import { BENCHMARKS, benchmarkRef, leaderboardOf } from './benchmarks';
+import { BENCHMARKS, benchmarkRef } from './benchmarks';
 import { MODELS, PUBLISHED_ON, modelRef, stageRef } from './catalog';
+import { publishedEntriesOf } from './published';
 
 export function hasModel(modelId: string): boolean {
   return MODELS.some(model => model.id === modelId);
@@ -15,9 +16,9 @@ export function modelSummary(vendor: string, benchmarkCount: number, locale: Loc
 /** A model's best combination and rank on every benchmark it entered, and its score under each harness. */
 export function modelProfile(modelId: string, locale: Locale): ModelProfile {
   const model = modelRef(modelId, locale);
-  const entered = BENCHMARKS.filter(record => record.ranking.some(([rankedModel]) => rankedModel === modelId));
+  const entered = BENCHMARKS.filter(record => publishedEntriesOf(record.id, locale).some(entry => entry.model.id === modelId));
   const standings = entered.map(record => {
-    const board = leaderboardOf(record.id, locale);
+    const board = publishedEntriesOf(record.id, locale);
     const best = board.find(entry => entry.model.id === modelId);
     if (!best) {
       throw new Error(`${modelId} is ranked on ${record.id} but missing from its leaderboard`);
@@ -29,7 +30,7 @@ export function modelProfile(modelId: string, locale: Locale): ModelProfile {
   });
   const harnessComparison = entered.map(record => ({
     benchmark: benchmarkRef(record.id), half: stageRef(record.stageId, locale).half, metric: { ...record.metric, name: record.metric.name[locale] },
-    scores: leaderboardOf(record.id, locale).filter(entry => entry.model.id === modelId).map(entry => ({ harness: entry.harness, score: entry.score })),
+    scores: publishedEntriesOf(record.id, locale).filter(entry => entry.model.id === modelId).map(entry => ({ harness: entry.harness, score: entry.score })),
   }));
   const harnessIds = new Set(harnessComparison.flatMap(comparison => comparison.scores.map(score => score.harness.id)));
   return {
