@@ -4,12 +4,15 @@ import { useParams } from 'react-router-dom';
 import { useBenchmarkOverview } from '../api/consoleClient';
 import type { EntrantResult, PendingWork, RunRow } from '../api/types';
 import { ConsoleHeader } from '../console/ConsoleHeader';
-import { useLocale } from '../i18n/localeContext';
+import { LocaleLink } from '../i18n/LocaleRouting';
+import { useLocale, useLocalizedNavigate } from '../i18n/localeContext';
 import { dateTimeOf, groupedNumber } from '../i18n/locales';
 import { ModelLabel } from '../models/ModelBadge';
 import { FailureClassTag } from '../results/FailureClassTag';
 import { PassRate } from '../results/PassRate';
 import { formatCost, formatRate } from '../results/presentation';
+import { PENDING_RUNS, consoleRunPath, consoleRunsPath } from '../runs/consoleRunQuery';
+import { combinationKey } from '../runs/runRecordsQuery';
 import { StatTile, StatTiles } from '../ui/content';
 import content from '../ui/content.module.css';
 import table from '../ui/table.module.css';
@@ -36,27 +39,28 @@ export function BenchmarkOverviewPage() {
       </StatTiles>
       <section className={styles.section}>
         <h2 className="t-heading">{t('console.overview.entrants')}</h2>
-        <EntrantTable entrants={entrants} />
+        <EntrantTable benchmarkId={benchmark.id} entrants={entrants} />
         <p className="t-micro c-faint">{t('console.overview.entrantsNote')}</p>
       </section>
       <div className={styles.columns}>
         <section className={clsx(content.panel, styles.panel)}>
           <h2 className="t-heading">{t('console.overview.recentFailures')}</h2>
-          <ul className={styles.list}>{recentFailures.map(run => <RecentFailure key={run.id} run={run} />)}</ul>
+          <ul className={styles.list}>{recentFailures.map(run => <RecentFailure key={run.id} benchmarkId={benchmark.id} run={run} />)}</ul>
         </section>
         <section className={clsx(content.panel, styles.panel)}>
           <h2 className="t-heading">{t('console.overview.pending')}</h2>
-          <ul className={styles.list}>{pending.map(work => <PendingItem key={work.kind} work={work} />)}</ul>
+          <ul className={styles.list}>{pending.map(work => <PendingItem key={work.kind} benchmarkId={benchmark.id} work={work} />)}</ul>
         </section>
       </div>
     </div>
   );
 }
 
-/** Each combination's pass rate, how many tasks it always or ever solved, and what a run of it costs. */
-export function EntrantTable({ entrants }: { entrants: EntrantResult[] }) {
+/** Each combination's pass rate, how many tasks it always or ever solved, and what a run of it costs; a row opens its runs. */
+export function EntrantTable({ benchmarkId, entrants }: { benchmarkId: string; entrants: EntrantResult[] }) {
   const { t } = useTranslation();
   const locale = useLocale();
+  const navigate = useLocalizedNavigate();
   return (
     <div className={clsx(table.table, styles.entrants)} role="table" aria-label={t('console.overview.entrants')}>
       <div className={clsx(table.row, table.head, 't-micro c-faint')} role="row">
@@ -68,7 +72,7 @@ export function EntrantTable({ entrants }: { entrants: EntrantResult[] }) {
         <span role="columnheader">{t('console.overview.column.steps')}</span>
       </div>
       {entrants.map(({ model, harness, result }) => (
-        <div key={`${model.id}-${harness.id}`} className={table.row} role="row">
+        <div key={`${model.id}-${harness.id}`} className={clsx(table.row, table.link)} role="row" onClick={() => navigate(consoleRunsPath(benchmarkId, { combination: combinationKey(model.id, harness.id) }))}>
           <span role="cell" className={styles.entrant}><ModelLabel model={model} /><span className="t-small c-muted">{harness.name}</span></span>
           <span role="cell"><PassRate rate={result.passRate} /></span>
           <span role="cell" className="t-numeric c-muted">{t('console.overview.tasksOf', { solved: result.solvedEveryTime, total: result.tasks })}</span>
@@ -81,23 +85,27 @@ export function EntrantTable({ entrants }: { entrants: EntrantResult[] }) {
   );
 }
 
-export function RecentFailure({ run }: { run: RunRow }) {
+export function RecentFailure({ benchmarkId, run }: { benchmarkId: string; run: RunRow }) {
   const locale = useLocale();
   return (
-    <li className={styles.failure}>
-      <span className={styles.who}><ModelLabel model={run.model} /><span className="t-small c-muted">{run.harness.name}</span></span>
-      <span className="t-small"><span className="t-mono c-faint">{run.task.id}</span> {run.task.title}</span>
-      <span className={styles.meta}><FailureClassTag failureClass={run.failureClass} /><span className="t-mono c-faint">{dateTimeOf(locale, run.finishedAt)}</span></span>
+    <li>
+      <LocaleLink className={styles.failure} to={consoleRunPath(benchmarkId, run.id)}>
+        <span className={styles.who}><ModelLabel model={run.model} /><span className="t-small c-muted">{run.harness.name}</span></span>
+        <span className="t-small"><span className="t-mono c-faint">{run.task.id}</span> {run.task.title}</span>
+        <span className={styles.meta}><FailureClassTag failureClass={run.failureClass} /><span className="t-mono c-faint">{dateTimeOf(locale, run.finishedAt)}</span></span>
+      </LocaleLink>
     </li>
   );
 }
 
-export function PendingItem({ work }: { work: PendingWork }) {
+export function PendingItem({ benchmarkId, work }: { benchmarkId: string; work: PendingWork }) {
   const { t } = useTranslation();
   return (
-    <li className={styles.pending}>
-      <span className="t-label">{t(`console.overview.pendingKind.${work.kind}.title`, { count: work.count })}</span>
-      <span className="t-small c-muted">{t(`console.overview.pendingKind.${work.kind}.body`)}</span>
+    <li>
+      <LocaleLink className={styles.pending} to={consoleRunsPath(benchmarkId, PENDING_RUNS[work.kind])}>
+        <span className="t-label">{t(`console.overview.pendingKind.${work.kind}.title`, { count: work.count })}</span>
+        <span className="t-small c-muted">{t(`console.overview.pendingKind.${work.kind}.body`)}</span>
+      </LocaleLink>
     </li>
   );
 }

@@ -15,10 +15,13 @@ model ConsoleBenchmark {
   metric: Metric;
   taskCount: int32;
 
-  /** Model and harness combinations evaluated on it */
-  entrantCount: int32;
+  /** Model and harness combinations evaluated on it, in ranking order */
+  entrants: Combination[];
 
   runCount: int32;
+
+  /** What each mark on a run's timeline means on this benchmark */
+  timelineLegend: TimelineLegend;
 }
 
 /**

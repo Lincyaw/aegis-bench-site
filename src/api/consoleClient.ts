@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient, useSuspenseInfiniteQuery, useSuspenseQuery, type QueryClient } from '@tanstack/react-query';
 import { useLocale } from '../i18n/localeContext';
 import { api, languageHeader, nextPageOffset, responseBody } from './client';
-import type { SessionState, SignInRequest, TaskOrder, TaskSpread } from './types';
+import type { ReviewFilter, RunEventKind, RunOutcome, SessionState, SignInRequest, TaskOrder, TaskSpread } from './types';
 
 /** Every console query key starts with this, so signing in or out can drop what the previous session read. */
 export const CONSOLE_QUERY = 'console';
@@ -139,6 +139,61 @@ export function useConsoleTaskFile(benchmarkId: string, taskId: string, path: st
   return useSuspenseQuery({
     queryKey: [CONSOLE_QUERY, 'taskFile', benchmarkId, taskId, path],
     queryFn: () => responseBody(api.GET('/console/benchmarks/{benchmarkId}/tasks/{taskId}/file', { params: { path: { benchmarkId, taskId }, query: { path } } })),
+  }).data;
+}
+
+/** What the console's run list asks for: the filters and the page. */
+export interface ConsoleRunQuery {
+  q: string;
+
+  /** A model and harness pair as "<model id>-<harness id>"; every pair when empty */
+  combination: string;
+
+  outcome?: RunOutcome;
+  review?: ReviewFilter;
+  offset: number;
+}
+
+export function useConsoleRunPage(benchmarkId: string, query: ConsoleRunQuery, pageSize: number) {
+  const locale = useLocale();
+  return useSuspenseQuery({
+    queryKey: [CONSOLE_QUERY, 'runs', benchmarkId, query, pageSize, locale],
+    queryFn: () => responseBody(api.GET('/console/benchmarks/{benchmarkId}/runs', {
+      params: {
+        path: { benchmarkId }, header: languageHeader(locale),
+        query: { q: query.q, combination: query.combination, outcome: query.outcome, review: query.review, offset: query.offset, limit: pageSize },
+      },
+    })),
+  }).data;
+}
+
+export function useConsoleRun(runId: string) {
+  const locale = useLocale();
+  return useSuspenseQuery({
+    queryKey: [CONSOLE_QUERY, 'run', runId, locale],
+    queryFn: () => responseBody(api.GET('/console/runs/{runId}', { params: { path: { runId }, header: languageHeader(locale) } })),
+  }).data;
+}
+
+/** One page of a run's trajectory as the console reads it; a trajectory is a record, the same in every language. */
+export function useConsoleTrajectoryPage(runId: string, offset: number, pageSize: number) {
+  return useSuspenseQuery({
+    queryKey: [CONSOLE_QUERY, 'trajectory', runId, offset, pageSize],
+    queryFn: () => responseBody(api.GET('/console/runs/{runId}/trajectory/steps', { params: { path: { runId }, query: { offset, limit: pageSize } } })),
+  }).data;
+}
+
+/** What the event list of a run asks for. */
+export interface RunEventQuery {
+  kind?: RunEventKind;
+  q: string;
+  offset: number;
+}
+
+export function useRunEvents(runId: string, query: RunEventQuery, pageSize: number) {
+  return useSuspenseQuery({
+    queryKey: [CONSOLE_QUERY, 'events', runId, query, pageSize],
+    queryFn: () => responseBody(api.GET('/console/runs/{runId}/events', { params: { path: { runId }, query: { kind: query.kind, q: query.q, offset: query.offset, limit: pageSize } } })),
   }).data;
 }
 

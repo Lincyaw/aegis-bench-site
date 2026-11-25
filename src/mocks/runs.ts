@@ -181,6 +181,11 @@ export function costUsdOf(key: RunKey, steps: number): number {
   return Math.round((entry?.avgCostUsd ?? 0.5) * (steps / 36) * 100) / 100;
 }
 
+/** Tokens the model wrote at an agent step; the trajectory records them, and the run's metrics add them up. */
+export function completionTokensOf(runId: string, step: number): number {
+  return 120 + (hashOf(`${runId}.c${step}`) % 400);
+}
+
 /** Whether a human has reviewed a failed run: about three failures in five, the showcase run among them. */
 export function isReviewed(runId: string): boolean {
   return runId === SHOWCASE_RUN_ID || fractionOf(`review:${runId}`) < 0.6;
@@ -412,7 +417,8 @@ export function runRecordOf(runId: string, locale: Locale): RunRecord | undefine
     model: modelRef(key.modelId, locale), harness, attempt: key.attempt, attemptCount: RUNS_PER_TASK, outcome: plan.outcome,
     metrics: {
       steps: plan.steps, durationMinutes: Math.max(2, Math.round(plan.steps * 0.44)), submissions: plan.submitSteps.length,
-      outputTokens: plan.steps * 1460, costUsd: costUsdOf(key, plan.steps),
+      outputTokens: Array.from({ length: plan.steps - 1 }, (_, index) => completionTokensOf(runId, index + 2)).reduce((sum, tokens) => sum + tokens, 0),
+      costUsd: costUsdOf(key, plan.steps),
       endReason: plan.outcome === 'executionFailed' ? 'executionError' : 'submitted',
     },
     input: {

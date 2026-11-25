@@ -1,7 +1,7 @@
 import { clsx } from 'clsx';
 import { Suspense, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useRun, type RunDetail, type TimelineLegend } from '../api/client';
+import { useRun, useTrajectoryPage, type RunDetail, type TimelineLegend } from '../api/client';
 import { LocaleLink } from '../i18n/LocaleRouting';
 import { VendorBadge } from '../models/ModelBadge';
 import { INSTRUCTION_PATH, taskFilesPath } from '../tasks/taskFiles';
@@ -31,6 +31,8 @@ export function RunDetailPanel({ runId, legend, view, onView }: { runId: string;
   const { t } = useTranslation();
   const run = useRun(runId);
   const tab = view.tab ?? defaultRunTab(run);
+  const filePath = (path: string) => taskFilesPath(run.benchmark.id, run.task.id, path);
+  const usePublicTrajectoryPage = (offset: number, pageSize: number) => useTrajectoryPage(runId, offset, pageSize);
   const counts: Partial<Record<RunTab, number>> = { grading: run.grading.total, failure: run.failure?.failedChecks.length, trajectory: run.metrics.steps };
   return (
     <div className={styles.root}>
@@ -43,13 +45,16 @@ export function RunDetailPanel({ runId, legend, view, onView }: { runId: string;
         ))}
       </TabRow>
       <div className={styles.content} role="tabpanel">
-        {tab === 'input' && <InputTab run={run} />}
+        {tab === 'input' && <InputTab run={run} filePath={filePath} />}
         {tab === 'output' && <OutputTab run={run} onStep={step => onView({ tab: 'trajectory', step })} />}
-        {tab === 'grading' && <GradingTab run={run} check={view.check} onCheck={check => onView({ tab: 'grading', check })} />}
+        {tab === 'grading' && <GradingTab run={run} filePath={filePath} check={view.check} onCheck={check => onView({ tab: 'grading', check })} />}
         {tab === 'failure' && <FailureTab run={run} onCheck={check => onView({ tab: 'grading', check })} onStep={step => onView({ tab: 'trajectory', step })} />}
         {tab === 'trajectory' && (
           <Suspense fallback={<Loading />}>
-            <TrajectoryView runId={runId} timeline={run.timeline} legend={legend} evidence={run.failure?.review?.evidenceSteps ?? []} selected={view.step} onSelect={step => onView({ tab: 'trajectory', step })} />
+            <TrajectoryView
+              usePage={usePublicTrajectoryPage} timeline={run.timeline} legend={legend}
+              evidence={run.failure?.review?.evidenceSteps ?? []} selected={view.step} onSelect={step => onView({ tab: 'trajectory', step })}
+            />
           </Suspense>
         )}
       </div>
@@ -89,7 +94,10 @@ export function DetailSection({ title, aside, children }: { title: string; aside
   );
 }
 
-export function InputTab({ run }: { run: RunDetail }) {
+/** A run's tabs link the task's files where the reader can open them: the public task page, or the console's. */
+type TaskFilePath = (path: string) => string;
+
+export function InputTab({ run, filePath }: { run: RunDetail; filePath: TaskFilePath }) {
   const { t } = useTranslation();
   const { input } = run;
   return (
@@ -99,7 +107,7 @@ export function InputTab({ run }: { run: RunDetail }) {
           <p className={clsx(styles.prose, 't-body')}>{input.instruction}</p>
           {input.reportSchema && <pre className={clsx(styles.code, 't-mono c-muted')}>{input.reportSchema}</pre>}
         </div>
-        <LocaleLink className={clsx(controls.textLink, 't-micro')} to={taskFilesPath(run.benchmark.id, run.task.id, INSTRUCTION_PATH)}>{t('tasks.viewFile')}</LocaleLink>
+        <LocaleLink className={clsx(controls.textLink, 't-micro')} to={filePath(INSTRUCTION_PATH)}>{t('tasks.viewFile')}</LocaleLink>
       </DetailSection>
       <DetailSection title={t('runs.input.environment')}>
         <FactList layout="rows" facts={input.environment} />
@@ -155,7 +163,7 @@ export function OutputTab({ run, onStep }: { run: RunDetail; onStep: (step: numb
   );
 }
 
-export function GradingTab({ run, check, onCheck }: { run: RunDetail; check: string | undefined; onCheck: (id: string | undefined) => void }) {
+export function GradingTab({ run, filePath, check, onCheck }: { run: RunDetail; filePath: TaskFilePath; check: string | undefined; onCheck: (id: string | undefined) => void }) {
   const { t } = useTranslation();
   const { grading } = run;
   return (
@@ -187,7 +195,7 @@ export function GradingTab({ run, check, onCheck }: { run: RunDetail; check: str
                   {item.rubric && <p className="t-small c-muted">{t('runs.grading.rubric', { rubric: item.rubric })}</p>}
                   {item.code && (
                     <>
-                      <LocaleLink className={clsx(controls.textLink, 't-mono')} to={taskFilesPath(run.benchmark.id, run.task.id, item.code.path)}>{item.code.path}</LocaleLink>
+                      <LocaleLink className={clsx(controls.textLink, 't-mono')} to={filePath(item.code.path)}>{item.code.path}</LocaleLink>
                       <pre className={clsx(content.panel, styles.code, 't-mono c-muted')}>{item.code.source}</pre>
                     </>
                   )}

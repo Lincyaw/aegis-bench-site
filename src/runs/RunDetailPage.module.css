@@ -1,0 +1,21 @@
+.page { display: grid; gap: var(--space-4); }
+.page > header { margin-bottom: 0; }
+.facts { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-4); }
+.tabs { --tab-gap: var(--space-6); border-bottom: var(--rule-hairline); }
+.count { margin-left: var(--space-1); color: var(--text-faint); font-variant-numeric: tabular-nums; }
+.panel { display: grid; gap: var(--space-5); max-width: 60rem; padding-top: var(--space-2); }
+
+.tab { display: grid; gap: var(--space-4); }
+.filters { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+.events { border-top: var(--rule-hairline); }
+.event { display: grid; grid-template-columns: 2.5rem 4.5rem 6rem minmax(0, 1fr) auto; align-items: baseline; gap: var(--space-3); padding: var(--space-2) 0; border-bottom: var(--rule-hairline); }
+.failedEvent .excerpt { color: var(--accent-warning); }
+.excerpt { white-space: pre-wrap; overflow-wrap: anywhere; }
+.tools { --columns: minmax(10rem, 1fr) 7rem 7rem; }
+
+@media (max-width: 760px) {
+  .tools { --columns: minmax(0, 1fr) 4rem 4rem; }
+  .event { grid-template-columns: 2rem 4rem minmax(0, 1fr); }
+  .event > :nth-child(4) { grid-column: 1 / -1; }
+  .event > :last-child { display: none; }
+}

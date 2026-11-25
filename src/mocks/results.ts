@@ -29,10 +29,13 @@ export function resultCountsOf(facts: readonly RunFact[]): ResultCounts {
 
 export function consoleBenchmarkOf(benchmarkId: string, locale: Locale): ConsoleBenchmark {
   const record = benchmarkById(benchmarkId);
+  const { action, change, submitPassed, submitFailed } = record.timelineLegend;
   return {
     ...benchmarkRef(benchmarkId), stage: stageRef(record.stageId, locale), version: record.version, summary: record.summary[locale],
-    metric: { ...record.metric, name: record.metric.name[locale] },
-    taskCount: record.taskCount, entrantCount: record.ranking.length, runCount: record.taskCount * record.ranking.length * RUNS_PER_TASK,
+    metric: { ...record.metric, name: record.metric.name[locale] }, taskCount: record.taskCount,
+    entrants: record.ranking.map(([modelId, harnessId]) => ({ model: modelRef(modelId, locale), harness: harnessRef(harnessId, locale) })),
+    runCount: record.taskCount * record.ranking.length * RUNS_PER_TASK,
+    timelineLegend: { action: action[locale], change: change[locale], submitPassed: submitPassed[locale], submitFailed: submitFailed[locale] },
   };
 }
 

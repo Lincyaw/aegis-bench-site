@@ -1,7 +1,7 @@
 import { clsx } from 'clsx';
 import { useDeferredValue, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useTrajectoryPage, type TimelineLegend, type TimelineStep, type TrajectoryStep } from '../api/client';
+import type { TimelineLegend, TimelineStep, TrajectoryPage, TrajectoryStep } from '../api/client';
 import { ArrowIcon, IconButton } from '../ui/controls';
 import { Pager } from '../ui/navigation';
 import { TRAJECTORY_PAGE_SIZE, isKnownTool, trajectoryPageStartOf } from './presentation';
@@ -13,8 +13,9 @@ import styles from './TrajectoryView.module.css';
  * The ATIF trajectory as the run's timeline of marks and a list of its steps a page at a time; selecting either opens
  * that step, turning the list to its page.
  */
-export function TrajectoryView({ runId, timeline, legend, evidence, selected, onSelect }: {
-  runId: string;
+export function TrajectoryView({ usePage, timeline, legend, evidence, selected, onSelect }: {
+  /** Reads one page of the run's trajectory, from the public site's API or the console's */
+  usePage: (offset: number, pageSize: number) => TrajectoryPage;
 
   /** The run's agent steps as the server marked them */
   timeline: TimelineStep[];
@@ -38,7 +39,7 @@ export function TrajectoryView({ runId, timeline, legend, evidence, selected, on
     }
   }
   // The page in view stays until the next one arrives.
-  const page = useTrajectoryPage(runId, useDeferredValue(pageStart), TRAJECTORY_PAGE_SIZE);
+  const page = usePage(useDeferredValue(pageStart), TRAJECTORY_PAGE_SIZE);
   const firstShown = page.items[0]?.step_id;
   const lastShown = page.items.at(-1)?.step_id;
   const selectedRow = useRef<HTMLLIElement>(null);

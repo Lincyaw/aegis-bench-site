@@ -1,12 +1,15 @@
 import { delay } from 'msw';
 import { BENCHMARKS, hasBenchmark } from './benchmarks';
+import { DEFAULT_EVENT_PAGE_SIZE, DEFAULT_RUN_PAGE_SIZE, consoleRunOf, filteredRunsOf, runEventsOf } from './consoleRuns';
 import {
   DEFAULT_CONSOLE_TASK_PAGE_SIZE, checkResultsOf, consoleEntriesOf, consoleTaskOf, filteredTasksOf, namedTaskOf, referenceFilesOf, revisionsOf,
   tagCountsOf, taskEntrantRunsOf, taskGradingOf, taskRowOf,
 } from './consoleTasks';
 import { http, localeOf, pageOf, writtenIn } from './protocol';
 import { consoleBenchmarkOf, overviewOf } from './results';
+import { runRowOf } from './runIndex';
 import { DEFAULT_ENTRY_PAGE_SIZE, taskFileOf, taskFilesOf } from './taskFiles';
+import { DEFAULT_TRAJECTORY_PAGE_SIZE, trajectoryOf } from './trajectories';
 import { DEMO_PASSWORD, consoleUserOf, sessionUserOf, signedInCookie, signedOutCookie } from './session';
 
 /** The answer of every console operation but the session's own when the request carries no session. */
@@ -138,6 +141,58 @@ export const consoleHandlers = [
     }
     await delay(60);
     return response(200).json(pageOf(entries, query, DEFAULT_ENTRY_PAGE_SIZE));
+  }),
+
+  http.get('/console/benchmarks/{benchmarkId}/runs', async ({ cookies, params, query, request, response }) => {
+    if (!sessionUserOf(cookies)) {
+      return response(401).json(SIGN_IN_REQUIRED);
+    }
+    if (!hasBenchmark(params.benchmarkId)) {
+      return response(404).json({ message: `no benchmark ${params.benchmarkId}` });
+    }
+    const locale = localeOf(request);
+    const filter = { q: (query.get('q') ?? '').trim(), combination: query.get('combination') ?? '', outcome: query.get('outcome') ?? undefined, review: query.get('review') ?? undefined };
+    const page = pageOf(filteredRunsOf(params.benchmarkId, filter), query, DEFAULT_RUN_PAGE_SIZE);
+    await delay(100);
+    return response(200).json({ ...page, items: page.items.map(fact => runRowOf(fact, locale)) }, writtenIn(locale));
+  }),
+
+  http.get('/console/runs/{runId}', async ({ cookies, params, request, response }) => {
+    if (!sessionUserOf(cookies)) {
+      return response(401).json(SIGN_IN_REQUIRED);
+    }
+    const locale = localeOf(request);
+    const run = consoleRunOf(params.runId, locale);
+    await delay(100);
+    return run ? response(200).json(run, writtenIn(locale)) : response(404).json({ message: `no run ${params.runId}` });
+  }),
+
+  http.get('/console/runs/{runId}/trajectory/steps', async ({ cookies, params, query, response }) => {
+    if (!sessionUserOf(cookies)) {
+      return response(401).json(SIGN_IN_REQUIRED);
+    }
+    const trajectory = trajectoryOf(params.runId);
+    if (!trajectory) {
+      return response(404).json({ message: `no run ${params.runId}` });
+    }
+    const { steps, ...header } = trajectory;
+    await delay(80);
+    return response(200).json({ ...header, ...pageOf(steps, query, DEFAULT_TRAJECTORY_PAGE_SIZE) });
+  }),
+
+  http.get('/console/runs/{runId}/events', async ({ cookies, params, query, response }) => {
+    if (!sessionUserOf(cookies)) {
+      return response(401).json(SIGN_IN_REQUIRED);
+    }
+    const trajectory = trajectoryOf(params.runId);
+    if (!trajectory) {
+      return response(404).json({ message: `no run ${params.runId}` });
+    }
+    const kind = query.get('kind');
+    const q = (query.get('q') ?? '').trim();
+    const events = runEventsOf(trajectory).filter(event => (!kind || event.kind === kind) && (!q || event.excerpt.includes(q) || event.tool?.includes(q)));
+    await delay(60);
+    return response(200).json(pageOf(events, query, DEFAULT_EVENT_PAGE_SIZE));
   }),
 
   http.get('/console/benchmarks/{benchmarkId}/tasks/{taskId}/file', async ({ cookies, params, query, response }) => {

@@ -3,7 +3,7 @@ import type {
   TaskOrder, TaskResults, TaskRevision, TaskSpread, ValidationRun,
 } from '../api/types';
 import { benchmarkById, benchmarkRef, hasBenchmark, type TaskKind } from './benchmarks';
-import { harnessRef, modelRef } from './catalog';
+import { STAFF, harnessRef, modelRef } from './catalog';
 import { fractionOf, hashOf, pickOf } from './hash';
 import { resultCountsOf } from './results';
 import { runFactsOf, runRowOf, taskVersionOf, type RunFact } from './runIndex';
@@ -180,7 +180,6 @@ export function checkResultsOf(benchmarkId: string, taskId: string, locale: Loca
 
 const EDIT_NOTES = ['补充任务说明中的边界条件', '修正环境的依赖版本', '新增一项隐藏测试', '更换示例数据，避免与公开代码重合'];
 const GRADING_NOTES = ['放宽报告格式的检查', '修正评分脚本对空结果的判断', '复核结论为评分错误，修订对应检查'];
-const AUTHORS = ['lin.fang', 'zhou.yu', 'chen.qi'];
 
 /** The versions that led to a task's current one, newest first; this round's runs all answered the current version. */
 export function revisionsOf(benchmarkId: string, task: TaskRecord): TaskRevision[] {
@@ -194,7 +193,7 @@ export function revisionsOf(benchmarkId: string, task: TaskRecord): TaskRevision
     const note = created ? '首次登记' : pickOf(change === 'edit' ? EDIT_NOTES : GRADING_NOTES, `note:${key}.${index}`);
     return {
       version: current ? taskVersionOf(benchmarkId, task.id) : hashOf(`version:${key}.${index}`).toString(16).padStart(8, '0').slice(0, 7),
-      change, note, author: pickOf(AUTHORS, `author:${key}.${index}`),
+      change, note, author: pickOf(STAFF, `author:${key}.${index}`),
       registeredAt: new Date(Date.parse('2026-11-12T10:00:00Z') - index * 9 * 86400_000 - (hashOf(`at:${key}.${index}`) % 28800) * 1000).toISOString(),
       current,
       runs: current ? facts.length : 0,

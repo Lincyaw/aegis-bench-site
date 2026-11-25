@@ -1,4 +1,5 @@
 import "@typespec/http";
+import "./session.tsp";
 
 using Http;
 
@@ -24,6 +25,8 @@ model RunRow {
   attempt: int32;
   outcome: RunOutcome;
   finishedAt: utcDateTime;
+  steps: int32;
+  costUsd: float64;
 
   /** The version of the task the run answered, a short content hash */
   taskVersion: string;
@@ -33,4 +36,126 @@ model RunRow {
 
   /** The class the review of a failed run gives it; absent while the failure is unreviewed and for other outcomes */
   failureClass?: FailureClass;
+}
+
+model RunRowPage is Page<RunRow>;
+
+/** Which failed runs a list keeps by their review: the unreviewed ones, or those a review gave one class. */
+enum ReviewFilter {
+  unreviewed,
+  modelError,
+  gradingError,
+  constructionProblem,
+}
+
+/** How often the agent called one tool, and how many of the calls failed. */
+model ToolUsage {
+  tool: string;
+  calls: int32;
+  failures: int32;
+}
+
+/** What a run consumed, from its trajectory's own metrics. */
+model RunUsage {
+  inputTokens: int32;
+  cachedTokens: int32;
+  outputTokens: int32;
+  costUsd: float64;
+  modelCalls: int32;
+
+  /** By tool, the most called first */
+  toolCalls: ToolUsage[];
+}
+
+/** A run as the console reads it: everything the public run record holds, and the records behind it. */
+model ConsoleRunDetail {
+  ...RunDetail;
+  taskVersion: string;
+  batch: string;
+  startedAt: utcDateTime;
+  finishedAt: utcDateTime;
+  usage: RunUsage;
+
+  /** The class the review gives a failed run; absent while the failure is unreviewed */
+  failureClass?: FailureClass;
+
+  /** Who reviewed the failure */
+  reviewer?: string;
+}
+
+/** What one event of a trajectory records. */
+enum RunEventKind {
+  /** What the agent said at a step */
+  message,
+
+  toolCall,
+  observation,
+
+  /** An observation that reports a failed call; the trajectory marks it with `extra.failed` on the observation result */
+  error,
+
+  submit,
+}
+
+/** One event of a run's trajectory, in the order it happened. */
+model RunEvent {
+  /** Position among all the run's events, from 1 */
+  index: int32;
+
+  stepId: int32;
+  kind: RunEventKind;
+  at: utcDateTime;
+  tool?: string;
+
+  /** The event's text, cut at 400 characters */
+  excerpt: string;
+}
+
+model RunEventPage is Page<RunEvent>;
+
+@route("/console/benchmarks/{benchmarkId}/runs")
+@useAuth(SessionCookie)
+interface ConsoleRuns {
+  /** The benchmark's runs, newest first, a page at a time */
+  @get list(
+    @path benchmarkId: string,
+
+    /** Matches the task id or title */
+    @query(#{ explode: true }) q?: string = "",
+
+    /** A model and harness pair as "<model id>-<harness id>"; every pair when empty */
+    @query(#{ explode: true }) combination?: string = "",
+
+    @query(#{ explode: true }) outcome?: RunOutcome,
+
+    /** Keeps only failed runs, by their review */
+    @query(#{ explode: true }) review?: ReviewFilter,
+
+    ...PageQuery<25>,
+    ...LanguageHeader,
+  ): Localized<RunRowPage> | SignInRequiredError | NotFoundError;
+}
+
+@route("/console/runs/{runId}")
+@useAuth(SessionCookie)
+interface ConsoleRunRecords {
+  @get read(@path runId: string, ...LanguageHeader): Localized<ConsoleRunDetail> | SignInRequiredError | NotFoundError;
+
+  /** The run's trajectory a page of steps at a time */
+  @get
+  @route("/trajectory/steps")
+  trajectorySteps(@path runId: string, ...PageQuery<25>): TrajectoryPage | SignInRequiredError | NotFoundError;
+
+  /** The events of the run's trajectory, a page at a time */
+  @get
+  @route("/events")
+  events(
+    @path runId: string,
+    @query(#{ explode: true }) kind?: RunEventKind,
+
+    /** Matches the event's text or tool */
+    @query(#{ explode: true }) q?: string = "",
+
+    ...PageQuery<50>,
+  ): RunEventPage | SignInRequiredError | NotFoundError;
 }

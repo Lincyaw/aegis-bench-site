@@ -6,7 +6,7 @@ import { useConsoleBenchmark, useConsoleTaskPage, type ConsoleTaskQuery } from '
 import { consoleTaskOrderValues, consoleTaskSpreadValues } from '../api/schema';
 import type { ConsoleTaskRow, TagCount, TaskOrder, TaskSpread } from '../api/types';
 import { ConsoleHeader } from '../console/ConsoleHeader';
-import { consoleBenchmarkPath } from '../console/consoleMap';
+import { EVERY_CHOICE, consoleBenchmarkPath } from '../console/consoleMap';
 import { LocaleLink } from '../i18n/LocaleRouting';
 import { useLocale, useLocalizedNavigate } from '../i18n/localeContext';
 import { groupedNumber } from '../i18n/locales';
@@ -17,9 +17,6 @@ import { Pager } from '../ui/navigation';
 import table from '../ui/table.module.css';
 import { TASK_LIST_PAGE_SIZE, consoleTaskPath, parseTaskQuery, taskQuerySearch } from './consoleTaskQuery';
 import styles from './TaskListPage.module.css';
-
-/** The choice of a filter that keeps every task; no tag or spread is spelt this way. */
-export const EVERY = 'all';
 
 /** A benchmark's tasks, hardest first, with what each combination made of them; the filters and the page live in the address. */
 export function TaskListPage() {
@@ -58,12 +55,12 @@ export function TaskFilters({ query, tags, onChange }: { query: ConsoleTaskQuery
     <div className={styles.filters} role="search" aria-label={t('console.tasks.filters')}>
       <SearchField label={t('console.tasks.search')} value={query.q} onChange={q => onChange({ q })} className={styles.search} />
       <Select
-        label={t('console.tasks.tagFilter')} value={query.tag || EVERY} onChange={tag => onChange({ tag: tag === EVERY ? '' : tag })}
-        choices={[{ value: EVERY, label: t('console.tasks.everyTag') }, ...tags.map(({ tag, tasks }) => ({ value: tag, label: `${tag} · ${groupedNumber(locale, tasks)}` }))]}
+        label={t('console.tasks.tagFilter')} value={query.tag || EVERY_CHOICE} onChange={tag => onChange({ tag: tag === EVERY_CHOICE ? '' : tag })}
+        choices={[{ value: EVERY_CHOICE, label: t('console.tasks.everyTag') }, ...tags.map(({ tag, tasks }) => ({ value: tag, label: `${tag} · ${groupedNumber(locale, tasks)}` }))]}
       />
       <Select
-        label={t('console.tasks.spreadFilter')} value={query.spread ?? EVERY} onChange={spread => onChange({ spread: spread === EVERY ? undefined : spread as TaskSpread })}
-        choices={[{ value: EVERY, label: t('console.tasks.everySpread') }, ...consoleTaskSpreadValues.map(spread => ({ value: spread, label: t(`console.tasks.spread.${spread}`) }))]}
+        label={t('console.tasks.spreadFilter')} value={query.spread ?? EVERY_CHOICE} onChange={spread => onChange({ spread: spread === EVERY_CHOICE ? undefined : spread as TaskSpread })}
+        choices={[{ value: EVERY_CHOICE, label: t('console.tasks.everySpread') }, ...consoleTaskSpreadValues.map(spread => ({ value: spread, label: t(`console.tasks.spread.${spread}`) }))]}
       />
       <Select
         label={t('console.tasks.orderFilter')} value={query.order} onChange={order => onChange({ order: order as TaskOrder })}

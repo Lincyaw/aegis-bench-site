@@ -6,12 +6,15 @@ import { useTaskCheckResults, useTaskResults } from '../api/consoleClient';
 import type { ConsoleTaskDetail, TaskEntrantRuns, ValidationRun } from '../api/types';
 import { useLocale } from '../i18n/localeContext';
 import { dateTimeOf } from '../i18n/locales';
+import { LocaleLink } from '../i18n/LocaleRouting';
 import { ModelLabel } from '../models/ModelBadge';
 import { PassRate } from '../results/PassRate';
+import { consoleRunPath, consoleRunsPath } from '../runs/consoleRunQuery';
 import { OutcomeBadge, OutcomeDot } from '../runs/Outcome';
 import { Tag } from '../ui/content';
 import content from '../ui/content.module.css';
 import { SegmentedControl } from '../ui/controls';
+import controls from '../ui/controls.module.css';
 import table from '../ui/table.module.css';
 import { TASK_RUN_VIEWS, type TaskRunView } from './consoleTaskQuery';
 import styles from './TaskDetailPage.module.css';
@@ -30,6 +33,7 @@ export function TaskRunsTab({ task, view }: { task: ConsoleTaskDetail; view: Tas
         />
       </div>
       {view === 'entrants' ? <EntrantRuns task={task} /> : <CheckMatrix task={task} />}
+      <LocaleLink className={clsx(controls.textLink, 't-small')} to={consoleRunsPath(task.benchmark.id, { q: task.id })}>{t('console.task.allRuns')}</LocaleLink>
     </div>
   );
 }
@@ -48,7 +52,7 @@ export function EntrantRuns({ task }: { task: ConsoleTaskDetail }) {
           <span role="columnheader">{t('console.task.runs.column.passRate')}</span>
           <span role="columnheader">{t('console.task.runs.column.review')}</span>
         </div>
-        {results.entrants.map(entrant => <EntrantRunsRow key={`${entrant.model.id}-${entrant.harness.id}`} entrant={entrant} />)}
+        {results.entrants.map(entrant => <EntrantRunsRow key={`${entrant.model.id}-${entrant.harness.id}`} benchmarkId={task.benchmark.id} entrant={entrant} />)}
       </div>
       <section className={clsx(content.panel, styles.panel)}>
         <h2 className="t-heading">{t('console.task.runs.validations')}</h2>
@@ -59,7 +63,7 @@ export function EntrantRuns({ task }: { task: ConsoleTaskDetail }) {
   );
 }
 
-export function EntrantRunsRow({ entrant }: { entrant: TaskEntrantRuns }) {
+export function EntrantRunsRow({ benchmarkId, entrant }: { benchmarkId: string; entrant: TaskEntrantRuns }) {
   const { t } = useTranslation();
   const { result } = entrant;
   const reviewed = result.failed - result.unreviewed;
@@ -69,7 +73,7 @@ export function EntrantRunsRow({ entrant }: { entrant: TaskEntrantRuns }) {
       <span role="cell" className={styles.runDots}>
         {entrant.runs.map(run => {
           const label = t('console.task.runs.runOf', { attempt: run.attempt, outcome: t(`runs.outcome.${run.outcome}`) });
-          return <span key={run.id} title={label} role="img" aria-label={label}><OutcomeDot outcome={run.outcome} /></span>;
+          return <LocaleLink key={run.id} className={styles.runDot} to={consoleRunPath(benchmarkId, run.id)} title={label} aria-label={label}><OutcomeDot outcome={run.outcome} /></LocaleLink>;
         })}
       </span>
       <span role="cell" className="t-numeric">{result.passed}</span>

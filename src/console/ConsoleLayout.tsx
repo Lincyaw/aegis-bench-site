@@ -111,7 +111,7 @@ export function ConsoleSidebar({ benchmarkId, open, onNavigate }: { benchmarkId:
                 <LocaleLink className={styles.item} to={benchmarkSectionPath(benchmarkId, item.section)} aria-current={item.section === current ? 'page' : undefined} onClick={onNavigate}>
                   <NavIconOf icon={item.icon} />
                   <span className="t-label">{t(item.label)}</span>
-                  {item.count && benchmark && <span className="t-micro c-faint">{groupedNumber(locale, benchmark[item.count])}</span>}
+                  {item.count && benchmark && <span className="t-micro c-faint">{groupedNumber(locale, item.count(benchmark))}</span>}
                 </LocaleLink>
               </li>
             ))}

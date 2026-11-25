@@ -1,8 +1,8 @@
 import type { Locale, RecentRun, RunDetail, SubmissionVerdict, TimelineMark, TimelineStep, Trajectory, TrajectoryStep } from '../api/types';
 import { benchmarkById, type TaskKind } from './benchmarks';
 import { RECORD_LOCALE } from './catalog';
-import { hashOf, pickOf } from './hash';
-import { SHOWCASE_RUN_ID, planOf, runIdOf, runRecordOf, stepTimeOf, type RunPlan, type RunRecord } from './runs';
+import { fractionOf, hashOf, pickOf } from './hash';
+import { SHOWCASE_RUN_ID, completionTokensOf, planOf, runIdOf, runRecordOf, stepTimeOf, type RunPlan, type RunRecord } from './runs';
 
 /** The tools a generated run cycles through, by task kind. */
 export const TOOL_PLAN: Record<TaskKind, string[]> = {
@@ -96,13 +96,21 @@ export function trajectoryOf(runId: string): Trajectory | undefined {
   const timestampOf = (step: number) => stepTimeOf(runId, step);
   const steps: TrajectoryStep[] = [{ step_id: 1, timestamp: timestampOf(0), source: 'user', message: `${detail.input.instruction}\n\n${detail.input.reportSchema}` }];
   const tools = TOOL_PLAN[plan.kind];
-  let promptTokens = 2400;
+  // The context grows with every step; each step's share of the run's cost follows the tokens it read and wrote.
+  const promptTokensAt: number[] = [];
+  let context = 2400;
+  for (let step = 2; step <= plan.steps; step++) {
+    context += 900 + (hashOf(`${runId}.${step}`) % 700);
+    promptTokensAt[step] = context;
+  }
+  const weightOf = (step: number) => promptTokensAt[step] * 1.5e-6 + completionTokensOf(runId, step) * 6e-6;
+  const totalWeight = Array.from({ length: plan.steps - 1 }, (_, index) => weightOf(index + 2)).reduce((sum, weight) => sum + weight, 0);
   for (let step = 2; step <= plan.steps; step++) {
     const submitIndex = plan.submitSteps.indexOf(step);
     const toolCallId = `call_${step}`;
-    promptTokens += 900 + (hashOf(`${runId}.${step}`) % 700);
-    const completionTokens = 120 + (hashOf(`${runId}.c${step}`) % 400);
-    const metrics = { prompt_tokens: promptTokens, completion_tokens: completionTokens, cached_tokens: Math.round(promptTokens * 0.8), cost_usd: Math.round((promptTokens * 1.5e-6 + completionTokens * 6e-6) * 10000) / 10000 };
+    const promptTokens = promptTokensAt[step];
+    const completionTokens = completionTokensOf(runId, step);
+    const metrics = { prompt_tokens: promptTokens, completion_tokens: completionTokens, cached_tokens: Math.round(promptTokens * 0.8), cost_usd: Math.round((detail.metrics.costUsd * weightOf(step)) / totalWeight * 10000) / 10000 };
     if (submitIndex >= 0) {
       const submit = submissionStepOf(plan, submitIndex);
       steps.push({
@@ -114,10 +122,12 @@ export function trajectoryOf(runId: string): Trajectory | undefined {
     } else {
       const tool = tools[(step + hashOf(runId)) % tools.length];
       const call = (plan.runId === SHOWCASE_RUN_ID ? SHOWCASE_STEPS[step] : undefined) ?? callOf(plan, tool, step);
+      // Now and then a call times out; the observation says so, and marks the failure in its extra fields.
+      const failed = plan.runId !== SHOWCASE_RUN_ID && fractionOf(`callFailed:${runId}.${step}`) < 0.05;
       steps.push({
         step_id: step, timestamp: timestampOf(step), source: 'agent', message: call.message,
         tool_calls: [{ tool_call_id: toolCallId, function_name: call.tool, arguments: call.args }],
-        observation: { results: [{ source_call_id: toolCallId, content: call.result }] },
+        observation: { results: [failed ? { source_call_id: toolCallId, content: `调用超时：${call.tool} 在 60 秒内没有返回结果。`, extra: { failed: true } } : { source_call_id: toolCallId, content: call.result }] },
         metrics, llm_call_count: 1,
       });
     }
@@ -128,12 +138,12 @@ export function trajectoryOf(runId: string): Trajectory | undefined {
     steps,
   };
   const agent = trajectory.steps.filter(step => step.source === 'agent');
-  const total =(field: 'prompt_tokens' | 'completion_tokens' | 'cached_tokens' | 'cost_usd') => agent.reduce((sum, step) => sum + (step.metrics?.[field] ?? 0), 0);
+  const total = (field: 'prompt_tokens' | 'completion_tokens' | 'cached_tokens') => agent.reduce((sum, step) => sum + (step.metrics?.[field] ?? 0), 0);
   return {
     ...trajectory,
     final_metrics: {
       total_prompt_tokens: total('prompt_tokens'), total_completion_tokens: total('completion_tokens'), total_cached_tokens: total('cached_tokens'),
-      total_cost_usd: Math.round(total('cost_usd') * 100) / 100, total_steps: steps.length,
+      total_cost_usd: detail.metrics.costUsd, total_steps: steps.length,
     },
   };
 }

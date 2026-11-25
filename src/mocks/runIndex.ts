@@ -57,7 +57,7 @@ export function runRowOf(fact: RunFact, locale: Locale): RunRow {
   const { key } = fact;
   return {
     id: fact.runId, task: { id: fact.task.id, title: fact.task.title }, model: modelRef(key.modelId, locale), harness: harnessRef(key.harnessId, locale),
-    attempt: key.attempt, outcome: fact.outcome, finishedAt: fact.finishedAt,
+    attempt: key.attempt, outcome: fact.outcome, finishedAt: fact.finishedAt, steps: fact.steps, costUsd: fact.costUsd,
     taskVersion: taskVersionOf(key.benchmarkId, key.taskId), batch: batchOf(key.modelId, key.harnessId),
     ...(fact.failureClass && { failureClass: fact.failureClass }),
   };

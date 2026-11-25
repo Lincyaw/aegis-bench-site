@@ -64,6 +64,9 @@ export const HARNESSES: { id: string; name: Text }[] = [
   { id: 'z', name: { 'zh-CN': '框架 Z', en: 'Harness Z' } },
 ];
 
+/** The staff who author tasks and review runs, by account. */
+export const STAFF = ['lin.fang', 'zhou.yu', 'chen.qi'];
+
 export function stageRef(stageId: string, locale: Locale): StageRef {
   const stage = STAGES.find(candidate => candidate.id === stageId);
   if (!stage) {
