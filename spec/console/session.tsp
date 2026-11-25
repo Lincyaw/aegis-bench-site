@@ -4,7 +4,8 @@ using Http;
 
 /**
  * The internal console: the records behind every benchmark, for the staff who run, review and publish evaluations.
- * Signing in sets the session cookie, and every console operation but the session's own answers 401 without it.
+ * Only members sign in. Signing in sets the session cookie, and every console operation but the session's own answers
+ * 401 without it; an operation the member's role does not allow answers 403.
  */
 namespace AegisBench.Console;
 
@@ -18,10 +19,17 @@ model SignInRequiredError {
   message: string;
 }
 
-/** The account and password do not match. */
+/** The account is not a member, or the password does not match. */
 @error
 model SignInFailedError {
   @statusCode _: 401;
+  message: string;
+}
+
+/** The signed-in member's role does not allow the operation. */
+@error
+model ForbiddenError {
+  @statusCode _: 403;
   message: string;
 }
 
@@ -29,11 +37,26 @@ model SignInFailedError {
 @pattern("^[A-Za-z0-9._\\-]{1,64}$")
 scalar AccountName extends string;
 
+/**
+ * What a member may do. Every member reads everything; editors also draft, publish and restore releases and draft and
+ * review reports; administrators also manage the members and the settings.
+ */
+enum Role {
+  admin,
+  editor,
+  viewer,
+}
+
 model ConsoleUser {
   account: AccountName;
 
+  /** The member's name, as colleagues know them */
+  name: string;
+
   /** Up to two letters standing for the account, as its avatar shows them */
   initials: string;
+
+  role: Role;
 }
 
 /** Who is signed in on this browser; no user when nobody is. */

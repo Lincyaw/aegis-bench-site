@@ -127,22 +127,22 @@ interface ConsoleReleases {
   /** Replaces what a draft publishes */
   @put
   @route("/{releaseId}")
-  update(@path releaseId: string, @body content: ReleaseContent): ReleaseDetail | SignInRequiredError | NotFoundError | ReleaseConflictError | InvalidReleaseContentError;
+  update(@path releaseId: string, @body content: ReleaseContent): ReleaseDetail | SignInRequiredError | ForbiddenError | NotFoundError | ReleaseConflictError | InvalidReleaseContentError;
 
   /** Drops a draft; the benchmark keeps its current release. Answers the benchmark's releases that remain. */
   @delete
   @route("/{releaseId}")
-  discard(@path releaseId: string): ReleaseSummary[] | SignInRequiredError | NotFoundError | ReleaseConflictError;
+  discard(@path releaseId: string): ReleaseSummary[] | SignInRequiredError | ForbiddenError | NotFoundError | ReleaseConflictError;
 
   /** Publishes a draft: the public site shows it from now on, and the release it replaces is superseded */
   @post
   @route("/{releaseId}/publish")
-  publish(@path releaseId: string, @body request: PublishRequest): ReleaseDetail | SignInRequiredError | NotFoundError | ReleaseConflictError;
+  publish(@path releaseId: string, @body request: PublishRequest): ReleaseDetail | SignInRequiredError | ForbiddenError | NotFoundError | ReleaseConflictError;
 
   /** Publishes a superseded release again, as a new version that restores it */
   @post
   @route("/{releaseId}/restore")
-  restore(@path releaseId: string, @body request: PublishRequest): ReleaseDetail | SignInRequiredError | NotFoundError | ReleaseConflictError;
+  restore(@path releaseId: string, @body request: PublishRequest): ReleaseDetail | SignInRequiredError | ForbiddenError | NotFoundError | ReleaseConflictError;
 }
 
 @route("/console/benchmarks/{benchmarkId}/releases")
@@ -152,5 +152,5 @@ interface ConsoleBenchmarkReleases {
   @get list(@path benchmarkId: string): ReleaseSummary[] | SignInRequiredError | NotFoundError;
 
   /** Starts the benchmark's next release as a copy of its current one; a benchmark has at most one draft */
-  @post draft(@path benchmarkId: string): ReleaseDetail | SignInRequiredError | NotFoundError | ReleaseConflictError;
+  @post draft(@path benchmarkId: string): ReleaseDetail | SignInRequiredError | ForbiddenError | NotFoundError | ReleaseConflictError;
 }

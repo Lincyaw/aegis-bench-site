@@ -10,35 +10,17 @@ import {
 import { DEFAULT_HUNT_TRIAL_PAGE_SIZE, HUNTS, filteredTrialsOf, huntById, huntOf, huntTrialOf, runHuntFindingsOf } from './hunts';
 import { http, localeOf, pageOf, writtenIn } from './protocol';
 import { contentProblemOf, createDraft, discardDraft, draftOf, makeCurrent, releaseById, releaseDetailOf, releaseSummaryOf, releasesOf, restoreRelease, updateDraft } from './releases';
-import { DEFAULT_CHANGELOG_PAGE_SIZE, changelogOf, releaseOverview, workbenchOf } from './workspace';
+import { mayEdit, refusalFor } from './members';
+import { releaseOverview } from './workspace';
 import { consoleBenchmarkOf, overviewOf } from './results';
 import { runFactsOf, runRowOf } from './runIndex';
 import { DEFAULT_ENTRY_PAGE_SIZE, taskFileOf, taskFilesOf } from './taskFiles';
 import { DEFAULT_TRAJECTORY_PAGE_SIZE, trajectoryOf } from './trajectories';
-import { DEMO_PASSWORD, consoleUserOf, sessionUserOf, signedInCookie, signedOutCookie } from './session';
+import { SIGN_IN_REQUIRED, sessionUserOf } from './session';
 
-/** The answer of every console operation but the session's own when the request carries no session. */
-export const SIGN_IN_REQUIRED = { message: 'sign in to use the console' };
-
-/** The console's operations: the session's own answer anyone, the others only a signed-in session. */
+/** The console's operations on the benchmarks and their releases: only a signed-in session, and editors to change a release. */
 export const consoleHandlers = [
-  http.get('/console/session', ({ cookies, response }) => {
-    const user = sessionUserOf(cookies);
-    return response(200).json(user ? { user } : {});
-  }),
-
-  http.post('/console/session', async ({ request, response }) => {
-    const { account, password } = await request.json();
-    await delay(240);
-    if (password !== DEMO_PASSWORD) {
-      return response(401).json({ message: 'the account and password do not match' });
-    }
-    return response(200).json({ user: consoleUserOf(account) }, { headers: { 'Set-Cookie': signedInCookie(account) } });
-  }),
-
-  http.delete('/console/session', ({ response }) => response(200).json({}, { headers: { 'Set-Cookie': signedOutCookie() } })),
-
-  http.get('/console/benchmarks', ({ cookies, request, response }) => {
+  http.get('/console/benchmarks',({ cookies, request, response }) => {
     if (!sessionUserOf(cookies)) {
       return response(401).json(SIGN_IN_REQUIRED);
     }
@@ -258,29 +240,7 @@ export const consoleHandlers = [
     return findings ? response(200).json(findings) : response(404).json({ message: `no run ${params.runId}` });
   }),
 
-  http.get('/console/workbench', async ({ cookies, request, response }) => {
-    if (!sessionUserOf(cookies)) {
-      return response(401).json(SIGN_IN_REQUIRED);
-    }
-    const locale = localeOf(request);
-    await delay(120);
-    return response(200).json(workbenchOf(locale), writtenIn(locale));
-  }),
-
-  http.get('/console/changelog', async ({ cookies, query, response }) => {
-    if (!sessionUserOf(cookies)) {
-      return response(401).json(SIGN_IN_REQUIRED);
-    }
-    const benchmarkId = query.get('benchmarkId') ?? '';
-    if (benchmarkId && !hasBenchmark(benchmarkId)) {
-      return response(404).json({ message: `no benchmark ${benchmarkId}` });
-    }
-    const entries = changelogOf(benchmarkId ? [benchmarkId] : BENCHMARKS.map(benchmark => benchmark.id), query.get('change') ?? undefined);
-    await delay(100);
-    return response(200).json(pageOf(entries, query, DEFAULT_CHANGELOG_PAGE_SIZE));
-  }),
-
-  http.get('/console/releases', async ({ cookies, response }) => {
+  http.get('/console/releases',async ({ cookies, response }) => {
     if (!sessionUserOf(cookies)) {
       return response(401).json(SIGN_IN_REQUIRED);
     }
@@ -301,6 +261,9 @@ export const consoleHandlers = [
     if (!user) {
       return response(401).json(SIGN_IN_REQUIRED);
     }
+    if (!mayEdit(user.role)) {
+      return response(403).json(refusalFor(user, 'editor'));
+    }
     const release = releaseById(params.releaseId);
     if (!release) {
       return response(404).json({ message: `no release ${params.releaseId}` });
@@ -318,8 +281,12 @@ export const consoleHandlers = [
   }),
 
   http.delete('/console/releases/{releaseId}', async ({ cookies, params, response }) => {
-    if (!sessionUserOf(cookies)) {
+    const user = sessionUserOf(cookies);
+    if (!user) {
       return response(401).json(SIGN_IN_REQUIRED);
+    }
+    if (!mayEdit(user.role)) {
+      return response(403).json(refusalFor(user, 'editor'));
     }
     const release = releaseById(params.releaseId);
     if (!release) {
@@ -338,6 +305,9 @@ export const consoleHandlers = [
     if (!user) {
       return response(401).json(SIGN_IN_REQUIRED);
     }
+    if (!mayEdit(user.role)) {
+      return response(403).json(refusalFor(user, 'editor'));
+    }
     const release = releaseById(params.releaseId);
     if (!release) {
       return response(404).json({ message: `no release ${params.releaseId}` });
@@ -354,6 +324,9 @@ export const consoleHandlers = [
     const user = sessionUserOf(cookies);
     if (!user) {
       return response(401).json(SIGN_IN_REQUIRED);
+    }
+    if (!mayEdit(user.role)) {
+      return response(403).json(refusalFor(user, 'editor'));
     }
     const release = releaseById(params.releaseId);
     if (!release) {
@@ -380,6 +353,9 @@ export const consoleHandlers = [
     const user = sessionUserOf(cookies);
     if (!user) {
       return response(401).json(SIGN_IN_REQUIRED);
+    }
+    if (!mayEdit(user.role)) {
+      return response(403).json(refusalFor(user, 'editor'));
     }
     if (!hasBenchmark(params.benchmarkId)) {
       return response(404).json({ message: `no benchmark ${params.benchmarkId}` });

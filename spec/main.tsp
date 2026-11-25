@@ -8,6 +8,8 @@ import "./console/collections.tsp";
 import "./console/analysis.tsp";
 import "./console/releases.tsp";
 import "./console/workspace.tsp";
+import "./console/members.tsp";
+import "./console/settings.tsp";
 
 using Http;
 
@@ -518,6 +520,16 @@ model WithheldError {
   @statusCode _: 403;
   message: string;
   reason: WithheldReason;
+}
+
+/** What the site says about the people behind it; the console's settings decide it. */
+model SiteInfo {
+  contactEmail: Console.EmailAddress;
+}
+
+@route("/site")
+interface Site {
+  @get read(): SiteInfo;
 }
 
 @route("/stages")

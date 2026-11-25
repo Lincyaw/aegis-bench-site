@@ -6,9 +6,11 @@ import { consoleHandlers } from './consoleHandlers';
 import { hasModel, modelProfile } from './models';
 import { http, localeOf, pageOf, writtenIn } from './protocol';
 import { passRateOf, taskRunsOf, taskSummariesOf } from './runs';
+import { currentSettings } from './settings';
 import { DEFAULT_ENTRY_PAGE_SIZE, directoryEntriesOf, taskFileOf, taskFilesOf, withheldUnder } from './taskFiles';
 import { DEFAULT_TASK_PAGE_SIZE, taskOf } from './tasks';
 import { DEFAULT_TRAJECTORY_PAGE_SIZE, runDetailOf, trajectoryOf } from './trajectories';
+import { workspaceHandlers } from './workspaceHandlers';
 
 /*
  * The mock server's implementation of each operation the spec declares. The handlers' types follow the spec, and
@@ -18,7 +20,9 @@ import { DEFAULT_TRAJECTORY_PAGE_SIZE, runDetailOf, trajectoryOf } from './traje
 
 /** The public site's operations, which answer without a session. */
 export const publicHandlers = [
-  http.get('/stages', ({ request, response }) => {
+  http.get('/site', ({ response }) => response(200).json({ contactEmail: currentSettings().workspace.contactEmail })),
+
+  http.get('/stages',({ request, response }) => {
     const locale = localeOf(request);
     return response(200).json(stagesWithBenchmarks(locale), writtenIn(locale));
   }),
@@ -140,4 +144,4 @@ export const publicHandlers = [
   }),
 ];
 
-export const handlers = [...publicHandlers, ...consoleHandlers];
+export const handlers = [...publicHandlers, ...workspaceHandlers, ...consoleHandlers];
