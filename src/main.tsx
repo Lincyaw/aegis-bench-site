@@ -13,8 +13,8 @@ if (!root) {
   throw new Error('index.html has no #root element');
 }
 
-// The demo has no backend: the mock service worker answers every /api request.
-await worker.start({ onUnhandledFrame: 'bypass', quiet: true });
+// The demo has no backend: the mock service worker, served from the build's base, answers every /api request.
+await worker.start({ serviceWorker: { url: `${import.meta.env.BASE_URL}mockServiceWorker.js` }, onUnhandledFrame: 'bypass', quiet: true });
 
 createRoot(root).render(
   <StrictMode>

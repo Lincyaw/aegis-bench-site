@@ -86,9 +86,12 @@ export function sitePages(): RouteObject[] {
   ];
 }
 
-/** The default locale at the root, every other locale under its prefix, such as /en. */
+/**
+ * The default locale at the root, every other locale under its prefix, such as /en. The root is the build's base, so the
+ * site also runs under a path such as a GitHub Pages project's.
+ */
 export const router = createBrowserRouter(LOCALES.map(locale => ({
   path: LOCALE_PREFIX[locale] || '/',
   element: <LocaleRoot locale={locale} />,
   children: sitePages(),
-})));
+})), { basename: import.meta.env.BASE_URL });

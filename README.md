@@ -2,6 +2,8 @@
 
 Aegis Bench 的前端演示，包括对外站点和内部的评测中台。对外站点按 Figma 文件 [Aegis Bench](https://www.figma.com/design/tozbvKVPYuRZEWHUhoSthz) 中「01 · 对外站点」的设计实现；中台按「02 · 内部中台」的页面结构实现，并与对外站点共用一套设计系统。接口用 TypeSpec 声明；数据由浏览器中的 mock 服务端提供，它只实现接口声明的操作，因此不需要后端。
 
+预览地址是 <https://profile.aoyangfang.top/aegis-bench-site/>。每次推送到 master，GitHub Actions 会重新构建并发布到 GitHub Pages（见 `.github/workflows/pages.yml`）；站点挂在仓库名的路径下，构建以这个路径为 base。mock 运行在 service worker 里，只能通过 HTTPS 访问。
+
 ## 运行
 
 ```bash
