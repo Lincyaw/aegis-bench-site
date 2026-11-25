@@ -47,10 +47,6 @@ export function BrandMark({ width = 38 }: { width?: number }) {
   );
 }
 
-export function Wordmark() {
-  return <span className="t-wordmark">AEGIS <span className="c-faint">BENCH</span></span>;
-}
-
 export function ThemeIcon() {
   return (
     <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
@@ -94,7 +90,7 @@ export function SiteNav({ sections }: { sections: PageSections | null }) {
     <header className={clsx(styles.nav, floating && styles.floating)}>
       <div className={styles.bar}>
         <div className={styles.start}>
-          <LocaleLink className={styles.brand} to="/" aria-label={t('site.home')}><BrandMark />{!sections && <Wordmark />}</LocaleLink>
+          <LocaleLink className={styles.brand} to="/" aria-label={t('site.home')}><BrandMark /></LocaleLink>
           {sections ? (
             <nav className={styles.sectionNav} aria-label={t('site.pageSections')}><SectionLinks sections={sections.sections} current={sections.current} className={styles.sections} /></nav>
           ) : (
@@ -128,7 +124,7 @@ export function SiteFooter() {
     <footer className={styles.footer}>
       <div className="page">
         <div className={styles.footerTop}>
-          <LocaleLink className={styles.brand} to="/"><BrandMark /><Wordmark /></LocaleLink>
+          <LocaleLink className={styles.brand} to="/" aria-label={t('site.home')}><BrandMark /></LocaleLink>
           <span className="t-micro c-muted">{t('site.tagline')}</span>
         </div>
         <div className={styles.footerBottom}>

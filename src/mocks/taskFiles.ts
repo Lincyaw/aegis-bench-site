@@ -65,11 +65,11 @@ export function environmentFilesOf(kind: TaskKind, module: string): TaskFileReco
       { path: `environment/repo/src/${module}/repository.py`, text: `from sqlalchemy.orm import Session\n\n\nclass Repository:\n    def __init__(self, session: Session):\n        self.session = session\n\n    def get(self, item_id: int):\n        ...\n` },
     ];
     case 'ops': return [
-      { path: 'environment/docker-compose.yaml', text: 'services:\n  gateway:\n    image: aegis/gateway:1.8\n  order-api:\n    image: aegis/order-api:3.2\n  payment-callback:\n    image: aegis/payment-callback:2.4\n    volumes:\n      - ./config/payment-callback.yaml:/etc/payment-callback.yaml\n  order-db:\n    image: postgres:16\n  telemetry:\n    image: aegis/telemetry:1.0\n' },
+      { path: 'environment/docker-compose.yaml', text: 'services:\n  gateway:\n    image: demo/gateway:1.8\n  order-api:\n    image: demo/order-api:3.2\n  payment-callback:\n    image: demo/payment-callback:2.4\n    volumes:\n      - ./config/payment-callback.yaml:/etc/payment-callback.yaml\n  order-db:\n    image: postgres:16\n  telemetry:\n    image: demo/telemetry:1.0\n' },
       { path: 'environment/config/payment-callback.yaml', text: 'service: payment-callback\nlisten: 0.0.0.0:8080\ncallback:\n  timeout_ms: 3000\n  retries: 2\n  pool_size: 8\n' },
     ];
     case 'rca': return [
-      { path: 'environment/docker-compose.yaml', text: 'services:\n  telemetry:\n    image: aegis/telemetry:1.0\n    volumes:\n      - ./telemetry:/data:ro\n  topology:\n    image: aegis/topology:1.0\n    volumes:\n      - ./topology.json:/data/topology.json:ro\n' },
+      { path: 'environment/docker-compose.yaml', text: 'services:\n  telemetry:\n    image: demo/telemetry:1.0\n    volumes:\n      - ./telemetry:/data:ro\n  topology:\n    image: demo/topology:1.0\n    volumes:\n      - ./topology.json:/data/topology.json:ro\n' },
       { path: 'environment/topology.json', text: `${JSON.stringify({ services: ['gateway', 'order-api', 'order-db', 'payment-api', 'inventory-api', 'search-api', 'user-api', 'session-cache'].map(name => ({ name })) }, null, 2)}\n` },
     ];
   }

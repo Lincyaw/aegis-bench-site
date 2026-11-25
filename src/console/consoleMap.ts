@@ -24,7 +24,7 @@ export const CONSOLE_PATH = '/console';
 export const SIGN_IN_PATH = `${CONSOLE_PATH}/sign-in`;
 
 /** The demo's mock server lets every member in with this password, and the sign-in page says so. */
-export const DEMO_PASSWORD = 'aegis';
+export const DEMO_PASSWORD = 'demo';
 
 /** The choice of a console filter that keeps everything; no tag, spread, combination, outcome or review is spelt this way. */
 export const EVERY_CHOICE = 'all';

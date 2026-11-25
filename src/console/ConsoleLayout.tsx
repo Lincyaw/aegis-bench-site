@@ -49,7 +49,6 @@ export function ConsoleBar({ user, benchmarkId, menuOpen, onMenu }: { user: Cons
       <span className={styles.menuButton}><IconButton label={t('console.openMenu')} expanded={menuOpen} onClick={onMenu}><MenuIcon /></IconButton></span>
       <LocaleLink className={styles.brand} to="/console" aria-label={t('console.home')}>
         <BrandMark />
-        <span className={clsx('t-wordmark', styles.wordmark)}>AEGIS</span>
         <span className="t-small c-muted">{t('console.name')}</span>
       </LocaleLink>
       <div className={styles.end}>

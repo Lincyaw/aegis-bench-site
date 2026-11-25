@@ -357,7 +357,7 @@ export function gradingOf(plan: RunPlan): RunDetail['grading'] {
   });
   return {
     checks, passCount: checks.filter(check => check.passed).length, total: checks.length,
-    codeUrl: `https://aegis-bench.org/benchmarks/${plan.key.benchmarkId}/tasks/${plan.task.id}/grading.tar.gz`,
+    codeUrl: `https://example.org/benchmarks/${plan.key.benchmarkId}/tasks/${plan.task.id}/grading.tar.gz`,
   };
 }
 
@@ -423,13 +423,13 @@ export function runRecordOf(runId: string, locale: Locale): RunRecord | undefine
     },
     input: {
       instruction: `${task.statement}\n\n${INSTRUCTION_TAIL[kind]}`, reportSchema: REPORT_SCHEMA[kind], environment: environmentOf(kind, task),
-      harness: { ...harness, version: '2.1', toolDefinitionsUrl: `https://aegis-bench.org/harness/${key.harnessId}/v2.1/tools.json` },
+      harness: { ...harness, version: '2.1', toolDefinitionsUrl: `https://example.org/harness/${key.harnessId}/v2.1/tools.json` },
     },
     output: {
       submission: { attempt: plan.submitSteps.length, step: lastSubmit, files: filesOf(plan) },
       finalReply: { step: lastSubmit, text: replyOf(plan) },
-      artifacts: [{ name: 'report.json', url: `https://aegis-bench.org/runs/${runId}/report.json` }],
-      patchUrl: `https://aegis-bench.org/runs/${runId}/submission.patch`,
+      artifacts: [{ name: 'report.json', url: `https://example.org/runs/${runId}/report.json` }],
+      patchUrl: `https://example.org/runs/${runId}/submission.patch`,
     },
     grading, failure: failureOf(plan, grading),
   };

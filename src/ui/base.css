@@ -44,7 +44,6 @@
   --type-code: 400 12px/1.7 var(--font-mono);
   --type-bench: 600 21px/1.3 var(--font-text);
   --type-numeric: 500 14px/1.4 var(--font-text);
-  --type-wordmark: 600 14px/1 var(--font-text);
   /* The landing page's title and section headings grow with the window. */
   --type-hero: 600 clamp(30px, 4vw, 56px)/1.16 var(--font-text);
   --type-section: 600 clamp(26px, 3vw, 38px)/1.2 var(--font-text);
@@ -115,7 +114,6 @@ button { padding: 0; border: 0; background: none; font: inherit; color: inherit;
 .t-mono { font: var(--type-mono); }
 .t-bench { font: var(--type-bench); }
 .t-numeric { font: var(--type-numeric); font-variant-numeric: tabular-nums; }
-.t-wordmark { font: var(--type-wordmark); letter-spacing: 0.18em; }
 
 .c-main { color: var(--text-main); }
 .c-muted { color: var(--text-muted); }

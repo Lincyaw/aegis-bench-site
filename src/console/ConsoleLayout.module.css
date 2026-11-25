@@ -78,7 +78,6 @@
 @media (max-width: 760px) {
   .console { grid-template-columns: minmax(0, 1fr); }
   .bar { padding: 0 var(--space-3); gap: var(--space-2); }
-  .wordmark { display: none; }
   .menuButton { display: inline-flex; }
   .sidebar { position: fixed; inset: var(--nav-height) 0 0; z-index: 25; display: none; height: auto; border-right: 0; background: var(--bg-page); }
   .open { display: grid; }

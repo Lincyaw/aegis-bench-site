@@ -29,7 +29,7 @@ export function SignInPage() {
   return (
     <main className={styles.page}>
       <form className={styles.card} onSubmit={submit}>
-        <span className={styles.brand}><BrandMark /><span className="t-wordmark">AEGIS</span><span className="t-small c-muted">{t('console.name')}</span></span>
+        <span className={styles.brand}><BrandMark /><span className="t-small c-muted">{t('console.name')}</span></span>
         <header className={styles.head}>
           <h1 className="t-title">{t('console.signIn.title')}</h1>
           <p className="t-small c-muted">{t('console.signIn.lead')}</p>

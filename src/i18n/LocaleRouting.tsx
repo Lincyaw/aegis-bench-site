@@ -5,10 +5,11 @@ import { I18N } from './i18n';
 import { LocaleContext, useLocale } from './localeContext';
 import { localizedPath, type Locale } from './locales';
 
-/** The root of one locale's routes: its translations, its <html lang> and scroll restoration for every page below. */
+/** The root of one locale's routes: its translations, its <html lang> and title, and scroll restoration for every page below. */
 export function LocaleRoot({ locale }: { locale: Locale }) {
   useEffect(() => {
     document.documentElement.lang = locale;
+    document.title = I18N[locale].t('site.title');
   }, [locale]);
   return (
     <LocaleContext.Provider value={locale}>

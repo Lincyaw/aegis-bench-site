@@ -4,7 +4,8 @@ import type { Messages } from './zh';
 
 export const en: Messages = {
   site: {
-    home: 'Aegis Bench home',
+    title: 'Agent evaluation',
+    home: 'Home',
     mainNav: 'Main',
     pageSections: 'On this page',
     footerNav: 'Footer',
@@ -13,7 +14,7 @@ export const en: Messages = {
     contact: 'Contact us',
     contactLead: 'Contact us: ',
     tagline: 'Agent evaluation across the whole software engineering lifecycle',
-    footnote: '© 2026 Aegis Bench · Design demo: benchmarks, models and figures are placeholders',
+    footnote: 'Design demo: benchmarks, models and figures are placeholders',
     nav: {
       leaderboard: 'Leaderboard',
       benchmarks: 'Benchmarks',
@@ -62,10 +63,10 @@ export const en: Messages = {
     member: { initial: 'N', name: 'Name', role: 'Institution · Role' },
     citeTitle: 'Cite this work',
     citeBody: 'If you use this benchmark in your research, please cite the paper below.',
-    bibtex: '@inproceedings{aegisbench2027,\n  title     = {Paper title},\n  author    = {Authors},\n  booktitle = {Conference},\n  year      = {2027}\n}',
+    bibtex: '@inproceedings{benchmark2027,\n  title     = {Paper title},\n  author    = {Authors},\n  booktitle = {Conference},\n  year      = {2027}\n}',
     contactBody: 'To have a model evaluated, or to learn more about the benchmarks, write to us.',
     copyEmail: 'Copy email address',
-    mark: 'Aegis Bench mark',
+    mark: 'Site mark',
     scene: { request: 'Request', tasks: 'Acceptable tasks', build: 'Build', test: 'Test', package: 'Package', deploy: 'Deploy', alert: 'Alert' },
   },
   articles: {

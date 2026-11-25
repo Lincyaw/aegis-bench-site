@@ -4,7 +4,8 @@ import { consoleZh } from './console.zh.ts';
 /** The site's Chinese text; its shape is every language's message shape. Keys with _one and _other take a count. */
 export const zh = {
   site: {
-    home: 'Aegis Bench 首页',
+    title: '智能体评测',
+    home: '首页',
     mainNav: '主导航',
     pageSections: '本页分区',
     footerNav: '页脚',
@@ -13,7 +14,7 @@ export const zh = {
     contact: '联系我们',
     contactLead: '联系我们：',
     tagline: '覆盖软件工程全生命周期的智能体评测',
-    footnote: '© 2026 Aegis Bench · 设计演示：评测基准、模型与数值均为占位内容',
+    footnote: '设计演示：评测基准、模型与数值均为占位内容',
     nav: {
       leaderboard: '排行榜',
       benchmarks: '评测基准',
@@ -62,10 +63,10 @@ export const zh = {
     member: { initial: '姓', name: '姓名', role: '所属机构 · 职务' },
     citeTitle: '引用本工作',
     citeBody: '如在研究中使用本评测基准，请引用以下论文。',
-    bibtex: '@inproceedings{aegisbench2027,\n  title     = {论文标题},\n  author    = {作者},\n  booktitle = {会议名称},\n  year      = {2027}\n}',
+    bibtex: '@inproceedings{benchmark2027,\n  title     = {论文标题},\n  author    = {作者},\n  booktitle = {会议名称},\n  year      = {2027}\n}',
     contactBody: '如需评测模型或了解更多评测基准，请通过邮件与我们联系。',
     copyEmail: '复制邮箱地址',
-    mark: 'Aegis Bench 标识',
+    mark: '站点标识',
     scene: { request: '原始需求', tasks: '可验收的任务', build: '构建', test: '测试', package: '打包', deploy: '部署', alert: '告警' },
   },
   articles: {

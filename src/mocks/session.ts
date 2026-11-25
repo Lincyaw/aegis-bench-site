@@ -5,7 +5,7 @@ import { memberOf } from './members';
 export const SESSION_COOKIE = 'aegis_console';
 
 /** Every member of the demo signs in with this password; the sign-in page tells the reader so. */
-export const DEMO_PASSWORD = 'aegis';
+export const DEMO_PASSWORD = 'demo';
 
 /** The session lasts a working day. */
 export const SESSION_SECONDS = 8 * 60 * 60;
