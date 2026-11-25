@@ -19,6 +19,7 @@ import { ModelPage } from './models/ModelPage';
 import { BenchmarkReleasesPage } from './releases/BenchmarkReleasesPage';
 import { ReleaseLogPage } from './releases/ReleaseLogPage';
 import { ReleasePage } from './releases/ReleasePage';
+import { ReportListPage } from './reports/ReportListPage';
 import { ReportPage, ReportsPage } from './reports/ReportsPage';
 import { RunDetailPage } from './runs/RunDetailPage';
 import { RunListPage } from './runs/RunListPage';
@@ -81,6 +82,9 @@ export function sitePages(): RouteObject[] {
           { path: 'benchmarks/:benchmarkId/analysis/:huntId', element: <HuntPage /> },
           { path: 'benchmarks/:benchmarkId/collections', element: <CollectionListPage /> },
           { path: 'benchmarks/:benchmarkId/collections/:tag', element: <CollectionPage /> },
+          { path: 'benchmarks/:benchmarkId/reports', element: <ReportListPage /> },
+          // The editor compiles MDX in the browser, so it loads on its own.
+          { path: 'benchmarks/:benchmarkId/reports/:reportId', lazy: async () => ({ Component: (await import('./reports/ReportEditorPage')).ReportEditorPage }) },
           { path: 'benchmarks/:benchmarkId/releases', element: <BenchmarkReleasesPage /> },
           { path: 'benchmarks/:benchmarkId/releases/:releaseId', element: <ReleasePage /> },
           { path: '*', element: <ConsoleNotFound /> },

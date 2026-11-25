@@ -22,8 +22,8 @@ export const DOCUMENTS: Record<string, LazyExoticComponent<MDXContent>> = Object
 /** The anchor of a document's citation block, which a page's head can link to. */
 export const CITATION_ANCHOR = 'cite';
 
-/** What a report's frontmatter declares; it is checked once, when the site loads. */
-const ReportFrontmatter = z.object({
+/** What a report's frontmatter declares; the site checks it once, when it loads, and the console as a draft changes. */
+export const ReportFrontmatter = z.object({
   title: z.string(),
   date: z.iso.date(),
   summary: z.string(),
@@ -54,6 +54,22 @@ export function reportOf(slug: string, locale: Locale): ReportEntry {
     throw new Error(`no report ${slug} in ${locale}`);
   }
   return report;
+}
+
+/** Each report document's text as its file holds it, read on demand, such as when the console revises the report. */
+const REPORT_SOURCE_LOADERS = import.meta.glob<string>('/content/reports/*/*.{md,mdx}', { query: '?raw', import: 'default' });
+
+/**
+ * The file a report's document in a language is committed to: the file it is published in, or a new MDX file for a
+ * report not yet published. A Markdown file stays Markdown.
+ */
+export function reportFileOf(slug: string, locale: Locale): string {
+  return REPORTS.find(report => report.slug === slug && report.locale === locale)?.path ?? `/content/reports/${slug}/${locale}.mdx`;
+}
+
+/** The published text of a report's document in a language. */
+export function reportSourceOf(slug: string, locale: Locale): Promise<string> {
+  return REPORT_SOURCE_LOADERS[reportOf(slug, locale).path]();
 }
 
 export function benchmarkDocumentPath(benchmarkId: string, locale: Locale): string {

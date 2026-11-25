@@ -1,5 +1,5 @@
 /** The console sidebar's icons: 16px line drawings in the text colour. */
-export type NavIcon = 'overview' | 'tasks' | 'runs' | 'models' | 'analysis' | 'collections' | 'releases' | 'workbench' | 'changelog' | 'members' | 'settings';
+export type NavIcon = 'overview' | 'tasks' | 'runs' | 'models' | 'analysis' | 'collections' | 'releases' | 'workbench' | 'changelog' | 'members' | 'settings' | 'reports';
 
 export function NavIconOf({ icon }: { icon: NavIcon }) {
   switch (icon) {
@@ -21,6 +21,8 @@ export function NavIconOf({ icon }: { icon: NavIcon }) {
       return <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" aria-hidden="true"><path d="M2.5 7 8 2.5 13.5 7v6a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5z" /><path d="M6.5 13.5V9.5h3v4" /></svg>;
     case 'changelog':
       return <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" aria-hidden="true"><circle cx="8" cy="8" r="5.75" /><path d="M8 4.75V8l2.25 1.5" /></svg>;
+    case 'reports':
+      return <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 1.75h5.5L12.5 4.75v9a.5.5 0 0 1-.5.5H4a.5.5 0 0 1-.5-.5V2.25a.5.5 0 0 1 .5-.5z" /><path d="M9.25 1.75v3.25h3.25M5.75 8h4.5M5.75 10.75h4.5" /></svg>;
     case 'members':
       return <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="6" cy="5.5" r="2.5" /><path d="M1.75 13.5c.5-2.4 2.2-3.75 4.25-3.75s3.75 1.35 4.25 3.75" /><path d="M10.5 3.25a2.25 2.25 0 0 1 0 4.5M12 9.9c1.2.5 2 1.7 2.25 3.6" /></svg>;
     case 'settings':

@@ -1,7 +1,10 @@
 import { useMutation, useQueryClient, useSuspenseInfiniteQuery, useSuspenseQuery, type QueryClient } from '@tanstack/react-query';
 import { useLocale } from '../i18n/localeContext';
 import { SITE_QUERY, api, languageHeader, nextPageOffset, responseBody } from './client';
-import type { HuntVerdict, Invitation, ReleaseContent, ReviewFilter, RevisionChange, Role, RunEventKind, RunOutcome, SessionState, SettingsChange, SignInRequest, TaskOrder, TaskSpread } from './types';
+import type {
+  HuntVerdict, Invitation, NewReport, ReleaseContent, ReportDraft, ReportEdit, ReviewFilter, ReviewRequest, RevisionChange, Role, RunEventKind, RunOutcome,
+  SessionState, SettingsChange, SignInRequest, TaskOrder, TaskSpread,
+} from './types';
 
 /** Every console query key starts with this, so signing in or out can drop what the previous session read. */
 export const CONSOLE_QUERY = 'console';
@@ -450,6 +453,71 @@ export function useDiscardDraft(releaseId: string) {
     onSuccess: () => {
       queryClient.removeQueries({ queryKey: [CONSOLE_QUERY, 'release', releaseId], exact: true });
       refreshAfterRelease(queryClient);
+    },
+  });
+}
+
+/** The report drafts that name a benchmark, newest first. */
+export function useReportDrafts(benchmarkId: string) {
+  return useSuspenseQuery({
+    queryKey: [CONSOLE_QUERY, 'reports', benchmarkId],
+    queryFn: () => responseBody(api.GET('/console/reports', { params: { query: { benchmarkId } } })),
+  }).data;
+}
+
+export function useReportDraft(reportId: string) {
+  return useSuspenseQuery({
+    queryKey: [CONSOLE_QUERY, 'report', reportId],
+    queryFn: () => responseBody(api.GET('/console/reports/{reportId}', { params: { path: { reportId } } })),
+  }).data;
+}
+
+/** After a draft changes, the lists are read again and the draft's own answer is kept as it is. */
+export function refreshAfterReport(queryClient: QueryClient, draft: ReportDraft) {
+  queryClient.setQueryData([CONSOLE_QUERY, 'report', draft.id], draft);
+  void queryClient.invalidateQueries({ queryKey: [CONSOLE_QUERY, 'reports'] });
+}
+
+export function useCreateReport() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (report: NewReport) => responseBody(api.POST('/console/reports', { body: report })),
+    onSuccess: draft => refreshAfterReport(queryClient, draft),
+  });
+}
+
+export function useUpdateReport(reportId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (edit: ReportEdit) => responseBody(api.PUT('/console/reports/{reportId}', { params: { path: { reportId } }, body: edit })),
+    onSuccess: draft => refreshAfterReport(queryClient, draft),
+  });
+}
+
+export function useSubmitReport(reportId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => responseBody(api.POST('/console/reports/{reportId}/submit', { params: { path: { reportId } } })),
+    onSuccess: draft => refreshAfterReport(queryClient, draft),
+  });
+}
+
+export function useReviewReport(reportId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (request: ReviewRequest) => responseBody(api.POST('/console/reports/{reportId}/reviews', { params: { path: { reportId } }, body: request })),
+    onSuccess: draft => refreshAfterReport(queryClient, draft),
+  });
+}
+
+/** A discarded draft no longer exists, so it is dropped rather than read again. */
+export function useDiscardReport(reportId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => responseBody(api.DELETE('/console/reports/{reportId}', { params: { path: { reportId } } })),
+    onSuccess: () => {
+      queryClient.removeQueries({ queryKey: [CONSOLE_QUERY, 'report', reportId], exact: true });
+      void queryClient.invalidateQueries({ queryKey: [CONSOLE_QUERY, 'reports'] });
     },
   });
 }

@@ -153,6 +153,12 @@ export const zh = {
   reports: {
     title: '研究报告',
     lead: '基于公开评测数据的分析与报告。',
+    run: {
+      open: '打开运行记录',
+      loading: '正在读取运行……',
+      empty: '这里引用的运行还没有填写编号。',
+      missing: '找不到运行 {{run}}。',
+    },
   },
   runs: {
     pageTitle: '{{benchmark}} 运行记录',

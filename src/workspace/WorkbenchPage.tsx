@@ -1,6 +1,6 @@
 import { clsx } from 'clsx';
 import { useTranslation } from 'react-i18next';
-import { useWorkbench } from '../api/consoleClient';
+import { useReportDrafts, useWorkbench } from '../api/consoleClient';
 import type { WorkbenchRow } from '../api/types';
 import { ConsoleHeader } from '../console/ConsoleHeader';
 import { consoleBenchmarkPath } from '../console/consoleMap';
@@ -10,8 +10,10 @@ import { dateTimeOf, groupedNumber } from '../i18n/locales';
 import { RecentReleases } from '../releases/ReleaseLogPage';
 import { ReleaseVersion } from '../releases/ReleaseLabels';
 import { releasePath } from '../releases/releaseQuery';
+import { consoleReportPath } from '../reports/reportQuery';
 import { PENDING_RUNS, consoleRunsPath } from '../runs/consoleRunQuery';
 import { StatTile, StatTiles } from '../ui/content';
+import content from '../ui/content.module.css';
 import table from '../ui/table.module.css';
 import styles from './WorkspacePages.module.css';
 
@@ -31,8 +33,36 @@ export function WorkbenchPage() {
         <StatTile label={t('console.workbench.stats.executionFailures')} value={total(row => row.executionFailures)} />
       </StatTiles>
       <WorkbenchTable rows={benchmarks} />
-      <RecentReleases title={t('console.workbench.recent')} releases={recentReleases} />
+      <div className={styles.columns}>
+        <ReportsInReview />
+        <RecentReleases title={t('console.workbench.recent')} releases={recentReleases} />
+      </div>
     </div>
+  );
+}
+
+/** The report drafts waiting for reviewers, newest first; each opens its draft under the first benchmark it names. */
+export function ReportsInReview() {
+  const { t } = useTranslation();
+  const locale = useLocale();
+  const reports = useReportDrafts('').filter(report => report.status === 'inReview' && report.benchmarkIds.length > 0);
+  return (
+    <section className={clsx(content.panel, styles.panel)}>
+      <h2 className="t-heading">{t('console.workbench.inReview')}</h2>
+      {reports.length === 0 ? <p className="t-small c-muted">{t('console.workbench.noneInReview')}</p> : (
+        <ul className={styles.list}>
+          {reports.map(report => (
+            <li key={report.id}>
+              <LocaleLink className={styles.listItem} to={consoleReportPath(report.benchmarkIds[0], report.id)}>
+                <span className="t-label">{report.title[locale]}</span>
+                <span className="t-small c-muted">{t('console.reports.approvalsOf', { approvals: report.approvals, required: report.approvalsRequired })}</span>
+                <span className="t-mono c-faint">{report.author} · {dateTimeOf(locale, report.updatedAt)}</span>
+              </LocaleLink>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }
 

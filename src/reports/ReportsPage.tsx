@@ -7,6 +7,7 @@ import { LocaleLink } from '../i18n/LocaleRouting';
 import { useLocale } from '../i18n/localeContext';
 import { reportPath } from '../site/siteMap';
 import { Breadcrumbs } from '../ui/navigation';
+import { Replay, RunNumber } from './runBlocks';
 import styles from './ReportsPage.module.css';
 
 /** The reports in the reader's language, newest first. */
@@ -48,7 +49,7 @@ export function ReportPage() {
           <p className="t-lead c-muted">{report.summary}</p>
           <p className="t-mono c-faint">{report.date}</p>
         </header>
-        <Document path={report.path} />
+        <Document path={report.path} blocks={{ Replay, RunNumber }} />
       </article>
     </div>
   );

@@ -153,6 +153,12 @@ export const en: Messages = {
   reports: {
     title: 'Research',
     lead: 'Analyses and reports built on the public evaluation data.',
+    run: {
+      open: 'Open the run record',
+      loading: 'Reading the run…',
+      empty: 'The run cited here has no id yet.',
+      missing: 'No run {{run}}.',
+    },
   },
   runs: {
     pageTitle: '{{benchmark}} run records',

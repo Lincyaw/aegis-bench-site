@@ -102,7 +102,7 @@ export function benchmarkSectionOf(path: string): string {
 /** A section of a benchmark in the sidebar; the label is a message key, and the count is the benchmark's figure the item shows. */
 export interface BenchmarkSection {
   section: string;
-  label: 'console.nav.overview' | 'console.nav.tasks' | 'console.nav.runs' | 'console.nav.models' | 'console.nav.analysis' | 'console.nav.collections' | 'console.nav.releases';
+  label: 'console.nav.overview' | 'console.nav.tasks' | 'console.nav.runs' | 'console.nav.models' | 'console.nav.analysis' | 'console.nav.collections' | 'console.nav.reports' | 'console.nav.releases';
   icon: NavIcon;
   count?: (benchmark: ConsoleBenchmark) => number;
 }
@@ -122,6 +122,7 @@ export const BENCHMARK_NAV: { label?: 'console.nav.publication'; sections: Bench
     label: 'console.nav.publication',
     sections: [
       { section: 'collections', label: 'console.nav.collections', icon: 'collections' },
+      { section: 'reports', label: 'console.nav.reports', icon: 'reports' },
       { section: 'releases', label: 'console.nav.releases', icon: 'releases' },
     ],
   },
