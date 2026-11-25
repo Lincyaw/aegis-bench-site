@@ -1,15 +1,29 @@
 import openapi from '../api/openapi.json';
-import type { ConsoleBenchmark } from '../api/types';
+import type { ConsoleBenchmark, Role } from '../api/types';
 import type { NavIcon } from './ConsoleIcons';
 
 /** The form an account name takes, as the spec declares it; the sign-in form checks it before asking the API. */
 export const ACCOUNT_PATTERN = openapi.components.schemas['Console.AccountName'].pattern;
 
+/** The form an e-mail address takes, as the spec declares it; the settings form checks it before asking the API. */
+export const EMAIL_PATTERN = openapi.components.schemas['Console.EmailAddress'].pattern;
+
+const PUBLICATION_RULES = openapi.components.schemas['Console.PublicationRules'].properties;
+
+/** The numbers of reviewers a report may require, as the spec bounds them. */
+export const REPORT_REVIEWER_CHOICES = Array.from(
+  { length: PUBLICATION_RULES.reportReviewers.maximum - PUBLICATION_RULES.reportReviewers.minimum + 1 },
+  (_, index) => PUBLICATION_RULES.reportReviewers.minimum + index,
+);
+
+/** The most checks a report may require, as the spec bounds them. */
+export const MAX_REPORT_CHECKS = PUBLICATION_RULES.reportChecks.maxItems;
+
 /** Every path of the console, as site paths; links add the reader's locale. */
 export const CONSOLE_PATH = '/console';
 export const SIGN_IN_PATH = `${CONSOLE_PATH}/sign-in`;
 
-/** The demo's mock server lets any account in with this password, and the sign-in page says so. */
+/** The demo's mock server lets every member in with this password, and the sign-in page says so. */
 export const DEMO_PASSWORD = 'aegis';
 
 /** The choice of a console filter that keeps everything; no tag, spread, combination, outcome or review is spelt this way. */
@@ -33,15 +47,42 @@ export function nextPathOf(search: URLSearchParams): string {
 
 export const RELEASE_LOG_PATH = `${CONSOLE_PATH}/releases`;
 export const CHANGELOG_PATH = `${CONSOLE_PATH}/changelog`;
+export const MEMBERS_PATH = `${CONSOLE_PATH}/members`;
+export const SETTINGS_PATH = `${CONSOLE_PATH}/settings`;
 
 /** The sidebar's choice for the workspace, beside the benchmarks; no benchmark id is spelt this way. */
 export const WORKSPACE_CHOICE = 'workspace';
 
-/** The workspace's pages in the sidebar, in order; the workbench is the console's home. */
-export const WORKSPACE_NAV: { path: string; label: 'console.nav.workbench' | 'console.nav.releaseLog' | 'console.nav.changelog'; icon: NavIcon }[] = [
-  { path: CONSOLE_PATH, label: 'console.nav.workbench', icon: 'workbench' },
-  { path: RELEASE_LOG_PATH, label: 'console.nav.releaseLog', icon: 'releases' },
-  { path: CHANGELOG_PATH, label: 'console.nav.changelog', icon: 'changelog' },
+/** A page of the workspace in the sidebar; the label is a message key. */
+export interface WorkspaceSection {
+  path: string;
+  label: 'console.nav.workbench' | 'console.nav.releaseLog' | 'console.nav.changelog' | 'console.nav.members' | 'console.nav.settings';
+  icon: NavIcon;
+}
+
+/** The workspace's pages in the sidebar: its records, then who works in it and how, under a label. The workbench is the console's home. */
+export const WORKSPACE_NAV: { label?: 'console.nav.administration'; sections: WorkspaceSection[] }[] = [
+  {
+    sections: [
+      { path: CONSOLE_PATH, label: 'console.nav.workbench', icon: 'workbench' },
+      { path: RELEASE_LOG_PATH, label: 'console.nav.releaseLog', icon: 'releases' },
+      { path: CHANGELOG_PATH, label: 'console.nav.changelog', icon: 'changelog' },
+    ],
+  },
+  {
+    label: 'console.nav.administration',
+    sections: [
+      { path: MEMBERS_PATH, label: 'console.nav.members', icon: 'members' },
+      { path: SETTINGS_PATH, label: 'console.nav.settings', icon: 'settings' },
+    ],
+  },
+];
+
+/** The accounts the sign-in page suggests for the demo, one per role; every member signs in with the demo password. */
+export const DEMO_ACCOUNTS: { account: string; role: Role }[] = [
+  { account: 'lin.fang', role: 'admin' },
+  { account: 'zhou.yu', role: 'editor' },
+  { account: 'he.ming', role: 'viewer' },
 ];
 
 export function consoleBenchmarkPath(benchmarkId: string): string {

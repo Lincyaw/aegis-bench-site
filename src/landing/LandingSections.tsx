@@ -1,14 +1,14 @@
 import { clsx } from 'clsx';
 import type { CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { BenchmarkSummary, Stage } from '../api/client';
+import { useSiteInfo, type BenchmarkSummary, type Stage } from '../api/client';
 import { Citation } from '../articles/blocks';
 import { LocaleLink } from '../i18n/LocaleRouting';
 import { formatScore } from '../leaderboard/presentation';
 import { HALF_LABELS } from '../lifecycle/stages';
 import { VendorBadge } from '../models/ModelBadge';
 import { SiteFooter } from '../site/SiteLayout';
-import { BENCHMARKS_PATH, CONTACT_EMAIL, benchmarkPath, leaderboardPath } from '../site/siteMap';
+import { BENCHMARKS_PATH, benchmarkPath, leaderboardPath } from '../site/siteMap';
 import { Tag } from '../ui/content';
 import { ButtonLink, CopyButton } from '../ui/controls';
 import { REDUCED_MOTION_QUERY, useMediaQuery } from '../ui/media';
@@ -126,6 +126,7 @@ export function Updates() {
 /** The team, the citation and the contact, then the footer, where the loop settles into the mark. */
 export function Closing() {
   const { t } = useTranslation();
+  const { contactEmail } = useSiteInfo();
   return (
     <section className={styles.closing} {...beatAttributes('mark')}>
       <div className={clsx(styles.copy, styles.wide)}>
@@ -148,8 +149,8 @@ export function Closing() {
           <div>
             <h3 className="t-heading">{t('site.contact')}</h3>
             <p className="t-small c-muted">{t('landing.contactBody')}</p>
-            <span className={styles.email}>{CONTACT_EMAIL}</span>
-            <CopyButton label={t('landing.copyEmail')} text={() => CONTACT_EMAIL} />
+            <span className={styles.email}>{contactEmail}</span>
+            <CopyButton label={t('landing.copyEmail')} text={() => contactEmail} />
           </div>
         </div>
       </div>

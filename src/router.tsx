@@ -12,6 +12,7 @@ import { CollectionPage } from './collections/CollectionPage';
 import { LocaleRoot } from './i18n/LocaleRouting';
 import { LOCALES, LOCALE_PREFIX } from './i18n/locales';
 import { LeaderboardPage } from './leaderboard/LeaderboardPage';
+import { MembersPage } from './members/MembersPage';
 import { ModelDetailPage } from './models/ModelDetailPage';
 import { ModelListPage } from './models/ModelListPage';
 import { ModelPage } from './models/ModelPage';
@@ -22,6 +23,7 @@ import { ReportPage, ReportsPage } from './reports/ReportsPage';
 import { RunDetailPage } from './runs/RunDetailPage';
 import { RunListPage } from './runs/RunListPage';
 import { RunRecordsPage } from './runs/RunRecordsPage';
+import { SettingsPage } from './settings/SettingsPage';
 import { SiteLayout, type RouteHandle } from './site/SiteLayout';
 import { PageError, PendingPage } from './site/SitePages';
 import { TaskDetailPage } from './tasks/TaskDetailPage';
@@ -66,6 +68,8 @@ export function sitePages(): RouteObject[] {
           { index: true, element: <WorkbenchPage /> },
           { path: 'releases', element: <ReleaseLogPage /> },
           { path: 'changelog', element: <ChangelogPage /> },
+          { path: 'members', element: <MembersPage /> },
+          { path: 'settings', element: <SettingsPage /> },
           { path: 'benchmarks/:benchmarkId', element: <BenchmarkOverviewPage /> },
           { path: 'benchmarks/:benchmarkId/tasks', element: <TaskListPage /> },
           { path: 'benchmarks/:benchmarkId/tasks/:taskId', element: <TaskDetailPage /> },

@@ -6,7 +6,7 @@ import { useSignIn } from '../api/consoleClient';
 import { useLocalizedNavigate } from '../i18n/localeContext';
 import { BrandMark } from '../site/SiteLayout';
 import { SubmitButton, TextField } from '../ui/controls';
-import { ACCOUNT_PATTERN, DEMO_PASSWORD, nextPathOf } from './consoleMap';
+import { ACCOUNT_PATTERN, DEMO_ACCOUNTS, DEMO_PASSWORD, nextPathOf } from './consoleMap';
 import styles from './SignInPage.module.css';
 
 /** The console's door: an account and its password, then back to the page the reader was opening. */
@@ -41,7 +41,9 @@ export function SignInPage() {
         <TextField label={t('console.signIn.password')} type="password" autoComplete="current-password" value={password} onChange={setPassword} />
         {signIn.error && <p className="t-small c-bad" role="alert">{t('console.signIn.failed')}</p>}
         <SubmitButton variant="solid" pending={signIn.isPending}>{t('console.signIn.submit')}</SubmitButton>
-        <p className="t-micro c-faint">{t('console.signIn.demo', { password: DEMO_PASSWORD })}</p>
+        <p className="t-micro c-faint">
+          {t('console.signIn.demo', { password: DEMO_PASSWORD, accounts: DEMO_ACCOUNTS.map(({ account, role }) => t('console.signIn.demoAccount', { account, role: t(`console.roles.${role}`) })) })}
+        </p>
       </form>
     </main>
   );

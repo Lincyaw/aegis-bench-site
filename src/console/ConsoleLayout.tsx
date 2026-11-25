@@ -3,7 +3,7 @@ import { clsx } from 'clsx';
 import { Suspense, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Navigate, Outlet, useLocation, useMatches } from 'react-router-dom';
-import { useConsoleBenchmarks, useConsoleSession, useSignOut } from '../api/consoleClient';
+import { useConsoleBenchmarks, useConsoleSession, useSettings, useSignOut } from '../api/consoleClient';
 import type { ConsoleUser } from '../api/types';
 import { LocaleLink } from '../i18n/LocaleRouting';
 import { useLocale, useLocalizedNavigate } from '../i18n/localeContext';
@@ -74,7 +74,8 @@ export function AccountMenu({ user }: { user: ConsoleUser }) {
       <Popover.Portal>
         <Popover.Content className={styles.accountMenu} align="end" sideOffset={8} collisionPadding={12}>
           <span className="t-micro c-faint">{t('console.account.signedInAs')}</span>
-          <span className="t-label">{user.account}</span>
+          <span className="t-label">{user.name}</span>
+          <span className="t-mono c-muted">{user.account} · {t(`console.roles.${user.role}`)}</span>
           <Button variant="line" onClick={() => signOut.mutate()}>{t('console.account.signOut')}</Button>
         </Popover.Content>
       </Popover.Portal>
@@ -89,6 +90,7 @@ export function AccountMenu({ user }: { user: ConsoleUser }) {
 export function ConsoleSidebar({ benchmarkId, open, onNavigate }: { benchmarkId: string | undefined; open: boolean; onNavigate: () => void }) {
   const { t } = useTranslation();
   const benchmarks = useConsoleBenchmarks();
+  const { workspace } = useSettings();
   const locale = useLocale();
   const navigate = useLocalizedNavigate();
   const path = sitePath(locale, useLocation().pathname);
@@ -99,22 +101,25 @@ export function ConsoleSidebar({ benchmarkId, open, onNavigate }: { benchmarkId:
       <Select
         label={t('console.context')}
         className={styles.context}
-        choices={[{ value: WORKSPACE_CHOICE, label: t('console.nav.workspace') }, ...benchmarks.map(entry => ({ value: entry.id, label: `${entry.name} · ${entry.stage.name}` }))]}
+        choices={[{ value: WORKSPACE_CHOICE, label: workspace.name }, ...benchmarks.map(entry => ({ value: entry.id, label: `${entry.name} · ${entry.stage.name}` }))]}
         value={benchmarkId ?? WORKSPACE_CHOICE}
         onChange={next => { navigate(next === WORKSPACE_CHOICE ? CONSOLE_PATH : benchmarkSectionPath(next, benchmarkId ? current : '')); onNavigate(); }}
       />
-      {!benchmarkId && (
-        <ul className={styles.items}>
-          {WORKSPACE_NAV.map(item => (
-            <li key={item.path}>
-              <LocaleLink className={styles.item} to={item.path} aria-current={item.path === path ? 'page' : undefined} onClick={onNavigate}>
-                <NavIconOf icon={item.icon} />
-                <span className="t-label">{t(item.label)}</span>
-              </LocaleLink>
-            </li>
-          ))}
-        </ul>
-      )}
+      {!benchmarkId && WORKSPACE_NAV.map(group => (
+        <div key={group.label ?? ''} className={styles.group}>
+          {group.label && <span className={clsx(styles.groupLabel, 't-micro c-faint')}>{t(group.label)}</span>}
+          <ul className={styles.items}>
+            {group.sections.map(item => (
+              <li key={item.path}>
+                <LocaleLink className={styles.item} to={item.path} aria-current={item.path === path ? 'page' : undefined} onClick={onNavigate}>
+                  <NavIconOf icon={item.icon} />
+                  <span className="t-label">{t(item.label)}</span>
+                </LocaleLink>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
       {benchmarkId && (
         <>
           {BENCHMARK_NAV.map(group => (

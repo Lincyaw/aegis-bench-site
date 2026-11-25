@@ -2,10 +2,12 @@ import { clsx } from 'clsx';
 import { useId, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
-import { useConsoleBenchmark, useDiscardDraft, usePublishRelease, useRelease, useRestoreRelease, useUpdateDraft } from '../api/consoleClient';
+import { useConsoleBenchmark, useConsoleUser, useDiscardDraft, usePublishRelease, useRelease, useRestoreRelease, useUpdateDraft } from '../api/consoleClient';
 import type { Combination, ConsoleBenchmark, EntrantKey, ReleaseContent, ReleaseDetail } from '../api/types';
 import { ConsoleHeader } from '../console/ConsoleHeader';
+import { ChangeFailure } from '../console/ConsolePages';
 import { consoleBenchmarkPath } from '../console/consoleMap';
+import { mayEdit } from '../members/roles';
 import { LocaleLink } from '../i18n/LocaleRouting';
 import { useLocale, useLocalizedNavigate } from '../i18n/localeContext';
 import { dateTimeOf } from '../i18n/locales';
@@ -16,7 +18,7 @@ import { FactList } from '../ui/content';
 import content from '../ui/content.module.css';
 import { Button, ButtonLink, SubmitButton, TextArea, TextField, ToggleChip } from '../ui/controls';
 import { benchmarkReleasesPath, isEntrant, releasePath } from './releaseQuery';
-import { ReleaseChangesText, ReleaseFailure, ReleaseStatusTag } from './ReleaseLabels';
+import { ReleaseChangesText, ReleaseStatusTag } from './ReleaseLabels';
 import styles from './ReleasePages.module.css';
 
 /** One release: what it puts on the public site, and what can be done with it in its state. */
@@ -28,6 +30,7 @@ export function ReleasePage() {
   const benchmark = useConsoleBenchmark(benchmarkId);
   const release = useRelease(releaseId);
   const restore = useRestoreRelease(release.id);
+  const editing = mayEdit(useConsoleUser().role);
   const version = t('console.releases.version', { version: release.version });
   return (
     <div className={styles.page} data-half={benchmark.stage.half}>
@@ -43,10 +46,10 @@ export function ReleasePage() {
       </div>
       {release.note && <p className="t-body">{release.note}</p>}
       <p className={styles.changes}><span className="t-micro c-faint">{t('console.release.changes')}</span><ReleaseChangesText changes={release.changes} /></p>
-      {release.status === 'draft'
+      {release.status === 'draft' && editing
         ? <DraftEditor key={release.id} benchmark={benchmark} release={release} />
         : <ReleaseContentView benchmark={benchmark} shown={release.content} />}
-      {release.status === 'superseded' && (
+      {release.status === 'superseded' && editing && (
         <ReleaseNoteForm
           title={t('console.release.restore')} lead={t('console.release.restoreLead')} confirm={t('console.release.confirmRestore')}
           pending={restore.isPending} error={restore.error}
@@ -114,7 +117,7 @@ export function DraftEditor({ benchmark, release }: { benchmark: ConsoleBenchmar
         <SubmitButton variant="solid" pending={update.isPending} form={formId}>{t('console.release.save')}</SubmitButton>
         {unsaved ? <p className="t-small c-muted">{t('console.release.unsaved')}</p> : update.isSuccess && <p className="t-small c-muted" role="status">{t('console.release.saved')}</p>}
       </div>
-      <ReleaseFailure error={update.error} />
+      <ChangeFailure error={update.error} reasons={{ 409: t('console.release.changedElsewhere'), 422: t('console.release.foreignContent') }} />
       {!unsaved && (
         <ReleaseNoteForm
           title={t('console.release.publish')} lead={t('console.release.publishLead')} confirm={t('console.release.confirmPublish')}
@@ -189,7 +192,7 @@ export function DiscardDraft({ benchmarkId, releaseId }: { benchmarkId: string; 
   return asking ? (
     <div className={clsx(content.panel, styles.action)}>
       <p className="t-small c-muted">{t('console.release.discardLead')}</p>
-      <ReleaseFailure error={discard.error} />
+      <ChangeFailure error={discard.error} reasons={{ 409: t('console.release.changedElsewhere') }} />
       <div className={styles.buttons}>
         <Button variant="line" onClick={() => discard.mutate(undefined, { onSuccess: () => navigate(benchmarkReleasesPath(benchmarkId)) })}>{t('console.release.confirmDiscard')}</Button>
         <Button variant="line" onClick={() => setAsking(false)}>{t('console.release.cancel')}</Button>
@@ -209,7 +212,7 @@ export function ReleaseNoteForm({ title, lead, confirm, pending, error, onSubmit
       <h2 className="t-heading">{title}</h2>
       <p className="t-small c-muted">{lead}</p>
       <TextArea label={t('console.release.note')} rows={2} value={note} onChange={setNote} />
-      <ReleaseFailure error={error} />
+      <ChangeFailure error={error} reasons={{ 409: t('console.release.changedElsewhere') }} />
       <div className={styles.buttons}><SubmitButton variant="solid" pending={pending}>{confirm}</SubmitButton></div>
     </form>
   );

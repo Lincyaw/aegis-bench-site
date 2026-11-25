@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient, useSuspenseInfiniteQuery, useSuspenseQuery, type QueryClient } from '@tanstack/react-query';
 import { useLocale } from '../i18n/localeContext';
-import { api, languageHeader, nextPageOffset, responseBody } from './client';
-import type { HuntVerdict, ReleaseContent, ReviewFilter, RevisionChange, RunEventKind, RunOutcome, SessionState, SignInRequest, TaskOrder, TaskSpread } from './types';
+import { SITE_QUERY, api, languageHeader, nextPageOffset, responseBody } from './client';
+import type { HuntVerdict, Invitation, ReleaseContent, ReviewFilter, RevisionChange, Role, RunEventKind, RunOutcome, SessionState, SettingsChange, SignInRequest, TaskOrder, TaskSpread } from './types';
 
 /** Every console query key starts with this, so signing in or out can drop what the previous session read. */
 export const CONSOLE_QUERY = 'console';
@@ -39,6 +39,71 @@ export function useSignOut() {
   return useMutation({
     mutationFn: () => responseBody(api.DELETE('/console/session')),
     onSuccess: session => startSession(queryClient, session),
+  });
+}
+
+/** The signed-in member; the console's layout renders its pages only for one. */
+export function useConsoleUser() {
+  const { user } = useConsoleSession();
+  if (!user) {
+    throw new Error('the console renders its pages only for a signed-in member');
+  }
+  return user;
+}
+
+export function useMembers() {
+  return useSuspenseQuery({
+    queryKey: [CONSOLE_QUERY, 'members'],
+    queryFn: () => responseBody(api.GET('/console/members')),
+  }).data;
+}
+
+/** After the members change, the list is read again, and so is the session, whose own role or membership may have changed. */
+export function refreshAfterMembers(queryClient: QueryClient) {
+  void queryClient.invalidateQueries({ queryKey: [CONSOLE_QUERY, 'members'] });
+  void queryClient.invalidateQueries({ queryKey: SESSION_QUERY_KEY });
+}
+
+export function useInviteMember() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (invitation: Invitation) => responseBody(api.POST('/console/members', { body: invitation })),
+    onSuccess: () => refreshAfterMembers(queryClient),
+  });
+}
+
+export function useChangeRole(account: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (role: Role) => responseBody(api.PUT('/console/members/{account}/role', { params: { path: { account } }, body: { role } })),
+    onSuccess: () => refreshAfterMembers(queryClient),
+  });
+}
+
+export function useRemoveMember(account: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => responseBody(api.DELETE('/console/members/{account}', { params: { path: { account } } })),
+    onSuccess: () => refreshAfterMembers(queryClient),
+  });
+}
+
+export function useSettings() {
+  return useSuspenseQuery({
+    queryKey: [CONSOLE_QUERY, 'settings'],
+    queryFn: () => responseBody(api.GET('/console/settings')),
+  }).data;
+}
+
+/** Saving the settings also changes what the public site says about the workspace, so its site information is read again. */
+export function useUpdateSettings() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (change: SettingsChange) => responseBody(api.PUT('/console/settings', { body: change })),
+    onSuccess: settings => {
+      queryClient.setQueryData([CONSOLE_QUERY, 'settings'], settings);
+      void queryClient.invalidateQueries({ queryKey: [SITE_QUERY] });
+    },
   });
 }
 

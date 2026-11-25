@@ -16,7 +16,6 @@ export const FOOTER_LINKS = [
   { to: '/changelog', label: 'site.nav.changelog' },
 ] as const;
 
-export const CONTACT_EMAIL = 'contact@aegis-bench.org';
 export const CONTACT_ANCHOR = 'contact';
 export const CONTACT_PATH = `/about#${CONTACT_ANCHOR}`;
 

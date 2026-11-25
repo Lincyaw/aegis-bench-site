@@ -37,6 +37,16 @@ export function languageHeader(locale: Locale) {
   return { 'Accept-Language': locale };
 }
 
+/** The key of the site's information, which the console's settings change. */
+export const SITE_QUERY = 'site';
+
+export function useSiteInfo() {
+  return useSuspenseQuery({
+    queryKey: [SITE_QUERY],
+    queryFn: () => responseBody(api.GET('/site')),
+  }).data;
+}
+
 export function useStages() {
   const locale = useLocale();
   return useSuspenseQuery({

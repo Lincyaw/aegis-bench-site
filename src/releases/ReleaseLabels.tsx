@@ -1,16 +1,6 @@
 import { useTranslation } from 'react-i18next';
-import { ApiError } from '../api/client';
 import type { ReleaseChanges, ReleaseStatus, ReleaseSummary } from '../api/types';
 import { Tag } from '../ui/content';
-
-/** A change to a release that the API refused, said where it was asked for; any other failure is the page's error. */
-export function ReleaseFailure({ error }: { error: Error | null }) {
-  const { t } = useTranslation();
-  if (error !== null && !(error instanceof ApiError)) {
-    throw error;
-  }
-  return error && <p className="t-small c-bad" role="alert">{t('console.release.failed', { message: error.reason })}</p>;
-}
 
 /** Where a release stands; a draft is dashed, as it is not settled yet. */
 export function ReleaseStatusTag({ status }: { status: ReleaseStatus }) {
