@@ -1,0 +1,37 @@
+.page { display: grid; gap: var(--space-6); }
+.page > header { margin-bottom: 0; }
+.section { display: grid; gap: var(--space-3); }
+.sectionHead { display: grid; gap: var(--space-1); }
+
+.models { --columns: minmax(12rem, 1.4fr) minmax(8rem, 1fr) minmax(9rem, 1.1fr) 6rem 6rem 5.5rem 5rem minmax(8rem, 1fr); }
+.model { display: flex; align-items: center; gap: var(--space-3); }
+.name { display: grid; }
+.name a:hover { text-decoration: underline; text-underline-offset: var(--space-1); }
+.tags { display: flex; flex-wrap: wrap; gap: var(--space-1); }
+
+.scope { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
+.harnesses { --columns: minmax(8rem, 1fr) minmax(9rem, 1.2fr) 7rem 7rem 6rem minmax(8rem, 1fr); }
+.current { background: linear-gradient(var(--brand-dev), var(--brand-ops)) left / var(--size-border-thick) 100% no-repeat, var(--bg-muted); }
+
+.filters { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+.search { width: 18rem; }
+.tasks { --columns: minmax(12rem, 1.5fr) minmax(10rem, 1.3fr) minmax(9rem, 1fr) minmax(8rem, 1fr); }
+.task { display: grid; gap: var(--space-px); min-width: 0; }
+.task a { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.task a:hover { text-decoration: underline; text-underline-offset: var(--space-1); }
+.runGroups { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-3); }
+.runGroup { display: inline-flex; }
+/* Each run's dot opens the run; the hit area is larger than the dot. */
+.runDot { display: inline-grid; place-items: center; width: var(--space-5); height: var(--space-5); border-radius: var(--radius-full); transition: background-color var(--duration-base); }
+.runDot:hover { background: var(--bg-muted); }
+.footer { display: flex; justify-content: space-between; align-items: center; gap: var(--space-4); flex-wrap: wrap; }
+
+@media (max-width: 760px) {
+  .search { width: 100%; }
+  .models { --columns: minmax(0, 1fr) auto; }
+  .models [role="row"] > :is(:nth-child(2), :nth-child(4), :nth-child(5), :nth-child(6), :nth-child(7), :nth-child(8)) { display: none; }
+  .harnesses { --columns: minmax(0, 1fr) auto; }
+  .harnesses [role="row"] > :is(:nth-child(3), :nth-child(4), :nth-child(5), :nth-child(6)) { display: none; }
+  .tasks { --columns: minmax(0, 1fr) auto; }
+  .tasks [role="row"] > :is(:nth-child(3), :nth-child(4)) { display: none; }
+}

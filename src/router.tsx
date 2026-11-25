@@ -8,6 +8,8 @@ import { BenchmarksPage } from './benchmarks/BenchmarksPage';
 import { LocaleRoot } from './i18n/LocaleRouting';
 import { LOCALES, LOCALE_PREFIX } from './i18n/locales';
 import { LeaderboardPage } from './leaderboard/LeaderboardPage';
+import { ModelDetailPage } from './models/ModelDetailPage';
+import { ModelListPage } from './models/ModelListPage';
 import { ModelPage } from './models/ModelPage';
 import { ReportPage, ReportsPage } from './reports/ReportsPage';
 import { RunDetailPage } from './runs/RunDetailPage';
@@ -58,6 +60,8 @@ export function sitePages(): RouteObject[] {
           { path: 'benchmarks/:benchmarkId/tasks/:taskId', element: <TaskDetailPage /> },
           { path: 'benchmarks/:benchmarkId/runs', element: <RunListPage /> },
           { path: 'benchmarks/:benchmarkId/runs/:runId', element: <RunDetailPage /> },
+          { path: 'benchmarks/:benchmarkId/models', element: <ModelListPage /> },
+          { path: 'benchmarks/:benchmarkId/models/:modelId', element: <ModelDetailPage /> },
           { path: '*', element: <ConsoleNotFound /> },
         ],
       }],

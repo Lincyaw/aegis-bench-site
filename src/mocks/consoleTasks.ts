@@ -82,18 +82,27 @@ export interface TaskFilter {
   order: TaskOrder;
 }
 
-/** The tasks a filter selects, in its order; a task without a counted run sorts last by pass rate. */
-export function filteredTasksOf(benchmarkId: string, filter: TaskFilter): TaskRecord[] {
-  const rates = new Map(tasksOf(benchmarkId).map(task => [task.id, taskResultCountsOf(benchmarkId, task.id)]));
-  const rateOf = (task: TaskRecord) => rates.get(task.id)?.passRate;
-  const matching = tasksOf(benchmarkId).filter(task => (!filter.q || task.id.includes(filter.q) || task.title.includes(filter.q))
-    && (!filter.tag || task.tags.includes(filter.tag))
-    && (!filter.spread || spreadOf(rates.get(task.id) ?? resultCountsOf([])) === filter.spread));
-  switch (filter.order) {
-    case 'id': return matching.toSorted((a, b) => a.id.localeCompare(b.id));
-    case 'hardest': return matching.toSorted((a, b) => (rateOf(a) ?? Infinity) - (rateOf(b) ?? Infinity));
-    case 'easiest': return matching.toSorted((a, b) => (rateOf(b) ?? -Infinity) - (rateOf(a) ?? -Infinity));
+/** Tasks in an order: by pass rate, a task without a counted run last, or by id. */
+export function sortedTasks<Item>(items: Item[], order: TaskOrder, idOf: (item: Item) => string, rateOf: (item: Item) => number | undefined): Item[] {
+  switch (order) {
+    case 'id': return items.toSorted((a, b) => idOf(a).localeCompare(idOf(b)));
+    case 'hardest': return items.toSorted((a, b) => (rateOf(a) ?? Infinity) - (rateOf(b) ?? Infinity));
+    case 'easiest': return items.toSorted((a, b) => (rateOf(b) ?? -Infinity) - (rateOf(a) ?? -Infinity));
   }
+}
+
+/** Whether a task's id or title holds the search text. */
+export function matchesTaskSearch(task: { id: string; title: string }, q: string): boolean {
+  return !q || task.id.includes(q) || task.title.includes(q);
+}
+
+/** The tasks a filter selects, in its order. */
+export function filteredTasksOf(benchmarkId: string, filter: TaskFilter): TaskRecord[] {
+  const results = new Map(tasksOf(benchmarkId).map(task => [task.id, taskResultCountsOf(benchmarkId, task.id)]));
+  const matching = tasksOf(benchmarkId).filter(task => matchesTaskSearch(task, filter.q)
+    && (!filter.tag || task.tags.includes(filter.tag))
+    && (!filter.spread || spreadOf(results.get(task.id) ?? resultCountsOf([])) === filter.spread));
+  return sortedTasks(matching, filter.order, task => task.id, task => results.get(task.id)?.passRate);
 }
 
 /** The tools a harness offers on a task of the kind: those its runs call, and submitting. */

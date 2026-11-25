@@ -10,6 +10,7 @@ export const consoleZh = {
     overview: '概览',
     tasks: '任务',
     runs: '运行',
+    models: '模型',
   },
   account: {
     menu: '账户 {{account}}',
@@ -169,6 +170,25 @@ export const consoleZh = {
     attempt: '第 {{attempt}} 次',
     range: '第 {{from, number}}–{{to, number}} 次，共 {{total, number}} 次',
     empty: '没有符合条件的运行。',
+  },
+  models: {
+    title: '模型',
+    lead_one: '{{count}} 个模型在这个评测基准上运行过。每个模型的结果合计它用过的全部框架，最好的在前。',
+    lead_other: '{{count}} 个模型在这个评测基准上运行过。每个模型的结果合计它用过的全部框架，最好的在前。',
+    column: { model: '模型', harnesses: '框架', passRate: '通过率', everyTime: '每次都通过', once: '至少一次通过', counted: '计入运行', cost: '平均成本', failures: '失败' },
+  },
+  model: {
+    allHarnesses: '全部框架',
+    harnessLabel: '框架',
+    lead_one: '{{vendor}} · 共 {{count}} 种框架',
+    lead_other: '{{vendor}} · 共 {{count}} 种框架',
+    stats: { passRate: '通过率', everyTime: '每次都通过', steps: '平均步数', cost: '平均成本' },
+    byHarness: '各框架的结果',
+    tasks: '逐题表现',
+    tasksLead: '模型在每道任务上的运行，按它自己的通过率从低到高排列。',
+    column: { task: '任务', runs: '各次运行', passRate: '通过率', failures: '失败' },
+    runOf: '{{harness}} 第 {{attempt}} 次：{{outcome}}',
+    range: '第 {{from, number}}–{{to, number}} 道，共 {{total, number}} 道',
   },
   run: {
     label: '{{model}} · {{harness}} · 第 {{attempt}} 次',

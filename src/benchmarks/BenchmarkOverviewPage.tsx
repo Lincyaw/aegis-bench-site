@@ -12,7 +12,7 @@ import { FailureClassTag } from '../results/FailureClassTag';
 import { PassRate } from '../results/PassRate';
 import { formatCost, formatRate } from '../results/presentation';
 import { PENDING_RUNS, consoleRunPath, consoleRunsPath } from '../runs/consoleRunQuery';
-import { combinationKey } from '../runs/runRecordsQuery';
+import { consoleModelPath } from '../models/consoleModelQuery';
 import { StatTile, StatTiles } from '../ui/content';
 import content from '../ui/content.module.css';
 import table from '../ui/table.module.css';
@@ -56,7 +56,7 @@ export function BenchmarkOverviewPage() {
   );
 }
 
-/** Each combination's pass rate, how many tasks it always or ever solved, and what a run of it costs; a row opens its runs. */
+/** Each combination's pass rate, how many tasks it always or ever solved, and what a run of it costs; a row opens the model in that harness. */
 export function EntrantTable({ benchmarkId, entrants }: { benchmarkId: string; entrants: EntrantResult[] }) {
   const { t } = useTranslation();
   const locale = useLocale();
@@ -72,7 +72,7 @@ export function EntrantTable({ benchmarkId, entrants }: { benchmarkId: string; e
         <span role="columnheader">{t('console.overview.column.steps')}</span>
       </div>
       {entrants.map(({ model, harness, result }) => (
-        <div key={`${model.id}-${harness.id}`} className={clsx(table.row, table.link)} role="row" onClick={() => navigate(consoleRunsPath(benchmarkId, { combination: combinationKey(model.id, harness.id) }))}>
+        <div key={`${model.id}-${harness.id}`} className={clsx(table.row, table.link)} role="row" onClick={() => navigate(consoleModelPath(benchmarkId, model.id, { harness: harness.id }))}>
           <span role="cell" className={styles.entrant}><ModelLabel model={model} /><span className="t-small c-muted">{harness.name}</span></span>
           <span role="cell"><PassRate rate={result.passRate} /></span>
           <span role="cell" className="t-numeric c-muted">{t('console.overview.tasksOf', { solved: result.solvedEveryTime, total: result.tasks })}</span>

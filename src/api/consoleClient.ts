@@ -197,6 +197,44 @@ export function useRunEvents(runId: string, query: RunEventQuery, pageSize: numb
   }).data;
 }
 
+export function useConsoleModels(benchmarkId: string) {
+  const locale = useLocale();
+  return useSuspenseQuery({
+    queryKey: [CONSOLE_QUERY, 'models', benchmarkId, locale],
+    queryFn: () => responseBody(api.GET('/console/benchmarks/{benchmarkId}/models', { params: { path: { benchmarkId }, header: languageHeader(locale) } })),
+  }).data;
+}
+
+export function useConsoleModel(benchmarkId: string, modelId: string) {
+  const locale = useLocale();
+  return useSuspenseQuery({
+    queryKey: [CONSOLE_QUERY, 'model', benchmarkId, modelId, locale],
+    queryFn: () => responseBody(api.GET('/console/benchmarks/{benchmarkId}/models/{modelId}', { params: { path: { benchmarkId, modelId }, header: languageHeader(locale) } })),
+  }).data;
+}
+
+/** What a model's task list asks for: one harness or all, the filters and the page. */
+export interface ModelTaskQuery {
+  harness: string;
+  q: string;
+  spread?: TaskSpread;
+  order: TaskOrder;
+  offset: number;
+}
+
+export function useModelTaskPage(benchmarkId: string, modelId: string, query: ModelTaskQuery, pageSize: number) {
+  const locale = useLocale();
+  return useSuspenseQuery({
+    queryKey: [CONSOLE_QUERY, 'modelTasks', benchmarkId, modelId, query, pageSize, locale],
+    queryFn: () => responseBody(api.GET('/console/benchmarks/{benchmarkId}/models/{modelId}/tasks', {
+      params: {
+        path: { benchmarkId, modelId }, header: languageHeader(locale),
+        query: { harness: query.harness, q: query.q, spread: query.spread, order: query.order, offset: query.offset, limit: pageSize },
+      },
+    })),
+  }).data;
+}
+
 export function useBenchmarkOverview(benchmarkId: string) {
   const locale = useLocale();
   return useSuspenseQuery({

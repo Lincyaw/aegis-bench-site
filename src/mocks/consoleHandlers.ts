@@ -1,5 +1,6 @@
 import { delay } from 'msw';
 import { BENCHMARKS, hasBenchmark } from './benchmarks';
+import { DEFAULT_MODEL_TASK_PAGE_SIZE, harnessIdsOf, modelDetailOf, modelResultsOf, modelTasksOf, ranOn } from './consoleModels';
 import { DEFAULT_EVENT_PAGE_SIZE, DEFAULT_RUN_PAGE_SIZE, consoleRunOf, filteredRunsOf, runEventsOf } from './consoleRuns';
 import {
   DEFAULT_CONSOLE_TASK_PAGE_SIZE, checkResultsOf, consoleEntriesOf, consoleTaskOf, filteredTasksOf, namedTaskOf, referenceFilesOf, revisionsOf,
@@ -141,6 +142,45 @@ export const consoleHandlers = [
     }
     await delay(60);
     return response(200).json(pageOf(entries, query, DEFAULT_ENTRY_PAGE_SIZE));
+  }),
+
+  http.get('/console/benchmarks/{benchmarkId}/models', async ({ cookies, params, request, response }) => {
+    if (!sessionUserOf(cookies)) {
+      return response(401).json(SIGN_IN_REQUIRED);
+    }
+    if (!hasBenchmark(params.benchmarkId)) {
+      return response(404).json({ message: `no benchmark ${params.benchmarkId}` });
+    }
+    const locale = localeOf(request);
+    await delay(80);
+    return response(200).json(modelResultsOf(params.benchmarkId, locale), writtenIn(locale));
+  }),
+
+  http.get('/console/benchmarks/{benchmarkId}/models/{modelId}', async ({ cookies, params, request, response }) => {
+    if (!sessionUserOf(cookies)) {
+      return response(401).json(SIGN_IN_REQUIRED);
+    }
+    if (!hasBenchmark(params.benchmarkId) || !ranOn(params.benchmarkId, params.modelId)) {
+      return response(404).json({ message: `no model ${params.modelId} on ${params.benchmarkId}` });
+    }
+    const locale = localeOf(request);
+    await delay(80);
+    return response(200).json(modelDetailOf(params.benchmarkId, params.modelId, locale), writtenIn(locale));
+  }),
+
+  http.get('/console/benchmarks/{benchmarkId}/models/{modelId}/tasks', async ({ cookies, params, query, request, response }) => {
+    if (!sessionUserOf(cookies)) {
+      return response(401).json(SIGN_IN_REQUIRED);
+    }
+    const harness = query.get('harness') ?? '';
+    if (!hasBenchmark(params.benchmarkId) || !ranOn(params.benchmarkId, params.modelId) || (harness && !harnessIdsOf(params.benchmarkId, params.modelId).includes(harness))) {
+      return response(404).json({ message: `no model ${params.modelId}${harness ? ` in harness ${harness}` : ''} on ${params.benchmarkId}` });
+    }
+    const locale = localeOf(request);
+    const filter = { harness, q: (query.get('q') ?? '').trim(), spread: query.get('spread') ?? undefined, order: query.get('order') ?? 'hardest' };
+    const { rows, totals } = modelTasksOf(params.benchmarkId, params.modelId, filter, locale);
+    await delay(100);
+    return response(200).json({ ...pageOf(rows, query, DEFAULT_MODEL_TASK_PAGE_SIZE), totals }, writtenIn(locale));
   }),
 
   http.get('/console/benchmarks/{benchmarkId}/runs', async ({ cookies, params, query, request, response }) => {

@@ -11,6 +11,7 @@ export const consoleEn: ConsoleMessages = {
     overview: 'Overview',
     tasks: 'Tasks',
     runs: 'Runs',
+    models: 'Models',
   },
   account: {
     menu: 'Account {{account}}',
@@ -170,6 +171,25 @@ export const consoleEn: ConsoleMessages = {
     attempt: 'Attempt {{attempt}}',
     range: 'Runs {{from, number}}–{{to, number}} of {{total, number}}',
     empty: 'No run matches.',
+  },
+  models: {
+    title: 'Models',
+    lead_one: '{{count}} model ran on this benchmark. Each model’s result counts every harness it ran in; the best comes first.',
+    lead_other: '{{count}} models ran on this benchmark. Each model’s result counts every harness it ran in; the best comes first.',
+    column: { model: 'Model', harnesses: 'Harnesses', passRate: 'Pass rate', everyTime: 'Passed every time', once: 'Passed at least once', counted: 'Counted runs', cost: 'Mean cost', failures: 'Failures' },
+  },
+  model: {
+    allHarnesses: 'All harnesses',
+    harnessLabel: 'Harness',
+    lead_one: '{{vendor}} · {{count}} harness',
+    lead_other: '{{vendor}} · {{count}} harnesses',
+    stats: { passRate: 'Pass rate', everyTime: 'Passed every time', steps: 'Mean steps', cost: 'Mean cost' },
+    byHarness: 'Results by harness',
+    tasks: 'Task by task',
+    tasksLead: 'The model’s runs on each task, its own lowest pass rate first.',
+    column: { task: 'Task', runs: 'Runs', passRate: 'Pass rate', failures: 'Failures' },
+    runOf: '{{harness}} attempt {{attempt}}: {{outcome}}',
+    range: 'Tasks {{from, number}}–{{to, number}} of {{total, number}}',
   },
   run: {
     label: '{{model}} · {{harness}} · attempt {{attempt}}',
