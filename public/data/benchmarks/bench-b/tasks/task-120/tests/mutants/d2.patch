@@ -1,0 +1,6 @@
+# 上限判断少了等号
+--- a/src/rules.py
++++ b/src/rules.py
+@@ -27,1 +27,1 @@
+-    if total >= cap:
++    if total > cap:

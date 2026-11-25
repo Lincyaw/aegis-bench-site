@@ -1,0 +1,45 @@
+{
+  "id": "bench-c",
+  "name": "Bench C",
+  "shortName": "C",
+  "version": "v2.1",
+  "stageId": "07",
+  "summary": {
+    "zh-CN": "在运行中的服务系统里定位故障根因并完成处置，以服务恢复情况与根因判定计分。",
+    "en": "Find the root cause of a fault in a running service system and remediate it; scored on recovery and on the root cause."
+  },
+  "updatedOn": "2026-11-12",
+  "evaluatedIn": "2026-11",
+  "runsPerTask": 5,
+  "metric": {
+    "name": {
+      "zh-CN": "通过率",
+      "en": "Pass rate"
+    },
+    "unit": "percent",
+    "higherIsBetter": true
+  },
+  "timelineLegend": {
+    "action": {
+      "zh-CN": "一步操作",
+      "en": "A step"
+    },
+    "change": {
+      "zh-CN": "执行处置",
+      "en": "Remediation"
+    },
+    "submitPassed": {
+      "zh-CN": "恢复且根因正确",
+      "en": "Recovered, cause right"
+    },
+    "submitFailed": {
+      "zh-CN": "未通过",
+      "en": "Failed"
+    }
+  },
+  "changeTools": [
+    "run_ops_command",
+    "edit_config"
+  ],
+  "passRule": "服务健康检查通过、错误率恢复到基线且根因判定正确，才判为通过。"
+}

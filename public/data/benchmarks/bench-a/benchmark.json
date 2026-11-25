@@ -1,0 +1,44 @@
+{
+  "id": "bench-a",
+  "name": "Bench A",
+  "shortName": "A",
+  "version": "v1.2",
+  "stageId": "03",
+  "summary": {
+    "zh-CN": "在真实代码仓库中按需求完成功能实现，以仓库内的隐藏测试判定是否通过。",
+    "en": "Implement a feature in a real code repository; hidden tests in the repository decide whether it passes."
+  },
+  "updatedOn": "2026-11-20",
+  "evaluatedIn": "2026-11",
+  "runsPerTask": 5,
+  "metric": {
+    "name": {
+      "zh-CN": "通过率",
+      "en": "Pass rate"
+    },
+    "unit": "percent",
+    "higherIsBetter": true
+  },
+  "timelineLegend": {
+    "action": {
+      "zh-CN": "一步操作",
+      "en": "A step"
+    },
+    "change": {
+      "zh-CN": "修改代码",
+      "en": "Code change"
+    },
+    "submitPassed": {
+      "zh-CN": "提交并通过",
+      "en": "Submitted, passed"
+    },
+    "submitFailed": {
+      "zh-CN": "提交未通过",
+      "en": "Submitted, failed"
+    }
+  },
+  "changeTools": [
+    "edit_file"
+  ],
+  "passRule": "全部检查通过才判为通过，任一检查未通过即判为失败。模型复核类检查取裁判多次评分的中位数。"
+}

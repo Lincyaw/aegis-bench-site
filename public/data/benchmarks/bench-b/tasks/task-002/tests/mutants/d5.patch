@@ -1,0 +1,6 @@
+# 同一张券可重复使用
+--- a/src/rules.py
++++ b/src/rules.py
+@@ -48,1 +48,1 @@
+-    used.add(coupon.id)
++    pass

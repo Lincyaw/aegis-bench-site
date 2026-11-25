@@ -1,0 +1,1 @@
+{ "chain": [ { "service": "order-db", "symptom": "连接数达到上限" }, { "service": "order-api", "symptom": "查询延迟升高" }, { "service": "gateway", "symptom": "下游超时" } ] }

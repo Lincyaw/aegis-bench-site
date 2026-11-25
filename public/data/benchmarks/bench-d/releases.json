@@ -1,0 +1,105 @@
+[
+  {
+    "version": 2,
+    "status": "current",
+    "note": "加入两个组合，并增加一个运行示例。",
+    "author": "lin.fang",
+    "updatedAt": "2026-09-30T08:00:00Z",
+    "content": {
+      "summary": {
+        "zh-CN": "依据监控指标与日志还原故障的传播链路，以链路节点的召回衡量定位的完整程度。",
+        "en": "Reconstruct how a fault spread from metrics and logs; node recall along the chain measures how complete the diagnosis is."
+      },
+      "entrants": [
+        {
+          "modelId": "bing",
+          "harnessId": "y"
+        },
+        {
+          "modelId": "jia",
+          "harnessId": "x"
+        },
+        {
+          "modelId": "yi",
+          "harnessId": "x"
+        },
+        {
+          "modelId": "ding",
+          "harnessId": "x"
+        },
+        {
+          "modelId": "jia",
+          "harnessId": "y"
+        },
+        {
+          "modelId": "yi",
+          "harnessId": "y"
+        },
+        {
+          "modelId": "wu",
+          "harnessId": "x"
+        },
+        {
+          "modelId": "ji",
+          "harnessId": "y"
+        },
+        {
+          "modelId": "geng",
+          "harnessId": "x"
+        }
+      ],
+      "replays": [
+        "bench-d.task-052.jia-x.1",
+        "bench-d.task-019.yi-x.1",
+        "bench-d.task-077.bing-y.1"
+      ]
+    }
+  },
+  {
+    "version": 1,
+    "status": "superseded",
+    "note": "首次发布。",
+    "author": "zhou.yu",
+    "updatedAt": "2026-09-15T08:00:00Z",
+    "content": {
+      "summary": {
+        "zh-CN": "依据监控指标与日志还原故障的传播链路，以链路节点的召回衡量定位的完整程度。",
+        "en": "Reconstruct how a fault spread from metrics and logs; node recall along the chain measures how complete the diagnosis is."
+      },
+      "entrants": [
+        {
+          "modelId": "bing",
+          "harnessId": "y"
+        },
+        {
+          "modelId": "jia",
+          "harnessId": "x"
+        },
+        {
+          "modelId": "yi",
+          "harnessId": "x"
+        },
+        {
+          "modelId": "ding",
+          "harnessId": "x"
+        },
+        {
+          "modelId": "jia",
+          "harnessId": "y"
+        },
+        {
+          "modelId": "yi",
+          "harnessId": "y"
+        },
+        {
+          "modelId": "wu",
+          "harnessId": "x"
+        }
+      ],
+      "replays": [
+        "bench-d.task-052.jia-x.1",
+        "bench-d.task-019.yi-x.1"
+      ]
+    }
+  }
+]

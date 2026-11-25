@@ -1,0 +1,12 @@
+--- a/src/notifications/api.py
++++ b/src/notifications/api.py
+@@ -9,3 +9,12 @@
+ @router.get("/notifications/{item_id}", dependencies=[Depends(require_session)])
+ def get_item(item_id: int):
+     return repo.get(item_id)
++
++@router.get("/notifications", dependencies=[Depends(require_session)])
++def list_items(status: str, cursor: str | None = None):
++    if not status or status not in Status.values():
++        raise HTTPException(400, "unknown status")
++    return repo.page(status, cursor, limit=settings.page_limit)

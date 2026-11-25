@@ -1,0 +1,6 @@
+# 过期券未被拒绝
+--- a/src/rules.py
++++ b/src/rules.py
+@@ -34,1 +34,1 @@
+-    if coupon.expired(now): raise Expired()
++    pass

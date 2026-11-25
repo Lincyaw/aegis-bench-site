@@ -1,0 +1,28 @@
+{
+  "services": [
+    {
+      "name": "gateway"
+    },
+    {
+      "name": "order-api"
+    },
+    {
+      "name": "order-db"
+    },
+    {
+      "name": "payment-api"
+    },
+    {
+      "name": "inventory-api"
+    },
+    {
+      "name": "search-api"
+    },
+    {
+      "name": "user-api"
+    },
+    {
+      "name": "session-cache"
+    }
+  ]
+}

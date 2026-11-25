@@ -1,0 +1,145 @@
+[
+  {
+    "version": 2,
+    "status": "current",
+    "note": "加入两个组合，并增加一个运行示例。",
+    "author": "lin.fang",
+    "updatedAt": "2026-11-20T08:00:00Z",
+    "content": {
+      "summary": {
+        "zh-CN": "在真实代码仓库中按需求完成功能实现，以仓库内的隐藏测试判定是否通过。",
+        "en": "Implement a feature in a real code repository; hidden tests in the repository decide whether it passes."
+      },
+      "entrants": [
+        {
+          "modelId": "jia",
+          "harnessId": "x"
+        },
+        {
+          "modelId": "yi",
+          "harnessId": "x"
+        },
+        {
+          "modelId": "bing",
+          "harnessId": "y"
+        },
+        {
+          "modelId": "jia",
+          "harnessId": "y"
+        },
+        {
+          "modelId": "ding",
+          "harnessId": "x"
+        },
+        {
+          "modelId": "yi",
+          "harnessId": "z"
+        },
+        {
+          "modelId": "bing",
+          "harnessId": "x"
+        },
+        {
+          "modelId": "wu",
+          "harnessId": "y"
+        },
+        {
+          "modelId": "ji",
+          "harnessId": "x"
+        },
+        {
+          "modelId": "geng",
+          "harnessId": "z"
+        },
+        {
+          "modelId": "ding",
+          "harnessId": "y"
+        },
+        {
+          "modelId": "wu",
+          "harnessId": "x"
+        },
+        {
+          "modelId": "ji",
+          "harnessId": "y"
+        },
+        {
+          "modelId": "geng",
+          "harnessId": "x"
+        }
+      ],
+      "replays": [
+        "bench-a.task-017.jia-x.1",
+        "bench-a.task-102.yi-x.1",
+        "bench-a.task-064.bing-y.1"
+      ]
+    }
+  },
+  {
+    "version": 1,
+    "status": "superseded",
+    "note": "首次发布。",
+    "author": "zhou.yu",
+    "updatedAt": "2026-09-15T08:00:00Z",
+    "content": {
+      "summary": {
+        "zh-CN": "在真实代码仓库中按需求完成功能实现，以仓库内的隐藏测试判定是否通过。",
+        "en": "Implement a feature in a real code repository; hidden tests in the repository decide whether it passes."
+      },
+      "entrants": [
+        {
+          "modelId": "jia",
+          "harnessId": "x"
+        },
+        {
+          "modelId": "yi",
+          "harnessId": "x"
+        },
+        {
+          "modelId": "bing",
+          "harnessId": "y"
+        },
+        {
+          "modelId": "jia",
+          "harnessId": "y"
+        },
+        {
+          "modelId": "ding",
+          "harnessId": "x"
+        },
+        {
+          "modelId": "yi",
+          "harnessId": "z"
+        },
+        {
+          "modelId": "bing",
+          "harnessId": "x"
+        },
+        {
+          "modelId": "wu",
+          "harnessId": "y"
+        },
+        {
+          "modelId": "ji",
+          "harnessId": "x"
+        },
+        {
+          "modelId": "geng",
+          "harnessId": "z"
+        },
+        {
+          "modelId": "ding",
+          "harnessId": "y"
+        },
+        {
+          "modelId": "wu",
+          "harnessId": "x"
+        }
+      ],
+      "replays": [
+        "bench-a.task-017.jia-x.1",
+        "bench-a.task-102.yi-x.1"
+      ]
+    }
+  }
+]

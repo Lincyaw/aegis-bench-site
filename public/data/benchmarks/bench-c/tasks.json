@@ -1,0 +1,734 @@
+[
+  {
+    "id": "task-008",
+    "title": "支付回调超时",
+    "tags": [
+      "配置"
+    ],
+    "version": "4685953",
+    "instruction": "支付回调在高峰时段大量超时，部分订单的状态长时间停留在「处理中」。请定位原因并恢复服务。\n\n处置完成后，在工作目录写一份 report.json，给出根因结论、执行过的处置操作以及服务是否已恢复。report.json 的格式如下：",
+    "reportSchema": "{ \"root_cause\": string, \"actions\": [ string ], \"recovered\": boolean }",
+    "environment": [
+      {
+        "label": "服务系统",
+        "value": "订单与支付服务，共 12 个服务"
+      },
+      {
+        "label": "观测数据",
+        "value": "指标、日志与调用链，覆盖故障前后两小时"
+      },
+      {
+        "label": "可用工具",
+        "value": "查询指标、查询日志、查询调用链、执行运维命令、修改配置、提交"
+      },
+      {
+        "label": "网络",
+        "value": "仅可访问服务系统"
+      },
+      {
+        "label": "轮次上限",
+        "value": "100 轮"
+      },
+      {
+        "label": "提交",
+        "value": "一次，提交后运行结束"
+      }
+    ],
+    "tools": [
+      "query_metrics",
+      "query_logs",
+      "query_traces",
+      "run_ops_command",
+      "edit_config",
+      "submit"
+    ],
+    "checks": [
+      {
+        "id": "H1",
+        "title": "服务健康检查通过",
+        "method": "script",
+        "path": "tests/checks/check_h1.py"
+      },
+      {
+        "id": "H2",
+        "title": "关键接口错误率恢复到基线",
+        "method": "script",
+        "path": "tests/checks/check_h2.py"
+      },
+      {
+        "id": "R1",
+        "title": "根因判定正确",
+        "method": "modelReview",
+        "samples": 3,
+        "rubric": "根因结论须指出触发故障的组件与机制，并与处置操作对应；只描述表象或给出多个并列猜测记为未通过。",
+        "path": "tests/review/r1.md"
+      },
+      {
+        "id": "R2",
+        "title": "处置说明与实际操作一致",
+        "method": "modelReview",
+        "samples": 3,
+        "rubric": "对照最终提交的改动与 report.json：每处改动都有对应说明、说明不描述未发生的改动时记为通过；任一说明与实际改动不符记为未通过。",
+        "path": "tests/review/r2.md"
+      }
+    ],
+    "verifier": [
+      {
+        "label": "入口脚本",
+        "value": "tests/test.sh",
+        "format": "code"
+      },
+      {
+        "label": "超时",
+        "value": "900 秒"
+      },
+      {
+        "label": "资源",
+        "value": "2 核 CPU · 4 GB 内存"
+      },
+      {
+        "label": "日志",
+        "value": "/logs/verifier",
+        "format": "code"
+      }
+    ],
+    "files": [
+      {
+        "path": "instruction.md",
+        "size": 368
+      },
+      {
+        "path": "task.toml",
+        "size": 303
+      },
+      {
+        "path": "environment/docker-compose.yaml",
+        "size": 306
+      },
+      {
+        "path": "environment/config/payment-callback.yaml",
+        "size": 104
+      },
+      {
+        "path": "solution/solve.sh",
+        "size": 191,
+        "withheld": "solution"
+      },
+      {
+        "path": "solution/report.json",
+        "size": 159,
+        "withheld": "solution"
+      },
+      {
+        "path": "tests/test.sh",
+        "size": 170
+      },
+      {
+        "path": "tests/checks/check_h1.py",
+        "size": 192
+      },
+      {
+        "path": "tests/checks/check_h2.py",
+        "size": 204
+      },
+      {
+        "path": "tests/review/r1.md",
+        "size": 217
+      },
+      {
+        "path": "tests/review/r2.md",
+        "size": 271
+      },
+      {
+        "path": "tests/ground_truth.json",
+        "size": 272,
+        "withheld": "referenceAnswer"
+      }
+    ],
+    "revisions": [
+      {
+        "version": "4685953",
+        "change": "edit",
+        "note": "更换示例数据，避免与公开代码重合",
+        "author": "zhou.yu",
+        "registeredAt": "2026-11-12T06:25:11.000Z"
+      },
+      {
+        "version": "e1feb47",
+        "change": "edit",
+        "note": "更换示例数据，避免与公开代码重合",
+        "author": "lin.fang",
+        "registeredAt": "2026-11-03T03:13:18.000Z"
+      },
+      {
+        "version": "b39d2e1",
+        "change": "edit",
+        "note": "补充任务说明中的边界条件",
+        "author": "chen.qi",
+        "registeredAt": "2026-10-25T09:08:01.000Z"
+      },
+      {
+        "version": "90da9c2",
+        "change": "created",
+        "note": "首次登记",
+        "author": "lin.fang",
+        "registeredAt": "2026-10-16T02:25:47.000Z"
+      }
+    ],
+    "validations": [
+      {
+        "agent": "oracle",
+        "outcome": "passed",
+        "expected": true,
+        "version": "4685953",
+        "finishedAt": "2026-11-17T15:04:01.000Z"
+      },
+      {
+        "agent": "nop",
+        "outcome": "failed",
+        "expected": true,
+        "version": "4685953",
+        "finishedAt": "2026-11-17T14:34:00.000Z"
+      }
+    ]
+  },
+  {
+    "id": "task-044",
+    "title": "缓存雪崩",
+    "tags": [
+      "容量"
+    ],
+    "version": "c5ffd4c",
+    "instruction": "线上出现「缓存雪崩」相关的故障现象，部分请求失败或超时。请定位原因并恢复服务。\n\n处置完成后，在工作目录写一份 report.json，给出根因结论、执行过的处置操作以及服务是否已恢复。report.json 的格式如下：",
+    "reportSchema": "{ \"root_cause\": string, \"actions\": [ string ], \"recovered\": boolean }",
+    "environment": [
+      {
+        "label": "服务系统",
+        "value": "订单与支付服务，共 12 个服务"
+      },
+      {
+        "label": "观测数据",
+        "value": "指标、日志与调用链，覆盖故障前后两小时"
+      },
+      {
+        "label": "可用工具",
+        "value": "查询指标、查询日志、查询调用链、执行运维命令、修改配置、提交"
+      },
+      {
+        "label": "网络",
+        "value": "仅可访问服务系统"
+      },
+      {
+        "label": "轮次上限",
+        "value": "100 轮"
+      },
+      {
+        "label": "提交",
+        "value": "一次，提交后运行结束"
+      }
+    ],
+    "tools": [
+      "query_metrics",
+      "query_logs",
+      "query_traces",
+      "run_ops_command",
+      "edit_config",
+      "submit"
+    ],
+    "checks": [
+      {
+        "id": "H1",
+        "title": "服务健康检查通过",
+        "method": "script",
+        "path": "tests/checks/check_h1.py"
+      },
+      {
+        "id": "H2",
+        "title": "关键接口错误率恢复到基线",
+        "method": "script",
+        "path": "tests/checks/check_h2.py"
+      },
+      {
+        "id": "R1",
+        "title": "根因判定正确",
+        "method": "modelReview",
+        "samples": 3,
+        "rubric": "根因结论须指出触发故障的组件与机制，并与处置操作对应；只描述表象或给出多个并列猜测记为未通过。",
+        "path": "tests/review/r1.md"
+      },
+      {
+        "id": "R2",
+        "title": "处置说明与实际操作一致",
+        "method": "modelReview",
+        "samples": 3,
+        "rubric": "对照最终提交的改动与 report.json：每处改动都有对应说明、说明不描述未发生的改动时记为通过；任一说明与实际改动不符记为未通过。",
+        "path": "tests/review/r2.md"
+      }
+    ],
+    "verifier": [
+      {
+        "label": "入口脚本",
+        "value": "tests/test.sh",
+        "format": "code"
+      },
+      {
+        "label": "超时",
+        "value": "900 秒"
+      },
+      {
+        "label": "资源",
+        "value": "2 核 CPU · 4 GB 内存"
+      },
+      {
+        "label": "日志",
+        "value": "/logs/verifier",
+        "format": "code"
+      }
+    ],
+    "files": [
+      {
+        "path": "instruction.md",
+        "size": 353
+      },
+      {
+        "path": "task.toml",
+        "size": 297
+      },
+      {
+        "path": "environment/docker-compose.yaml",
+        "size": 306
+      },
+      {
+        "path": "environment/config/payment-callback.yaml",
+        "size": 104
+      },
+      {
+        "path": "solution/solve.sh",
+        "size": 191,
+        "withheld": "solution"
+      },
+      {
+        "path": "solution/report.json",
+        "size": 159,
+        "withheld": "solution"
+      },
+      {
+        "path": "tests/test.sh",
+        "size": 170
+      },
+      {
+        "path": "tests/checks/check_h1.py",
+        "size": 192
+      },
+      {
+        "path": "tests/checks/check_h2.py",
+        "size": 204
+      },
+      {
+        "path": "tests/review/r1.md",
+        "size": 217
+      },
+      {
+        "path": "tests/review/r2.md",
+        "size": 271
+      },
+      {
+        "path": "tests/ground_truth.json",
+        "size": 272,
+        "withheld": "referenceAnswer"
+      }
+    ],
+    "revisions": [
+      {
+        "version": "c5ffd4c",
+        "change": "edit",
+        "note": "修正环境的依赖版本",
+        "author": "chen.qi",
+        "registeredAt": "2026-11-12T08:47:00.000Z"
+      },
+      {
+        "version": "2a6222c",
+        "change": "reviseGrading",
+        "note": "修正评分脚本对空结果的判断",
+        "author": "chen.qi",
+        "registeredAt": "2026-11-03T05:22:47.000Z"
+      },
+      {
+        "version": "b2a7a0d",
+        "change": "edit",
+        "note": "新增一项隐藏测试",
+        "author": "zhou.yu",
+        "registeredAt": "2026-10-25T05:19:54.000Z"
+      },
+      {
+        "version": "083bf5f",
+        "change": "created",
+        "note": "首次登记",
+        "author": "zhou.yu",
+        "registeredAt": "2026-10-16T09:01:30.000Z"
+      }
+    ],
+    "validations": [
+      {
+        "agent": "oracle",
+        "outcome": "passed",
+        "expected": true,
+        "version": "c5ffd4c",
+        "finishedAt": "2026-11-17T08:12:46.000Z"
+      },
+      {
+        "agent": "nop",
+        "outcome": "failed",
+        "expected": true,
+        "version": "c5ffd4c",
+        "finishedAt": "2026-11-17T13:40:53.000Z"
+      }
+    ]
+  },
+  {
+    "id": "task-071",
+    "title": "证书过期",
+    "tags": [
+      "配置",
+      "容量"
+    ],
+    "version": "c309259",
+    "instruction": "线上出现「证书过期」相关的故障现象，部分请求失败或超时。请定位原因并恢复服务。\n\n处置完成后，在工作目录写一份 report.json，给出根因结论、执行过的处置操作以及服务是否已恢复。report.json 的格式如下：",
+    "reportSchema": "{ \"root_cause\": string, \"actions\": [ string ], \"recovered\": boolean }",
+    "environment": [
+      {
+        "label": "服务系统",
+        "value": "订单与支付服务，共 12 个服务"
+      },
+      {
+        "label": "观测数据",
+        "value": "指标、日志与调用链，覆盖故障前后两小时"
+      },
+      {
+        "label": "可用工具",
+        "value": "查询指标、查询日志、查询调用链、执行运维命令、修改配置、提交"
+      },
+      {
+        "label": "网络",
+        "value": "仅可访问服务系统"
+      },
+      {
+        "label": "轮次上限",
+        "value": "100 轮"
+      },
+      {
+        "label": "提交",
+        "value": "一次，提交后运行结束"
+      }
+    ],
+    "tools": [
+      "query_metrics",
+      "query_logs",
+      "query_traces",
+      "run_ops_command",
+      "edit_config",
+      "submit"
+    ],
+    "checks": [
+      {
+        "id": "H1",
+        "title": "服务健康检查通过",
+        "method": "script",
+        "path": "tests/checks/check_h1.py"
+      },
+      {
+        "id": "H2",
+        "title": "关键接口错误率恢复到基线",
+        "method": "script",
+        "path": "tests/checks/check_h2.py"
+      },
+      {
+        "id": "R1",
+        "title": "根因判定正确",
+        "method": "modelReview",
+        "samples": 3,
+        "rubric": "根因结论须指出触发故障的组件与机制，并与处置操作对应；只描述表象或给出多个并列猜测记为未通过。",
+        "path": "tests/review/r1.md"
+      },
+      {
+        "id": "R2",
+        "title": "处置说明与实际操作一致",
+        "method": "modelReview",
+        "samples": 3,
+        "rubric": "对照最终提交的改动与 report.json：每处改动都有对应说明、说明不描述未发生的改动时记为通过；任一说明与实际改动不符记为未通过。",
+        "path": "tests/review/r2.md"
+      }
+    ],
+    "verifier": [
+      {
+        "label": "入口脚本",
+        "value": "tests/test.sh",
+        "format": "code"
+      },
+      {
+        "label": "超时",
+        "value": "900 秒"
+      },
+      {
+        "label": "资源",
+        "value": "2 核 CPU · 4 GB 内存"
+      },
+      {
+        "label": "日志",
+        "value": "/logs/verifier",
+        "format": "code"
+      }
+    ],
+    "files": [
+      {
+        "path": "instruction.md",
+        "size": 353
+      },
+      {
+        "path": "task.toml",
+        "size": 297
+      },
+      {
+        "path": "environment/docker-compose.yaml",
+        "size": 306
+      },
+      {
+        "path": "environment/config/payment-callback.yaml",
+        "size": 104
+      },
+      {
+        "path": "solution/solve.sh",
+        "size": 191,
+        "withheld": "solution"
+      },
+      {
+        "path": "solution/report.json",
+        "size": 159,
+        "withheld": "solution"
+      },
+      {
+        "path": "tests/test.sh",
+        "size": 170
+      },
+      {
+        "path": "tests/checks/check_h1.py",
+        "size": 192
+      },
+      {
+        "path": "tests/checks/check_h2.py",
+        "size": 204
+      },
+      {
+        "path": "tests/review/r1.md",
+        "size": 217
+      },
+      {
+        "path": "tests/review/r2.md",
+        "size": 271
+      },
+      {
+        "path": "tests/ground_truth.json",
+        "size": 272,
+        "withheld": "referenceAnswer"
+      }
+    ],
+    "revisions": [
+      {
+        "version": "c309259",
+        "change": "created",
+        "note": "首次登记",
+        "author": "chen.qi",
+        "registeredAt": "2026-11-12T09:35:22.000Z"
+      }
+    ],
+    "validations": [
+      {
+        "agent": "oracle",
+        "outcome": "passed",
+        "expected": true,
+        "version": "c309259",
+        "finishedAt": "2026-11-17T17:57:27.000Z"
+      },
+      {
+        "agent": "nop",
+        "outcome": "failed",
+        "expected": true,
+        "version": "c309259",
+        "finishedAt": "2026-11-17T09:47:46.000Z"
+      }
+    ]
+  },
+  {
+    "id": "task-001",
+    "title": "磁盘写满",
+    "tags": [
+      "网络",
+      "配置"
+    ],
+    "version": "05e80c7",
+    "instruction": "线上出现「磁盘写满」相关的故障现象，部分请求失败或超时。请定位原因并恢复服务。\n\n处置完成后，在工作目录写一份 report.json，给出根因结论、执行过的处置操作以及服务是否已恢复。report.json 的格式如下：",
+    "reportSchema": "{ \"root_cause\": string, \"actions\": [ string ], \"recovered\": boolean }",
+    "environment": [
+      {
+        "label": "服务系统",
+        "value": "订单与支付服务，共 12 个服务"
+      },
+      {
+        "label": "观测数据",
+        "value": "指标、日志与调用链，覆盖故障前后两小时"
+      },
+      {
+        "label": "可用工具",
+        "value": "查询指标、查询日志、查询调用链、执行运维命令、修改配置、提交"
+      },
+      {
+        "label": "网络",
+        "value": "仅可访问服务系统"
+      },
+      {
+        "label": "轮次上限",
+        "value": "100 轮"
+      },
+      {
+        "label": "提交",
+        "value": "一次，提交后运行结束"
+      }
+    ],
+    "tools": [
+      "query_metrics",
+      "query_logs",
+      "query_traces",
+      "run_ops_command",
+      "edit_config",
+      "submit"
+    ],
+    "checks": [
+      {
+        "id": "H1",
+        "title": "服务健康检查通过",
+        "method": "script",
+        "path": "tests/checks/check_h1.py"
+      },
+      {
+        "id": "H2",
+        "title": "关键接口错误率恢复到基线",
+        "method": "script",
+        "path": "tests/checks/check_h2.py"
+      },
+      {
+        "id": "R1",
+        "title": "根因判定正确",
+        "method": "modelReview",
+        "samples": 3,
+        "rubric": "根因结论须指出触发故障的组件与机制，并与处置操作对应；只描述表象或给出多个并列猜测记为未通过。",
+        "path": "tests/review/r1.md"
+      },
+      {
+        "id": "R2",
+        "title": "处置说明与实际操作一致",
+        "method": "modelReview",
+        "samples": 3,
+        "rubric": "对照最终提交的改动与 report.json：每处改动都有对应说明、说明不描述未发生的改动时记为通过；任一说明与实际改动不符记为未通过。",
+        "path": "tests/review/r2.md"
+      }
+    ],
+    "verifier": [
+      {
+        "label": "入口脚本",
+        "value": "tests/test.sh",
+        "format": "code"
+      },
+      {
+        "label": "超时",
+        "value": "900 秒"
+      },
+      {
+        "label": "资源",
+        "value": "2 核 CPU · 4 GB 内存"
+      },
+      {
+        "label": "日志",
+        "value": "/logs/verifier",
+        "format": "code"
+      }
+    ],
+    "files": [
+      {
+        "path": "instruction.md",
+        "size": 353
+      },
+      {
+        "path": "task.toml",
+        "size": 297
+      },
+      {
+        "path": "environment/docker-compose.yaml",
+        "size": 306
+      },
+      {
+        "path": "environment/config/payment-callback.yaml",
+        "size": 104
+      },
+      {
+        "path": "solution/solve.sh",
+        "size": 191,
+        "withheld": "solution"
+      },
+      {
+        "path": "solution/report.json",
+        "size": 159,
+        "withheld": "solution"
+      },
+      {
+        "path": "tests/test.sh",
+        "size": 170
+      },
+      {
+        "path": "tests/checks/check_h1.py",
+        "size": 192
+      },
+      {
+        "path": "tests/checks/check_h2.py",
+        "size": 204
+      },
+      {
+        "path": "tests/review/r1.md",
+        "size": 217
+      },
+      {
+        "path": "tests/review/r2.md",
+        "size": 271
+      },
+      {
+        "path": "tests/ground_truth.json",
+        "size": 272,
+        "withheld": "referenceAnswer"
+      }
+    ],
+    "revisions": [
+      {
+        "version": "05e80c7",
+        "change": "created",
+        "note": "首次登记",
+        "author": "chen.qi",
+        "registeredAt": "2026-11-12T03:20:23.000Z"
+      }
+    ],
+    "validations": [
+      {
+        "agent": "oracle",
+        "outcome": "passed",
+        "expected": true,
+        "version": "05e80c7",
+        "finishedAt": "2026-11-17T16:39:53.000Z"
+      },
+      {
+        "agent": "nop",
+        "outcome": "failed",
+        "expected": true,
+        "version": "05e80c7",
+        "finishedAt": "2026-11-17T14:54:17.000Z"
+      }
+    ]
+  }
+]

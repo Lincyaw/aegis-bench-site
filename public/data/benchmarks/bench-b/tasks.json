@@ -1,0 +1,1122 @@
+[
+  {
+    "id": "task-033",
+    "title": "优惠券叠加规则",
+    "tags": [
+      "金额",
+      "规则"
+    ],
+    "version": "4de42d8",
+    "instruction": "为优惠券叠加规则的修改编写测试，覆盖满减与折扣同时生效、超过上限与使用过期券三种情形。\n\n新增的测试放在 tests/ 目录下，完成后在仓库根目录写一份 report.json，说明每个测试覆盖的情形。report.json 的格式如下：",
+    "reportSchema": "{ \"tests\": [ { \"path\": string, \"covers\": string } ] }",
+    "environment": [
+      {
+        "label": "代码仓库",
+        "value": "orders-service @ e04f2be",
+        "format": "code"
+      },
+      {
+        "label": "被测变更",
+        "value": "变更 #760"
+      },
+      {
+        "label": "可用工具",
+        "value": "读取文件、新增测试文件、运行测试、提交"
+      },
+      {
+        "label": "网络",
+        "value": "不可访问外网"
+      },
+      {
+        "label": "轮次上限",
+        "value": "100 轮"
+      },
+      {
+        "label": "提交",
+        "value": "一次，提交后运行结束"
+      }
+    ],
+    "tools": [
+      "read_file",
+      "write_test",
+      "run_tests",
+      "submit"
+    ],
+    "checks": [
+      {
+        "id": "S1",
+        "title": "测试在正确版本上全部通过",
+        "method": "script",
+        "path": "tests/checks/check_s1.py"
+      },
+      {
+        "id": "D1",
+        "title": "缺陷版本 1 被检出",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_d1.py"
+      },
+      {
+        "id": "D2",
+        "title": "缺陷版本 2 被检出",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_d2.py"
+      },
+      {
+        "id": "D3",
+        "title": "缺陷版本 3 被检出",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_d3.py"
+      },
+      {
+        "id": "D4",
+        "title": "缺陷版本 4 被检出",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_d4.py"
+      },
+      {
+        "id": "D5",
+        "title": "缺陷版本 5 被检出",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_d5.py"
+      }
+    ],
+    "verifier": [
+      {
+        "label": "入口脚本",
+        "value": "tests/test.sh",
+        "format": "code"
+      },
+      {
+        "label": "超时",
+        "value": "900 秒"
+      },
+      {
+        "label": "资源",
+        "value": "2 核 CPU · 4 GB 内存"
+      },
+      {
+        "label": "日志",
+        "value": "/logs/verifier",
+        "format": "code"
+      }
+    ],
+    "files": [
+      {
+        "path": "instruction.md",
+        "size": 345
+      },
+      {
+        "path": "task.toml",
+        "size": 311
+      },
+      {
+        "path": "environment/Dockerfile",
+        "size": 115
+      },
+      {
+        "path": "environment/repo/requirements.txt",
+        "size": 50
+      },
+      {
+        "path": "environment/repo/src/orders/api.py",
+        "size": 270
+      },
+      {
+        "path": "environment/repo/src/orders/repository.py",
+        "size": 174
+      },
+      {
+        "path": "solution/solve.sh",
+        "size": 87,
+        "withheld": "solution"
+      },
+      {
+        "path": "solution/test_reference.py",
+        "size": 169,
+        "withheld": "solution"
+      },
+      {
+        "path": "tests/test.sh",
+        "size": 173
+      },
+      {
+        "path": "tests/checks/check_s1.py",
+        "size": 204
+      },
+      {
+        "path": "tests/hidden/test_d1.py",
+        "size": 172
+      },
+      {
+        "path": "tests/hidden/test_d2.py",
+        "size": 172
+      },
+      {
+        "path": "tests/hidden/test_d3.py",
+        "size": 172
+      },
+      {
+        "path": "tests/hidden/test_d4.py",
+        "size": 172
+      },
+      {
+        "path": "tests/hidden/test_d5.py",
+        "size": 172
+      },
+      {
+        "path": "tests/mutants/d1.patch",
+        "size": 197,
+        "withheld": "referenceAnswer"
+      },
+      {
+        "path": "tests/mutants/d2.patch",
+        "size": 126,
+        "withheld": "referenceAnswer"
+      },
+      {
+        "path": "tests/mutants/d3.patch",
+        "size": 135,
+        "withheld": "referenceAnswer"
+      },
+      {
+        "path": "tests/mutants/d4.patch",
+        "size": 170,
+        "withheld": "referenceAnswer"
+      },
+      {
+        "path": "tests/mutants/d5.patch",
+        "size": 121,
+        "withheld": "referenceAnswer"
+      }
+    ],
+    "revisions": [
+      {
+        "version": "4de42d8",
+        "change": "created",
+        "note": "首次登记",
+        "author": "zhou.yu",
+        "registeredAt": "2026-11-12T03:09:19.000Z"
+      }
+    ],
+    "validations": [
+      {
+        "agent": "oracle",
+        "outcome": "passed",
+        "expected": true,
+        "version": "4de42d8",
+        "finishedAt": "2026-11-17T10:33:58.000Z"
+      },
+      {
+        "agent": "nop",
+        "outcome": "failed",
+        "expected": true,
+        "version": "4de42d8",
+        "finishedAt": "2026-11-17T11:59:22.000Z"
+      }
+    ]
+  },
+  {
+    "id": "task-091",
+    "title": "库存扣减并发",
+    "tags": [
+      "边界"
+    ],
+    "version": "c762e5f",
+    "instruction": "为「库存扣减并发」相关的代码变更编写测试，覆盖需求说明中列出的全部情形。\n\n新增的测试放在 tests/ 目录下，完成后在仓库根目录写一份 report.json，说明每个测试覆盖的情形。report.json 的格式如下：",
+    "reportSchema": "{ \"tests\": [ { \"path\": string, \"covers\": string } ] }",
+    "environment": [
+      {
+        "label": "代码仓库",
+        "value": "billing-service @ 8254e29",
+        "format": "code"
+      },
+      {
+        "label": "被测变更",
+        "value": "变更 #816"
+      },
+      {
+        "label": "可用工具",
+        "value": "读取文件、新增测试文件、运行测试、提交"
+      },
+      {
+        "label": "网络",
+        "value": "不可访问外网"
+      },
+      {
+        "label": "轮次上限",
+        "value": "100 轮"
+      },
+      {
+        "label": "提交",
+        "value": "一次，提交后运行结束"
+      }
+    ],
+    "tools": [
+      "read_file",
+      "write_test",
+      "run_tests",
+      "submit"
+    ],
+    "checks": [
+      {
+        "id": "S1",
+        "title": "测试在正确版本上全部通过",
+        "method": "script",
+        "path": "tests/checks/check_s1.py"
+      },
+      {
+        "id": "D1",
+        "title": "缺陷版本 1 被检出",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_d1.py"
+      },
+      {
+        "id": "D2",
+        "title": "缺陷版本 2 被检出",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_d2.py"
+      },
+      {
+        "id": "D3",
+        "title": "缺陷版本 3 被检出",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_d3.py"
+      },
+      {
+        "id": "D4",
+        "title": "缺陷版本 4 被检出",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_d4.py"
+      },
+      {
+        "id": "D5",
+        "title": "缺陷版本 5 被检出",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_d5.py"
+      }
+    ],
+    "verifier": [
+      {
+        "label": "入口脚本",
+        "value": "tests/test.sh",
+        "format": "code"
+      },
+      {
+        "label": "超时",
+        "value": "900 秒"
+      },
+      {
+        "label": "资源",
+        "value": "2 核 CPU · 4 GB 内存"
+      },
+      {
+        "label": "日志",
+        "value": "/logs/verifier",
+        "format": "code"
+      }
+    ],
+    "files": [
+      {
+        "path": "instruction.md",
+        "size": 324
+      },
+      {
+        "path": "task.toml",
+        "size": 308
+      },
+      {
+        "path": "environment/Dockerfile",
+        "size": 115
+      },
+      {
+        "path": "environment/repo/requirements.txt",
+        "size": 50
+      },
+      {
+        "path": "environment/repo/src/billing/api.py",
+        "size": 273
+      },
+      {
+        "path": "environment/repo/src/billing/repository.py",
+        "size": 174
+      },
+      {
+        "path": "solution/solve.sh",
+        "size": 87,
+        "withheld": "solution"
+      },
+      {
+        "path": "solution/test_reference.py",
+        "size": 171,
+        "withheld": "solution"
+      },
+      {
+        "path": "tests/test.sh",
+        "size": 173
+      },
+      {
+        "path": "tests/checks/check_s1.py",
+        "size": 204
+      },
+      {
+        "path": "tests/hidden/test_d1.py",
+        "size": 172
+      },
+      {
+        "path": "tests/hidden/test_d2.py",
+        "size": 172
+      },
+      {
+        "path": "tests/hidden/test_d3.py",
+        "size": 172
+      },
+      {
+        "path": "tests/hidden/test_d4.py",
+        "size": 172
+      },
+      {
+        "path": "tests/hidden/test_d5.py",
+        "size": 172
+      },
+      {
+        "path": "tests/mutants/d1.patch",
+        "size": 197,
+        "withheld": "referenceAnswer"
+      },
+      {
+        "path": "tests/mutants/d2.patch",
+        "size": 126,
+        "withheld": "referenceAnswer"
+      },
+      {
+        "path": "tests/mutants/d3.patch",
+        "size": 135,
+        "withheld": "referenceAnswer"
+      },
+      {
+        "path": "tests/mutants/d4.patch",
+        "size": 170,
+        "withheld": "referenceAnswer"
+      },
+      {
+        "path": "tests/mutants/d5.patch",
+        "size": 121,
+        "withheld": "referenceAnswer"
+      }
+    ],
+    "revisions": [
+      {
+        "version": "c762e5f",
+        "change": "edit",
+        "note": "补充任务说明中的边界条件",
+        "author": "lin.fang",
+        "registeredAt": "2026-11-12T03:14:45.000Z"
+      },
+      {
+        "version": "fa09c43",
+        "change": "edit",
+        "note": "新增一项隐藏测试",
+        "author": "zhou.yu",
+        "registeredAt": "2026-11-03T05:06:28.000Z"
+      },
+      {
+        "version": "b76e470",
+        "change": "created",
+        "note": "首次登记",
+        "author": "lin.fang",
+        "registeredAt": "2026-10-25T07:32:25.000Z"
+      }
+    ],
+    "validations": [
+      {
+        "agent": "oracle",
+        "outcome": "passed",
+        "expected": true,
+        "version": "c762e5f",
+        "finishedAt": "2026-11-17T14:38:06.000Z"
+      },
+      {
+        "agent": "nop",
+        "outcome": "failed",
+        "expected": true,
+        "version": "c762e5f",
+        "finishedAt": "2026-11-17T10:08:01.000Z"
+      }
+    ]
+  },
+  {
+    "id": "task-120",
+    "title": "账单导出格式",
+    "tags": [
+      "边界"
+    ],
+    "version": "9e395af",
+    "instruction": "为「账单导出格式」相关的代码变更编写测试，覆盖需求说明中列出的全部情形。\n\n新增的测试放在 tests/ 目录下，完成后在仓库根目录写一份 report.json，说明每个测试覆盖的情形。report.json 的格式如下：",
+    "reportSchema": "{ \"tests\": [ { \"path\": string, \"covers\": string } ] }",
+    "environment": [
+      {
+        "label": "代码仓库",
+        "value": "billing-service @ fac56ea",
+        "format": "code"
+      },
+      {
+        "label": "被测变更",
+        "value": "变更 #426"
+      },
+      {
+        "label": "可用工具",
+        "value": "读取文件、新增测试文件、运行测试、提交"
+      },
+      {
+        "label": "网络",
+        "value": "不可访问外网"
+      },
+      {
+        "label": "轮次上限",
+        "value": "100 轮"
+      },
+      {
+        "label": "提交",
+        "value": "一次，提交后运行结束"
+      }
+    ],
+    "tools": [
+      "read_file",
+      "write_test",
+      "run_tests",
+      "submit"
+    ],
+    "checks": [
+      {
+        "id": "S1",
+        "title": "测试在正确版本上全部通过",
+        "method": "script",
+        "path": "tests/checks/check_s1.py"
+      },
+      {
+        "id": "D1",
+        "title": "缺陷版本 1 被检出",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_d1.py"
+      },
+      {
+        "id": "D2",
+        "title": "缺陷版本 2 被检出",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_d2.py"
+      },
+      {
+        "id": "D3",
+        "title": "缺陷版本 3 被检出",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_d3.py"
+      },
+      {
+        "id": "D4",
+        "title": "缺陷版本 4 被检出",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_d4.py"
+      },
+      {
+        "id": "D5",
+        "title": "缺陷版本 5 被检出",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_d5.py"
+      }
+    ],
+    "verifier": [
+      {
+        "label": "入口脚本",
+        "value": "tests/test.sh",
+        "format": "code"
+      },
+      {
+        "label": "超时",
+        "value": "900 秒"
+      },
+      {
+        "label": "资源",
+        "value": "2 核 CPU · 4 GB 内存"
+      },
+      {
+        "label": "日志",
+        "value": "/logs/verifier",
+        "format": "code"
+      }
+    ],
+    "files": [
+      {
+        "path": "instruction.md",
+        "size": 324
+      },
+      {
+        "path": "task.toml",
+        "size": 308
+      },
+      {
+        "path": "environment/Dockerfile",
+        "size": 115
+      },
+      {
+        "path": "environment/repo/requirements.txt",
+        "size": 50
+      },
+      {
+        "path": "environment/repo/src/billing/api.py",
+        "size": 273
+      },
+      {
+        "path": "environment/repo/src/billing/repository.py",
+        "size": 174
+      },
+      {
+        "path": "solution/solve.sh",
+        "size": 87,
+        "withheld": "solution"
+      },
+      {
+        "path": "solution/test_reference.py",
+        "size": 171,
+        "withheld": "solution"
+      },
+      {
+        "path": "tests/test.sh",
+        "size": 173
+      },
+      {
+        "path": "tests/checks/check_s1.py",
+        "size": 204
+      },
+      {
+        "path": "tests/hidden/test_d1.py",
+        "size": 172
+      },
+      {
+        "path": "tests/hidden/test_d2.py",
+        "size": 172
+      },
+      {
+        "path": "tests/hidden/test_d3.py",
+        "size": 172
+      },
+      {
+        "path": "tests/hidden/test_d4.py",
+        "size": 172
+      },
+      {
+        "path": "tests/hidden/test_d5.py",
+        "size": 172
+      },
+      {
+        "path": "tests/mutants/d1.patch",
+        "size": 197,
+        "withheld": "referenceAnswer"
+      },
+      {
+        "path": "tests/mutants/d2.patch",
+        "size": 126,
+        "withheld": "referenceAnswer"
+      },
+      {
+        "path": "tests/mutants/d3.patch",
+        "size": 135,
+        "withheld": "referenceAnswer"
+      },
+      {
+        "path": "tests/mutants/d4.patch",
+        "size": 170,
+        "withheld": "referenceAnswer"
+      },
+      {
+        "path": "tests/mutants/d5.patch",
+        "size": 121,
+        "withheld": "referenceAnswer"
+      }
+    ],
+    "revisions": [
+      {
+        "version": "9e395af",
+        "change": "edit",
+        "note": "新增一项隐藏测试",
+        "author": "zhou.yu",
+        "registeredAt": "2026-11-12T07:23:48.000Z"
+      },
+      {
+        "version": "0c3ba51",
+        "change": "created",
+        "note": "首次登记",
+        "author": "chen.qi",
+        "registeredAt": "2026-11-03T03:55:28.000Z"
+      }
+    ],
+    "validations": [
+      {
+        "agent": "oracle",
+        "outcome": "passed",
+        "expected": true,
+        "version": "9e395af",
+        "finishedAt": "2026-11-17T16:43:36.000Z"
+      },
+      {
+        "agent": "nop",
+        "outcome": "failed",
+        "expected": true,
+        "version": "9e395af",
+        "finishedAt": "2026-11-17T10:01:12.000Z"
+      }
+    ]
+  },
+  {
+    "id": "task-001",
+    "title": "积分过期规则",
+    "tags": [
+      "边界",
+      "金额"
+    ],
+    "version": "600f7e9",
+    "instruction": "为「积分过期规则」相关的代码变更编写测试，覆盖需求说明中列出的全部情形。\n\n新增的测试放在 tests/ 目录下，完成后在仓库根目录写一份 report.json，说明每个测试覆盖的情形。report.json 的格式如下：",
+    "reportSchema": "{ \"tests\": [ { \"path\": string, \"covers\": string } ] }",
+    "environment": [
+      {
+        "label": "代码仓库",
+        "value": "notifications-service @ 0aa7e1a",
+        "format": "code"
+      },
+      {
+        "label": "被测变更",
+        "value": "变更 #345"
+      },
+      {
+        "label": "可用工具",
+        "value": "读取文件、新增测试文件、运行测试、提交"
+      },
+      {
+        "label": "网络",
+        "value": "不可访问外网"
+      },
+      {
+        "label": "轮次上限",
+        "value": "100 轮"
+      },
+      {
+        "label": "提交",
+        "value": "一次，提交后运行结束"
+      }
+    ],
+    "tools": [
+      "read_file",
+      "write_test",
+      "run_tests",
+      "submit"
+    ],
+    "checks": [
+      {
+        "id": "S1",
+        "title": "测试在正确版本上全部通过",
+        "method": "script",
+        "path": "tests/checks/check_s1.py"
+      },
+      {
+        "id": "D1",
+        "title": "缺陷版本 1 被检出",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_d1.py"
+      },
+      {
+        "id": "D2",
+        "title": "缺陷版本 2 被检出",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_d2.py"
+      },
+      {
+        "id": "D3",
+        "title": "缺陷版本 3 被检出",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_d3.py"
+      },
+      {
+        "id": "D4",
+        "title": "缺陷版本 4 被检出",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_d4.py"
+      },
+      {
+        "id": "D5",
+        "title": "缺陷版本 5 被检出",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_d5.py"
+      }
+    ],
+    "verifier": [
+      {
+        "label": "入口脚本",
+        "value": "tests/test.sh",
+        "format": "code"
+      },
+      {
+        "label": "超时",
+        "value": "900 秒"
+      },
+      {
+        "label": "资源",
+        "value": "2 核 CPU · 4 GB 内存"
+      },
+      {
+        "label": "日志",
+        "value": "/logs/verifier",
+        "format": "code"
+      }
+    ],
+    "files": [
+      {
+        "path": "instruction.md",
+        "size": 324
+      },
+      {
+        "path": "task.toml",
+        "size": 308
+      },
+      {
+        "path": "environment/Dockerfile",
+        "size": 115
+      },
+      {
+        "path": "environment/repo/requirements.txt",
+        "size": 50
+      },
+      {
+        "path": "environment/repo/src/notifications/api.py",
+        "size": 291
+      },
+      {
+        "path": "environment/repo/src/notifications/repository.py",
+        "size": 174
+      },
+      {
+        "path": "solution/solve.sh",
+        "size": 87,
+        "withheld": "solution"
+      },
+      {
+        "path": "solution/test_reference.py",
+        "size": 183,
+        "withheld": "solution"
+      },
+      {
+        "path": "tests/test.sh",
+        "size": 173
+      },
+      {
+        "path": "tests/checks/check_s1.py",
+        "size": 204
+      },
+      {
+        "path": "tests/hidden/test_d1.py",
+        "size": 172
+      },
+      {
+        "path": "tests/hidden/test_d2.py",
+        "size": 172
+      },
+      {
+        "path": "tests/hidden/test_d3.py",
+        "size": 172
+      },
+      {
+        "path": "tests/hidden/test_d4.py",
+        "size": 172
+      },
+      {
+        "path": "tests/hidden/test_d5.py",
+        "size": 172
+      },
+      {
+        "path": "tests/mutants/d1.patch",
+        "size": 197,
+        "withheld": "referenceAnswer"
+      },
+      {
+        "path": "tests/mutants/d2.patch",
+        "size": 126,
+        "withheld": "referenceAnswer"
+      },
+      {
+        "path": "tests/mutants/d3.patch",
+        "size": 135,
+        "withheld": "referenceAnswer"
+      },
+      {
+        "path": "tests/mutants/d4.patch",
+        "size": 170,
+        "withheld": "referenceAnswer"
+      },
+      {
+        "path": "tests/mutants/d5.patch",
+        "size": 121,
+        "withheld": "referenceAnswer"
+      }
+    ],
+    "revisions": [
+      {
+        "version": "600f7e9",
+        "change": "created",
+        "note": "首次登记",
+        "author": "zhou.yu",
+        "registeredAt": "2026-11-12T02:04:05.000Z"
+      }
+    ],
+    "validations": [
+      {
+        "agent": "oracle",
+        "outcome": "passed",
+        "expected": true,
+        "version": "600f7e9",
+        "finishedAt": "2026-11-17T09:21:35.000Z"
+      },
+      {
+        "agent": "nop",
+        "outcome": "failed",
+        "expected": true,
+        "version": "600f7e9",
+        "finishedAt": "2026-11-17T17:27:47.000Z"
+      }
+    ]
+  },
+  {
+    "id": "task-002",
+    "title": "运费计算",
+    "tags": [
+      "并发",
+      "金额"
+    ],
+    "version": "c5f7fef",
+    "instruction": "为「运费计算」相关的代码变更编写测试，覆盖需求说明中列出的全部情形。\n\n新增的测试放在 tests/ 目录下，完成后在仓库根目录写一份 report.json，说明每个测试覆盖的情形。report.json 的格式如下：",
+    "reportSchema": "{ \"tests\": [ { \"path\": string, \"covers\": string } ] }",
+    "environment": [
+      {
+        "label": "代码仓库",
+        "value": "notifications-service @ ed00206",
+        "format": "code"
+      },
+      {
+        "label": "被测变更",
+        "value": "变更 #495"
+      },
+      {
+        "label": "可用工具",
+        "value": "读取文件、新增测试文件、运行测试、提交"
+      },
+      {
+        "label": "网络",
+        "value": "不可访问外网"
+      },
+      {
+        "label": "轮次上限",
+        "value": "100 轮"
+      },
+      {
+        "label": "提交",
+        "value": "一次，提交后运行结束"
+      }
+    ],
+    "tools": [
+      "read_file",
+      "write_test",
+      "run_tests",
+      "submit"
+    ],
+    "checks": [
+      {
+        "id": "S1",
+        "title": "测试在正确版本上全部通过",
+        "method": "script",
+        "path": "tests/checks/check_s1.py"
+      },
+      {
+        "id": "D1",
+        "title": "缺陷版本 1 被检出",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_d1.py"
+      },
+      {
+        "id": "D2",
+        "title": "缺陷版本 2 被检出",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_d2.py"
+      },
+      {
+        "id": "D3",
+        "title": "缺陷版本 3 被检出",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_d3.py"
+      },
+      {
+        "id": "D4",
+        "title": "缺陷版本 4 被检出",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_d4.py"
+      },
+      {
+        "id": "D5",
+        "title": "缺陷版本 5 被检出",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_d5.py"
+      }
+    ],
+    "verifier": [
+      {
+        "label": "入口脚本",
+        "value": "tests/test.sh",
+        "format": "code"
+      },
+      {
+        "label": "超时",
+        "value": "900 秒"
+      },
+      {
+        "label": "资源",
+        "value": "2 核 CPU · 4 GB 内存"
+      },
+      {
+        "label": "日志",
+        "value": "/logs/verifier",
+        "format": "code"
+      }
+    ],
+    "files": [
+      {
+        "path": "instruction.md",
+        "size": 318
+      },
+      {
+        "path": "task.toml",
+        "size": 302
+      },
+      {
+        "path": "environment/Dockerfile",
+        "size": 115
+      },
+      {
+        "path": "environment/repo/requirements.txt",
+        "size": 50
+      },
+      {
+        "path": "environment/repo/src/notifications/api.py",
+        "size": 291
+      },
+      {
+        "path": "environment/repo/src/notifications/repository.py",
+        "size": 174
+      },
+      {
+        "path": "solution/solve.sh",
+        "size": 87,
+        "withheld": "solution"
+      },
+      {
+        "path": "solution/test_reference.py",
+        "size": 183,
+        "withheld": "solution"
+      },
+      {
+        "path": "tests/test.sh",
+        "size": 173
+      },
+      {
+        "path": "tests/checks/check_s1.py",
+        "size": 204
+      },
+      {
+        "path": "tests/hidden/test_d1.py",
+        "size": 172
+      },
+      {
+        "path": "tests/hidden/test_d2.py",
+        "size": 172
+      },
+      {
+        "path": "tests/hidden/test_d3.py",
+        "size": 172
+      },
+      {
+        "path": "tests/hidden/test_d4.py",
+        "size": 172
+      },
+      {
+        "path": "tests/hidden/test_d5.py",
+        "size": 172
+      },
+      {
+        "path": "tests/mutants/d1.patch",
+        "size": 197,
+        "withheld": "referenceAnswer"
+      },
+      {
+        "path": "tests/mutants/d2.patch",
+        "size": 126,
+        "withheld": "referenceAnswer"
+      },
+      {
+        "path": "tests/mutants/d3.patch",
+        "size": 135,
+        "withheld": "referenceAnswer"
+      },
+      {
+        "path": "tests/mutants/d4.patch",
+        "size": 170,
+        "withheld": "referenceAnswer"
+      },
+      {
+        "path": "tests/mutants/d5.patch",
+        "size": 121,
+        "withheld": "referenceAnswer"
+      }
+    ],
+    "revisions": [
+      {
+        "version": "c5f7fef",
+        "change": "reviseGrading",
+        "note": "放宽报告格式的检查",
+        "author": "chen.qi",
+        "registeredAt": "2026-11-12T02:41:15.000Z"
+      },
+      {
+        "version": "14d369f",
+        "change": "reviseGrading",
+        "note": "修正评分脚本对空结果的判断",
+        "author": "lin.fang",
+        "registeredAt": "2026-11-03T07:05:26.000Z"
+      },
+      {
+        "version": "57671e2",
+        "change": "edit",
+        "note": "修正环境的依赖版本",
+        "author": "zhou.yu",
+        "registeredAt": "2026-10-25T03:28:47.000Z"
+      },
+      {
+        "version": "37ad3d4",
+        "change": "created",
+        "note": "首次登记",
+        "author": "chen.qi",
+        "registeredAt": "2026-10-16T06:38:49.000Z"
+      }
+    ],
+    "validations": [
+      {
+        "agent": "oracle",
+        "outcome": "passed",
+        "expected": true,
+        "version": "c5f7fef",
+        "finishedAt": "2026-11-17T15:55:33.000Z"
+      },
+      {
+        "agent": "nop",
+        "outcome": "failed",
+        "expected": true,
+        "version": "c5f7fef",
+        "finishedAt": "2026-11-17T17:18:39.000Z"
+      }
+    ]
+  }
+]

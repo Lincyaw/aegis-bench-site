@@ -1,0 +1,113 @@
+[
+  {
+    "version": 2,
+    "status": "current",
+    "note": "加入两个组合，并增加一个运行示例。",
+    "author": "lin.fang",
+    "updatedAt": "2026-11-12T08:00:00Z",
+    "content": {
+      "summary": {
+        "zh-CN": "在运行中的服务系统里定位故障根因并完成处置，以服务恢复情况与根因判定计分。",
+        "en": "Find the root cause of a fault in a running service system and remediate it; scored on recovery and on the root cause."
+      },
+      "entrants": [
+        {
+          "modelId": "jia",
+          "harnessId": "x"
+        },
+        {
+          "modelId": "ding",
+          "harnessId": "x"
+        },
+        {
+          "modelId": "yi",
+          "harnessId": "x"
+        },
+        {
+          "modelId": "bing",
+          "harnessId": "y"
+        },
+        {
+          "modelId": "jia",
+          "harnessId": "y"
+        },
+        {
+          "modelId": "yi",
+          "harnessId": "y"
+        },
+        {
+          "modelId": "bing",
+          "harnessId": "x"
+        },
+        {
+          "modelId": "wu",
+          "harnessId": "x"
+        },
+        {
+          "modelId": "ji",
+          "harnessId": "x"
+        },
+        {
+          "modelId": "geng",
+          "harnessId": "y"
+        }
+      ],
+      "replays": [
+        "bench-c.task-008.jia-x.1",
+        "bench-c.task-044.yi-x.1",
+        "bench-c.task-071.bing-y.1"
+      ]
+    }
+  },
+  {
+    "version": 1,
+    "status": "superseded",
+    "note": "首次发布。",
+    "author": "zhou.yu",
+    "updatedAt": "2026-09-15T08:00:00Z",
+    "content": {
+      "summary": {
+        "zh-CN": "在运行中的服务系统里定位故障根因并完成处置，以服务恢复情况与根因判定计分。",
+        "en": "Find the root cause of a fault in a running service system and remediate it; scored on recovery and on the root cause."
+      },
+      "entrants": [
+        {
+          "modelId": "jia",
+          "harnessId": "x"
+        },
+        {
+          "modelId": "ding",
+          "harnessId": "x"
+        },
+        {
+          "modelId": "yi",
+          "harnessId": "x"
+        },
+        {
+          "modelId": "bing",
+          "harnessId": "y"
+        },
+        {
+          "modelId": "jia",
+          "harnessId": "y"
+        },
+        {
+          "modelId": "yi",
+          "harnessId": "y"
+        },
+        {
+          "modelId": "bing",
+          "harnessId": "x"
+        },
+        {
+          "modelId": "wu",
+          "harnessId": "x"
+        }
+      ],
+      "replays": [
+        "bench-c.task-008.jia-x.1",
+        "bench-c.task-044.yi-x.1"
+      ]
+    }
+  }
+]

@@ -1,0 +1,46 @@
+{
+  "id": "bench-d",
+  "name": "Bench D",
+  "shortName": "D",
+  "version": "v1.1",
+  "stageId": "07",
+  "summary": {
+    "zh-CN": "依据监控指标与日志还原故障的传播链路，以链路节点的召回衡量定位的完整程度。",
+    "en": "Reconstruct how a fault spread from metrics and logs; node recall along the chain measures how complete the diagnosis is."
+  },
+  "updatedOn": "2026-09-30",
+  "evaluatedIn": "2026-11",
+  "runsPerTask": 5,
+  "metric": {
+    "name": {
+      "zh-CN": "节点召回均值",
+      "en": "Mean node recall"
+    },
+    "unit": "ratio",
+    "higherIsBetter": true
+  },
+  "timelineLegend": {
+    "action": {
+      "zh-CN": "一步操作",
+      "en": "A step"
+    },
+    "change": {
+      "zh-CN": "查询数据",
+      "en": "Data query"
+    },
+    "submitPassed": {
+      "zh-CN": "召回较高",
+      "en": "High recall"
+    },
+    "submitFailed": {
+      "zh-CN": "召回较低",
+      "en": "Low recall"
+    }
+  },
+  "changeTools": [
+    "query_metrics",
+    "query_logs",
+    "query_traces"
+  ],
+  "passRule": "参考链路的节点全部召回且顺序一致，才判为通过；节点召回率另行计分。"
+}

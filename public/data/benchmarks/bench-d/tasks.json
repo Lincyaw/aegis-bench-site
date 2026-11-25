@@ -1,0 +1,822 @@
+[
+  {
+    "id": "task-052",
+    "title": "订单查询延迟",
+    "tags": [
+      "缓存"
+    ],
+    "version": "980359b",
+    "instruction": "订单查询接口的延迟在十分钟内升高数倍，随后多个下游服务出现超时。请还原这次故障的传播链路。\n\n请在工作目录写一份 report.json，按从源头到表象的顺序列出故障传播经过的服务。report.json 的格式如下：",
+    "reportSchema": "{ \"chain\": [ { \"service\": string, \"symptom\": string } ] }",
+    "environment": [
+      {
+        "label": "观测数据",
+        "value": "故障时段的指标、日志与调用链"
+      },
+      {
+        "label": "服务拓扑",
+        "value": "18 个服务"
+      },
+      {
+        "label": "可用工具",
+        "value": "读取拓扑、查询指标、查询日志、查询调用链、提交"
+      },
+      {
+        "label": "权限",
+        "value": "只读"
+      },
+      {
+        "label": "轮次上限",
+        "value": "100 轮"
+      },
+      {
+        "label": "提交",
+        "value": "一次，提交后运行结束"
+      }
+    ],
+    "tools": [
+      "read_topology",
+      "query_metrics",
+      "query_logs",
+      "query_traces",
+      "submit"
+    ],
+    "checks": [
+      {
+        "id": "N1",
+        "title": "链路节点 1 被召回",
+        "method": "script",
+        "path": "tests/checks/check_n1.py"
+      },
+      {
+        "id": "N2",
+        "title": "链路节点 2 被召回",
+        "method": "script",
+        "path": "tests/checks/check_n2.py"
+      },
+      {
+        "id": "N3",
+        "title": "链路节点 3 被召回",
+        "method": "script",
+        "path": "tests/checks/check_n3.py"
+      },
+      {
+        "id": "N4",
+        "title": "链路节点 4 被召回",
+        "method": "script",
+        "path": "tests/checks/check_n4.py"
+      },
+      {
+        "id": "N5",
+        "title": "链路节点 5 被召回",
+        "method": "script",
+        "path": "tests/checks/check_n5.py"
+      },
+      {
+        "id": "O1",
+        "title": "节点顺序与参考链路一致",
+        "method": "script",
+        "path": "tests/checks/check_o1.py"
+      }
+    ],
+    "verifier": [
+      {
+        "label": "入口脚本",
+        "value": "tests/test.sh",
+        "format": "code"
+      },
+      {
+        "label": "超时",
+        "value": "900 秒"
+      },
+      {
+        "label": "资源",
+        "value": "2 核 CPU · 4 GB 内存"
+      },
+      {
+        "label": "日志",
+        "value": "/logs/verifier",
+        "format": "code"
+      }
+    ],
+    "files": [
+      {
+        "path": "instruction.md",
+        "size": 335
+      },
+      {
+        "path": "task.toml",
+        "size": 303
+      },
+      {
+        "path": "environment/docker-compose.yaml",
+        "size": 196
+      },
+      {
+        "path": "environment/topology.json",
+        "size": 342
+      },
+      {
+        "path": "solution/solve.sh",
+        "size": 86,
+        "withheld": "solution"
+      },
+      {
+        "path": "solution/report.json",
+        "size": 193,
+        "withheld": "solution"
+      },
+      {
+        "path": "tests/test.sh",
+        "size": 170
+      },
+      {
+        "path": "tests/checks/check_n1.py",
+        "size": 192
+      },
+      {
+        "path": "tests/checks/check_n2.py",
+        "size": 192
+      },
+      {
+        "path": "tests/checks/check_n3.py",
+        "size": 192
+      },
+      {
+        "path": "tests/checks/check_n4.py",
+        "size": 192
+      },
+      {
+        "path": "tests/checks/check_n5.py",
+        "size": 192
+      },
+      {
+        "path": "tests/checks/check_o1.py",
+        "size": 201
+      },
+      {
+        "path": "tests/ground_truth.json",
+        "size": 319,
+        "withheld": "referenceAnswer"
+      }
+    ],
+    "revisions": [
+      {
+        "version": "980359b",
+        "change": "edit",
+        "note": "新增一项隐藏测试",
+        "author": "lin.fang",
+        "registeredAt": "2026-11-12T08:11:16.000Z"
+      },
+      {
+        "version": "0b9cecc",
+        "change": "edit",
+        "note": "更换示例数据，避免与公开代码重合",
+        "author": "zhou.yu",
+        "registeredAt": "2026-11-03T08:27:36.000Z"
+      },
+      {
+        "version": "d63e9fe",
+        "change": "created",
+        "note": "首次登记",
+        "author": "chen.qi",
+        "registeredAt": "2026-10-25T02:19:52.000Z"
+      }
+    ],
+    "validations": [
+      {
+        "agent": "oracle",
+        "outcome": "passed",
+        "expected": true,
+        "version": "980359b",
+        "finishedAt": "2026-11-17T13:06:25.000Z"
+      },
+      {
+        "agent": "nop",
+        "outcome": "failed",
+        "expected": true,
+        "version": "980359b",
+        "finishedAt": "2026-11-17T12:56:27.000Z"
+      }
+    ]
+  },
+  {
+    "id": "task-019",
+    "title": "消息积压",
+    "tags": [
+      "消息",
+      "数据库"
+    ],
+    "version": "1979651",
+    "instruction": "「消息积压」期间多个服务出现异常。请还原这次故障的传播链路。\n\n请在工作目录写一份 report.json，按从源头到表象的顺序列出故障传播经过的服务。report.json 的格式如下：",
+    "reportSchema": "{ \"chain\": [ { \"service\": string, \"symptom\": string } ] }",
+    "environment": [
+      {
+        "label": "观测数据",
+        "value": "故障时段的指标、日志与调用链"
+      },
+      {
+        "label": "服务拓扑",
+        "value": "18 个服务"
+      },
+      {
+        "label": "可用工具",
+        "value": "读取拓扑、查询指标、查询日志、查询调用链、提交"
+      },
+      {
+        "label": "权限",
+        "value": "只读"
+      },
+      {
+        "label": "轮次上限",
+        "value": "100 轮"
+      },
+      {
+        "label": "提交",
+        "value": "一次，提交后运行结束"
+      }
+    ],
+    "tools": [
+      "read_topology",
+      "query_metrics",
+      "query_logs",
+      "query_traces",
+      "submit"
+    ],
+    "checks": [
+      {
+        "id": "N1",
+        "title": "链路节点 1 被召回",
+        "method": "script",
+        "path": "tests/checks/check_n1.py"
+      },
+      {
+        "id": "N2",
+        "title": "链路节点 2 被召回",
+        "method": "script",
+        "path": "tests/checks/check_n2.py"
+      },
+      {
+        "id": "N3",
+        "title": "链路节点 3 被召回",
+        "method": "script",
+        "path": "tests/checks/check_n3.py"
+      },
+      {
+        "id": "N4",
+        "title": "链路节点 4 被召回",
+        "method": "script",
+        "path": "tests/checks/check_n4.py"
+      },
+      {
+        "id": "N5",
+        "title": "链路节点 5 被召回",
+        "method": "script",
+        "path": "tests/checks/check_n5.py"
+      },
+      {
+        "id": "O1",
+        "title": "节点顺序与参考链路一致",
+        "method": "script",
+        "path": "tests/checks/check_o1.py"
+      }
+    ],
+    "verifier": [
+      {
+        "label": "入口脚本",
+        "value": "tests/test.sh",
+        "format": "code"
+      },
+      {
+        "label": "超时",
+        "value": "900 秒"
+      },
+      {
+        "label": "资源",
+        "value": "2 核 CPU · 4 GB 内存"
+      },
+      {
+        "label": "日志",
+        "value": "/logs/verifier",
+        "format": "code"
+      }
+    ],
+    "files": [
+      {
+        "path": "instruction.md",
+        "size": 290
+      },
+      {
+        "path": "task.toml",
+        "size": 297
+      },
+      {
+        "path": "environment/docker-compose.yaml",
+        "size": 196
+      },
+      {
+        "path": "environment/topology.json",
+        "size": 342
+      },
+      {
+        "path": "solution/solve.sh",
+        "size": 86,
+        "withheld": "solution"
+      },
+      {
+        "path": "solution/report.json",
+        "size": 193,
+        "withheld": "solution"
+      },
+      {
+        "path": "tests/test.sh",
+        "size": 170
+      },
+      {
+        "path": "tests/checks/check_n1.py",
+        "size": 192
+      },
+      {
+        "path": "tests/checks/check_n2.py",
+        "size": 192
+      },
+      {
+        "path": "tests/checks/check_n3.py",
+        "size": 192
+      },
+      {
+        "path": "tests/checks/check_n4.py",
+        "size": 192
+      },
+      {
+        "path": "tests/checks/check_n5.py",
+        "size": 192
+      },
+      {
+        "path": "tests/checks/check_o1.py",
+        "size": 201
+      },
+      {
+        "path": "tests/ground_truth.json",
+        "size": 319,
+        "withheld": "referenceAnswer"
+      }
+    ],
+    "revisions": [
+      {
+        "version": "1979651",
+        "change": "edit",
+        "note": "更换示例数据，避免与公开代码重合",
+        "author": "lin.fang",
+        "registeredAt": "2026-11-12T05:33:54.000Z"
+      },
+      {
+        "version": "01f9bac",
+        "change": "edit",
+        "note": "新增一项隐藏测试",
+        "author": "zhou.yu",
+        "registeredAt": "2026-11-03T07:49:31.000Z"
+      },
+      {
+        "version": "a62a723",
+        "change": "reviseGrading",
+        "note": "复核结论为评分错误，修订对应检查",
+        "author": "lin.fang",
+        "registeredAt": "2026-10-25T09:12:03.000Z"
+      },
+      {
+        "version": "cc86d50",
+        "change": "created",
+        "note": "首次登记",
+        "author": "zhou.yu",
+        "registeredAt": "2026-10-16T09:05:55.000Z"
+      }
+    ],
+    "validations": [
+      {
+        "agent": "oracle",
+        "outcome": "passed",
+        "expected": true,
+        "version": "1979651",
+        "finishedAt": "2026-11-17T15:48:35.000Z"
+      },
+      {
+        "agent": "nop",
+        "outcome": "failed",
+        "expected": true,
+        "version": "1979651",
+        "finishedAt": "2026-11-17T09:49:57.000Z"
+      }
+    ]
+  },
+  {
+    "id": "task-077",
+    "title": "数据库连接耗尽",
+    "tags": [
+      "消息"
+    ],
+    "version": "f0c56eb",
+    "instruction": "「数据库连接耗尽」期间多个服务出现异常。请还原这次故障的传播链路。\n\n请在工作目录写一份 report.json，按从源头到表象的顺序列出故障传播经过的服务。report.json 的格式如下：",
+    "reportSchema": "{ \"chain\": [ { \"service\": string, \"symptom\": string } ] }",
+    "environment": [
+      {
+        "label": "观测数据",
+        "value": "故障时段的指标、日志与调用链"
+      },
+      {
+        "label": "服务拓扑",
+        "value": "18 个服务"
+      },
+      {
+        "label": "可用工具",
+        "value": "读取拓扑、查询指标、查询日志、查询调用链、提交"
+      },
+      {
+        "label": "权限",
+        "value": "只读"
+      },
+      {
+        "label": "轮次上限",
+        "value": "100 轮"
+      },
+      {
+        "label": "提交",
+        "value": "一次，提交后运行结束"
+      }
+    ],
+    "tools": [
+      "read_topology",
+      "query_metrics",
+      "query_logs",
+      "query_traces",
+      "submit"
+    ],
+    "checks": [
+      {
+        "id": "N1",
+        "title": "链路节点 1 被召回",
+        "method": "script",
+        "path": "tests/checks/check_n1.py"
+      },
+      {
+        "id": "N2",
+        "title": "链路节点 2 被召回",
+        "method": "script",
+        "path": "tests/checks/check_n2.py"
+      },
+      {
+        "id": "N3",
+        "title": "链路节点 3 被召回",
+        "method": "script",
+        "path": "tests/checks/check_n3.py"
+      },
+      {
+        "id": "N4",
+        "title": "链路节点 4 被召回",
+        "method": "script",
+        "path": "tests/checks/check_n4.py"
+      },
+      {
+        "id": "N5",
+        "title": "链路节点 5 被召回",
+        "method": "script",
+        "path": "tests/checks/check_n5.py"
+      },
+      {
+        "id": "O1",
+        "title": "节点顺序与参考链路一致",
+        "method": "script",
+        "path": "tests/checks/check_o1.py"
+      }
+    ],
+    "verifier": [
+      {
+        "label": "入口脚本",
+        "value": "tests/test.sh",
+        "format": "code"
+      },
+      {
+        "label": "超时",
+        "value": "900 秒"
+      },
+      {
+        "label": "资源",
+        "value": "2 核 CPU · 4 GB 内存"
+      },
+      {
+        "label": "日志",
+        "value": "/logs/verifier",
+        "format": "code"
+      }
+    ],
+    "files": [
+      {
+        "path": "instruction.md",
+        "size": 299
+      },
+      {
+        "path": "task.toml",
+        "size": 306
+      },
+      {
+        "path": "environment/docker-compose.yaml",
+        "size": 196
+      },
+      {
+        "path": "environment/topology.json",
+        "size": 342
+      },
+      {
+        "path": "solution/solve.sh",
+        "size": 86,
+        "withheld": "solution"
+      },
+      {
+        "path": "solution/report.json",
+        "size": 193,
+        "withheld": "solution"
+      },
+      {
+        "path": "tests/test.sh",
+        "size": 170
+      },
+      {
+        "path": "tests/checks/check_n1.py",
+        "size": 192
+      },
+      {
+        "path": "tests/checks/check_n2.py",
+        "size": 192
+      },
+      {
+        "path": "tests/checks/check_n3.py",
+        "size": 192
+      },
+      {
+        "path": "tests/checks/check_n4.py",
+        "size": 192
+      },
+      {
+        "path": "tests/checks/check_n5.py",
+        "size": 192
+      },
+      {
+        "path": "tests/checks/check_o1.py",
+        "size": 201
+      },
+      {
+        "path": "tests/ground_truth.json",
+        "size": 319,
+        "withheld": "referenceAnswer"
+      }
+    ],
+    "revisions": [
+      {
+        "version": "f0c56eb",
+        "change": "reviseGrading",
+        "note": "修正评分脚本对空结果的判断",
+        "author": "chen.qi",
+        "registeredAt": "2026-11-12T08:07:00.000Z"
+      },
+      {
+        "version": "91df547",
+        "change": "reviseGrading",
+        "note": "放宽报告格式的检查",
+        "author": "chen.qi",
+        "registeredAt": "2026-11-03T03:41:56.000Z"
+      },
+      {
+        "version": "5fd1bc9",
+        "change": "reviseGrading",
+        "note": "复核结论为评分错误，修订对应检查",
+        "author": "lin.fang",
+        "registeredAt": "2026-10-25T07:46:13.000Z"
+      },
+      {
+        "version": "f21cb11",
+        "change": "created",
+        "note": "首次登记",
+        "author": "lin.fang",
+        "registeredAt": "2026-10-16T07:31:40.000Z"
+      }
+    ],
+    "validations": [
+      {
+        "agent": "oracle",
+        "outcome": "passed",
+        "expected": true,
+        "version": "f0c56eb",
+        "finishedAt": "2026-11-17T10:36:09.000Z"
+      },
+      {
+        "agent": "nop",
+        "outcome": "failed",
+        "expected": true,
+        "version": "f0c56eb",
+        "finishedAt": "2026-11-17T13:37:19.000Z"
+      }
+    ]
+  },
+  {
+    "id": "task-001",
+    "title": "支付链路超时",
+    "tags": [
+      "网关",
+      "缓存"
+    ],
+    "version": "5ecf053",
+    "instruction": "「支付链路超时」期间多个服务出现异常。请还原这次故障的传播链路。\n\n请在工作目录写一份 report.json，按从源头到表象的顺序列出故障传播经过的服务。report.json 的格式如下：",
+    "reportSchema": "{ \"chain\": [ { \"service\": string, \"symptom\": string } ] }",
+    "environment": [
+      {
+        "label": "观测数据",
+        "value": "故障时段的指标、日志与调用链"
+      },
+      {
+        "label": "服务拓扑",
+        "value": "18 个服务"
+      },
+      {
+        "label": "可用工具",
+        "value": "读取拓扑、查询指标、查询日志、查询调用链、提交"
+      },
+      {
+        "label": "权限",
+        "value": "只读"
+      },
+      {
+        "label": "轮次上限",
+        "value": "100 轮"
+      },
+      {
+        "label": "提交",
+        "value": "一次，提交后运行结束"
+      }
+    ],
+    "tools": [
+      "read_topology",
+      "query_metrics",
+      "query_logs",
+      "query_traces",
+      "submit"
+    ],
+    "checks": [
+      {
+        "id": "N1",
+        "title": "链路节点 1 被召回",
+        "method": "script",
+        "path": "tests/checks/check_n1.py"
+      },
+      {
+        "id": "N2",
+        "title": "链路节点 2 被召回",
+        "method": "script",
+        "path": "tests/checks/check_n2.py"
+      },
+      {
+        "id": "N3",
+        "title": "链路节点 3 被召回",
+        "method": "script",
+        "path": "tests/checks/check_n3.py"
+      },
+      {
+        "id": "N4",
+        "title": "链路节点 4 被召回",
+        "method": "script",
+        "path": "tests/checks/check_n4.py"
+      },
+      {
+        "id": "N5",
+        "title": "链路节点 5 被召回",
+        "method": "script",
+        "path": "tests/checks/check_n5.py"
+      },
+      {
+        "id": "O1",
+        "title": "节点顺序与参考链路一致",
+        "method": "script",
+        "path": "tests/checks/check_o1.py"
+      }
+    ],
+    "verifier": [
+      {
+        "label": "入口脚本",
+        "value": "tests/test.sh",
+        "format": "code"
+      },
+      {
+        "label": "超时",
+        "value": "900 秒"
+      },
+      {
+        "label": "资源",
+        "value": "2 核 CPU · 4 GB 内存"
+      },
+      {
+        "label": "日志",
+        "value": "/logs/verifier",
+        "format": "code"
+      }
+    ],
+    "files": [
+      {
+        "path": "instruction.md",
+        "size": 296
+      },
+      {
+        "path": "task.toml",
+        "size": 303
+      },
+      {
+        "path": "environment/docker-compose.yaml",
+        "size": 196
+      },
+      {
+        "path": "environment/topology.json",
+        "size": 342
+      },
+      {
+        "path": "solution/solve.sh",
+        "size": 86,
+        "withheld": "solution"
+      },
+      {
+        "path": "solution/report.json",
+        "size": 193,
+        "withheld": "solution"
+      },
+      {
+        "path": "tests/test.sh",
+        "size": 170
+      },
+      {
+        "path": "tests/checks/check_n1.py",
+        "size": 192
+      },
+      {
+        "path": "tests/checks/check_n2.py",
+        "size": 192
+      },
+      {
+        "path": "tests/checks/check_n3.py",
+        "size": 192
+      },
+      {
+        "path": "tests/checks/check_n4.py",
+        "size": 192
+      },
+      {
+        "path": "tests/checks/check_n5.py",
+        "size": 192
+      },
+      {
+        "path": "tests/checks/check_o1.py",
+        "size": 201
+      },
+      {
+        "path": "tests/ground_truth.json",
+        "size": 319,
+        "withheld": "referenceAnswer"
+      }
+    ],
+    "revisions": [
+      {
+        "version": "5ecf053",
+        "change": "reviseGrading",
+        "note": "修正评分脚本对空结果的判断",
+        "author": "lin.fang",
+        "registeredAt": "2026-11-12T03:39:35.000Z"
+      },
+      {
+        "version": "821fe71",
+        "change": "reviseGrading",
+        "note": "放宽报告格式的检查",
+        "author": "zhou.yu",
+        "registeredAt": "2026-11-03T04:03:30.000Z"
+      },
+      {
+        "version": "611e9b0",
+        "change": "created",
+        "note": "首次登记",
+        "author": "zhou.yu",
+        "registeredAt": "2026-10-25T08:21:54.000Z"
+      }
+    ],
+    "validations": [
+      {
+        "agent": "oracle",
+        "outcome": "passed",
+        "expected": true,
+        "version": "5ecf053",
+        "finishedAt": "2026-11-17T09:58:30.000Z"
+      },
+      {
+        "agent": "nop",
+        "outcome": "failed",
+        "expected": true,
+        "version": "5ecf053",
+        "finishedAt": "2026-11-17T08:00:08.000Z"
+      }
+    ]
+  }
+]

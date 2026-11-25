@@ -1,0 +1,1 @@
+{ "root_cause": "回调线程池容量不足，高峰时请求排队超时", "actions": ["pool_size 8 → 32", "重启 payment-callback"], "recovered": true }

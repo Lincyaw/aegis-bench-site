@@ -1,0 +1,21 @@
+{
+  "chain": [
+    {
+      "service": "order-db",
+      "state": "连接数耗尽"
+    },
+    {
+      "service": "order-api",
+      "state": "查询延迟升高"
+    },
+    {
+      "service": "gateway",
+      "state": "下游超时"
+    }
+  ],
+  "required_nodes": [
+    "order-db",
+    "order-api",
+    "gateway"
+  ]
+}

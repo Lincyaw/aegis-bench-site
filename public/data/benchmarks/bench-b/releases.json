@@ -1,0 +1,129 @@
+[
+  {
+    "version": 2,
+    "status": "current",
+    "note": "加入两个组合，并增加一个运行示例。",
+    "author": "lin.fang",
+    "updatedAt": "2026-10-08T08:00:00Z",
+    "content": {
+      "summary": {
+        "zh-CN": "为给定的代码变更编写测试用例，以测试能否检出变更中的缺陷衡量其有效性。",
+        "en": "Write tests for a given code change; their worth is whether they catch the defects hidden in the change."
+      },
+      "entrants": [
+        {
+          "modelId": "yi",
+          "harnessId": "x"
+        },
+        {
+          "modelId": "bing",
+          "harnessId": "y"
+        },
+        {
+          "modelId": "jia",
+          "harnessId": "x"
+        },
+        {
+          "modelId": "ding",
+          "harnessId": "x"
+        },
+        {
+          "modelId": "jia",
+          "harnessId": "y"
+        },
+        {
+          "modelId": "yi",
+          "harnessId": "y"
+        },
+        {
+          "modelId": "bing",
+          "harnessId": "x"
+        },
+        {
+          "modelId": "wu",
+          "harnessId": "x"
+        },
+        {
+          "modelId": "ji",
+          "harnessId": "y"
+        },
+        {
+          "modelId": "geng",
+          "harnessId": "x"
+        },
+        {
+          "modelId": "ding",
+          "harnessId": "y"
+        },
+        {
+          "modelId": "wu",
+          "harnessId": "y"
+        }
+      ],
+      "replays": [
+        "bench-b.task-033.jia-x.1",
+        "bench-b.task-091.yi-x.1",
+        "bench-b.task-120.bing-y.1"
+      ]
+    }
+  },
+  {
+    "version": 1,
+    "status": "superseded",
+    "note": "首次发布。",
+    "author": "zhou.yu",
+    "updatedAt": "2026-09-15T08:00:00Z",
+    "content": {
+      "summary": {
+        "zh-CN": "为给定的代码变更编写测试用例，以测试能否检出变更中的缺陷衡量其有效性。",
+        "en": "Write tests for a given code change; their worth is whether they catch the defects hidden in the change."
+      },
+      "entrants": [
+        {
+          "modelId": "yi",
+          "harnessId": "x"
+        },
+        {
+          "modelId": "bing",
+          "harnessId": "y"
+        },
+        {
+          "modelId": "jia",
+          "harnessId": "x"
+        },
+        {
+          "modelId": "ding",
+          "harnessId": "x"
+        },
+        {
+          "modelId": "jia",
+          "harnessId": "y"
+        },
+        {
+          "modelId": "yi",
+          "harnessId": "y"
+        },
+        {
+          "modelId": "bing",
+          "harnessId": "x"
+        },
+        {
+          "modelId": "wu",
+          "harnessId": "x"
+        },
+        {
+          "modelId": "ji",
+          "harnessId": "y"
+        },
+        {
+          "modelId": "geng",
+          "harnessId": "x"
+        }
+      ],
+      "replays": [
+        "bench-b.task-033.jia-x.1",
+        "bench-b.task-091.yi-x.1"
+      ]
+    }
+  }
+]

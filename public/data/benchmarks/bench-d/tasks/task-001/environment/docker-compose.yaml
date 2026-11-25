@@ -1,0 +1,9 @@
+services:
+  telemetry:
+    image: demo/telemetry:1.0
+    volumes:
+      - ./telemetry:/data:ro
+  topology:
+    image: demo/topology:1.0
+    volumes:
+      - ./topology.json:/data/topology.json:ro

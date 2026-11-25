@@ -1,0 +1,6 @@
+# 满减与折扣的叠加顺序颠倒
+--- a/src/rules.py
++++ b/src/rules.py
+@@ -20,1 +20,1 @@
+-    total = apply_discount(apply_reduction(cart))
++    total = apply_reduction(apply_discount(cart))

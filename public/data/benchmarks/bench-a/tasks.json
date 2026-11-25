@@ -1,0 +1,2059 @@
+[
+  {
+    "id": "task-001",
+    "title": "用户注册邮箱校验",
+    "tags": [
+      "配置",
+      "迁移"
+    ],
+    "version": "88a95e4",
+    "instruction": "为服务新增「用户注册邮箱校验」相关的功能。已有接口的行为与返回格式保持不变。\n\n完成后请运行项目已有的测试，并在仓库根目录写一份 report.json，列出改动的文件和每处改动的理由。report.json 的格式如下：",
+    "reportSchema": "{ \"files\": [ { \"path\": string, \"reason\": string } ], \"tests_run\": boolean }",
+    "environment": [
+      {
+        "label": "代码仓库",
+        "value": "notifications-service @ 0aa7e1a",
+        "format": "code"
+      },
+      {
+        "label": "语言与依赖",
+        "value": "Python 3.12 · FastAPI · SQLAlchemy"
+      },
+      {
+        "label": "可用工具",
+        "value": "读取文件、修改文件、运行命令、提交"
+      },
+      {
+        "label": "网络",
+        "value": "不可访问外网"
+      },
+      {
+        "label": "轮次上限",
+        "value": "100 轮"
+      },
+      {
+        "label": "提交",
+        "value": "次数不限，以最后一次提交为准"
+      }
+    ],
+    "tools": [
+      "read_file",
+      "run_command",
+      "edit_file",
+      "submit"
+    ],
+    "checks": [
+      {
+        "id": "C01",
+        "title": "已有测试全部通过",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c01.py"
+      },
+      {
+        "id": "C02",
+        "title": "新增行为符合需求说明",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c02.py"
+      },
+      {
+        "id": "C03",
+        "title": "边界输入的处理",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c03.py"
+      },
+      {
+        "id": "C04",
+        "title": "错误输入返回明确的错误",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c04.py"
+      },
+      {
+        "id": "C05",
+        "title": "已有接口的行为不变",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c05.py"
+      },
+      {
+        "id": "C06",
+        "title": "并发请求下结果一致",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c06.py"
+      },
+      {
+        "id": "C07",
+        "title": "配置项缺省时的行为",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c07.py"
+      },
+      {
+        "id": "C08",
+        "title": "数据库迁移可回滚",
+        "method": "script",
+        "path": "tests/checks/check_c08.py"
+      },
+      {
+        "id": "C09",
+        "title": "report.json 格式正确",
+        "method": "script",
+        "path": "tests/checks/check_c09.py"
+      },
+      {
+        "id": "C10",
+        "title": "改动说明与实际改动一致",
+        "method": "modelReview",
+        "samples": 3,
+        "rubric": "对照最终提交的改动与 report.json：每处改动都有对应说明、说明不描述未发生的改动时记为通过；任一说明与实际改动不符记为未通过。",
+        "path": "tests/review/c10.md"
+      }
+    ],
+    "verifier": [
+      {
+        "label": "入口脚本",
+        "value": "tests/test.sh",
+        "format": "code"
+      },
+      {
+        "label": "超时",
+        "value": "900 秒"
+      },
+      {
+        "label": "资源",
+        "value": "2 核 CPU · 4 GB 内存"
+      },
+      {
+        "label": "日志",
+        "value": "/logs/verifier",
+        "format": "code"
+      }
+    ],
+    "files": [
+      {
+        "path": "instruction.md",
+        "size": 359
+      },
+      {
+        "path": "task.toml",
+        "size": 313
+      },
+      {
+        "path": "environment/Dockerfile",
+        "size": 115
+      },
+      {
+        "path": "environment/repo/requirements.txt",
+        "size": 50
+      },
+      {
+        "path": "environment/repo/src/notifications/api.py",
+        "size": 291
+      },
+      {
+        "path": "environment/repo/src/notifications/repository.py",
+        "size": 174
+      },
+      {
+        "path": "solution/solve.sh",
+        "size": 88,
+        "withheld": "solution"
+      },
+      {
+        "path": "solution/reference.patch",
+        "size": 521,
+        "withheld": "solution"
+      },
+      {
+        "path": "tests/test.sh",
+        "size": 191
+      },
+      {
+        "path": "tests/hidden/test_c01.py",
+        "size": 174
+      },
+      {
+        "path": "tests/hidden/test_c02.py",
+        "size": 180
+      },
+      {
+        "path": "tests/hidden/test_c03.py",
+        "size": 171
+      },
+      {
+        "path": "tests/hidden/test_c04.py",
+        "size": 183
+      },
+      {
+        "path": "tests/hidden/test_c05.py",
+        "size": 177
+      },
+      {
+        "path": "tests/hidden/test_c06.py",
+        "size": 177
+      },
+      {
+        "path": "tests/hidden/test_c07.py",
+        "size": 177
+      },
+      {
+        "path": "tests/checks/check_c08.py",
+        "size": 195
+      },
+      {
+        "path": "tests/checks/check_c09.py",
+        "size": 195
+      },
+      {
+        "path": "tests/review/c10.md",
+        "size": 272
+      }
+    ],
+    "revisions": [
+      {
+        "version": "88a95e4",
+        "change": "reviseGrading",
+        "note": "放宽报告格式的检查",
+        "author": "zhou.yu",
+        "registeredAt": "2026-11-12T06:50:24.000Z"
+      },
+      {
+        "version": "9b32c60",
+        "change": "edit",
+        "note": "修正环境的依赖版本",
+        "author": "zhou.yu",
+        "registeredAt": "2026-11-03T03:43:59.000Z"
+      },
+      {
+        "version": "e032e77",
+        "change": "reviseGrading",
+        "note": "放宽报告格式的检查",
+        "author": "chen.qi",
+        "registeredAt": "2026-10-25T06:13:37.000Z"
+      },
+      {
+        "version": "7518d56",
+        "change": "created",
+        "note": "首次登记",
+        "author": "chen.qi",
+        "registeredAt": "2026-10-16T09:48:17.000Z"
+      }
+    ],
+    "validations": [
+      {
+        "agent": "oracle",
+        "outcome": "passed",
+        "expected": true,
+        "version": "88a95e4",
+        "finishedAt": "2026-11-17T13:39:40.000Z"
+      },
+      {
+        "agent": "nop",
+        "outcome": "failed",
+        "expected": true,
+        "version": "88a95e4",
+        "finishedAt": "2026-11-17T11:27:39.000Z"
+      }
+    ]
+  },
+  {
+    "id": "task-004",
+    "title": "订单金额精度",
+    "tags": [
+      "配置"
+    ],
+    "version": "28df63a",
+    "instruction": "为服务新增「订单金额精度」相关的功能。已有接口的行为与返回格式保持不变。\n\n完成后请运行项目已有的测试，并在仓库根目录写一份 report.json，列出改动的文件和每处改动的理由。report.json 的格式如下：",
+    "reportSchema": "{ \"files\": [ { \"path\": string, \"reason\": string } ], \"tests_run\": boolean }",
+    "environment": [
+      {
+        "label": "代码仓库",
+        "value": "notifications-service @ 9257f74",
+        "format": "code"
+      },
+      {
+        "label": "语言与依赖",
+        "value": "Python 3.12 · FastAPI · SQLAlchemy"
+      },
+      {
+        "label": "可用工具",
+        "value": "读取文件、修改文件、运行命令、提交"
+      },
+      {
+        "label": "网络",
+        "value": "不可访问外网"
+      },
+      {
+        "label": "轮次上限",
+        "value": "100 轮"
+      },
+      {
+        "label": "提交",
+        "value": "次数不限，以最后一次提交为准"
+      }
+    ],
+    "tools": [
+      "read_file",
+      "run_command",
+      "edit_file",
+      "submit"
+    ],
+    "checks": [
+      {
+        "id": "C01",
+        "title": "已有测试全部通过",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c01.py"
+      },
+      {
+        "id": "C02",
+        "title": "新增行为符合需求说明",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c02.py"
+      },
+      {
+        "id": "C03",
+        "title": "边界输入的处理",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c03.py"
+      },
+      {
+        "id": "C04",
+        "title": "错误输入返回明确的错误",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c04.py"
+      },
+      {
+        "id": "C05",
+        "title": "已有接口的行为不变",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c05.py"
+      },
+      {
+        "id": "C06",
+        "title": "并发请求下结果一致",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c06.py"
+      },
+      {
+        "id": "C07",
+        "title": "配置项缺省时的行为",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c07.py"
+      },
+      {
+        "id": "C08",
+        "title": "数据库迁移可回滚",
+        "method": "script",
+        "path": "tests/checks/check_c08.py"
+      },
+      {
+        "id": "C09",
+        "title": "report.json 格式正确",
+        "method": "script",
+        "path": "tests/checks/check_c09.py"
+      },
+      {
+        "id": "C10",
+        "title": "改动说明与实际改动一致",
+        "method": "modelReview",
+        "samples": 3,
+        "rubric": "对照最终提交的改动与 report.json：每处改动都有对应说明、说明不描述未发生的改动时记为通过；任一说明与实际改动不符记为未通过。",
+        "path": "tests/review/c10.md"
+      }
+    ],
+    "verifier": [
+      {
+        "label": "入口脚本",
+        "value": "tests/test.sh",
+        "format": "code"
+      },
+      {
+        "label": "超时",
+        "value": "900 秒"
+      },
+      {
+        "label": "资源",
+        "value": "2 核 CPU · 4 GB 内存"
+      },
+      {
+        "label": "日志",
+        "value": "/logs/verifier",
+        "format": "code"
+      }
+    ],
+    "files": [
+      {
+        "path": "instruction.md",
+        "size": 353
+      },
+      {
+        "path": "task.toml",
+        "size": 307
+      },
+      {
+        "path": "environment/Dockerfile",
+        "size": 115
+      },
+      {
+        "path": "environment/repo/requirements.txt",
+        "size": 50
+      },
+      {
+        "path": "environment/repo/src/notifications/api.py",
+        "size": 291
+      },
+      {
+        "path": "environment/repo/src/notifications/repository.py",
+        "size": 174
+      },
+      {
+        "path": "solution/solve.sh",
+        "size": 88,
+        "withheld": "solution"
+      },
+      {
+        "path": "solution/reference.patch",
+        "size": 521,
+        "withheld": "solution"
+      },
+      {
+        "path": "tests/test.sh",
+        "size": 191
+      },
+      {
+        "path": "tests/hidden/test_c01.py",
+        "size": 174
+      },
+      {
+        "path": "tests/hidden/test_c02.py",
+        "size": 180
+      },
+      {
+        "path": "tests/hidden/test_c03.py",
+        "size": 171
+      },
+      {
+        "path": "tests/hidden/test_c04.py",
+        "size": 183
+      },
+      {
+        "path": "tests/hidden/test_c05.py",
+        "size": 177
+      },
+      {
+        "path": "tests/hidden/test_c06.py",
+        "size": 177
+      },
+      {
+        "path": "tests/hidden/test_c07.py",
+        "size": 177
+      },
+      {
+        "path": "tests/checks/check_c08.py",
+        "size": 195
+      },
+      {
+        "path": "tests/checks/check_c09.py",
+        "size": 195
+      },
+      {
+        "path": "tests/review/c10.md",
+        "size": 272
+      }
+    ],
+    "revisions": [
+      {
+        "version": "28df63a",
+        "change": "edit",
+        "note": "新增一项隐藏测试",
+        "author": "chen.qi",
+        "registeredAt": "2026-11-12T05:33:19.000Z"
+      },
+      {
+        "version": "ff1ab72",
+        "change": "created",
+        "note": "首次登记",
+        "author": "lin.fang",
+        "registeredAt": "2026-11-03T09:14:48.000Z"
+      }
+    ],
+    "validations": [
+      {
+        "agent": "oracle",
+        "outcome": "passed",
+        "expected": true,
+        "version": "28df63a",
+        "finishedAt": "2026-11-17T13:21:48.000Z"
+      },
+      {
+        "agent": "nop",
+        "outcome": "failed",
+        "expected": true,
+        "version": "28df63a",
+        "finishedAt": "2026-11-17T14:41:45.000Z"
+      }
+    ]
+  },
+  {
+    "id": "task-009",
+    "title": "分页游标失效",
+    "tags": [
+      "数据"
+    ],
+    "version": "70374e1",
+    "instruction": "为服务新增「分页游标失效」相关的功能。已有接口的行为与返回格式保持不变。\n\n完成后请运行项目已有的测试，并在仓库根目录写一份 report.json，列出改动的文件和每处改动的理由。report.json 的格式如下：",
+    "reportSchema": "{ \"files\": [ { \"path\": string, \"reason\": string } ], \"tests_run\": boolean }",
+    "environment": [
+      {
+        "label": "代码仓库",
+        "value": "billing-service @ 049ce07",
+        "format": "code"
+      },
+      {
+        "label": "语言与依赖",
+        "value": "Python 3.12 · FastAPI · SQLAlchemy"
+      },
+      {
+        "label": "可用工具",
+        "value": "读取文件、修改文件、运行命令、提交"
+      },
+      {
+        "label": "网络",
+        "value": "不可访问外网"
+      },
+      {
+        "label": "轮次上限",
+        "value": "100 轮"
+      },
+      {
+        "label": "提交",
+        "value": "次数不限，以最后一次提交为准"
+      }
+    ],
+    "tools": [
+      "read_file",
+      "run_command",
+      "edit_file",
+      "submit"
+    ],
+    "checks": [
+      {
+        "id": "C01",
+        "title": "已有测试全部通过",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c01.py"
+      },
+      {
+        "id": "C02",
+        "title": "新增行为符合需求说明",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c02.py"
+      },
+      {
+        "id": "C03",
+        "title": "边界输入的处理",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c03.py"
+      },
+      {
+        "id": "C04",
+        "title": "错误输入返回明确的错误",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c04.py"
+      },
+      {
+        "id": "C05",
+        "title": "已有接口的行为不变",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c05.py"
+      },
+      {
+        "id": "C06",
+        "title": "并发请求下结果一致",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c06.py"
+      },
+      {
+        "id": "C07",
+        "title": "配置项缺省时的行为",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c07.py"
+      },
+      {
+        "id": "C08",
+        "title": "数据库迁移可回滚",
+        "method": "script",
+        "path": "tests/checks/check_c08.py"
+      },
+      {
+        "id": "C09",
+        "title": "report.json 格式正确",
+        "method": "script",
+        "path": "tests/checks/check_c09.py"
+      },
+      {
+        "id": "C10",
+        "title": "改动说明与实际改动一致",
+        "method": "modelReview",
+        "samples": 3,
+        "rubric": "对照最终提交的改动与 report.json：每处改动都有对应说明、说明不描述未发生的改动时记为通过；任一说明与实际改动不符记为未通过。",
+        "path": "tests/review/c10.md"
+      }
+    ],
+    "verifier": [
+      {
+        "label": "入口脚本",
+        "value": "tests/test.sh",
+        "format": "code"
+      },
+      {
+        "label": "超时",
+        "value": "900 秒"
+      },
+      {
+        "label": "资源",
+        "value": "2 核 CPU · 4 GB 内存"
+      },
+      {
+        "label": "日志",
+        "value": "/logs/verifier",
+        "format": "code"
+      }
+    ],
+    "files": [
+      {
+        "path": "instruction.md",
+        "size": 353
+      },
+      {
+        "path": "task.toml",
+        "size": 307
+      },
+      {
+        "path": "environment/Dockerfile",
+        "size": 115
+      },
+      {
+        "path": "environment/repo/requirements.txt",
+        "size": 50
+      },
+      {
+        "path": "environment/repo/src/billing/api.py",
+        "size": 273
+      },
+      {
+        "path": "environment/repo/src/billing/repository.py",
+        "size": 174
+      },
+      {
+        "path": "solution/solve.sh",
+        "size": 88,
+        "withheld": "solution"
+      },
+      {
+        "path": "solution/reference.patch",
+        "size": 497,
+        "withheld": "solution"
+      },
+      {
+        "path": "tests/test.sh",
+        "size": 191
+      },
+      {
+        "path": "tests/hidden/test_c01.py",
+        "size": 174
+      },
+      {
+        "path": "tests/hidden/test_c02.py",
+        "size": 180
+      },
+      {
+        "path": "tests/hidden/test_c03.py",
+        "size": 171
+      },
+      {
+        "path": "tests/hidden/test_c04.py",
+        "size": 183
+      },
+      {
+        "path": "tests/hidden/test_c05.py",
+        "size": 177
+      },
+      {
+        "path": "tests/hidden/test_c06.py",
+        "size": 177
+      },
+      {
+        "path": "tests/hidden/test_c07.py",
+        "size": 177
+      },
+      {
+        "path": "tests/checks/check_c08.py",
+        "size": 195
+      },
+      {
+        "path": "tests/checks/check_c09.py",
+        "size": 195
+      },
+      {
+        "path": "tests/review/c10.md",
+        "size": 272
+      }
+    ],
+    "revisions": [
+      {
+        "version": "70374e1",
+        "change": "edit",
+        "note": "新增一项隐藏测试",
+        "author": "zhou.yu",
+        "registeredAt": "2026-11-12T05:50:09.000Z"
+      },
+      {
+        "version": "eda4bf2",
+        "change": "created",
+        "note": "首次登记",
+        "author": "zhou.yu",
+        "registeredAt": "2026-11-03T09:38:20.000Z"
+      }
+    ],
+    "validations": [
+      {
+        "agent": "oracle",
+        "outcome": "passed",
+        "expected": true,
+        "version": "70374e1",
+        "finishedAt": "2026-11-17T16:36:49.000Z"
+      },
+      {
+        "agent": "nop",
+        "outcome": "failed",
+        "expected": true,
+        "version": "70374e1",
+        "finishedAt": "2026-11-17T16:51:06.000Z"
+      }
+    ]
+  },
+  {
+    "id": "task-017",
+    "title": "订单分页查询",
+    "tags": [
+      "迁移"
+    ],
+    "version": "30aff7b",
+    "instruction": "为订单服务新增按状态筛选的分页查询接口。已有接口的行为与返回格式保持不变，新增接口的鉴权方式与现有接口一致。\n\n完成后请运行项目已有的测试，并在仓库根目录写一份 report.json，列出改动的文件和每处改动的理由。report.json 的格式如下：",
+    "reportSchema": "{ \"files\": [ { \"path\": string, \"reason\": string } ], \"tests_run\": boolean }",
+    "environment": [
+      {
+        "label": "代码仓库",
+        "value": "orders-service @ 7975b16",
+        "format": "code"
+      },
+      {
+        "label": "语言与依赖",
+        "value": "Python 3.12 · FastAPI · SQLAlchemy"
+      },
+      {
+        "label": "可用工具",
+        "value": "读取文件、修改文件、运行命令、提交"
+      },
+      {
+        "label": "网络",
+        "value": "不可访问外网"
+      },
+      {
+        "label": "轮次上限",
+        "value": "100 轮"
+      },
+      {
+        "label": "提交",
+        "value": "次数不限，以最后一次提交为准"
+      }
+    ],
+    "tools": [
+      "read_file",
+      "run_command",
+      "edit_file",
+      "submit"
+    ],
+    "checks": [
+      {
+        "id": "C01",
+        "title": "已有接口的返回格式不变",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c01.py"
+      },
+      {
+        "id": "C02",
+        "title": "按状态筛选返回正确的订单",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c02.py"
+      },
+      {
+        "id": "C03",
+        "title": "每页条数不超过上限",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c03.py"
+      },
+      {
+        "id": "C04",
+        "title": "游标翻页不重复、不遗漏",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c04.py"
+      },
+      {
+        "id": "C05",
+        "title": "翻页之间排序稳定",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c05.py"
+      },
+      {
+        "id": "C06",
+        "title": "未知状态返回参数错误",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c06.py"
+      },
+      {
+        "id": "C07",
+        "title": "状态为空时的参数校验",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_orders_status.py"
+      },
+      {
+        "id": "C08",
+        "title": "游标格式错误时返回参数错误",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c08.py"
+      },
+      {
+        "id": "C09",
+        "title": "无结果时返回空页",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c09.py"
+      },
+      {
+        "id": "C10",
+        "title": "单页上限可配置",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c10.py"
+      },
+      {
+        "id": "C11",
+        "title": "越界游标返回空页",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_orders_cursor.py"
+      },
+      {
+        "id": "C12",
+        "title": "订单详情接口不受影响",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c12.py"
+      },
+      {
+        "id": "C13",
+        "title": "已有分页参数保持兼容",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c13.py"
+      },
+      {
+        "id": "C14",
+        "title": "返回字段与接口文档一致",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c14.py"
+      },
+      {
+        "id": "C15",
+        "title": "新接口与现有接口鉴权一致",
+        "method": "script",
+        "path": "tests/hidden/check_auth.py"
+      },
+      {
+        "id": "C16",
+        "title": "查询使用已有索引",
+        "method": "script",
+        "path": "tests/checks/check_c16.py"
+      },
+      {
+        "id": "C17",
+        "title": "report.json 格式正确",
+        "method": "script",
+        "path": "tests/checks/check_c17.py"
+      },
+      {
+        "id": "C18",
+        "title": "改动说明与实际改动一致",
+        "method": "modelReview",
+        "samples": 3,
+        "rubric": "对照最终提交的改动与 report.json：每处改动都有对应说明、说明不描述未发生的改动时记为通过；任一说明与实际改动不符记为未通过。",
+        "path": "tests/review/c18.md"
+      }
+    ],
+    "verifier": [
+      {
+        "label": "入口脚本",
+        "value": "tests/test.sh",
+        "format": "code"
+      },
+      {
+        "label": "超时",
+        "value": "900 秒"
+      },
+      {
+        "label": "资源",
+        "value": "2 核 CPU · 4 GB 内存"
+      },
+      {
+        "label": "日志",
+        "value": "/logs/verifier",
+        "format": "code"
+      }
+    ],
+    "files": [
+      {
+        "path": "instruction.md",
+        "size": 407
+      },
+      {
+        "path": "task.toml",
+        "size": 307
+      },
+      {
+        "path": "environment/Dockerfile",
+        "size": 115
+      },
+      {
+        "path": "environment/repo/requirements.txt",
+        "size": 50
+      },
+      {
+        "path": "environment/repo/src/orders/api.py",
+        "size": 270
+      },
+      {
+        "path": "environment/repo/src/orders/repository.py",
+        "size": 174
+      },
+      {
+        "path": "solution/solve.sh",
+        "size": 88,
+        "withheld": "solution"
+      },
+      {
+        "path": "solution/reference.patch",
+        "size": 493,
+        "withheld": "solution"
+      },
+      {
+        "path": "tests/test.sh",
+        "size": 191
+      },
+      {
+        "path": "tests/hidden/test_c01.py",
+        "size": 183
+      },
+      {
+        "path": "tests/hidden/test_c02.py",
+        "size": 186
+      },
+      {
+        "path": "tests/hidden/test_c03.py",
+        "size": 177
+      },
+      {
+        "path": "tests/hidden/test_c04.py",
+        "size": 183
+      },
+      {
+        "path": "tests/hidden/test_c05.py",
+        "size": 174
+      },
+      {
+        "path": "tests/hidden/test_c06.py",
+        "size": 180
+      },
+      {
+        "path": "tests/hidden/test_orders_status.py",
+        "size": 160
+      },
+      {
+        "path": "tests/hidden/test_c08.py",
+        "size": 189
+      },
+      {
+        "path": "tests/hidden/test_c09.py",
+        "size": 174
+      },
+      {
+        "path": "tests/hidden/test_c10.py",
+        "size": 171
+      },
+      {
+        "path": "tests/hidden/test_orders_cursor.py",
+        "size": 240
+      },
+      {
+        "path": "tests/hidden/test_c12.py",
+        "size": 180
+      },
+      {
+        "path": "tests/hidden/test_c13.py",
+        "size": 180
+      },
+      {
+        "path": "tests/hidden/test_c14.py",
+        "size": 183
+      },
+      {
+        "path": "tests/hidden/check_auth.py",
+        "size": 138
+      },
+      {
+        "path": "tests/checks/check_c16.py",
+        "size": 195
+      },
+      {
+        "path": "tests/checks/check_c17.py",
+        "size": 195
+      },
+      {
+        "path": "tests/review/c18.md",
+        "size": 272
+      }
+    ],
+    "revisions": [
+      {
+        "version": "30aff7b",
+        "change": "edit",
+        "note": "更换示例数据，避免与公开代码重合",
+        "author": "chen.qi",
+        "registeredAt": "2026-11-12T04:44:29.000Z"
+      },
+      {
+        "version": "a746db0",
+        "change": "edit",
+        "note": "更换示例数据，避免与公开代码重合",
+        "author": "lin.fang",
+        "registeredAt": "2026-11-03T07:46:00.000Z"
+      },
+      {
+        "version": "1db4b34",
+        "change": "created",
+        "note": "首次登记",
+        "author": "lin.fang",
+        "registeredAt": "2026-10-25T03:19:47.000Z"
+      }
+    ],
+    "validations": [
+      {
+        "agent": "oracle",
+        "outcome": "passed",
+        "expected": true,
+        "version": "30aff7b",
+        "finishedAt": "2026-11-17T17:36:49.000Z"
+      },
+      {
+        "agent": "nop",
+        "outcome": "failed",
+        "expected": true,
+        "version": "30aff7b",
+        "finishedAt": "2026-11-17T08:30:56.000Z"
+      }
+    ]
+  },
+  {
+    "id": "task-023",
+    "title": "配置热更新",
+    "tags": [
+      "数据"
+    ],
+    "version": "0a6ef4f",
+    "instruction": "为服务新增「配置热更新」相关的功能。已有接口的行为与返回格式保持不变。\n\n完成后请运行项目已有的测试，并在仓库根目录写一份 report.json，列出改动的文件和每处改动的理由。report.json 的格式如下：",
+    "reportSchema": "{ \"files\": [ { \"path\": string, \"reason\": string } ], \"tests_run\": boolean }",
+    "environment": [
+      {
+        "label": "代码仓库",
+        "value": "orders-service @ 6429919",
+        "format": "code"
+      },
+      {
+        "label": "语言与依赖",
+        "value": "Python 3.12 · FastAPI · SQLAlchemy"
+      },
+      {
+        "label": "可用工具",
+        "value": "读取文件、修改文件、运行命令、提交"
+      },
+      {
+        "label": "网络",
+        "value": "不可访问外网"
+      },
+      {
+        "label": "轮次上限",
+        "value": "100 轮"
+      },
+      {
+        "label": "提交",
+        "value": "次数不限，以最后一次提交为准"
+      }
+    ],
+    "tools": [
+      "read_file",
+      "run_command",
+      "edit_file",
+      "submit"
+    ],
+    "checks": [
+      {
+        "id": "C01",
+        "title": "已有测试全部通过",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c01.py"
+      },
+      {
+        "id": "C02",
+        "title": "新增行为符合需求说明",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c02.py"
+      },
+      {
+        "id": "C03",
+        "title": "边界输入的处理",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c03.py"
+      },
+      {
+        "id": "C04",
+        "title": "错误输入返回明确的错误",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c04.py"
+      },
+      {
+        "id": "C05",
+        "title": "已有接口的行为不变",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c05.py"
+      },
+      {
+        "id": "C06",
+        "title": "并发请求下结果一致",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c06.py"
+      },
+      {
+        "id": "C07",
+        "title": "配置项缺省时的行为",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c07.py"
+      },
+      {
+        "id": "C08",
+        "title": "数据库迁移可回滚",
+        "method": "script",
+        "path": "tests/checks/check_c08.py"
+      },
+      {
+        "id": "C09",
+        "title": "report.json 格式正确",
+        "method": "script",
+        "path": "tests/checks/check_c09.py"
+      },
+      {
+        "id": "C10",
+        "title": "改动说明与实际改动一致",
+        "method": "modelReview",
+        "samples": 3,
+        "rubric": "对照最终提交的改动与 report.json：每处改动都有对应说明、说明不描述未发生的改动时记为通过；任一说明与实际改动不符记为未通过。",
+        "path": "tests/review/c10.md"
+      }
+    ],
+    "verifier": [
+      {
+        "label": "入口脚本",
+        "value": "tests/test.sh",
+        "format": "code"
+      },
+      {
+        "label": "超时",
+        "value": "900 秒"
+      },
+      {
+        "label": "资源",
+        "value": "2 核 CPU · 4 GB 内存"
+      },
+      {
+        "label": "日志",
+        "value": "/logs/verifier",
+        "format": "code"
+      }
+    ],
+    "files": [
+      {
+        "path": "instruction.md",
+        "size": 350
+      },
+      {
+        "path": "task.toml",
+        "size": 304
+      },
+      {
+        "path": "environment/Dockerfile",
+        "size": 115
+      },
+      {
+        "path": "environment/repo/requirements.txt",
+        "size": 50
+      },
+      {
+        "path": "environment/repo/src/orders/api.py",
+        "size": 270
+      },
+      {
+        "path": "environment/repo/src/orders/repository.py",
+        "size": 174
+      },
+      {
+        "path": "solution/solve.sh",
+        "size": 88,
+        "withheld": "solution"
+      },
+      {
+        "path": "solution/reference.patch",
+        "size": 493,
+        "withheld": "solution"
+      },
+      {
+        "path": "tests/test.sh",
+        "size": 191
+      },
+      {
+        "path": "tests/hidden/test_c01.py",
+        "size": 174
+      },
+      {
+        "path": "tests/hidden/test_c02.py",
+        "size": 180
+      },
+      {
+        "path": "tests/hidden/test_c03.py",
+        "size": 171
+      },
+      {
+        "path": "tests/hidden/test_c04.py",
+        "size": 183
+      },
+      {
+        "path": "tests/hidden/test_c05.py",
+        "size": 177
+      },
+      {
+        "path": "tests/hidden/test_c06.py",
+        "size": 177
+      },
+      {
+        "path": "tests/hidden/test_c07.py",
+        "size": 177
+      },
+      {
+        "path": "tests/checks/check_c08.py",
+        "size": 195
+      },
+      {
+        "path": "tests/checks/check_c09.py",
+        "size": 195
+      },
+      {
+        "path": "tests/review/c10.md",
+        "size": 272
+      }
+    ],
+    "revisions": [
+      {
+        "version": "0a6ef4f",
+        "change": "edit",
+        "note": "修正环境的依赖版本",
+        "author": "zhou.yu",
+        "registeredAt": "2026-11-12T05:35:08.000Z"
+      },
+      {
+        "version": "eedb7ff",
+        "change": "reviseGrading",
+        "note": "复核结论为评分错误，修订对应检查",
+        "author": "chen.qi",
+        "registeredAt": "2026-11-03T06:23:48.000Z"
+      },
+      {
+        "version": "2ea22ed",
+        "change": "edit",
+        "note": "修正环境的依赖版本",
+        "author": "chen.qi",
+        "registeredAt": "2026-10-25T02:35:34.000Z"
+      },
+      {
+        "version": "6a007b9",
+        "change": "created",
+        "note": "首次登记",
+        "author": "chen.qi",
+        "registeredAt": "2026-10-16T07:25:14.000Z"
+      }
+    ],
+    "validations": [
+      {
+        "agent": "oracle",
+        "outcome": "passed",
+        "expected": true,
+        "version": "0a6ef4f",
+        "finishedAt": "2026-11-17T12:30:54.000Z"
+      },
+      {
+        "agent": "nop",
+        "outcome": "failed",
+        "expected": true,
+        "version": "0a6ef4f",
+        "finishedAt": "2026-11-17T17:19:42.000Z"
+      }
+    ]
+  },
+  {
+    "id": "task-045",
+    "title": "搜索结果高亮",
+    "tags": [
+      "接口"
+    ],
+    "version": "f12d1b3",
+    "instruction": "为服务新增「搜索结果高亮」相关的功能。已有接口的行为与返回格式保持不变。\n\n完成后请运行项目已有的测试，并在仓库根目录写一份 report.json，列出改动的文件和每处改动的理由。report.json 的格式如下：",
+    "reportSchema": "{ \"files\": [ { \"path\": string, \"reason\": string } ], \"tests_run\": boolean }",
+    "environment": [
+      {
+        "label": "代码仓库",
+        "value": "notifications-service @ 4f8a466",
+        "format": "code"
+      },
+      {
+        "label": "语言与依赖",
+        "value": "Python 3.12 · FastAPI · SQLAlchemy"
+      },
+      {
+        "label": "可用工具",
+        "value": "读取文件、修改文件、运行命令、提交"
+      },
+      {
+        "label": "网络",
+        "value": "不可访问外网"
+      },
+      {
+        "label": "轮次上限",
+        "value": "100 轮"
+      },
+      {
+        "label": "提交",
+        "value": "次数不限，以最后一次提交为准"
+      }
+    ],
+    "tools": [
+      "read_file",
+      "run_command",
+      "edit_file",
+      "submit"
+    ],
+    "checks": [
+      {
+        "id": "C01",
+        "title": "已有测试全部通过",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c01.py"
+      },
+      {
+        "id": "C02",
+        "title": "新增行为符合需求说明",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c02.py"
+      },
+      {
+        "id": "C03",
+        "title": "边界输入的处理",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c03.py"
+      },
+      {
+        "id": "C04",
+        "title": "错误输入返回明确的错误",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c04.py"
+      },
+      {
+        "id": "C05",
+        "title": "已有接口的行为不变",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c05.py"
+      },
+      {
+        "id": "C06",
+        "title": "并发请求下结果一致",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c06.py"
+      },
+      {
+        "id": "C07",
+        "title": "配置项缺省时的行为",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c07.py"
+      },
+      {
+        "id": "C08",
+        "title": "数据库迁移可回滚",
+        "method": "script",
+        "path": "tests/checks/check_c08.py"
+      },
+      {
+        "id": "C09",
+        "title": "report.json 格式正确",
+        "method": "script",
+        "path": "tests/checks/check_c09.py"
+      },
+      {
+        "id": "C10",
+        "title": "改动说明与实际改动一致",
+        "method": "modelReview",
+        "samples": 3,
+        "rubric": "对照最终提交的改动与 report.json：每处改动都有对应说明、说明不描述未发生的改动时记为通过；任一说明与实际改动不符记为未通过。",
+        "path": "tests/review/c10.md"
+      }
+    ],
+    "verifier": [
+      {
+        "label": "入口脚本",
+        "value": "tests/test.sh",
+        "format": "code"
+      },
+      {
+        "label": "超时",
+        "value": "900 秒"
+      },
+      {
+        "label": "资源",
+        "value": "2 核 CPU · 4 GB 内存"
+      },
+      {
+        "label": "日志",
+        "value": "/logs/verifier",
+        "format": "code"
+      }
+    ],
+    "files": [
+      {
+        "path": "instruction.md",
+        "size": 353
+      },
+      {
+        "path": "task.toml",
+        "size": 307
+      },
+      {
+        "path": "environment/Dockerfile",
+        "size": 115
+      },
+      {
+        "path": "environment/repo/requirements.txt",
+        "size": 50
+      },
+      {
+        "path": "environment/repo/src/notifications/api.py",
+        "size": 291
+      },
+      {
+        "path": "environment/repo/src/notifications/repository.py",
+        "size": 174
+      },
+      {
+        "path": "solution/solve.sh",
+        "size": 88,
+        "withheld": "solution"
+      },
+      {
+        "path": "solution/reference.patch",
+        "size": 521,
+        "withheld": "solution"
+      },
+      {
+        "path": "tests/test.sh",
+        "size": 191
+      },
+      {
+        "path": "tests/hidden/test_c01.py",
+        "size": 174
+      },
+      {
+        "path": "tests/hidden/test_c02.py",
+        "size": 180
+      },
+      {
+        "path": "tests/hidden/test_c03.py",
+        "size": 171
+      },
+      {
+        "path": "tests/hidden/test_c04.py",
+        "size": 183
+      },
+      {
+        "path": "tests/hidden/test_c05.py",
+        "size": 177
+      },
+      {
+        "path": "tests/hidden/test_c06.py",
+        "size": 177
+      },
+      {
+        "path": "tests/hidden/test_c07.py",
+        "size": 177
+      },
+      {
+        "path": "tests/checks/check_c08.py",
+        "size": 195
+      },
+      {
+        "path": "tests/checks/check_c09.py",
+        "size": 195
+      },
+      {
+        "path": "tests/review/c10.md",
+        "size": 272
+      }
+    ],
+    "revisions": [
+      {
+        "version": "f12d1b3",
+        "change": "edit",
+        "note": "修正环境的依赖版本",
+        "author": "lin.fang",
+        "registeredAt": "2026-11-12T08:05:04.000Z"
+      },
+      {
+        "version": "2f0df64",
+        "change": "edit",
+        "note": "更换示例数据，避免与公开代码重合",
+        "author": "chen.qi",
+        "registeredAt": "2026-11-03T07:51:54.000Z"
+      },
+      {
+        "version": "c61ec82",
+        "change": "edit",
+        "note": "补充任务说明中的边界条件",
+        "author": "chen.qi",
+        "registeredAt": "2026-10-25T07:26:26.000Z"
+      },
+      {
+        "version": "962e1cf",
+        "change": "created",
+        "note": "首次登记",
+        "author": "chen.qi",
+        "registeredAt": "2026-10-16T03:15:41.000Z"
+      }
+    ],
+    "validations": [
+      {
+        "agent": "oracle",
+        "outcome": "passed",
+        "expected": true,
+        "version": "f12d1b3",
+        "finishedAt": "2026-11-17T09:24:51.000Z"
+      },
+      {
+        "agent": "nop",
+        "outcome": "failed",
+        "expected": true,
+        "version": "f12d1b3",
+        "finishedAt": "2026-11-17T09:30:50.000Z"
+      }
+    ]
+  },
+  {
+    "id": "task-064",
+    "title": "导出任务重试",
+    "tags": [
+      "迁移",
+      "配置"
+    ],
+    "version": "ffea6da",
+    "instruction": "为服务新增「导出任务重试」相关的功能。已有接口的行为与返回格式保持不变。\n\n完成后请运行项目已有的测试，并在仓库根目录写一份 report.json，列出改动的文件和每处改动的理由。report.json 的格式如下：",
+    "reportSchema": "{ \"files\": [ { \"path\": string, \"reason\": string } ], \"tests_run\": boolean }",
+    "environment": [
+      {
+        "label": "代码仓库",
+        "value": "billing-service @ 9e65703",
+        "format": "code"
+      },
+      {
+        "label": "语言与依赖",
+        "value": "Python 3.12 · FastAPI · SQLAlchemy"
+      },
+      {
+        "label": "可用工具",
+        "value": "读取文件、修改文件、运行命令、提交"
+      },
+      {
+        "label": "网络",
+        "value": "不可访问外网"
+      },
+      {
+        "label": "轮次上限",
+        "value": "100 轮"
+      },
+      {
+        "label": "提交",
+        "value": "次数不限，以最后一次提交为准"
+      }
+    ],
+    "tools": [
+      "read_file",
+      "run_command",
+      "edit_file",
+      "submit"
+    ],
+    "checks": [
+      {
+        "id": "C01",
+        "title": "已有测试全部通过",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c01.py"
+      },
+      {
+        "id": "C02",
+        "title": "新增行为符合需求说明",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c02.py"
+      },
+      {
+        "id": "C03",
+        "title": "边界输入的处理",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c03.py"
+      },
+      {
+        "id": "C04",
+        "title": "错误输入返回明确的错误",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c04.py"
+      },
+      {
+        "id": "C05",
+        "title": "已有接口的行为不变",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c05.py"
+      },
+      {
+        "id": "C06",
+        "title": "并发请求下结果一致",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c06.py"
+      },
+      {
+        "id": "C07",
+        "title": "配置项缺省时的行为",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c07.py"
+      },
+      {
+        "id": "C08",
+        "title": "数据库迁移可回滚",
+        "method": "script",
+        "path": "tests/checks/check_c08.py"
+      },
+      {
+        "id": "C09",
+        "title": "report.json 格式正确",
+        "method": "script",
+        "path": "tests/checks/check_c09.py"
+      },
+      {
+        "id": "C10",
+        "title": "改动说明与实际改动一致",
+        "method": "modelReview",
+        "samples": 3,
+        "rubric": "对照最终提交的改动与 report.json：每处改动都有对应说明、说明不描述未发生的改动时记为通过；任一说明与实际改动不符记为未通过。",
+        "path": "tests/review/c10.md"
+      }
+    ],
+    "verifier": [
+      {
+        "label": "入口脚本",
+        "value": "tests/test.sh",
+        "format": "code"
+      },
+      {
+        "label": "超时",
+        "value": "900 秒"
+      },
+      {
+        "label": "资源",
+        "value": "2 核 CPU · 4 GB 内存"
+      },
+      {
+        "label": "日志",
+        "value": "/logs/verifier",
+        "format": "code"
+      }
+    ],
+    "files": [
+      {
+        "path": "instruction.md",
+        "size": 353
+      },
+      {
+        "path": "task.toml",
+        "size": 307
+      },
+      {
+        "path": "environment/Dockerfile",
+        "size": 115
+      },
+      {
+        "path": "environment/repo/requirements.txt",
+        "size": 50
+      },
+      {
+        "path": "environment/repo/src/billing/api.py",
+        "size": 273
+      },
+      {
+        "path": "environment/repo/src/billing/repository.py",
+        "size": 174
+      },
+      {
+        "path": "solution/solve.sh",
+        "size": 88,
+        "withheld": "solution"
+      },
+      {
+        "path": "solution/reference.patch",
+        "size": 497,
+        "withheld": "solution"
+      },
+      {
+        "path": "tests/test.sh",
+        "size": 191
+      },
+      {
+        "path": "tests/hidden/test_c01.py",
+        "size": 174
+      },
+      {
+        "path": "tests/hidden/test_c02.py",
+        "size": 180
+      },
+      {
+        "path": "tests/hidden/test_c03.py",
+        "size": 171
+      },
+      {
+        "path": "tests/hidden/test_c04.py",
+        "size": 183
+      },
+      {
+        "path": "tests/hidden/test_c05.py",
+        "size": 177
+      },
+      {
+        "path": "tests/hidden/test_c06.py",
+        "size": 177
+      },
+      {
+        "path": "tests/hidden/test_c07.py",
+        "size": 177
+      },
+      {
+        "path": "tests/checks/check_c08.py",
+        "size": 195
+      },
+      {
+        "path": "tests/checks/check_c09.py",
+        "size": 195
+      },
+      {
+        "path": "tests/review/c10.md",
+        "size": 272
+      }
+    ],
+    "revisions": [
+      {
+        "version": "ffea6da",
+        "change": "reviseGrading",
+        "note": "修正评分脚本对空结果的判断",
+        "author": "chen.qi",
+        "registeredAt": "2026-11-12T04:00:23.000Z"
+      },
+      {
+        "version": "94e5440",
+        "change": "reviseGrading",
+        "note": "复核结论为评分错误，修订对应检查",
+        "author": "zhou.yu",
+        "registeredAt": "2026-11-03T02:46:28.000Z"
+      },
+      {
+        "version": "91afe74",
+        "change": "reviseGrading",
+        "note": "复核结论为评分错误，修订对应检查",
+        "author": "chen.qi",
+        "registeredAt": "2026-10-25T08:53:22.000Z"
+      },
+      {
+        "version": "f4fa4da",
+        "change": "created",
+        "note": "首次登记",
+        "author": "zhou.yu",
+        "registeredAt": "2026-10-16T08:01:14.000Z"
+      }
+    ],
+    "validations": [
+      {
+        "agent": "oracle",
+        "outcome": "passed",
+        "expected": true,
+        "version": "ffea6da",
+        "finishedAt": "2026-11-17T14:36:51.000Z"
+      },
+      {
+        "agent": "nop",
+        "outcome": "failed",
+        "expected": true,
+        "version": "ffea6da",
+        "finishedAt": "2026-11-17T16:47:44.000Z"
+      }
+    ]
+  },
+  {
+    "id": "task-102",
+    "title": "缓存失效策略",
+    "tags": [
+      "配置"
+    ],
+    "version": "fd8dfb1",
+    "instruction": "为服务新增「缓存失效策略」相关的功能。已有接口的行为与返回格式保持不变。\n\n完成后请运行项目已有的测试，并在仓库根目录写一份 report.json，列出改动的文件和每处改动的理由。report.json 的格式如下：",
+    "reportSchema": "{ \"files\": [ { \"path\": string, \"reason\": string } ], \"tests_run\": boolean }",
+    "environment": [
+      {
+        "label": "代码仓库",
+        "value": "search-service @ fba3557",
+        "format": "code"
+      },
+      {
+        "label": "语言与依赖",
+        "value": "Python 3.12 · FastAPI · SQLAlchemy"
+      },
+      {
+        "label": "可用工具",
+        "value": "读取文件、修改文件、运行命令、提交"
+      },
+      {
+        "label": "网络",
+        "value": "不可访问外网"
+      },
+      {
+        "label": "轮次上限",
+        "value": "100 轮"
+      },
+      {
+        "label": "提交",
+        "value": "次数不限，以最后一次提交为准"
+      }
+    ],
+    "tools": [
+      "read_file",
+      "run_command",
+      "edit_file",
+      "submit"
+    ],
+    "checks": [
+      {
+        "id": "C01",
+        "title": "已有测试全部通过",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c01.py"
+      },
+      {
+        "id": "C02",
+        "title": "新增行为符合需求说明",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c02.py"
+      },
+      {
+        "id": "C03",
+        "title": "边界输入的处理",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c03.py"
+      },
+      {
+        "id": "C04",
+        "title": "错误输入返回明确的错误",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c04.py"
+      },
+      {
+        "id": "C05",
+        "title": "已有接口的行为不变",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c05.py"
+      },
+      {
+        "id": "C06",
+        "title": "并发请求下结果一致",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c06.py"
+      },
+      {
+        "id": "C07",
+        "title": "配置项缺省时的行为",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c07.py"
+      },
+      {
+        "id": "C08",
+        "title": "数据库迁移可回滚",
+        "method": "script",
+        "path": "tests/checks/check_c08.py"
+      },
+      {
+        "id": "C09",
+        "title": "report.json 格式正确",
+        "method": "script",
+        "path": "tests/checks/check_c09.py"
+      },
+      {
+        "id": "C10",
+        "title": "改动说明与实际改动一致",
+        "method": "modelReview",
+        "samples": 3,
+        "rubric": "对照最终提交的改动与 report.json：每处改动都有对应说明、说明不描述未发生的改动时记为通过；任一说明与实际改动不符记为未通过。",
+        "path": "tests/review/c10.md"
+      }
+    ],
+    "verifier": [
+      {
+        "label": "入口脚本",
+        "value": "tests/test.sh",
+        "format": "code"
+      },
+      {
+        "label": "超时",
+        "value": "900 秒"
+      },
+      {
+        "label": "资源",
+        "value": "2 核 CPU · 4 GB 内存"
+      },
+      {
+        "label": "日志",
+        "value": "/logs/verifier",
+        "format": "code"
+      }
+    ],
+    "files": [
+      {
+        "path": "instruction.md",
+        "size": 353
+      },
+      {
+        "path": "task.toml",
+        "size": 307
+      },
+      {
+        "path": "environment/Dockerfile",
+        "size": 115
+      },
+      {
+        "path": "environment/repo/requirements.txt",
+        "size": 50
+      },
+      {
+        "path": "environment/repo/src/search/api.py",
+        "size": 270
+      },
+      {
+        "path": "environment/repo/src/search/repository.py",
+        "size": 174
+      },
+      {
+        "path": "solution/solve.sh",
+        "size": 88,
+        "withheld": "solution"
+      },
+      {
+        "path": "solution/reference.patch",
+        "size": 493,
+        "withheld": "solution"
+      },
+      {
+        "path": "tests/test.sh",
+        "size": 191
+      },
+      {
+        "path": "tests/hidden/test_c01.py",
+        "size": 174
+      },
+      {
+        "path": "tests/hidden/test_c02.py",
+        "size": 180
+      },
+      {
+        "path": "tests/hidden/test_c03.py",
+        "size": 171
+      },
+      {
+        "path": "tests/hidden/test_c04.py",
+        "size": 183
+      },
+      {
+        "path": "tests/hidden/test_c05.py",
+        "size": 177
+      },
+      {
+        "path": "tests/hidden/test_c06.py",
+        "size": 177
+      },
+      {
+        "path": "tests/hidden/test_c07.py",
+        "size": 177
+      },
+      {
+        "path": "tests/checks/check_c08.py",
+        "size": 195
+      },
+      {
+        "path": "tests/checks/check_c09.py",
+        "size": 195
+      },
+      {
+        "path": "tests/review/c10.md",
+        "size": 272
+      }
+    ],
+    "revisions": [
+      {
+        "version": "fd8dfb1",
+        "change": "edit",
+        "note": "修正环境的依赖版本",
+        "author": "zhou.yu",
+        "registeredAt": "2026-11-12T02:16:25.000Z"
+      },
+      {
+        "version": "203d15b",
+        "change": "created",
+        "note": "首次登记",
+        "author": "chen.qi",
+        "registeredAt": "2026-11-03T06:18:15.000Z"
+      }
+    ],
+    "validations": [
+      {
+        "agent": "oracle",
+        "outcome": "passed",
+        "expected": true,
+        "version": "fd8dfb1",
+        "finishedAt": "2026-11-17T12:01:02.000Z"
+      },
+      {
+        "agent": "nop",
+        "outcome": "failed",
+        "expected": true,
+        "version": "fd8dfb1",
+        "finishedAt": "2026-11-17T09:03:06.000Z"
+      }
+    ]
+  }
+]

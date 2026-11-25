@@ -1,0 +1,6 @@
+# 金额向下取整
+--- a/src/rules.py
++++ b/src/rules.py
+@@ -41,1 +41,1 @@
+-    return total.quantize(CENT, ROUND_HALF_UP)
++    return total.quantize(CENT, ROUND_DOWN)

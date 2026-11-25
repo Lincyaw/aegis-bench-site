@@ -1,0 +1,13 @@
+services:
+  gateway:
+    image: demo/gateway:1.8
+  order-api:
+    image: demo/order-api:3.2
+  payment-callback:
+    image: demo/payment-callback:2.4
+    volumes:
+      - ./config/payment-callback.yaml:/etc/payment-callback.yaml
+  order-db:
+    image: postgres:16
+  telemetry:
+    image: demo/telemetry:1.0

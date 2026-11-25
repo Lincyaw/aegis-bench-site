@@ -1,0 +1,44 @@
+{
+  "id": "bench-b",
+  "name": "Bench B",
+  "shortName": "B",
+  "version": "v1.0",
+  "stageId": "05",
+  "summary": {
+    "zh-CN": "为给定的代码变更编写测试用例，以测试能否检出变更中的缺陷衡量其有效性。",
+    "en": "Write tests for a given code change; their worth is whether they catch the defects hidden in the change."
+  },
+  "updatedOn": "2026-10-08",
+  "evaluatedIn": "2026-11",
+  "runsPerTask": 5,
+  "metric": {
+    "name": {
+      "zh-CN": "缺陷检出率",
+      "en": "Defect detection rate"
+    },
+    "unit": "percent",
+    "higherIsBetter": true
+  },
+  "timelineLegend": {
+    "action": {
+      "zh-CN": "一步操作",
+      "en": "A step"
+    },
+    "change": {
+      "zh-CN": "编写测试",
+      "en": "Test written"
+    },
+    "submitPassed": {
+      "zh-CN": "全部检出",
+      "en": "All defects found"
+    },
+    "submitFailed": {
+      "zh-CN": "部分检出",
+      "en": "Some defects found"
+    }
+  },
+  "changeTools": [
+    "write_test"
+  ],
+  "passRule": "测试须在正确版本上全部通过，并检出全部缺陷版本，才判为通过。"
+}

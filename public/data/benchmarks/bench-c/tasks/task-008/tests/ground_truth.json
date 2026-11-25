@@ -1,0 +1,14 @@
+{
+  "root_cause": {
+    "component": "payment-callback",
+    "mechanism": "回调线程池容量不足"
+  },
+  "recovery": {
+    "metric": "callback_error_rate",
+    "baseline": 0.01
+  },
+  "accepted_actions": [
+    "调大 pool_size",
+    "扩容 payment-callback"
+  ]
+}
