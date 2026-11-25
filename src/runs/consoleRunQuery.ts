@@ -51,8 +51,11 @@ export function consoleRunsPath(benchmarkId: string, query: Partial<ConsoleRunQu
   return `${consoleBenchmarkPath(benchmarkId)}/runs${search ? `?${search}` : ''}`;
 }
 
-/** A run's console page has the public run's five views and two of its own: the trajectory's raw events and what the run consumed. */
-export const CONSOLE_RUN_TABS = [...RUN_TABS, 'events', 'usage'] as const;
+/**
+ * A run's console page has the public run's five views and three of its own: the trajectory's raw events, what the run
+ * consumed, and what the trajectory analyses found in it.
+ */
+export const CONSOLE_RUN_TABS = [...RUN_TABS, 'events', 'usage', 'hunts'] as const;
 export type ConsoleRunTab = (typeof CONSOLE_RUN_TABS)[number];
 
 export interface ConsoleRunView {

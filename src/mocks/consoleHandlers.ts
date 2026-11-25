@@ -7,6 +7,7 @@ import {
   DEFAULT_CONSOLE_TASK_PAGE_SIZE, checkResultsOf, consoleEntriesOf, consoleTaskOf, filteredTasksOf, namedTaskOf, referenceFilesOf, revisionsOf,
   tagCountsOf, taskEntrantRunsOf, taskGradingOf, taskRowOf,
 } from './consoleTasks';
+import { DEFAULT_HUNT_TRIAL_PAGE_SIZE, HUNTS, filteredTrialsOf, huntById, huntOf, huntTrialOf, runHuntFindingsOf } from './hunts';
 import { http, localeOf, pageOf, writtenIn } from './protocol';
 import { consoleBenchmarkOf, overviewOf } from './results';
 import { runFactsOf, runRowOf } from './runIndex';
@@ -218,6 +219,41 @@ export const consoleHandlers = [
     const { models, rows } = matrixOf(params.benchmarkId, params.tag, query.get('order') ?? 'hardest', locale);
     await delay(100);
     return response(200).json({ ...pageOf(rows, query, DEFAULT_MATRIX_PAGE_SIZE), models }, writtenIn(locale));
+  }),
+
+  http.get('/console/benchmarks/{benchmarkId}/hunts', async ({ cookies, params, response }) => {
+    if (!sessionUserOf(cookies)) {
+      return response(401).json(SIGN_IN_REQUIRED);
+    }
+    if (!hasBenchmark(params.benchmarkId)) {
+      return response(404).json({ message: `no benchmark ${params.benchmarkId}` });
+    }
+    await delay(100);
+    return response(200).json(HUNTS.map(hunt => huntOf(params.benchmarkId, hunt)).sort((a, b) => b.recordedAt.localeCompare(a.recordedAt)));
+  }),
+
+  http.get('/console/benchmarks/{benchmarkId}/hunts/{huntId}/trials', async ({ cookies, params, query, request, response }) => {
+    if (!sessionUserOf(cookies)) {
+      return response(401).json(SIGN_IN_REQUIRED);
+    }
+    const hunt = huntById(params.huntId);
+    const facet = query.get('facet') ?? '';
+    if (!hasBenchmark(params.benchmarkId) || !hunt || (facet && !hunt.facets.some(candidate => candidate.id === facet))) {
+      return response(404).json({ message: `no hunt ${params.huntId}${facet ? ` with facet ${facet}` : ''} on ${params.benchmarkId}` });
+    }
+    const locale = localeOf(request);
+    const page = pageOf(filteredTrialsOf(params.benchmarkId, hunt, facet, query.get('verdict') ?? undefined), query, DEFAULT_HUNT_TRIAL_PAGE_SIZE);
+    await delay(100);
+    return response(200).json({ ...page, items: page.items.map(trial => huntTrialOf(trial, locale)) }, writtenIn(locale));
+  }),
+
+  http.get('/console/runs/{runId}/hunts', async ({ cookies, params, response }) => {
+    if (!sessionUserOf(cookies)) {
+      return response(401).json(SIGN_IN_REQUIRED);
+    }
+    const findings = runHuntFindingsOf(params.runId);
+    await delay(80);
+    return findings ? response(200).json(findings) : response(404).json({ message: `no run ${params.runId}` });
   }),
 
   http.get('/console/benchmarks/{benchmarkId}/runs', async ({ cookies, params, query, request, response }) => {

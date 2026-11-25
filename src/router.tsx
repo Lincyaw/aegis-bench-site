@@ -1,4 +1,6 @@
 import { createBrowserRouter, type RouteObject } from 'react-router-dom';
+import { AnalysisPage } from './analysis/AnalysisPage';
+import { HuntPage } from './analysis/HuntPage';
 import { BenchmarkOverviewPage } from './benchmarks/BenchmarkOverviewPage';
 import { BenchmarkPage } from './benchmarks/BenchmarkPage';
 import { ConsoleLayout } from './console/ConsoleLayout';
@@ -64,6 +66,8 @@ export function sitePages(): RouteObject[] {
           { path: 'benchmarks/:benchmarkId/runs/:runId', element: <RunDetailPage /> },
           { path: 'benchmarks/:benchmarkId/models', element: <ModelListPage /> },
           { path: 'benchmarks/:benchmarkId/models/:modelId', element: <ModelDetailPage /> },
+          { path: 'benchmarks/:benchmarkId/analysis', element: <AnalysisPage /> },
+          { path: 'benchmarks/:benchmarkId/analysis/:huntId', element: <HuntPage /> },
           { path: 'benchmarks/:benchmarkId/collections', element: <CollectionListPage /> },
           { path: 'benchmarks/:benchmarkId/collections/:tag', element: <CollectionPage /> },
           { path: '*', element: <ConsoleNotFound /> },

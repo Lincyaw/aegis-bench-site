@@ -2,6 +2,7 @@ import { clsx } from 'clsx';
 import { Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useSearchParams } from 'react-router-dom';
+import { RunHuntsTab } from '../analysis/RunHuntsTab';
 import { useConsoleBenchmark, useConsoleRun, useConsoleTrajectoryPage } from '../api/consoleClient';
 import type { ConsoleBenchmark, ConsoleRunDetail } from '../api/types';
 import { ConsoleHeader } from '../console/ConsoleHeader';
@@ -67,7 +68,7 @@ export function RunDetailPage() {
       <TabRow current={view.tab} className={styles.tabs} role="tablist" aria-label={t('console.run.tabList')}>
         {CONSOLE_RUN_TABS.map(tab => (
           <button key={tab} type="button" role="tab" data-tab={tab} aria-selected={tab === view.tab} className={clsx(navigation.tab, 't-small')} onClick={() => onView({ tab })}>
-            {tab === 'events' || tab === 'usage' ? t(`console.run.tabs.${tab}`) : t(`runs.tab.${tab}`)}
+            {tab === 'events' || tab === 'usage' ? t(`console.run.tabs.${tab}`) : tab === 'hunts' ? t('console.analysis.runTab') : t(`runs.tab.${tab}`)}
             {counts[tab] !== undefined && <span className={styles.count}>{counts[tab]}</span>}
           </button>
         ))}
@@ -97,5 +98,6 @@ export function RunTabContent({ benchmark, run, view, onView }: { benchmark: Con
     );
     case 'events': return <RunEventsTab run={run} onStep={step => onView({ tab: 'trajectory', step })} />;
     case 'usage': return <RunUsageTab run={run} />;
+    case 'hunts': return <RunHuntsTab runId={run.id} onStep={step => onView({ tab: 'trajectory', step })} />;
   }
 }

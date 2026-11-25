@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient, useSuspenseInfiniteQuery, useSuspenseQuery, type QueryClient } from '@tanstack/react-query';
 import { useLocale } from '../i18n/localeContext';
 import { api, languageHeader, nextPageOffset, responseBody } from './client';
-import type { ReviewFilter, RunEventKind, RunOutcome, SessionState, SignInRequest, TaskOrder, TaskSpread } from './types';
+import type { HuntVerdict, ReviewFilter, RunEventKind, RunOutcome, SessionState, SignInRequest, TaskOrder, TaskSpread } from './types';
 
 /** Every console query key starts with this, so signing in or out can drop what the previous session read. */
 export const CONSOLE_QUERY = 'console';
@@ -258,6 +258,38 @@ export function useCollectionMatrix(benchmarkId: string, tag: string, order: Tas
     queryFn: () => responseBody(api.GET('/console/benchmarks/{benchmarkId}/collections/{tag}/matrix', {
       params: { path: { benchmarkId, tag }, query: { order, offset, limit: pageSize }, header: languageHeader(locale) },
     })),
+  }).data;
+}
+
+/** A hunt's question, facets and verdicts are records, the same in every language. */
+export function useHunts(benchmarkId: string) {
+  return useSuspenseQuery({
+    queryKey: [CONSOLE_QUERY, 'hunts', benchmarkId],
+    queryFn: () => responseBody(api.GET('/console/benchmarks/{benchmarkId}/hunts', { params: { path: { benchmarkId } } })),
+  }).data;
+}
+
+/** What a hunt's trial list asks for: a facet or all, a verdict or all, and the page. */
+export interface HuntTrialQuery {
+  facet: string;
+  verdict?: HuntVerdict;
+  offset: number;
+}
+
+export function useHuntTrials(benchmarkId: string, huntId: string, query: HuntTrialQuery, pageSize: number) {
+  const locale = useLocale();
+  return useSuspenseQuery({
+    queryKey: [CONSOLE_QUERY, 'huntTrials', benchmarkId, huntId, query, pageSize, locale],
+    queryFn: () => responseBody(api.GET('/console/benchmarks/{benchmarkId}/hunts/{huntId}/trials', {
+      params: { path: { benchmarkId, huntId }, query: { facet: query.facet, verdict: query.verdict, offset: query.offset, limit: pageSize }, header: languageHeader(locale) },
+    })),
+  }).data;
+}
+
+export function useRunHunts(runId: string) {
+  return useSuspenseQuery({
+    queryKey: [CONSOLE_QUERY, 'runHunts', runId],
+    queryFn: () => responseBody(api.GET('/console/runs/{runId}/hunts', { params: { path: { runId } } })),
   }).data;
 }
 
