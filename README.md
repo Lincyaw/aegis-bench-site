@@ -1,6 +1,6 @@
 # Aegis Bench 前端 demo
 
-Aegis Bench 的前端演示，包括对外站点和内部的评测中台。对外站点按 Figma 文件 [Aegis Bench](https://www.figma.com/design/tozbvKVPYuRZEWHUhoSthz) 中「01 · 对外站点」的设计实现；中台按「02 · 内部中台」的页面结构实现，并与对外站点共用一套设计系统。接口用 TypeSpec 声明；数据由浏览器中的 mock 服务端提供，它只实现接口声明的操作，因此不需要后端。
+Aegis Bench 的前端演示，包括对外站点和内部的评测中台。对外站点按 Figma 文件 [Aegis Bench](https://www.figma.com/design/tozbvKVPYuRZEWHUhoSthz) 中「01 · 对外站点」的设计实现；中台按「02 · 内部中台」的页面结构实现，并与对外站点共用一套设计系统。接口用 TypeSpec 声明；数据由浏览器中的 mock 服务端提供，它只实现接口声明的操作，读的是仓库里 `public/data/` 下的静态文件，因此不需要后端。
 
 预览地址是 <https://profile.aoyangfang.top/aegis-bench-site/>。每次推送到 master，GitHub Actions 会重新构建并发布到 GitHub Pages（见 `.github/workflows/pages.yml`）；站点挂在仓库名的路径下，构建以这个路径为 base。mock 运行在 service worker 里，只能通过 HTTPS 访问。
 
@@ -28,6 +28,7 @@ npm run mock     # 在本地启动 mock 服务：接口 http://127.0.0.1:4010/ap
 | `spec/atif.tsp` | 运行轨迹的格式，ATIF-v1.8，按 Harbor 的参考模型（`harbor.models.trajectories`）声明 |
 | `src/` | 按业务领域组织的站点代码，各目录的职责见工程规范 |
 | `content/` | 各评测基准的介绍页与研究报告（MD/MDX） |
+| `public/data/` | mock 服务端读取的评测记录：评测基准、任务、运行、轨迹、轨迹分析与发布记录 |
 | `scripts/` | 仓库自带的检查脚本 |
 
 ## 运行记录
@@ -42,7 +43,7 @@ npm run mock     # 在本地启动 mock 服务：接口 http://127.0.0.1:4010/ap
 
 研究报告在中台起草、预览并复核，发布仍然是提交文件：草稿在浏览器里按构建时的同一套插件编译预览，勾完设置里的发布前检查后提交复核，达到设置要求的同意人数后，下载文件提交到 `content/reports/<目录名>/`，对外站点下次构建时显示。报告可以用 `<Replay run="…" />` 和 `<RunNumber run="…" field="steps" />` 引用运行。
 
-对外站点只显示每个评测基准已发布的版本：排行榜上的组合、简介和运行示例。在中台起草下一版、发布后，对外站点即改为显示它；被替换的版本可以再次发布以恢复。演示环境的发布记录、成员和设置都保存在浏览器内存里，重新加载页面后回到初始状态。
+对外站点只显示每个评测基准已发布的版本：排行榜上的组合、简介和运行示例。在中台起草下一版、发布后，对外站点即改为显示它；被替换的版本可以再次发布以恢复。演示环境里，中台对发布记录、成员和设置的修改都只保存在浏览器内存里，重新加载页面后回到初始状态：发布记录回到数据目录里记录的版本，成员和设置回到演示的初始值。
 
 ## 轨迹校验
 
@@ -54,4 +55,24 @@ uv run python -m harbor.utils.trajectory_validator path/to/trajectory.json
 
 ## 数据
 
-评测基准、模型与数值都是占位内容。
+站点展示的评测记录都是 `public/data/` 下的静态文件。构建把它们原样复制到站点的 `data/` 下；mock 服务端启动时读入目录和索引，运行详情、轨迹和任务文件在第一次被请求时才读取。现有数据是占位内容：评测基准、模型与数值都不是真实结果，规模也只有每个评测基准 4 到 8 道任务。
+
+```
+public/data/
+  catalog.json                          环节、模型、框架，以及评测基准的目录名和顺序
+  benchmarks/<评测基准>/
+    benchmark.json                      名称、版本、所属环节、指标、时间线规则、评分规则
+    tasks.json                          每道任务：说明、检查项、文件清单、版本历史、验证运行
+    tasks/<任务>/…                      任务的 Harbor 目录，文件原样存放
+    runs.json                           每次运行的索引：组合、结果、得分、步数、成本、复核分类、未通过的检查
+    runs/<运行>/run.json                运行的其余记录：输入、输出、评分、失败原因与复核
+    runs/<运行>/trajectory.json         运行轨迹，ATIF-v1.8
+    hunts.json                          轨迹分析：每次分析的问题、维度、探针与逐条判定
+    releases.json                       已发布的各个版本，其中一个是当前版本
+```
+
+每种文件的字段在 `src/mocks/records.ts` 中声明。接入真实数据时注意：
+- **只记录事实，汇总由服务端计算。** 排行榜的分数和成本是各组合计入运行的 `score` 与 `costUsd` 的均值，任务数、通过率、各类计数也都从 `runs.json` 和 `tasks.json` 算出，不另存汇总值。`runs.json` 里每一项要与对应的 `run.json` 一致。
+- **文件全部公开。** 仓库是公开的，`public/` 下的文件发布后任何人都能直接下载，包括中台才显示的参考解法、参考答案和复核结论。不能公开的数据不要放进来。
+- **控制体积。** GitHub 拒收超过 100 MiB 的单个文件，Pages 站点总共不超过 1 GB。现有占位数据约 30 MB，压缩后约 3 MB。
+- **发现格式错误靠契约检查。** mock 读文件时不逐项校验，但 `npm run dev` 和 `npm run mock` 会按 spec 检查每个响应；数据缺字段或类型不对时，相应的请求会返回 500 并写明哪一项不合规。

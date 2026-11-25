@@ -1,7 +1,8 @@
 import { delay } from 'msw';
-import { BENCHMARKS, hasBenchmark } from './benchmarks';
+import { hasBenchmark } from './benchmarks';
 import { changeRole, inviteMember, leavesNoAdministrator, mayAdminister, memberOf, membersInOrder, recordSignIn, refusalFor, removeMember } from './members';
 import { http, localeOf, pageOf, writtenIn } from './protocol';
+import { openedIndexes } from './records';
 import { DEMO_PASSWORD, SIGN_IN_REQUIRED, consoleUserOf, sessionUserOf, signedInCookie, signedOutCookie } from './session';
 import { currentSettings, updateSettings } from './settings';
 import { DEFAULT_CHANGELOG_PAGE_SIZE, changelogOf, workbenchOf } from './workspace';
@@ -127,7 +128,7 @@ export const workspaceHandlers = [
     if (benchmarkId && !hasBenchmark(benchmarkId)) {
       return response(404).json({ message: `no benchmark ${benchmarkId}` });
     }
-    const entries = changelogOf(benchmarkId ? [benchmarkId] : BENCHMARKS.map(benchmark => benchmark.id), query.get('change') ?? undefined);
+    const entries = changelogOf(benchmarkId ? [benchmarkId] : openedIndexes().catalog.benchmarks, query.get('change') ?? undefined);
     await delay(100);
     return response(200).json(pageOf(entries, query, DEFAULT_CHANGELOG_PAGE_SIZE));
   }),

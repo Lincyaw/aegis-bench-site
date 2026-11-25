@@ -1,7 +1,8 @@
 import type { CombinationRuns, LeaderboardEntry, Locale, RecentRun } from '../api/types';
-import { leaderboardOf, type BenchmarkShowing } from './benchmarks';
+import type { BenchmarkShowing } from './benchmarks';
 import { currentReleaseOf } from './releases';
-import { recentRunsOf } from './trajectories';
+import { leaderboardOf } from './results';
+import { recentRunsOf } from './runs';
 
 /*
  * What the public site shows of each benchmark: what its current release publishes. The console's releases change it;
@@ -17,8 +18,8 @@ export function publishedShowingOf(benchmarkId: string, locale: Locale): Benchma
   return { summary: currentReleaseOf(benchmarkId).content.summary[locale], entries: publishedEntriesOf(benchmarkId, locale) };
 }
 
-export function publishedRecentRunsOf(benchmarkId: string, locale: Locale): RecentRun[] {
-  return recentRunsOf(benchmarkId, currentReleaseOf(benchmarkId).content.replays, locale);
+export function publishedRecentRunsOf(benchmarkId: string, locale: Locale): Promise<RecentRun[]> {
+  return recentRunsOf(currentReleaseOf(benchmarkId).content.replays, locale);
 }
 
 /** A task's runs by combination, keeping only the combinations the current release publishes. */

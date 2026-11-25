@@ -1,23 +1,18 @@
 import type { ReleaseChanges, ReleaseContent, ReleaseDetail, ReleaseStatus, ReleaseSummary } from '../api/types';
-import { BENCHMARKS, benchmarkById, benchmarkRef } from './benchmarks';
-import { parseRunId, runIdOf } from './runs';
+import { benchmarkOf, benchmarkRef } from './benchmarks';
+import { openedIndexes, type PublishedRelease } from './records';
+import { rankingOf } from './results';
 
 /*
- * The releases of each benchmark. Unlike the rest of the demo's data they change: the console drafts, publishes,
- * restores and discards them, and the public site shows the current one. They are kept in memory, so a reload brings
- * back the two releases each benchmark starts with.
+ * The releases of each benchmark. The data directory records the versions each benchmark published; the console
+ * drafts, publishes, restores and discards releases in memory, so a reload brings back the recorded ones. The public
+ * site shows the current one.
  */
 
-export interface ReleaseRecord {
+export interface ReleaseRecord extends Omit<PublishedRelease, 'status'> {
   id: string;
   benchmarkId: string;
-  version: number;
   status: ReleaseStatus;
-  note?: string;
-  author: string;
-  updatedAt: string;
-  restoresVersion?: number;
-  content: ReleaseContent;
 
   /** What the public site showed when the release was drafted or when it was published, which its changes are counted against */
   baseline: ReleaseContent;
@@ -27,30 +22,20 @@ export function releaseIdOf(benchmarkId: string, version: number): string {
   return `${benchmarkId}.${version}`;
 }
 
-/** Each benchmark's first two releases: the second added the last two combinations and a third example run. */
-export function initialReleasesOf(benchmarkId: string): ReleaseRecord[] {
-  const record = benchmarkById(benchmarkId);
-  const entrants = record.ranking.map(([modelId, harnessId]) => ({ modelId, harnessId }));
-  const replays = record.listedRuns.map(([taskId, modelId, harnessId]) => runIdOf(benchmarkId, taskId, modelId, harnessId, 1));
-  const first: ReleaseContent = { summary: { ...record.summary }, entrants: entrants.slice(0, -2), replays: replays.slice(0, 2) };
-  const second: ReleaseContent = { summary: { ...record.summary }, entrants, replays };
-  return [
-    {
-      id: releaseIdOf(benchmarkId, 2), benchmarkId, version: 2, status: 'current', note: '加入两个组合，并增加一个运行示例。', author: 'lin.fang',
-      updatedAt: `${record.updatedOn}T08:00:00Z`, content: second, baseline: first,
-    },
-    {
-      id: releaseIdOf(benchmarkId, 1), benchmarkId, version: 1, status: 'superseded', note: '首次发布。', author: 'zhou.yu',
-      updatedAt: '2026-09-15T08:00:00Z', content: first, baseline: { summary: first.summary, entrants: [], replays: [] },
-    },
-  ];
+/** The versions a benchmark published, each counted against the version before it. */
+export function recordedReleasesOf(benchmarkId: string): ReleaseRecord[] {
+  const published = structuredClone(benchmarkOf(benchmarkId).releases).toSorted((a, b) => a.version - b.version);
+  return published.map((release, index) => ({
+    ...release, id: releaseIdOf(benchmarkId, release.version), benchmarkId,
+    baseline: index === 0 ? { summary: release.content.summary, entrants: [], replays: [] } : published[index - 1].content,
+  }));
 }
 
 const store = new Map<string, ReleaseRecord[]>();
 
 /** The list a benchmark's releases are kept in, which drafting, publishing and discarding change. */
 export function storedReleasesOf(benchmarkId: string): ReleaseRecord[] {
-  const releases = store.get(benchmarkId) ?? initialReleasesOf(benchmarkId);
+  const releases = store.get(benchmarkId) ?? recordedReleasesOf(benchmarkId);
   store.set(benchmarkId, releases);
   return releases;
 }
@@ -73,7 +58,7 @@ export function draftOf(benchmarkId: string): ReleaseRecord | undefined {
 }
 
 export function releaseById(releaseId: string): ReleaseRecord | undefined {
-  return BENCHMARKS.flatMap(benchmark => releasesOf(benchmark.id)).find(release => release.id === releaseId);
+  return openedIndexes().benchmarks.flatMap(benchmark => releasesOf(benchmark.record.id)).find(release => release.id === releaseId);
 }
 
 export function changesOf(release: ReleaseRecord): ReleaseChanges {
@@ -104,9 +89,9 @@ export function releaseDetailOf(release: ReleaseRecord): ReleaseDetail {
 
 /** Why a content cannot be published for a benchmark, or nothing when it can. */
 export function contentProblemOf(benchmarkId: string, content: ReleaseContent): string | undefined {
-  const { ranking } = benchmarkById(benchmarkId);
-  const unranked = content.entrants.find(entrant => !ranking.some(([modelId, harnessId]) => modelId === entrant.modelId && harnessId === entrant.harnessId));
-  const foreign = content.replays.find(runId => parseRunId(runId)?.benchmarkId !== benchmarkId);
+  const ranking = rankingOf(benchmarkId);
+  const unranked = content.entrants.find(entrant => !ranking.some(ranked => ranked.modelId === entrant.modelId && ranked.harnessId === entrant.harnessId));
+  const foreign = content.replays.find(runId => openedIndexes().runs.get(runId)?.benchmarkId !== benchmarkId);
   return unranked ? `${benchmarkId} did not rank ${unranked.modelId} in ${unranked.harnessId}`
     : foreign ? `${foreign} is not a run of ${benchmarkId}` : undefined;
 }

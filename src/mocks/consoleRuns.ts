@@ -1,9 +1,8 @@
-import type { ConsoleRunDetail, Locale, ReviewFilter, RunEvent, RunEventKind, RunOutcome, RunUsage, Trajectory } from '../api/types';
-import { STAFF } from './catalog';
-import { pickOf } from './hash';
-import { batchOf, runFactsOf, taskVersionOf, type RunFact } from './runIndex';
-import { stepTimeOf } from './runs';
-import { runDetailOf, trajectoryOf } from './trajectories';
+import type { ConsoleRunDetail, Locale, ReviewFilter, RunEvent, RunEventKind, RunOutcome, RunRow, RunUsage, Trajectory } from '../api/types';
+import { benchmarkOf, taskRefOf } from './benchmarks';
+import { harnessRef, modelRef } from './catalog';
+import { openedIndexes, readRunRecord, readTrajectory, type RunFact } from './records';
+import { runDetailOf } from './runs';
 
 /*
  * The console's view of runs: every run of a benchmark with its review, and what each run's trajectory records step by
@@ -18,6 +17,14 @@ export const DEFAULT_EVENT_PAGE_SIZE = 50;
 
 /** No event's excerpt is longer than this, as the spec declares. */
 export const MAX_EXCERPT_LENGTH = 400;
+
+export function runRowOf(benchmarkId: string, fact: RunFact, locale: Locale): RunRow {
+  return {
+    id: fact.id, task: taskRefOf(benchmarkId, fact.taskId), model: modelRef(fact.modelId, locale), harness: harnessRef(fact.harnessId, locale),
+    attempt: fact.attempt, outcome: fact.outcome, finishedAt: fact.finishedAt, steps: fact.steps, costUsd: fact.costUsd,
+    taskVersion: fact.taskVersion, batch: fact.batch, ...(fact.failureClass && { failureClass: fact.failureClass }),
+  };
+}
 
 export interface RunFilter {
   q: string;
@@ -36,9 +43,9 @@ export function matchesReview(fact: RunFact, review: ReviewFilter): boolean {
 
 /** The runs a filter selects, newest first. */
 export function filteredRunsOf(benchmarkId: string, filter: RunFilter): RunFact[] {
-  return runFactsOf(benchmarkId)
-    .filter(fact => (!filter.q || fact.task.id.includes(filter.q) || fact.task.title.includes(filter.q))
-      && (!filter.combination || `${fact.key.modelId}-${fact.key.harnessId}` === filter.combination)
+  return benchmarkOf(benchmarkId).runs
+    .filter(fact => (!filter.q || fact.taskId.includes(filter.q) || taskRefOf(benchmarkId, fact.taskId).title.includes(filter.q))
+      && (!filter.combination || `${fact.modelId}-${fact.harnessId}` === filter.combination)
       && (!filter.outcome || fact.outcome === filter.outcome)
       && (!filter.review || matchesReview(fact, filter.review)))
     .toSorted((a, b) => b.finishedAt.localeCompare(a.finishedAt));
@@ -68,18 +75,20 @@ export function usageOf(trajectory: Trajectory): RunUsage {
   };
 }
 
-export function consoleRunOf(runId: string, locale: Locale): ConsoleRunDetail | undefined {
-  const detail = runDetailOf(runId, locale);
-  const trajectory = trajectoryOf(runId);
-  const fact = detail && runFactsOf(detail.benchmark.id).find(candidate => candidate.runId === runId);
-  if (!detail || !trajectory || !fact) {
+/** A run as the console shows it, or nothing when there is no such run. */
+export async function consoleRunOf(runId: string, locale: Locale): Promise<ConsoleRunDetail | undefined> {
+  const located = openedIndexes().runs.get(runId);
+  if (!located) {
     return undefined;
   }
-  const { key } = fact;
+  const { benchmarkId, fact } = located;
+  const [detail, run, trajectory] = await Promise.all([runDetailOf(runId, locale), readRunRecord(benchmarkId, runId), readTrajectory(benchmarkId, runId)]);
+  if (!detail) {
+    throw new Error(`run ${runId} has no detail`);
+  }
   return {
-    ...detail, taskVersion: taskVersionOf(key.benchmarkId, key.taskId), batch: batchOf(key.modelId, key.harnessId),
-    startedAt: stepTimeOf(runId, 0), finishedAt: fact.finishedAt, usage: usageOf(trajectory),
-    ...(fact.failureClass && { failureClass: fact.failureClass, reviewer: pickOf(STAFF, `reviewer:${runId}`) }),
+    ...detail, taskVersion: fact.taskVersion, batch: fact.batch, startedAt: run.startedAt, finishedAt: fact.finishedAt, usage: usageOf(trajectory),
+    ...(fact.failureClass && { failureClass: fact.failureClass }), ...(run.reviewer && { reviewer: run.reviewer }),
   };
 }
 

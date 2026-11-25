@@ -1,16 +1,13 @@
 import type {
   ConsoleTaskDetail, ConsoleTaskEntry, ConsoleTaskRow, EntrantMark, Locale, ReferenceFile, ResultCounts, TagCount, TaskCheckResults, TaskGrading,
-  TaskOrder, TaskResults, TaskRevision, TaskSpread, ValidationRun,
+  TaskOrder, TaskResults, TaskRevision, TaskSpread,
 } from '../api/types';
-import { benchmarkById, benchmarkRef, hasBenchmark, type TaskKind } from './benchmarks';
-import { STAFF, harnessRef, modelRef } from './catalog';
-import { fractionOf, hashOf, pickOf } from './hash';
-import { resultCountsOf } from './results';
-import { runFactsOf, runRowOf, taskVersionOf, type RunFact } from './runIndex';
-import { INSTRUCTION_TAIL, REPORT_SCHEMA, checksOf, environmentOf, planOf } from './runs';
-import { byteLengthOf, checkFileOf, directoryEntriesOf, taskFileOf, taskFilesOf } from './taskFiles';
-import { taskOf, tasksOf, type TaskRecord } from './tasks';
-import { TOOL_PLAN } from './trajectories';
+import { benchmarkOf, benchmarkRef, hasBenchmark, taskOf } from './benchmarks';
+import { harnessRef, modelRef } from './catalog';
+import { runRowOf } from './consoleRuns';
+import { readTaskFile, type RunFact, type TaskRecord } from './records';
+import { rankingOf, resultCountsOf } from './results';
+import { directoryEntriesOf, taskFileOf } from './taskFiles';
 
 /*
  * The console's view of a benchmark's tasks: every run that answered them, how their grading decides, the files the
@@ -33,7 +30,7 @@ export function runFactsByTask(benchmarkId: string): Map<string, RunFact[]> {
   if (cached) {
     return cached;
   }
-  const grouped = Map.groupBy(runFactsOf(benchmarkId), fact => fact.task.id);
+  const grouped = Map.groupBy(benchmarkOf(benchmarkId).runs, fact => fact.taskId);
   factsByTaskCache.set(benchmarkId, grouped);
   return grouped;
 }
@@ -54,9 +51,9 @@ export function spreadOf(result: ResultCounts): TaskSpread | undefined {
 /** Whether each combination, in ranking order, passed the task at least once. */
 export function entrantMarksOf(benchmarkId: string, taskId: string, locale: Locale): EntrantMark[] {
   const facts = runFactsByTask(benchmarkId).get(taskId) ?? [];
-  return benchmarkById(benchmarkId).ranking.map(([modelId, harnessId]) => ({
+  return rankingOf(benchmarkId).map(({ modelId, harnessId }) => ({
     model: modelRef(modelId, locale), harness: harnessRef(harnessId, locale),
-    solved: facts.some(fact => fact.key.modelId === modelId && fact.key.harnessId === harnessId && fact.outcome === 'passed'),
+    solved: facts.some(fact => fact.modelId === modelId && fact.harnessId === harnessId && fact.outcome === 'passed'),
   }));
 }
 
@@ -64,14 +61,14 @@ export function taskRowOf(benchmarkId: string, task: TaskRecord, locale: Locale)
   const result = taskResultCountsOf(benchmarkId, task.id);
   const spread = spreadOf(result);
   return {
-    id: task.id, title: task.title, tags: task.tags, version: taskVersionOf(benchmarkId, task.id), result, ...(spread && { spread }),
+    id: task.id, title: task.title, tags: task.tags, version: task.version, result, ...(spread && { spread }),
     entrants: entrantMarksOf(benchmarkId, task.id, locale),
   };
 }
 
 /** Every tag of a benchmark's tasks and how many tasks carry it, the commonest first. */
 export function tagCountsOf(benchmarkId: string): TagCount[] {
-  const counts = Map.groupBy(tasksOf(benchmarkId).flatMap(task => task.tags), tag => tag);
+  const counts = Map.groupBy(benchmarkOf(benchmarkId).tasks.flatMap(task => task.tags), tag => tag);
   return [...counts].map(([tag, tasks]) => ({ tag, tasks: tasks.length })).sort((a, b) => b.tasks - a.tasks || a.tag.localeCompare(b.tag));
 }
 
@@ -98,127 +95,87 @@ export function matchesTaskSearch(task: { id: string; title: string }, q: string
 
 /** The tasks a filter selects, in its order. */
 export function filteredTasksOf(benchmarkId: string, filter: TaskFilter): TaskRecord[] {
-  const results = new Map(tasksOf(benchmarkId).map(task => [task.id, taskResultCountsOf(benchmarkId, task.id)]));
-  const matching = tasksOf(benchmarkId).filter(task => matchesTaskSearch(task, filter.q)
+  const { tasks } = benchmarkOf(benchmarkId);
+  const results = new Map(tasks.map(task => [task.id, taskResultCountsOf(benchmarkId, task.id)]));
+  const matching = tasks.filter(task => matchesTaskSearch(task, filter.q)
     && (!filter.tag || task.tags.includes(filter.tag))
     && (!filter.spread || spreadOf(results.get(task.id) ?? resultCountsOf([])) === filter.spread));
   return sortedTasks(matching, filter.order, task => task.id, task => results.get(task.id)?.passRate);
 }
 
-/** The tools a harness offers on a task of the kind: those its runs call, and submitting. */
-export function toolsOf(kind: TaskKind): string[] {
-  return [...new Set([...TOOL_PLAN[kind], 'submit'])];
-}
-
 export function consoleTaskOf(benchmarkId: string, task: TaskRecord, locale: Locale): ConsoleTaskDetail {
-  const { kind } = benchmarkById(benchmarkId);
-  const checks = checksOf(kind, task.id);
   const result = taskResultCountsOf(benchmarkId, task.id);
   const spread = spreadOf(result);
   return {
-    id: task.id, title: task.title, benchmark: benchmarkRef(benchmarkId), tags: task.tags, version: taskVersionOf(benchmarkId, task.id),
-    instruction: `${task.statement}\n\n${INSTRUCTION_TAIL[kind]}`, reportSchema: REPORT_SCHEMA[kind], environment: environmentOf(kind, task),
-    tools: toolsOf(kind), acceptance: checks.map(check => ({ checkId: check.id, requirement: check.title })), result, ...(spread && { spread }),
+    id: task.id, title: task.title, benchmark: benchmarkRef(benchmarkId), tags: task.tags, version: task.version,
+    instruction: task.instruction, reportSchema: task.reportSchema, environment: task.environment, tools: task.tools,
+    acceptance: task.checks.map(check => ({ checkId: check.id, requirement: check.title })), result, ...(spread && { spread }),
     entrants: entrantMarksOf(benchmarkId, task.id, locale),
-    sizes: { checks: checks.length, files: taskFilesOf(benchmarkId, task.id)?.length ?? 0, revisions: revisionsOf(benchmarkId, task).length },
+    sizes: { checks: task.checks.length, files: task.files.length, revisions: task.revisions.length },
   };
 }
 
-const PASS_RULES: Record<TaskKind, string> = {
-  coding: '全部检查通过才判为通过，任一检查未通过即判为失败。模型复核类检查取裁判多次评分的中位数。',
-  testing: '测试须在正确版本上全部通过，并检出全部缺陷版本，才判为通过。',
-  ops: '服务健康检查通过、错误率恢复到基线且根因判定正确，才判为通过。',
-  rca: '参考链路的节点全部召回且顺序一致，才判为通过；节点召回率另行计分。',
-};
-
-export function taskGradingOf(benchmarkId: string, task: TaskRecord): TaskGrading {
-  const { kind } = benchmarkById(benchmarkId);
+/** How the task's grading decides, with each check's code as the task's directory holds it. */
+export async function taskGradingOf(benchmarkId: string, task: TaskRecord): Promise<TaskGrading> {
   return {
-    passRule: PASS_RULES[kind],
-    checks: checksOf(kind, task.id).map(check => {
-      const file = checkFileOf(check, task.id);
-      return { id: check.id, title: check.title, method: check.method, ...(check.samples && { samples: check.samples }), code: { path: file.path, source: file.text } };
-    }),
-    verifier: [
-      { label: '入口脚本', value: 'tests/test.sh', format: 'code' }, { label: '超时', value: '900 秒' },
-      { label: '资源', value: '2 核 CPU · 4 GB 内存' }, { label: '日志', value: '/logs/verifier', format: 'code' },
-    ],
+    passRule: benchmarkOf(benchmarkId).record.passRule,
+    checks: await Promise.all(task.checks.map(async check => ({
+      id: check.id, title: check.title, method: check.method, ...(check.samples && { samples: check.samples }),
+      code: { path: check.path, source: await readTaskFile(benchmarkId, task.id, check.path) },
+    }))),
+    verifier: task.verifier,
   };
 }
 
-export function referenceFilesOf(benchmarkId: string, taskId: string): ReferenceFile[] {
-  return (taskFilesOf(benchmarkId, taskId) ?? []).flatMap(file => (file.withheld ? [{ reason: file.withheld, file: taskFileOf(file) }] : []));
+/** The files the public site withholds, whole. */
+export function referenceFilesOf(benchmarkId: string, task: TaskRecord): Promise<ReferenceFile[]> {
+  return Promise.all(task.files.flatMap(file => (file.withheld ? [{ file, reason: file.withheld }] : []))
+    .map(async ({ file, reason }) => ({ reason, file: await taskFileOf(benchmarkId, task.id, file) })));
 }
 
-/** The oracle passes and the no-op agent fails, as they should, except on the rare task whose oracle does not pass. */
-export function validationsOf(benchmarkId: string, taskId: string): ValidationRun[] {
-  const version = taskVersionOf(benchmarkId, taskId);
-  const oracle = fractionOf(`oracle:${benchmarkId}.${taskId}`) < 0.03 ? 'failed' : 'passed';
-  const at = (agent: string) => new Date(Date.parse('2026-11-17T08:00:00Z') + (hashOf(`${agent}:${benchmarkId}.${taskId}`) % 36000) * 1000).toISOString();
-  return [
-    { agent: 'oracle', outcome: oracle, expected: oracle === 'passed', version, finishedAt: at('oracle') },
-    { agent: 'nop', outcome: 'failed', expected: true, version, finishedAt: at('nop') },
-  ];
-}
-
-export function taskEntrantRunsOf(benchmarkId: string, taskId: string, locale: Locale): TaskResults {
-  const byEntrant = Map.groupBy(runFactsByTask(benchmarkId).get(taskId) ?? [], fact => `${fact.key.modelId}-${fact.key.harnessId}`);
+export function taskEntrantRunsOf(benchmarkId: string, task: TaskRecord, locale: Locale): TaskResults {
+  const byEntrant = Map.groupBy(runFactsByTask(benchmarkId).get(task.id) ?? [], fact => `${fact.modelId}-${fact.harnessId}`);
   const entrants = [...byEntrant.values()].map(facts => ({
-    model: modelRef(facts[0].key.modelId, locale), harness: harnessRef(facts[0].key.harnessId, locale),
-    runs: facts.map(fact => runRowOf(fact, locale)), result: resultCountsOf(facts),
+    model: modelRef(facts[0].modelId, locale), harness: harnessRef(facts[0].harnessId, locale),
+    runs: facts.map(fact => runRowOf(benchmarkId, fact, locale)), result: resultCountsOf(facts),
   }));
-  return { entrants: entrants.sort((a, b) => (b.result.passRate ?? -1) - (a.result.passRate ?? -1)), validations: validationsOf(benchmarkId, taskId) };
+  return { entrants: entrants.sort((a, b) => (b.result.passRate ?? -1) - (a.result.passRate ?? -1)), validations: task.validations };
 }
 
 /** Each check against each combination: of a combination's counted runs, how many passed the check. */
-export function checkResultsOf(benchmarkId: string, taskId: string, locale: Locale): TaskCheckResults {
-  const { kind, ranking } = benchmarkById(benchmarkId);
-  const facts = (runFactsByTask(benchmarkId).get(taskId) ?? []).filter(fact => fact.outcome !== 'executionFailed');
-  const failing = new Map(facts.map(fact => [fact.runId, fact.outcome === 'failed' ? planOf(fact.runId)?.failingIds ?? [] : []]));
+export function checkResultsOf(benchmarkId: string, task: TaskRecord, locale: Locale): TaskCheckResults {
+  const ranking = rankingOf(benchmarkId);
+  const facts = (runFactsByTask(benchmarkId).get(task.id) ?? []).filter(fact => fact.outcome !== 'executionFailed');
   return {
-    entrants: ranking.map(([modelId, harnessId]) => ({ model: modelRef(modelId, locale), harness: harnessRef(harnessId, locale) })),
-    checks: checksOf(kind, taskId).map(check => ({
+    entrants: ranking.map(({ modelId, harnessId }) => ({ model: modelRef(modelId, locale), harness: harnessRef(harnessId, locale) })),
+    checks: task.checks.map(check => ({
       id: check.id, title: check.title, method: check.method,
-      byEntrant: ranking.map(([modelId, harnessId]) => {
-        const runs = facts.filter(fact => fact.key.modelId === modelId && fact.key.harnessId === harnessId);
-        return { passed: runs.filter(fact => !failing.get(fact.runId)?.includes(check.id)).length, counted: runs.length };
+      byEntrant: ranking.map(({ modelId, harnessId }) => {
+        const runs = facts.filter(fact => fact.modelId === modelId && fact.harnessId === harnessId);
+        return { passed: runs.filter(fact => !fact.failedChecks.includes(check.id)).length, counted: runs.length };
       }),
     })),
   };
 }
 
-const EDIT_NOTES = ['补充任务说明中的边界条件', '修正环境的依赖版本', '新增一项隐藏测试', '更换示例数据，避免与公开代码重合'];
-const GRADING_NOTES = ['放宽报告格式的检查', '修正评分脚本对空结果的判断', '复核结论为评分错误，修订对应检查'];
-
-/** The versions that led to a task's current one, newest first; this round's runs all answered the current version. */
+/** The versions that led to a task's current one, newest first, each with the runs that answered it. */
 export function revisionsOf(benchmarkId: string, task: TaskRecord): TaskRevision[] {
-  const key = `${benchmarkId}.${task.id}`;
-  const count = 1 + (hashOf(`revisions:${key}`) % 4);
   const facts = runFactsByTask(benchmarkId).get(task.id) ?? [];
-  return Array.from({ length: count }, (_, index): TaskRevision => {
-    const current = index === 0;
-    const created = index === count - 1;
-    const change = created ? 'created' : fractionOf(`change:${key}.${index}`) < 0.6 ? 'edit' : 'reviseGrading';
-    const note = created ? '首次登记' : pickOf(change === 'edit' ? EDIT_NOTES : GRADING_NOTES, `note:${key}.${index}`);
+  return task.revisions.map(revision => {
+    const answered = facts.filter(fact => fact.taskVersion === revision.version);
     return {
-      version: current ? taskVersionOf(benchmarkId, task.id) : hashOf(`version:${key}.${index}`).toString(16).padStart(8, '0').slice(0, 7),
-      change, note, author: pickOf(STAFF, `author:${key}.${index}`),
-      registeredAt: new Date(Date.parse('2026-11-12T10:00:00Z') - index * 9 * 86400_000 - (hashOf(`at:${key}.${index}`) % 28800) * 1000).toISOString(),
-      current,
-      runs: current ? facts.length : 0,
-      counted: current ? facts.filter(fact => fact.outcome !== 'executionFailed').length : 0,
+      ...revision, current: revision.version === task.version,
+      runs: answered.length, counted: answered.filter(fact => fact.outcome !== 'executionFailed').length,
     };
   });
 }
 
 /** A directory's entries as the console lists them: every file with its size, and what the public site withholds marked. */
-export function consoleEntriesOf(benchmarkId: string, taskId: string, directory: string): ConsoleTaskEntry[] | undefined {
-  const files = taskFilesOf(benchmarkId, taskId);
-  const entries = files && directoryEntriesOf(files, directory);
-  return entries?.map(entry => {
-    const file = files?.find(candidate => candidate.path === entry.path);
+export function consoleEntriesOf(task: TaskRecord, directory: string): ConsoleTaskEntry[] | undefined {
+  return directoryEntriesOf(task.files, directory)?.map(entry => {
+    const file = task.files.find(candidate => candidate.path === entry.path);
     return {
-      path: entry.path, kind: entry.kind, ...(file && { size: byteLengthOf(file.text) }), ...(entry.withheld && { withheldFromPublic: entry.withheld }),
+      path: entry.path, kind: entry.kind, ...(file && { size: file.size }), ...(entry.withheld && { withheldFromPublic: entry.withheld }),
     };
   });
 }

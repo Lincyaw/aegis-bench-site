@@ -1,16 +1,16 @@
 import { delay } from 'msw';
-import { BENCHMARKS, DEFAULT_LEADERBOARD_PAGE_SIZE, benchmarkDetail, benchmarkSummary, hasBenchmark, leaderboardView, stagesWithBenchmarks } from './benchmarks';
-import { publishedEntriesOf, publishedRecentRunsOf, publishedShowingOf, publishedTaskRuns } from './published';
-import { RUNS_PER_TASK } from './catalog';
+import { DEFAULT_LEADERBOARD_PAGE_SIZE, benchmarkDetail, benchmarkOf, benchmarkSummary, hasBenchmark, leaderboardView, stagesWithBenchmarks, taskOf } from './benchmarks';
 import { consoleHandlers } from './consoleHandlers';
 import { hasModel, modelProfile } from './models';
 import { http, localeOf, pageOf, writtenIn } from './protocol';
+import { publishedEntriesOf, publishedRecentRunsOf, publishedShowingOf, publishedTaskRuns } from './published';
+import { openedIndexes } from './records';
 import { reportHandlers } from './reportHandlers';
-import { passRateOf, taskRunsOf, taskSummariesOf } from './runs';
+import { runDetailOf } from './runs';
 import { currentSettings } from './settings';
-import { DEFAULT_ENTRY_PAGE_SIZE, directoryEntriesOf, taskFileOf, taskFilesOf, withheldUnder } from './taskFiles';
-import { DEFAULT_TASK_PAGE_SIZE, taskOf } from './tasks';
-import { DEFAULT_TRAJECTORY_PAGE_SIZE, runDetailOf, trajectoryOf } from './trajectories';
+import { DEFAULT_ENTRY_PAGE_SIZE, directoryEntriesOf, taskFileOf, withheldUnder } from './taskFiles';
+import { DEFAULT_TASK_PAGE_SIZE, passRateOf, taskRunsOf, taskSummariesOf } from './tasks';
+import { DEFAULT_TRAJECTORY_PAGE_SIZE, trajectoryOf } from './trajectories';
 import { workspaceHandlers } from './workspaceHandlers';
 
 /*
@@ -30,7 +30,7 @@ export const publicHandlers = [
 
   http.get('/benchmarks', ({ request, response }) => {
     const locale = localeOf(request);
-    return response(200).json(BENCHMARKS.map(record => benchmarkSummary(record.id, publishedShowingOf(record.id, locale), locale)), writtenIn(locale));
+    return response(200).json(openedIndexes().catalog.benchmarks.map(benchmarkId => benchmarkSummary(benchmarkId, publishedShowingOf(benchmarkId, locale), locale)), writtenIn(locale));
   }),
 
   http.get('/benchmarks/{benchmarkId}', async ({ params, request, response }) => {
@@ -38,8 +38,9 @@ export const publicHandlers = [
       return response(404).json({ message: `no benchmark ${params.benchmarkId}` });
     }
     const locale = localeOf(request);
+    const recentRuns = await publishedRecentRunsOf(params.benchmarkId, locale);
     await delay(120);
-    return response(200).json(benchmarkDetail(params.benchmarkId, publishedShowingOf(params.benchmarkId, locale), publishedRecentRunsOf(params.benchmarkId, locale), locale), writtenIn(locale));
+    return response(200).json(benchmarkDetail(params.benchmarkId, publishedShowingOf(params.benchmarkId, locale), recentRuns, locale), writtenIn(locale));
   }),
 
   http.get('/benchmarks/{benchmarkId}/leaderboard', ({ params, query, request, response }) => {
@@ -75,7 +76,7 @@ export const publicHandlers = [
   }),
 
   http.get('/benchmarks/{benchmarkId}/tasks/{taskId}/files', async ({ params, query, response }) => {
-    const files = hasBenchmark(params.benchmarkId) ? taskFilesOf(params.benchmarkId, params.taskId) : undefined;
+    const files = hasBenchmark(params.benchmarkId) ? taskOf(params.benchmarkId, params.taskId)?.files : undefined;
     const directory = query.get('dir') ?? '';
     const entries = files && directoryEntriesOf(files, directory);
     if (!files || !entries) {
@@ -91,15 +92,16 @@ export const publicHandlers = [
 
   http.get('/benchmarks/{benchmarkId}/tasks/{taskId}/file', async ({ params, query, response }) => {
     const path = query.get('path');
-    const file = (hasBenchmark(params.benchmarkId) ? taskFilesOf(params.benchmarkId, params.taskId) : undefined)?.find(candidate => candidate.path === path);
+    const file = (hasBenchmark(params.benchmarkId) ? taskOf(params.benchmarkId, params.taskId)?.files : undefined)?.find(candidate => candidate.path === path);
     if (!file) {
       return response(404).json({ message: `no file "${path}" in ${params.taskId} of ${params.benchmarkId}` });
     }
     if (file.withheld) {
       return response(403).json({ message: `${file.path} is not published`, reason: file.withheld });
     }
+    const published = await taskFileOf(params.benchmarkId, params.taskId, file);
     await delay(60);
-    return response(200).json(taskFileOf(file));
+    return response(200).json(published);
   }),
 
   http.get('/benchmarks/{benchmarkId}/tasks/{taskId}/runs', async ({ params, request, response }) => {
@@ -110,24 +112,26 @@ export const publicHandlers = [
     const locale = localeOf(request);
     const combinations = publishedTaskRuns(params.benchmarkId, taskRunsOf(params.benchmarkId, task.id, locale));
     await delay(80);
-    return response(200).json({ task: { id: task.id, title: task.title, passRate: passRateOf(combinations) }, runsPerTask: RUNS_PER_TASK, combinations }, writtenIn(locale));
+    return response(200).json({
+      task: { id: task.id, title: task.title, passRate: passRateOf(combinations) }, runsPerTask: benchmarkOf(params.benchmarkId).record.runsPerTask, combinations,
+    }, writtenIn(locale));
   }),
 
   http.get('/runs/{runId}', async ({ params, request, response }) => {
     const locale = localeOf(request);
-    const detail = runDetailOf(params.runId, locale);
+    const detail = await runDetailOf(params.runId, locale);
     await delay(100);
     return detail ? response(200).json(detail, writtenIn(locale)) : response(404).json({ message: `no run ${params.runId}` });
   }),
 
   http.get('/runs/{runId}/trajectory', async ({ params, response }) => {
-    const trajectory = trajectoryOf(params.runId);
+    const trajectory = await trajectoryOf(params.runId);
     await delay(140);
     return trajectory ? response(200).json(trajectory) : response(404).json({ message: `no run ${params.runId}` });
   }),
 
   http.get('/runs/{runId}/trajectory/steps', async ({ params, query, response }) => {
-    const trajectory = trajectoryOf(params.runId);
+    const trajectory = await trajectoryOf(params.runId);
     if (!trajectory) {
       return response(404).json({ message: `no run ${params.runId}` });
     }

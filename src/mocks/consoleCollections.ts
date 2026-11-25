@@ -1,9 +1,9 @@
 import type { CollectionModelResult, CollectionSummary, Locale, MatrixRow, ModelRef, TaskOrder } from '../api/types';
-import { hasBenchmark } from './benchmarks';
+import { benchmarkOf, hasBenchmark } from './benchmarks';
 import { modelResultsOver } from './consoleModels';
 import { runFactsByTask, sortedTasks, tagCountsOf, taskResultCountsOf } from './consoleTasks';
+import type { TaskRecord } from './records';
 import { resultCountsOf } from './results';
-import { tasksOf, type TaskRecord } from './tasks';
 
 /*
  * Collections: the tasks of a benchmark that carry one tag, compared across models. Nothing about a collection is
@@ -14,11 +14,11 @@ import { tasksOf, type TaskRecord } from './tasks';
 export const DEFAULT_MATRIX_PAGE_SIZE = 20;
 
 export function hasCollection(benchmarkId: string, tag: string): boolean {
-  return hasBenchmark(benchmarkId) && tasksOf(benchmarkId).some(task => task.tags.includes(tag));
+  return hasBenchmark(benchmarkId) && benchmarkOf(benchmarkId).tasks.some(task => task.tags.includes(tag));
 }
 
 export function collectionTasksOf(benchmarkId: string, tag: string): TaskRecord[] {
-  return tasksOf(benchmarkId).filter(task => task.tags.includes(tag));
+  return benchmarkOf(benchmarkId).tasks.filter(task => task.tags.includes(tag));
 }
 
 /** The runs of every model on a collection's tasks. */
@@ -56,7 +56,7 @@ export function matrixOf(benchmarkId: string, tag: string, order: TaskOrder, loc
       return {
         task: { id: task.id, title: task.title },
         cells: models.map(model => {
-          const runs = counted.filter(fact => fact.key.modelId === model.id);
+          const runs = counted.filter(fact => fact.modelId === model.id);
           return { passed: runs.filter(fact => fact.outcome === 'passed').length, counted: runs.length };
         }),
       };

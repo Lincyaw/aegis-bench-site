@@ -2,10 +2,12 @@ import { serve } from '@hono/node-server';
 import { swaggerUI } from '@hono/swagger-ui';
 import { Hono } from 'hono';
 import { getResponse } from 'msw';
+import { readFile } from 'node:fs/promises';
 import openapi from '../src/api/openapi.json';
 import { API_ROOT } from '../src/api/server';
 import { contractHandler } from '../src/mocks/contract';
 import { handlers } from '../src/mocks/handlers';
+import { DATA_DIRECTORY, openRecords } from '../src/mocks/records';
 
 /*
  * The mock server outside the browser: the same handlers behind the same contract, reachable with curl or from the
@@ -16,6 +18,9 @@ export const MOCK_HOST = '127.0.0.1';
 export const MOCK_PORT = 4010;
 export const OPENAPI_PATH = '/openapi.json';
 export const DOCS_PATH = '/docs';
+
+// The site's public directory holds the data directory the build publishes.
+await openRecords(path => readFile(new URL(`../public/${DATA_DIRECTORY}/${path}`, import.meta.url), 'utf8'));
 
 const mockServer = [contractHandler(handlers)];
 const app = new Hono();

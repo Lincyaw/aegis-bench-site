@@ -1,10 +1,12 @@
 import type { Locale, ModelProfile } from '../api/types';
-import { BENCHMARKS, benchmarkRef } from './benchmarks';
-import { MODELS, PUBLISHED_ON, modelRef, stageRef } from './catalog';
+import { benchmarkRef } from './benchmarks';
+import { modelRef, stageRef } from './catalog';
 import { publishedEntriesOf } from './published';
+import { openedIndexes } from './records';
+import { rankingOf } from './results';
 
 export function hasModel(modelId: string): boolean {
-  return MODELS.some(model => model.id === modelId);
+  return openedIndexes().catalog.models.some(model => model.id === modelId);
 }
 
 export function modelSummary(vendor: string, benchmarkCount: number, locale: Locale): string {
@@ -13,10 +15,16 @@ export function modelSummary(vendor: string, benchmarkCount: number, locale: Loc
     : `${vendor} 发布的通用模型，已在 ${benchmarkCount} 个评测基准上完成评测。各评测基准分别排名，不计算综合分。`;
 }
 
-/** A model's best combination and rank on every benchmark it entered, and its score under each harness. */
+/** A model's best combination and rank on every benchmark it entered, its score under each harness, and when its results were last published. */
 export function modelProfile(modelId: string, locale: Locale): ModelProfile {
   const model = modelRef(modelId, locale);
-  const entered = BENCHMARKS.filter(record => publishedEntriesOf(record.id, locale).some(entry => entry.model.id === modelId));
+  const records = openedIndexes().benchmarks.map(benchmark => benchmark.record);
+  const lastEvaluatedOn = records.filter(record => rankingOf(record.id).some(ranked => ranked.modelId === modelId))
+    .map(record => record.updatedOn).toSorted().at(-1);
+  if (!lastEvaluatedOn) {
+    throw new Error(`model ${modelId} ran on no benchmark`);
+  }
+  const entered = records.filter(record => publishedEntriesOf(record.id, locale).some(entry => entry.model.id === modelId));
   const standings = entered.map(record => {
     const board = publishedEntriesOf(record.id, locale);
     const best = board.find(entry => entry.model.id === modelId);
@@ -35,6 +43,6 @@ export function modelProfile(modelId: string, locale: Locale): ModelProfile {
   const harnessIds = new Set(harnessComparison.flatMap(comparison => comparison.scores.map(score => score.harness.id)));
   return {
     model, summary: modelSummary(model.vendor, entered.length, locale),
-    lastEvaluatedOn: PUBLISHED_ON, harnessCount: harnessIds.size, standings, harnessComparison,
+    lastEvaluatedOn, harnessCount: harnessIds.size, standings, harnessComparison,
   };
 }

@@ -1,20 +1,20 @@
 import { delay } from 'msw';
-import { BENCHMARKS, hasBenchmark } from './benchmarks';
+import { benchmarkOf, hasBenchmark } from './benchmarks';
 import { DEFAULT_MATRIX_PAGE_SIZE, collectionModelsOf, collectionsOf, hasCollection, matrixOf } from './consoleCollections';
 import { DEFAULT_MODEL_TASK_PAGE_SIZE, harnessIdsOf, modelDetailOf, modelResultsOver, modelTasksOf, ranOn } from './consoleModels';
-import { DEFAULT_EVENT_PAGE_SIZE, DEFAULT_RUN_PAGE_SIZE, consoleRunOf, filteredRunsOf, runEventsOf } from './consoleRuns';
+import { DEFAULT_EVENT_PAGE_SIZE, DEFAULT_RUN_PAGE_SIZE, consoleRunOf, filteredRunsOf, runEventsOf, runRowOf } from './consoleRuns';
 import {
   DEFAULT_CONSOLE_TASK_PAGE_SIZE, checkResultsOf, consoleEntriesOf, consoleTaskOf, filteredTasksOf, namedTaskOf, referenceFilesOf, revisionsOf,
   tagCountsOf, taskEntrantRunsOf, taskGradingOf, taskRowOf,
 } from './consoleTasks';
-import { DEFAULT_HUNT_TRIAL_PAGE_SIZE, HUNTS, filteredTrialsOf, huntById, huntOf, huntTrialOf, runHuntFindingsOf } from './hunts';
+import { DEFAULT_HUNT_TRIAL_PAGE_SIZE, filteredTrialsOf, huntById, huntOf, huntTrialOf, runHuntFindingsOf } from './hunts';
 import { http, localeOf, pageOf, writtenIn } from './protocol';
+import { openedIndexes } from './records';
 import { contentProblemOf, createDraft, discardDraft, draftOf, makeCurrent, releaseById, releaseDetailOf, releaseSummaryOf, releasesOf, restoreRelease, updateDraft } from './releases';
 import { mayEdit, refusalFor } from './members';
 import { releaseOverview } from './workspace';
 import { consoleBenchmarkOf, overviewOf } from './results';
-import { runFactsOf, runRowOf } from './runIndex';
-import { DEFAULT_ENTRY_PAGE_SIZE, taskFileOf, taskFilesOf } from './taskFiles';
+import { DEFAULT_ENTRY_PAGE_SIZE, taskFileOf } from './taskFiles';
 import { DEFAULT_TRAJECTORY_PAGE_SIZE, trajectoryOf } from './trajectories';
 import { SIGN_IN_REQUIRED, sessionUserOf } from './session';
 
@@ -25,7 +25,7 @@ export const consoleHandlers = [
       return response(401).json(SIGN_IN_REQUIRED);
     }
     const locale = localeOf(request);
-    return response(200).json(BENCHMARKS.map(record => consoleBenchmarkOf(record.id, locale)), writtenIn(locale));
+    return response(200).json(openedIndexes().catalog.benchmarks.map(benchmarkId => consoleBenchmarkOf(benchmarkId, locale)), writtenIn(locale));
   }),
 
   http.get('/console/benchmarks/{benchmarkId}/overview', async ({ cookies, params, request, response }) => {
@@ -67,20 +67,20 @@ export const consoleHandlers = [
     return response(200).json(consoleTaskOf(params.benchmarkId, task, locale), writtenIn(locale));
   }),
 
-  http.get('/console/benchmarks/{benchmarkId}/tasks/{taskId}/grading', ({ cookies, params, response }) => {
+  http.get('/console/benchmarks/{benchmarkId}/tasks/{taskId}/grading', async ({ cookies, params, response }) => {
     if (!sessionUserOf(cookies)) {
       return response(401).json(SIGN_IN_REQUIRED);
     }
     const task = namedTaskOf(params.benchmarkId, params.taskId);
-    return task ? response(200).json(taskGradingOf(params.benchmarkId, task)) : response(404).json({ message: `no task ${params.taskId} in ${params.benchmarkId}` });
+    return task ? response(200).json(await taskGradingOf(params.benchmarkId, task)) : response(404).json({ message: `no task ${params.taskId} in ${params.benchmarkId}` });
   }),
 
-  http.get('/console/benchmarks/{benchmarkId}/tasks/{taskId}/reference', ({ cookies, params, response }) => {
+  http.get('/console/benchmarks/{benchmarkId}/tasks/{taskId}/reference', async ({ cookies, params, response }) => {
     if (!sessionUserOf(cookies)) {
       return response(401).json(SIGN_IN_REQUIRED);
     }
     const task = namedTaskOf(params.benchmarkId, params.taskId);
-    return task ? response(200).json(referenceFilesOf(params.benchmarkId, task.id)) : response(404).json({ message: `no task ${params.taskId} in ${params.benchmarkId}` });
+    return task ? response(200).json(await referenceFilesOf(params.benchmarkId, task)) : response(404).json({ message: `no task ${params.taskId} in ${params.benchmarkId}` });
   }),
 
   http.get('/console/benchmarks/{benchmarkId}/tasks/{taskId}/results', async ({ cookies, params, request, response }) => {
@@ -93,7 +93,7 @@ export const consoleHandlers = [
     }
     const locale = localeOf(request);
     await delay(80);
-    return response(200).json(taskEntrantRunsOf(params.benchmarkId, task.id, locale), writtenIn(locale));
+    return response(200).json(taskEntrantRunsOf(params.benchmarkId, task, locale), writtenIn(locale));
   }),
 
   http.get('/console/benchmarks/{benchmarkId}/tasks/{taskId}/check-results', async ({ cookies, params, request, response }) => {
@@ -106,7 +106,7 @@ export const consoleHandlers = [
     }
     const locale = localeOf(request);
     await delay(80);
-    return response(200).json(checkResultsOf(params.benchmarkId, task.id, locale), writtenIn(locale));
+    return response(200).json(checkResultsOf(params.benchmarkId, task, locale), writtenIn(locale));
   }),
 
   http.get('/console/benchmarks/{benchmarkId}/tasks/{taskId}/revisions', ({ cookies, params, response }) => {
@@ -122,7 +122,8 @@ export const consoleHandlers = [
       return response(401).json(SIGN_IN_REQUIRED);
     }
     const directory = query.get('dir') ?? '';
-    const entries = namedTaskOf(params.benchmarkId, params.taskId) && consoleEntriesOf(params.benchmarkId, params.taskId, directory);
+    const task = namedTaskOf(params.benchmarkId, params.taskId);
+    const entries = task && consoleEntriesOf(task, directory);
     if (!entries) {
       return response(404).json({ message: `no directory "${directory}" in ${params.taskId} of ${params.benchmarkId}` });
     }
@@ -139,7 +140,7 @@ export const consoleHandlers = [
     }
     const locale = localeOf(request);
     await delay(80);
-    return response(200).json(modelResultsOver(params.benchmarkId, runFactsOf(params.benchmarkId), locale), writtenIn(locale));
+    return response(200).json(modelResultsOver(params.benchmarkId, benchmarkOf(params.benchmarkId).runs, locale), writtenIn(locale));
   }),
 
   http.get('/console/benchmarks/{benchmarkId}/models/{modelId}', async ({ cookies, params, request, response }) => {
@@ -213,29 +214,29 @@ export const consoleHandlers = [
       return response(404).json({ message: `no benchmark ${params.benchmarkId}` });
     }
     await delay(100);
-    return response(200).json(HUNTS.map(hunt => huntOf(params.benchmarkId, hunt)).sort((a, b) => b.recordedAt.localeCompare(a.recordedAt)));
+    return response(200).json(benchmarkOf(params.benchmarkId).hunts.map(hunt => huntOf(params.benchmarkId, hunt)).sort((a, b) => b.recordedAt.localeCompare(a.recordedAt)));
   }),
 
   http.get('/console/benchmarks/{benchmarkId}/hunts/{huntId}/trials', async ({ cookies, params, query, request, response }) => {
     if (!sessionUserOf(cookies)) {
       return response(401).json(SIGN_IN_REQUIRED);
     }
-    const hunt = huntById(params.huntId);
+    const hunt = hasBenchmark(params.benchmarkId) ? huntById(params.benchmarkId, params.huntId) : undefined;
     const facet = query.get('facet') ?? '';
-    if (!hasBenchmark(params.benchmarkId) || !hunt || (facet && !hunt.facets.some(candidate => candidate.id === facet))) {
+    if (!hunt || (facet && !hunt.facets.some(candidate => candidate.id === facet))) {
       return response(404).json({ message: `no hunt ${params.huntId}${facet ? ` with facet ${facet}` : ''} on ${params.benchmarkId}` });
     }
     const locale = localeOf(request);
-    const page = pageOf(filteredTrialsOf(params.benchmarkId, hunt, facet, query.get('verdict') ?? undefined), query, DEFAULT_HUNT_TRIAL_PAGE_SIZE);
+    const page = pageOf(filteredTrialsOf(hunt, facet, query.get('verdict') ?? undefined), query, DEFAULT_HUNT_TRIAL_PAGE_SIZE);
     await delay(100);
-    return response(200).json({ ...page, items: page.items.map(trial => huntTrialOf(trial, locale)) }, writtenIn(locale));
+    return response(200).json({ ...page, items: page.items.map(trial => huntTrialOf(params.benchmarkId, trial, locale)) }, writtenIn(locale));
   }),
 
   http.get('/console/runs/{runId}/hunts', async ({ cookies, params, response }) => {
     if (!sessionUserOf(cookies)) {
       return response(401).json(SIGN_IN_REQUIRED);
     }
-    const findings = runHuntFindingsOf(params.runId);
+    const findings = await runHuntFindingsOf(params.runId);
     await delay(80);
     return findings ? response(200).json(findings) : response(404).json({ message: `no run ${params.runId}` });
   }),
@@ -379,7 +380,7 @@ export const consoleHandlers = [
     const filter = { q: (query.get('q') ?? '').trim(), combination: query.get('combination') ?? '', outcome: query.get('outcome') ?? undefined, review: query.get('review') ?? undefined };
     const page = pageOf(filteredRunsOf(params.benchmarkId, filter), query, DEFAULT_RUN_PAGE_SIZE);
     await delay(100);
-    return response(200).json({ ...page, items: page.items.map(fact => runRowOf(fact, locale)) }, writtenIn(locale));
+    return response(200).json({ ...page, items: page.items.map(fact => runRowOf(params.benchmarkId, fact, locale)) }, writtenIn(locale));
   }),
 
   http.get('/console/runs/{runId}', async ({ cookies, params, request, response }) => {
@@ -387,7 +388,7 @@ export const consoleHandlers = [
       return response(401).json(SIGN_IN_REQUIRED);
     }
     const locale = localeOf(request);
-    const run = consoleRunOf(params.runId, locale);
+    const run = await consoleRunOf(params.runId, locale);
     await delay(100);
     return run ? response(200).json(run, writtenIn(locale)) : response(404).json({ message: `no run ${params.runId}` });
   }),
@@ -396,7 +397,7 @@ export const consoleHandlers = [
     if (!sessionUserOf(cookies)) {
       return response(401).json(SIGN_IN_REQUIRED);
     }
-    const trajectory = trajectoryOf(params.runId);
+    const trajectory = await trajectoryOf(params.runId);
     if (!trajectory) {
       return response(404).json({ message: `no run ${params.runId}` });
     }
@@ -409,7 +410,7 @@ export const consoleHandlers = [
     if (!sessionUserOf(cookies)) {
       return response(401).json(SIGN_IN_REQUIRED);
     }
-    const trajectory = trajectoryOf(params.runId);
+    const trajectory = await trajectoryOf(params.runId);
     if (!trajectory) {
       return response(404).json({ message: `no run ${params.runId}` });
     }
@@ -425,11 +426,12 @@ export const consoleHandlers = [
       return response(401).json(SIGN_IN_REQUIRED);
     }
     const path = query.get('path');
-    const file = namedTaskOf(params.benchmarkId, params.taskId) && taskFilesOf(params.benchmarkId, params.taskId)?.find(candidate => candidate.path === path);
+    const file = namedTaskOf(params.benchmarkId, params.taskId)?.files.find(candidate => candidate.path === path);
     if (!file) {
       return response(404).json({ message: `no file "${path}" in ${params.taskId} of ${params.benchmarkId}` });
     }
+    const whole = await taskFileOf(params.benchmarkId, params.taskId, file);
     await delay(60);
-    return response(200).json(taskFileOf(file));
+    return response(200).json(whole);
   }),
 ];

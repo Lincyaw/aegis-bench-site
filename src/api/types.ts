@@ -22,6 +22,7 @@ export type BenchmarkDetail = Schemas['BenchmarkDetail'];
 export type RecentRun = Schemas['RecentRun'];
 export type TimelineMark = Schemas['TimelineMark'];
 export type TimelineStep = Schemas['TimelineStep'];
+export type TaskRef = Schemas['TaskRef'];
 export type TaskSummary = Schemas['TaskSummary'];
 export type TaskPage = Schemas['TaskPage'];
 export type TaskEntry = Schemas['TaskEntry'];

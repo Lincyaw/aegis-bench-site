@@ -1,10 +1,9 @@
 import type { ChangelogEntry, Locale, ReleaseOverview, RevisionChange, Workbench } from '../api/types';
-import { BENCHMARKS, benchmarkRef } from './benchmarks';
+import { benchmarkOf, benchmarkRef } from './benchmarks';
 import { revisionsOf } from './consoleTasks';
+import { openedIndexes } from './records';
 import { consoleBenchmarkOf, resultCountsOf } from './results';
 import { currentReleaseOf, draftOf, releaseSummaryOf, releasesOf } from './releases';
-import { runFactsOf } from './runIndex';
-import { tasksOf } from './tasks';
 
 /* The console's workspace: every benchmark at a glance, every release, and every task's versions. */
 
@@ -15,15 +14,15 @@ export const RECENT_RELEASE_COUNT = 6;
 export const DEFAULT_CHANGELOG_PAGE_SIZE = 25;
 
 export function recentReleases() {
-  return BENCHMARKS.flatMap(benchmark => releasesOf(benchmark.id)).filter(release => release.status !== 'draft')
+  return openedIndexes().catalog.benchmarks.flatMap(benchmarkId => releasesOf(benchmarkId)).filter(release => release.status !== 'draft')
     .toSorted((a, b) => b.updatedAt.localeCompare(a.updatedAt)).slice(0, RECENT_RELEASE_COUNT).map(releaseSummaryOf);
 }
 
 export function releaseOverview(): ReleaseOverview {
   return {
-    benchmarks: BENCHMARKS.map(benchmark => {
-      const draft = draftOf(benchmark.id);
-      return { benchmark: benchmarkRef(benchmark.id), current: releaseSummaryOf(currentReleaseOf(benchmark.id)), ...(draft && { draft: releaseSummaryOf(draft) }) };
+    benchmarks: openedIndexes().catalog.benchmarks.map(benchmarkId => {
+      const draft = draftOf(benchmarkId);
+      return { benchmark: benchmarkRef(benchmarkId), current: releaseSummaryOf(currentReleaseOf(benchmarkId)), ...(draft && { draft: releaseSummaryOf(draft) }) };
     }),
     recent: recentReleases(),
   };
@@ -31,12 +30,12 @@ export function releaseOverview(): ReleaseOverview {
 
 export function workbenchOf(locale: Locale): Workbench {
   return {
-    benchmarks: BENCHMARKS.map(benchmark => {
-      const totals = resultCountsOf(runFactsOf(benchmark.id));
-      const draft = draftOf(benchmark.id);
+    benchmarks: openedIndexes().catalog.benchmarks.map(benchmarkId => {
+      const totals = resultCountsOf(benchmarkOf(benchmarkId).runs);
+      const draft = draftOf(benchmarkId);
       return {
-        benchmark: consoleBenchmarkOf(benchmark.id, locale), unreviewedFailures: totals.unreviewed, executionFailures: totals.executionFailed,
-        current: releaseSummaryOf(currentReleaseOf(benchmark.id)), ...(draft && { draft: releaseSummaryOf(draft) }),
+        benchmark: consoleBenchmarkOf(benchmarkId, locale), unreviewedFailures: totals.unreviewed, executionFailures: totals.executionFailed,
+        current: releaseSummaryOf(currentReleaseOf(benchmarkId)), ...(draft && { draft: releaseSummaryOf(draft) }),
       };
     }),
     recentReleases: recentReleases(),
@@ -46,7 +45,7 @@ export function workbenchOf(locale: Locale): Workbench {
 /** Every version of every task of the benchmarks asked for, newest first. */
 export function changelogOf(benchmarkIds: string[], change: RevisionChange | undefined): ChangelogEntry[] {
   return benchmarkIds
-    .flatMap(benchmarkId => tasksOf(benchmarkId).flatMap(task => revisionsOf(benchmarkId, task).map(revision => ({
+    .flatMap(benchmarkId => benchmarkOf(benchmarkId).tasks.flatMap(task => revisionsOf(benchmarkId, task).map(revision => ({
       benchmark: benchmarkRef(benchmarkId), task: { id: task.id, title: task.title }, revision,
     }))))
     .filter(entry => !change || entry.revision.change === change)
