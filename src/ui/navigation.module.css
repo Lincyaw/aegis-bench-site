@@ -1,4 +1,5 @@
 .crumbs { display: flex; flex-wrap: wrap; color: var(--text-muted); }
+.pager { display: flex; justify-content: center; align-items: center; gap: var(--space-4); }
 .crumbs a:hover { color: var(--text-main); }
 .slash { margin: 0 var(--space-2); color: var(--text-faint); }
 

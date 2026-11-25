@@ -31,6 +31,9 @@
 .icon { width: var(--control-icon); height: var(--control-icon); padding: 0; }
 .icon svg { transition: transform var(--duration-slow) var(--ease-out); }
 .icon:hover svg { transform: rotate(180deg); }
+/* An arrow keeps its direction and nudges the way it points. */
+.icon:hover svg[data-direction="left"] { transform: translateX(calc(-1 * var(--space-px))); }
+.icon:hover svg[data-direction="right"] { transform: translateX(var(--space-px)); }
 .icon:disabled { color: var(--text-faint); background: none; cursor: default; }
 .icon:disabled svg { transform: none; }
 

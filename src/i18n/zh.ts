@@ -32,6 +32,8 @@ export const zh = {
     loading: '正在加载…',
     copyBibtex: '复制 BibTeX',
     copied: '已复制',
+    previousPage: '上一页',
+    nextPage: '下一页',
   },
   landing: {
     updated: '最近更新：{{date, datetime}} · 第 3 版',
@@ -237,8 +239,6 @@ export const zh = {
     },
     previousStep: '上一步',
     nextStep: '下一步',
-    previousPage: '上一页',
-    nextPage: '下一页',
     stepRange: '第 {{from}}–{{to}} 步，共 {{total}} 步',
     stepCount_one: '共 {{count}} 步',
     stepCount_other: '共 {{count}} 步',

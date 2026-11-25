@@ -96,6 +96,11 @@ export function SearchField({ label, value, onChange, className }: { label: stri
   );
 }
 
+/** An arrow for stepping back or forth; in an icon button it nudges its way on hover instead of turning. */
+export function ArrowIcon({ direction }: { direction: 'left' | 'right' }) {
+  return <svg viewBox="0 0 12 12" width="12" height="12" data-direction={direction} aria-hidden="true"><path d={direction === 'left' ? 'M7.5 3 4.5 6l3 3' : 'M4.5 3l3 3-3 3'} fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>;
+}
+
 export function ChevronIcon() {
   return <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M3 4.5 6 7.5 9 4.5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>;
 }

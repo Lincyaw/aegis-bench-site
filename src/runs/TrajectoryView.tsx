@@ -2,7 +2,8 @@ import { clsx } from 'clsx';
 import { useDeferredValue, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useTrajectoryPage, type TimelineLegend, type TimelineStep, type TrajectoryStep } from '../api/client';
-import { IconButton } from '../ui/controls';
+import { ArrowIcon, IconButton } from '../ui/controls';
+import { Pager } from '../ui/navigation';
 import { TRAJECTORY_PAGE_SIZE, isKnownTool, trajectoryPageStartOf } from './presentation';
 import { RunScrubber, TimelineLegendRow } from './RunTimeline';
 import { submissionOf, targetOf, textOf } from './trajectory';
@@ -74,19 +75,15 @@ export function TrajectoryView({ runId, timeline, legend, evidence, selected, on
         })}
       </ol>
       {page.total > TRAJECTORY_PAGE_SIZE && (
-        <div className={styles.pager}>
-          <IconButton label={t('runs.previousPage')} disabled={pageStart === 0} onClick={() => turnTo(pageStart - TRAJECTORY_PAGE_SIZE)}><ArrowIcon direction="left" /></IconButton>
-          <span className="t-micro c-muted">{t('runs.stepRange', { from: firstShown, to: lastShown, total: page.total })}</span>
-          <IconButton label={t('runs.nextPage')} disabled={pageStart + TRAJECTORY_PAGE_SIZE >= page.total} onClick={() => turnTo(pageStart + TRAJECTORY_PAGE_SIZE)}><ArrowIcon direction="right" /></IconButton>
-        </div>
+        <Pager
+          label={t('runs.stepRange', { from: firstShown, to: lastShown, total: page.total })}
+          atStart={pageStart === 0} atEnd={pageStart + TRAJECTORY_PAGE_SIZE >= page.total}
+          onPrevious={() => turnTo(pageStart - TRAJECTORY_PAGE_SIZE)} onNext={() => turnTo(pageStart + TRAJECTORY_PAGE_SIZE)}
+        />
       )}
       <p className="t-micro c-faint">{t('runs.trajectoryNote', { version: page.schema_version, agent: `${page.agent.name} ${page.agent.version}`, model: page.agent.model_name, count: page.final_metrics?.total_steps, cost: page.final_metrics?.total_cost_usd?.toFixed(2) })}</p>
     </div>
   );
-}
-
-export function ArrowIcon({ direction }: { direction: 'left' | 'right' }) {
-  return <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d={direction === 'left' ? 'M7.5 3 4.5 6l3 3' : 'M4.5 3l3 3-3 3'} fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>;
 }
 
 /** A step's row: its number, what kind of step it is, its target and its sentence. */

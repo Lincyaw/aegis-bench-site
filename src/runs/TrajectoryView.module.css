@@ -2,7 +2,6 @@
 .controls { display: flex; align-items: center; gap: var(--space-3); }
 .controls > :nth-child(3) { flex: 1; overflow-x: auto; scrollbar-width: none; }
 .controls > :last-child { flex: none; }
-.pager { display: flex; justify-content: center; align-items: center; gap: var(--space-4); }
 
 /* A step's detail lines up under its message, past the head's padding, the number column and the gap. */
 .steps { --step-number: var(--space-8); --step-indent: calc(var(--space-3) * 2 + var(--step-number)); display: grid; border-top: var(--rule-hairline); }

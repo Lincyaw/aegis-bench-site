@@ -2,6 +2,7 @@ import { clsx } from 'clsx';
 import { useLayoutEffect, useRef, type HTMLAttributes, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LocaleLink } from '../i18n/LocaleRouting';
+import { ArrowIcon, IconButton } from './controls';
 import styles from './navigation.module.css';
 
 export interface Crumb {
@@ -54,6 +55,18 @@ export function TabRow({ current, className, children, ...attributes }: { curren
     <div ref={row} className={clsx(styles.tabs, className)} {...attributes}>
       {children}
       <span ref={bar} className={styles.indicator} aria-hidden="true" />
+    </div>
+  );
+}
+
+/** Turns a list a page back or forth, saying which items are in view; an end it has reached cannot be passed. */
+export function Pager({ label, atStart, atEnd, onPrevious, onNext, className }: { label: string; atStart: boolean; atEnd: boolean; onPrevious: () => void; onNext: () => void; className?: string }) {
+  const { t } = useTranslation();
+  return (
+    <div className={clsx(styles.pager, className)}>
+      <IconButton label={t('ui.previousPage')} disabled={atStart} onClick={onPrevious}><ArrowIcon direction="left" /></IconButton>
+      <span className="t-micro c-muted">{label}</span>
+      <IconButton label={t('ui.nextPage')} disabled={atEnd} onClick={onNext}><ArrowIcon direction="right" /></IconButton>
     </div>
   );
 }

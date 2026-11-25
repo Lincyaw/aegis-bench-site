@@ -32,6 +32,8 @@ export const en: Messages = {
     loading: 'Loading…',
     copyBibtex: 'Copy BibTeX',
     copied: 'Copied',
+    previousPage: 'Previous page',
+    nextPage: 'Next page',
   },
   landing: {
     updated: 'Updated {{date, datetime}} · Edition 3',
@@ -237,8 +239,6 @@ export const en: Messages = {
     },
     previousStep: 'Previous step',
     nextStep: 'Next step',
-    previousPage: 'Previous page',
-    nextPage: 'Next page',
     stepRange: 'Steps {{from}}–{{to}} of {{total}}',
     stepCount_one: '{{count}} step',
     stepCount_other: '{{count}} steps',
