@@ -23,9 +23,9 @@ export function harnessIdsOf(benchmarkId: string, modelId: string): string[] {
   return benchmarkById(benchmarkId).ranking.filter(([rankedModel]) => rankedModel === modelId).map(([, harnessId]) => harnessId);
 }
 
-/** Every model that ran on a benchmark, best pass rate first. */
-export function modelResultsOf(benchmarkId: string, locale: Locale): ConsoleModelResult[] {
-  const byModel = Map.groupBy(runFactsOf(benchmarkId), fact => fact.key.modelId);
+/** Every model among a benchmark's runs, over the harnesses it ran in, best pass rate first. */
+export function modelResultsOver(benchmarkId: string, facts: readonly RunFact[], locale: Locale): ConsoleModelResult[] {
+  const byModel = Map.groupBy(facts, fact => fact.key.modelId);
   return [...byModel].map(([modelId, facts]) => ({
     model: modelRef(modelId, locale), harnesses: harnessIdsOf(benchmarkId, modelId).map(harnessId => harnessRef(harnessId, locale)), result: resultCountsOf(facts),
   })).sort((a, b) => (b.result.passRate ?? -1) - (a.result.passRate ?? -1));

@@ -15,7 +15,7 @@ import { Loading } from '../ui/content';
 import { Button, IconButton, Select } from '../ui/controls';
 import controls from '../ui/controls.module.css';
 import { NavIconOf } from './ConsoleIcons';
-import { BENCHMARK_SECTIONS, benchmarkSectionOf, benchmarkSectionPath, signInPath } from './consoleMap';
+import { BENCHMARK_NAV, benchmarkSectionOf, benchmarkSectionPath, signInPath } from './consoleMap';
 import styles from './ConsoleLayout.module.css';
 
 /**
@@ -105,17 +105,22 @@ export function ConsoleSidebar({ benchmarkId, open, onNavigate }: { benchmarkId:
             value={benchmarkId}
             onChange={next => { navigate(benchmarkSectionPath(next, current)); onNavigate(); }}
           />
-          <ul className={styles.items}>
-            {BENCHMARK_SECTIONS.map(item => (
-              <li key={item.section}>
-                <LocaleLink className={styles.item} to={benchmarkSectionPath(benchmarkId, item.section)} aria-current={item.section === current ? 'page' : undefined} onClick={onNavigate}>
-                  <NavIconOf icon={item.icon} />
-                  <span className="t-label">{t(item.label)}</span>
-                  {item.count && benchmark && <span className="t-micro c-faint">{groupedNumber(locale, item.count(benchmark))}</span>}
-                </LocaleLink>
-              </li>
-            ))}
-          </ul>
+          {BENCHMARK_NAV.map(group => (
+            <div key={group.label ?? ''} className={styles.group}>
+              {group.label && <span className={clsx(styles.groupLabel, 't-micro c-faint')}>{t(group.label)}</span>}
+              <ul className={styles.items}>
+                {group.sections.map(item => (
+                  <li key={item.section}>
+                    <LocaleLink className={styles.item} to={benchmarkSectionPath(benchmarkId, item.section)} aria-current={item.section === current ? 'page' : undefined} onClick={onNavigate}>
+                      <NavIconOf icon={item.icon} />
+                      <span className="t-label">{t(item.label)}</span>
+                      {item.count && benchmark && <span className="t-micro c-faint">{groupedNumber(locale, item.count(benchmark))}</span>}
+                    </LocaleLink>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </>
       )}
     </nav>

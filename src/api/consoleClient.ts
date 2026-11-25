@@ -235,6 +235,32 @@ export function useModelTaskPage(benchmarkId: string, modelId: string, query: Mo
   }).data;
 }
 
+/** The collections are read from the tasks' tags, which are records, so they are the same in every language. */
+export function useCollections(benchmarkId: string) {
+  return useSuspenseQuery({
+    queryKey: [CONSOLE_QUERY, 'collections', benchmarkId],
+    queryFn: () => responseBody(api.GET('/console/benchmarks/{benchmarkId}/collections', { params: { path: { benchmarkId } } })),
+  }).data;
+}
+
+export function useCollectionModels(benchmarkId: string, tag: string) {
+  const locale = useLocale();
+  return useSuspenseQuery({
+    queryKey: [CONSOLE_QUERY, 'collectionModels', benchmarkId, tag, locale],
+    queryFn: () => responseBody(api.GET('/console/benchmarks/{benchmarkId}/collections/{tag}/models', { params: { path: { benchmarkId, tag }, header: languageHeader(locale) } })),
+  }).data;
+}
+
+export function useCollectionMatrix(benchmarkId: string, tag: string, order: TaskOrder, offset: number, pageSize: number) {
+  const locale = useLocale();
+  return useSuspenseQuery({
+    queryKey: [CONSOLE_QUERY, 'collectionMatrix', benchmarkId, tag, order, offset, pageSize, locale],
+    queryFn: () => responseBody(api.GET('/console/benchmarks/{benchmarkId}/collections/{tag}/matrix', {
+      params: { path: { benchmarkId, tag }, query: { order, offset, limit: pageSize }, header: languageHeader(locale) },
+    })),
+  }).data;
+}
+
 export function useBenchmarkOverview(benchmarkId: string) {
   const locale = useLocale();
   return useSuspenseQuery({

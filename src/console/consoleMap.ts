@@ -48,15 +48,23 @@ export function benchmarkSectionOf(path: string): string {
 /** A section of a benchmark in the sidebar; the label is a message key, and the count is the benchmark's figure the item shows. */
 export interface BenchmarkSection {
   section: string;
-  label: 'console.nav.overview' | 'console.nav.tasks' | 'console.nav.runs' | 'console.nav.models';
+  label: 'console.nav.overview' | 'console.nav.tasks' | 'console.nav.runs' | 'console.nav.models' | 'console.nav.collections';
   icon: NavIcon;
   count?: (benchmark: ConsoleBenchmark) => number;
 }
 
-/** A benchmark's sections in the sidebar, in order. */
-export const BENCHMARK_SECTIONS: BenchmarkSection[] = [
-  { section: '', label: 'console.nav.overview', icon: 'overview' },
-  { section: 'tasks', label: 'console.nav.tasks', icon: 'tasks', count: benchmark => benchmark.taskCount },
-  { section: 'runs', label: 'console.nav.runs', icon: 'runs', count: benchmark => benchmark.runCount },
-  { section: 'models', label: 'console.nav.models', icon: 'models', count: benchmark => new Set(benchmark.entrants.map(entrant => entrant.model.id)).size },
+/** A benchmark's sections in the sidebar: its records first, then what it shows the public, under a label. */
+export const BENCHMARK_NAV: { label?: 'console.nav.publication'; sections: BenchmarkSection[] }[] = [
+  {
+    sections: [
+      { section: '', label: 'console.nav.overview', icon: 'overview' },
+      { section: 'tasks', label: 'console.nav.tasks', icon: 'tasks', count: benchmark => benchmark.taskCount },
+      { section: 'runs', label: 'console.nav.runs', icon: 'runs', count: benchmark => benchmark.runCount },
+      { section: 'models', label: 'console.nav.models', icon: 'models', count: benchmark => new Set(benchmark.entrants.map(entrant => entrant.model.id)).size },
+    ],
+  },
+  {
+    label: 'console.nav.publication',
+    sections: [{ section: 'collections', label: 'console.nav.collections', icon: 'collections' }],
+  },
 ];

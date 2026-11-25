@@ -1,6 +1,7 @@
 import { delay } from 'msw';
 import { BENCHMARKS, hasBenchmark } from './benchmarks';
-import { DEFAULT_MODEL_TASK_PAGE_SIZE, harnessIdsOf, modelDetailOf, modelResultsOf, modelTasksOf, ranOn } from './consoleModels';
+import { DEFAULT_MATRIX_PAGE_SIZE, collectionModelsOf, collectionsOf, hasCollection, matrixOf } from './consoleCollections';
+import { DEFAULT_MODEL_TASK_PAGE_SIZE, harnessIdsOf, modelDetailOf, modelResultsOver, modelTasksOf, ranOn } from './consoleModels';
 import { DEFAULT_EVENT_PAGE_SIZE, DEFAULT_RUN_PAGE_SIZE, consoleRunOf, filteredRunsOf, runEventsOf } from './consoleRuns';
 import {
   DEFAULT_CONSOLE_TASK_PAGE_SIZE, checkResultsOf, consoleEntriesOf, consoleTaskOf, filteredTasksOf, namedTaskOf, referenceFilesOf, revisionsOf,
@@ -8,7 +9,7 @@ import {
 } from './consoleTasks';
 import { http, localeOf, pageOf, writtenIn } from './protocol';
 import { consoleBenchmarkOf, overviewOf } from './results';
-import { runRowOf } from './runIndex';
+import { runFactsOf, runRowOf } from './runIndex';
 import { DEFAULT_ENTRY_PAGE_SIZE, taskFileOf, taskFilesOf } from './taskFiles';
 import { DEFAULT_TRAJECTORY_PAGE_SIZE, trajectoryOf } from './trajectories';
 import { DEMO_PASSWORD, consoleUserOf, sessionUserOf, signedInCookie, signedOutCookie } from './session';
@@ -153,7 +154,7 @@ export const consoleHandlers = [
     }
     const locale = localeOf(request);
     await delay(80);
-    return response(200).json(modelResultsOf(params.benchmarkId, locale), writtenIn(locale));
+    return response(200).json(modelResultsOver(params.benchmarkId, runFactsOf(params.benchmarkId), locale), writtenIn(locale));
   }),
 
   http.get('/console/benchmarks/{benchmarkId}/models/{modelId}', async ({ cookies, params, request, response }) => {
@@ -181,6 +182,42 @@ export const consoleHandlers = [
     const { rows, totals } = modelTasksOf(params.benchmarkId, params.modelId, filter, locale);
     await delay(100);
     return response(200).json({ ...pageOf(rows, query, DEFAULT_MODEL_TASK_PAGE_SIZE), totals }, writtenIn(locale));
+  }),
+
+  http.get('/console/benchmarks/{benchmarkId}/collections', async ({ cookies, params, response }) => {
+    if (!sessionUserOf(cookies)) {
+      return response(401).json(SIGN_IN_REQUIRED);
+    }
+    if (!hasBenchmark(params.benchmarkId)) {
+      return response(404).json({ message: `no benchmark ${params.benchmarkId}` });
+    }
+    await delay(80);
+    return response(200).json(collectionsOf(params.benchmarkId));
+  }),
+
+  http.get('/console/benchmarks/{benchmarkId}/collections/{tag}/models', async ({ cookies, params, request, response }) => {
+    if (!sessionUserOf(cookies)) {
+      return response(401).json(SIGN_IN_REQUIRED);
+    }
+    if (!hasCollection(params.benchmarkId, params.tag)) {
+      return response(404).json({ message: `no collection ${params.tag} in ${params.benchmarkId}` });
+    }
+    const locale = localeOf(request);
+    await delay(80);
+    return response(200).json(collectionModelsOf(params.benchmarkId, params.tag, locale), writtenIn(locale));
+  }),
+
+  http.get('/console/benchmarks/{benchmarkId}/collections/{tag}/matrix', async ({ cookies, params, query, request, response }) => {
+    if (!sessionUserOf(cookies)) {
+      return response(401).json(SIGN_IN_REQUIRED);
+    }
+    if (!hasCollection(params.benchmarkId, params.tag)) {
+      return response(404).json({ message: `no collection ${params.tag} in ${params.benchmarkId}` });
+    }
+    const locale = localeOf(request);
+    const { models, rows } = matrixOf(params.benchmarkId, params.tag, query.get('order') ?? 'hardest', locale);
+    await delay(100);
+    return response(200).json({ ...pageOf(rows, query, DEFAULT_MATRIX_PAGE_SIZE), models }, writtenIn(locale));
   }),
 
   http.get('/console/benchmarks/{benchmarkId}/runs', async ({ cookies, params, query, request, response }) => {

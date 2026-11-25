@@ -4,6 +4,7 @@ import "./console/session.tsp";
 import "./console/results.tsp";
 import "./console/tasks.tsp";
 import "./console/models.tsp";
+import "./console/collections.tsp";
 
 using Http;
 

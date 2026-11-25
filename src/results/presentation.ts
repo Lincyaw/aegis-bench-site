@@ -13,6 +13,14 @@ export function failureCountOf(result: ResultCounts, kind: FailureKind): number 
   }
 }
 
+/** Steps of a chart's axis: round values from 0, about `count` of them, that cover the largest value. */
+export function axisSteps(largest: number, count: number): number[] {
+  const rough = largest / count;
+  const magnitude = 10 ** Math.floor(Math.log10(rough));
+  const step = [1, 2, 2.5, 5, 10].map(factor => factor * magnitude).find(candidate => candidate >= rough) ?? 10 * magnitude;
+  return Array.from({ length: Math.ceil(largest / step) + 1 }, (_, index) => index * step);
+}
+
 /** A share as a percentage with one decimal, such as 45.1%. */
 export function formatRate(rate: number): string {
   return `${(rate * 100).toFixed(1)}%`;

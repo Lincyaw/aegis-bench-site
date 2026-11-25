@@ -1,0 +1,30 @@
+/* Bars grow from the baseline in the half's colour, with a rounded end; the track behind them stays recessive. */
+.chart { display: grid; gap: var(--space-5); }
+.rows { display: grid; gap: var(--space-2); }
+.row { display: grid; grid-template-columns: minmax(8rem, 12rem) minmax(0, 1fr) 4.5rem; align-items: center; gap: var(--space-4); }
+.name { display: inline-flex; align-items: center; gap: var(--space-2); min-width: 0; }
+.track { display: flex; height: var(--space-3); }
+.bar { width: calc(var(--share, 0) * 100%); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; background: var(--half-color); }
+.row:hover .bar { filter: brightness(1.15); }
+
+/* Stacked segments keep a 2px gap of the surface between them. */
+.stack { display: flex; gap: var(--size-border-thick); width: calc(var(--share, 0) * 100%); }
+/* A segment's colour comes from the failure bar's kind class. */
+.segment { flex-basis: 0; }
+.segment:last-child { border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
+
+.plot { display: block; width: 100%; height: auto; max-width: 52rem; overflow: visible; }
+.grid { stroke: var(--border-hairline); stroke-width: 1; }
+.tick, .axis, .label { font: var(--type-micro); fill: var(--text-faint); }
+.axis { fill: var(--text-muted); }
+.label { fill: var(--text-muted); paint-order: stroke; stroke: var(--bg-page); stroke-width: 3; stroke-linejoin: round; }
+.frontier { fill: none; stroke: var(--half-color); stroke-width: 1.5; stroke-dasharray: 4 4; }
+.hit { fill: transparent; cursor: default; }
+.point { fill: var(--bg-page); stroke: var(--half-color); stroke-width: 2; }
+.onFrontier { fill: var(--half-color); }
+g:hover > .point { stroke-width: 3; }
+
+@media (max-width: 760px) {
+  .row { grid-template-columns: minmax(0, 1fr) 4rem; }
+  .row > .track { grid-column: 1 / -1; grid-row: 2; }
+}

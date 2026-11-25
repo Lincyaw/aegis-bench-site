@@ -1,0 +1,40 @@
+.page { display: grid; gap: var(--space-5); }
+.page > header { margin-bottom: 0; }
+.tabs { --tab-gap: var(--space-6); border-bottom: var(--rule-hairline); }
+.section { display: grid; gap: var(--space-4); }
+.switch, .order { justify-self: start; }
+.footer { display: flex; justify-content: space-between; align-items: center; gap: var(--space-4); flex-wrap: wrap; }
+
+.collections { --columns: minmax(8rem, 1fr) 5rem minmax(9rem, 1.2fr) 6rem minmax(8rem, 1fr); }
+.collections a:hover { text-decoration: underline; text-underline-offset: var(--space-1); }
+.models { --columns: minmax(14rem, 1.6fr) minmax(9rem, 1.1fr) 6rem 6rem 5.5rem 5rem minmax(8rem, 1fr); }
+.model { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); }
+
+/* The matrix scrolls sideways on its own when its models outgrow the page; its cells darken as more runs pass. */
+.matrixScroll { overflow-x: auto; }
+.matrix { min-width: 48rem; }
+.matrix [role="row"] { gap: var(--space-1); }
+.matrixHead { display: grid; justify-items: center; gap: var(--space-1); text-align: center; --badge-size: var(--space-4); }
+.task { display: grid; gap: var(--space-px); min-width: 0; }
+.task a { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.task a:hover { text-decoration: underline; text-underline-offset: var(--space-1); }
+.cell {
+  display: grid;
+  place-items: center;
+  height: var(--control-small);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--half-color) calc(var(--share, 0) * 60%), var(--bg-muted));
+  font-variant-numeric: tabular-nums;
+  transition: box-shadow var(--duration-base);
+}
+.cell:hover { box-shadow: inset 0 0 0 var(--size-border-thick) var(--text-faint); }
+
+.figure { margin: 0; padding: var(--space-5); border: var(--rule-hairline); border-radius: var(--radius-lg); background: var(--bg-panel); }
+
+@media (max-width: 760px) {
+  .collections { --columns: minmax(0, 1fr) auto; }
+  .collections [role="row"] > :is(:nth-child(2), :nth-child(4), :nth-child(5)) { display: none; }
+  .models { --columns: minmax(0, 1fr) auto; }
+  .models [role="row"] > :is(:nth-child(3), :nth-child(4), :nth-child(5), :nth-child(6), :nth-child(7)) { display: none; }
+  .figure { padding: var(--space-3); }
+}

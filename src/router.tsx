@@ -5,6 +5,8 @@ import { ConsoleLayout } from './console/ConsoleLayout';
 import { ConsoleError, ConsoleHome, ConsoleNotFound } from './console/ConsolePages';
 import { SignInPage } from './console/SignInPage';
 import { BenchmarksPage } from './benchmarks/BenchmarksPage';
+import { CollectionListPage } from './collections/CollectionListPage';
+import { CollectionPage } from './collections/CollectionPage';
 import { LocaleRoot } from './i18n/LocaleRouting';
 import { LOCALES, LOCALE_PREFIX } from './i18n/locales';
 import { LeaderboardPage } from './leaderboard/LeaderboardPage';
@@ -62,6 +64,8 @@ export function sitePages(): RouteObject[] {
           { path: 'benchmarks/:benchmarkId/runs/:runId', element: <RunDetailPage /> },
           { path: 'benchmarks/:benchmarkId/models', element: <ModelListPage /> },
           { path: 'benchmarks/:benchmarkId/models/:modelId', element: <ModelDetailPage /> },
+          { path: 'benchmarks/:benchmarkId/collections', element: <CollectionListPage /> },
+          { path: 'benchmarks/:benchmarkId/collections/:tag', element: <CollectionPage /> },
           { path: '*', element: <ConsoleNotFound /> },
         ],
       }],
