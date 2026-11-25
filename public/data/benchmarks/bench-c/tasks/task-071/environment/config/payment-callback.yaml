@@ -1,6 +1,0 @@
-service: payment-callback
-listen: 0.0.0.0:8080
-callback:
-  timeout_ms: 3000
-  retries: 2
-  pool_size: 8

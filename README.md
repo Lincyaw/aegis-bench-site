@@ -55,7 +55,7 @@ uv run python -m harbor.utils.trajectory_validator path/to/trajectory.json
 
 ## 数据
 
-站点展示的评测记录都是 `public/data/` 下的静态文件。构建把它们原样复制到站点的 `data/` 下；mock 服务端启动时读入目录和索引，运行详情、轨迹和任务文件在第一次被请求时才读取。现有数据是占位内容：评测基准、模型与数值都不是真实结果，规模也只有每个评测基准 4 到 8 道任务。
+站点展示的评测记录都是静态文件：目录、索引和发布记录在 `public/data/` 下，运行详情、轨迹和任务文件也可以放在 Hugging Face 上（见下文）。构建把 `public/data/` 原样复制到站点的 `data/` 下；mock 服务端启动时读入目录和索引，运行详情、轨迹和任务文件在第一次被请求时才读取。现有数据是占位内容：评测基准、模型与数值都不是真实结果，规模也只有每个评测基准 4 到 8 道任务。
 
 ```
 public/data/
@@ -63,16 +63,25 @@ public/data/
   benchmarks/<评测基准>/
     benchmark.json                      名称、版本、所属环节、指标、时间线规则、评分规则
     tasks.json                          每道任务：说明、检查项、文件清单、版本历史、验证运行
-    tasks/<任务>/…                      任务的 Harbor 目录，文件原样存放
+    tasks/<任务>/…                      任务的 Harbor 目录，文件原样存放（放在 Hugging Face 时，这里只留不公开的文件）
     runs.json                           每次运行的索引：组合、结果、得分、步数、成本、复核分类、未通过的检查
-    runs/<运行>/run.json                运行的其余记录：输入、输出、评分、失败原因与复核
-    runs/<运行>/trajectory.json         运行轨迹，ATIF-v1.8
+    runs/<运行>/run.json                运行的其余记录：输入、输出、评分、失败原因与复核（或放在 Hugging Face）
+    runs/<运行>/trajectory.json         运行轨迹，ATIF-v1.8（或放在 Hugging Face）
     hunts.json                          轨迹分析：每次分析的问题、维度、探针与逐条判定
     releases.json                       已发布的各个版本，其中一个是当前版本
 ```
 
 每种文件的字段在 `src/mocks/records.ts` 中声明。接入真实数据时注意：
-- **只记录事实，汇总由服务端计算。** 排行榜的分数和成本是各组合计入运行的 `score` 与 `costUsd` 的均值，任务数、通过率、各类计数也都从 `runs.json` 和 `tasks.json` 算出，不另存汇总值。`runs.json` 里每一项要与对应的 `run.json` 一致。
+- **只记录事实，汇总由服务端计算。** 排行榜的分数和成本是各组合计入运行的 `score` 与 `costUsd` 的均值，任务数、通过率、各类计数也都从 `runs.json` 和 `tasks.json` 算出，不另存汇总值。一次运行的记录分在 `runs.json` 的一项和它的 `run.json` 里，同一个字段只出现在一处。
 - **文件全部公开。** 仓库是公开的，`public/` 下的文件发布后任何人都能直接下载，包括中台才显示的参考解法、参考答案和复核结论。不能公开的数据不要放进来。
-- **控制体积。** GitHub 拒收超过 100 MiB 的单个文件，Pages 站点总共不超过 1 GB。现有占位数据约 30 MB，压缩后约 3 MB。
+- **控制体积。** GitHub 拒收超过 100 MiB 的单个文件，Pages 站点总共不超过 1 GB。现有占位数据在仓库里约 5 MB，放在 Hugging Face 上的约 25 MB。
 - **发现格式错误靠契约检查。** mock 读文件时不逐项校验，但 `npm run dev` 和 `npm run mock` 会按 spec 检查每个响应；数据缺字段或类型不对时，相应的请求会返回 500 并写明哪一项不合规。
+
+### 放在 Hugging Face 上的记录
+
+评测基准的 `benchmark.json` 写明 `huggingFace`（数据集仓库、提交号、仓库内的目录）时，它的 `runs/` 和 `tasks/` 按同样的结构放在那个目录下，不在 `public/data/` 里。读者打开某次运行或某个任务文件时，浏览器才从 Hugging Face 取那一个文件。运行详情和任务文件页会注明记录存放在 Hugging Face，并链接到对应的目录。
+- 用提交号而不是分支名，记录就固定在那个版本，链接也不会随仓库更新而变。更新数据时上传新的提交，再改 `benchmark.json` 里的提交号。
+- 参考解法和参考答案这类不公开的文件不上传，仍留在 `public/data/` 的任务目录里，只供中台读取。
+- 数据集仓库必须公开：静态站点里放不了访问令牌，私有或受限的仓库读不到。
+- 读者访问不了 huggingface.co 时，这些评测基准的运行详情和任务文件就打不开。匿名访问时，每个 IP 每 5 分钟最多下载 3,000 个文件。
+- 现在 Bench A、B、C 的运行与任务文件放在 [PolarBear2026/agent-eval-demo](https://huggingface.co/datasets/PolarBear2026/agent-eval-demo)，Bench D 全部在仓库里。

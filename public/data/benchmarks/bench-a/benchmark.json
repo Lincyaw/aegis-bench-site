@@ -40,5 +40,10 @@
   "changeTools": [
     "edit_file"
   ],
-  "passRule": "全部检查通过才判为通过，任一检查未通过即判为失败。模型复核类检查取裁判多次评分的中位数。"
+  "passRule": "全部检查通过才判为通过，任一检查未通过即判为失败。模型复核类检查取裁判多次评分的中位数。",
+  "huggingFace": {
+    "repo": "PolarBear2026/agent-eval-demo",
+    "revision": "a64297dc251e12366f4e83cb3930282467dd6d16",
+    "directory": "benchmarks/bench-a"
+  }
 }
