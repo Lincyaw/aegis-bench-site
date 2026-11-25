@@ -203,6 +203,9 @@ enum LeaderboardView {
 model TaskSummary {
   ...TaskRef;
   passRate: float64;
+
+  /** The task's Harbor directory on Hugging Face, when its files are kept there */
+  huggingFaceUrl?: url;
 }
 
 /** No page of a list holds more than this, so no response carries a list that grows with the data. */
@@ -449,6 +452,9 @@ model RunDetail {
 
   /** Present when the run failed; absent for passed runs and execution failures */
   failure?: RunFailure;
+
+  /** The run's directory on Hugging Face, when its record and trajectory are kept there */
+  huggingFaceUrl?: url;
 }
 
 /** A run's trajectory read a page of steps at a time: the trajectory's own fields, and one page of its steps in step order. */

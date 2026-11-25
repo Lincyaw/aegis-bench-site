@@ -2,11 +2,13 @@ import { setupWorker } from 'msw/browser';
 import { handlers } from './handlers';
 import { DATA_DIRECTORY, openRecords } from './records';
 
-// The data directory is published with the site, under the build's base.
+// The data directory is published with the site, under the build's base; a file kept elsewhere is named by its URL.
+const dataDirectory = new URL(`${import.meta.env.BASE_URL}${DATA_DIRECTORY}/`, window.location.href);
 await openRecords(async path => {
-  const response = await fetch(`${import.meta.env.BASE_URL}${DATA_DIRECTORY}/${path}`);
+  const url = new URL(path, dataDirectory);
+  const response = await fetch(url);
   if (!response.ok) {
-    throw new Error(`${DATA_DIRECTORY}/${path} answered ${response.status}`);
+    throw new Error(`${url.href} answered ${response.status}`);
   }
   return response.text();
 });

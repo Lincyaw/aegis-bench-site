@@ -82,7 +82,8 @@ export async function consoleRunOf(runId: string, locale: Locale): Promise<Conso
     return undefined;
   }
   const { benchmarkId, fact } = located;
-  const [detail, run, trajectory] = await Promise.all([runDetailOf(runId, locale), readRunRecord(benchmarkId, runId), readTrajectory(benchmarkId, runId)]);
+  const { record } = benchmarkOf(benchmarkId);
+  const [detail, run, trajectory] = await Promise.all([runDetailOf(runId, locale), readRunRecord(record, runId), readTrajectory(record, runId)]);
   if (!detail) {
     throw new Error(`run ${runId} has no detail`);
   }

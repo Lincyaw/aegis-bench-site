@@ -1,4 +1,5 @@
 import type { SubmissionVerdict, TimelineMark, TimelineStep, Trajectory, TrajectoryStep } from '../api/types';
+import { benchmarkOf } from './benchmarks';
 import { openedIndexes, readTrajectory } from './records';
 
 /** Trajectory steps per page when a request names no limit, as the spec declares. */
@@ -7,7 +8,7 @@ export const DEFAULT_TRAJECTORY_PAGE_SIZE = 25;
 /** The run's trajectory in ATIF-v1.8, a record in its original language, or nothing when there is no such run. */
 export async function trajectoryOf(runId: string): Promise<Trajectory | undefined> {
   const located = openedIndexes().runs.get(runId);
-  return located && readTrajectory(located.benchmarkId, runId);
+  return located && readTrajectory(benchmarkOf(located.benchmarkId).record, runId);
 }
 
 /** The server's marking rule for a step: a submission by its verdict, a call to one of the benchmark's change tools as a change, any other step as an action. */

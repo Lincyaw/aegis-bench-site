@@ -5,7 +5,7 @@ import type {
 import { benchmarkOf, benchmarkRef, hasBenchmark, taskOf } from './benchmarks';
 import { harnessRef, modelRef } from './catalog';
 import { runRowOf } from './consoleRuns';
-import { readTaskFile, type RunFact, type TaskRecord } from './records';
+import { huggingFacePageOf, readTaskFile, taskDirectoryOf, type RunFact, type TaskRecord } from './records';
 import { rankingOf, resultCountsOf } from './results';
 import { directoryEntriesOf, taskFileOf } from './taskFiles';
 
@@ -106,23 +106,32 @@ export function filteredTasksOf(benchmarkId: string, filter: TaskFilter): TaskRe
 export function consoleTaskOf(benchmarkId: string, task: TaskRecord, locale: Locale): ConsoleTaskDetail {
   const result = taskResultCountsOf(benchmarkId, task.id);
   const spread = spreadOf(result);
+  const huggingFaceUrl = huggingFacePageOf(benchmarkOf(benchmarkId).record, taskDirectoryOf(task.id));
   return {
     id: task.id, title: task.title, benchmark: benchmarkRef(benchmarkId), tags: task.tags, version: task.version,
     instruction: task.instruction, reportSchema: task.reportSchema, environment: task.environment, tools: task.tools,
     acceptance: task.checks.map(check => ({ checkId: check.id, requirement: check.title })), result, ...(spread && { spread }),
     entrants: entrantMarksOf(benchmarkId, task.id, locale),
     sizes: { checks: task.checks.length, files: task.files.length, revisions: task.revisions.length },
+    ...(huggingFaceUrl && { huggingFaceUrl }),
   };
 }
 
 /** How the task's grading decides, with each check's code as the task's directory holds it. */
 export async function taskGradingOf(benchmarkId: string, task: TaskRecord): Promise<TaskGrading> {
+  const { record } = benchmarkOf(benchmarkId);
   return {
-    passRule: benchmarkOf(benchmarkId).record.passRule,
-    checks: await Promise.all(task.checks.map(async check => ({
-      id: check.id, title: check.title, method: check.method, ...(check.samples && { samples: check.samples }),
-      code: { path: check.path, source: await readTaskFile(benchmarkId, task.id, check.path) },
-    }))),
+    passRule: record.passRule,
+    checks: await Promise.all(task.checks.map(async check => {
+      const file = task.files.find(candidate => candidate.path === check.path);
+      if (!file) {
+        throw new Error(`check ${check.id} of ${task.id} names ${check.path}, which the task's files do not list`);
+      }
+      return {
+        id: check.id, title: check.title, method: check.method, ...(check.samples && { samples: check.samples }),
+        code: { path: check.path, source: await readTaskFile(record, task.id, file) },
+      };
+    })),
     verifier: task.verifier,
   };
 }

@@ -1,4 +1,5 @@
 import type { TaskEntry, TaskFile, WithheldReason } from '../api/types';
+import { benchmarkOf } from './benchmarks';
 import { readTaskFile, type TaskFileEntry } from './records';
 
 /*
@@ -56,7 +57,7 @@ export function directoryEntriesOf(files: TaskFileEntry[], directory: string): T
 
 /** A task's file as the API serves it, its text cut where it passes the limit. */
 export async function taskFileOf(benchmarkId: string, taskId: string, file: TaskFileEntry): Promise<TaskFile> {
-  const text = await readTaskFile(benchmarkId, taskId, file.path);
+  const text = await readTaskFile(benchmarkOf(benchmarkId).record, taskId, file);
   const bytes = new TextEncoder().encode(text);
   const truncated = bytes.length > MAX_FILE_TEXT_BYTES;
   return {

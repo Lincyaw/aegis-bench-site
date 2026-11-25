@@ -94,8 +94,9 @@ export async function runHuntFindingsOf(runId: string): Promise<RunHuntFinding[]
   if (!located) {
     return undefined;
   }
-  const trajectory = await readTrajectory(located.benchmarkId, runId);
-  return benchmarkOf(located.benchmarkId).hunts.flatMap(hunt => {
+  const { record, hunts } = benchmarkOf(located.benchmarkId);
+  const trajectory = await readTrajectory(record, runId);
+  return hunts.flatMap(hunt => {
     const trial = hunt.trials.find(candidate => candidate.runId === runId);
     if (!trial) {
       return [];

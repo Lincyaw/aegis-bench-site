@@ -98,6 +98,9 @@ model ConsoleTaskDetail {
 
   /** How much each of the task's other views holds */
   sizes: TaskSizes;
+
+  /** The task's Harbor directory on Hugging Face, when its files are kept there */
+  huggingFaceUrl?: url;
 }
 
 /** A check as the task defines it, with the file that holds its code or, for a model review, its rubric. */

@@ -41,7 +41,7 @@ export function TaskFilesPage() {
         ]} />
       </header>
       <TaskFileBrowser
-        className={styles.browser} source={source} note={t('tasks.harbor')}
+        className={styles.browser} source={source} note={t('tasks.harbor')} huggingFaceUrl={task.huggingFaceUrl}
         open={search.get(FILE_PARAM) ?? INSTRUCTION_PATH}
         onOpen={file => setSearch({ [FILE_PARAM]: file }, { replace: true, preventScrollReset: true })}
       />

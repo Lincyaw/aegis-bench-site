@@ -35,6 +35,7 @@ export const en: Messages = {
     copied: 'Copied',
     previousPage: 'Previous page',
     nextPage: 'Next page',
+    openOnHuggingFace: 'Open on Hugging Face',
   },
   landing: {
     updated: 'Updated {{date, datetime}} · Edition 3',
@@ -170,6 +171,7 @@ export const en: Messages = {
     filter: { all: 'All outcomes', failed: 'Failed only', passed: 'Passed only' },
     outcome: { passed: 'Passed', failed: 'Failed', executionFailed: 'Execution failed' },
     notCounted: 'Execution failed (not counted)',
+    huggingFace: "This run's record and trajectory are kept on Hugging Face, where the original files can be viewed and downloaded.",
     tasks: 'Tasks',
     runs: 'Runs',
     passRate: 'Pass rate {{rate}}%',
@@ -285,6 +287,7 @@ export const en: Messages = {
     truncated: 'The file is over 256 KB; only its beginning is shown.',
     binary: 'Binary file; no preview.',
     viewFile: 'View in the task files',
+    huggingFace: 'The published task files are kept on Hugging Face, where they can be viewed and downloaded.',
   },
   console: consoleEn,
 };

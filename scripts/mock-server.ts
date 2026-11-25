@@ -19,8 +19,19 @@ export const MOCK_PORT = 4010;
 export const OPENAPI_PATH = '/openapi.json';
 export const DOCS_PATH = '/docs';
 
-// The site's public directory holds the data directory the build publishes.
-await openRecords(path => readFile(new URL(`../public/${DATA_DIRECTORY}/${path}`, import.meta.url), 'utf8'));
+// The site's public directory holds the data directory the build publishes; a file kept elsewhere is named by its URL.
+const dataDirectory = new URL(`../public/${DATA_DIRECTORY}/`, import.meta.url);
+await openRecords(async path => {
+  const url = new URL(path, dataDirectory);
+  if (url.protocol === 'file:') {
+    return readFile(url, 'utf8');
+  }
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`${url.href} answered ${response.status}`);
+  }
+  return response.text();
+});
 
 const mockServer = [contractHandler(handlers)];
 const app = new Hono();

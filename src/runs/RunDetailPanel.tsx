@@ -81,6 +81,12 @@ export function RunHeader({ run }: { run: RunDetail }) {
         { label: t('runs.metrics.cost'), value: `$${run.metrics.costUsd.toFixed(2)}` },
         { label: t('runs.metrics.endReason'), value: t(`runs.endReason.${run.metrics.endReason}`) },
       ]} />
+      {run.huggingFaceUrl && (
+        <p className={clsx(styles.hosted, 't-micro c-faint')}>
+          {t('runs.huggingFace')}
+          <a className={clsx(controls.textLink, 't-micro')} href={run.huggingFaceUrl} target="_blank" rel="noreferrer">{t('ui.openOnHuggingFace')}</a>
+        </p>
+      )}
     </header>
   );
 }

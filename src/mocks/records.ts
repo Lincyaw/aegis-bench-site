@@ -6,15 +6,26 @@ import type {
 /*
  * The data directory the mock server answers from, public/data in the repository and data/ next to the published site:
  * what each file holds and how it is read. The indexes are read once when the server opens the directory; a run, its
- * trajectory and a task's files are read when a request first needs them. Records keep the language they were made in,
- * and display names carry a string for each locale.
+ * trajectory and a task's files are read when a request first needs them, from the data directory or, for a benchmark
+ * that keeps them there, from a dataset repository on Hugging Face. Records keep the language they were made in, and
+ * display names carry a string for each locale.
  */
 
 /** The data directory's path under the site's root. */
 export const DATA_DIRECTORY = 'data';
 
-/** Reads the text of a file in the data directory, given its path there; it fails when the file cannot be read. */
+/** Where Hugging Face serves dataset repositories, their files and their pages. */
+export const HUGGING_FACE_ORIGIN = 'https://huggingface.co';
+
+/** Reads the text of a file, given its path in the data directory or its URL elsewhere; it fails when the file cannot be read. */
 export type DataReader = (path: string) => Promise<string>;
+
+/** A directory of a dataset repository on Hugging Face, at one commit. */
+export interface HuggingFaceDirectory {
+  repo: string;
+  revision: string;
+  directory: string;
+}
 
 /** catalog.json: the lifecycle stages, every model and harness, and the benchmarks in the order the site lists them. */
 export interface Catalog {
@@ -48,6 +59,12 @@ export interface BenchmarkRecord {
 
   /** How grading decides that a run passed */
   passRule: string;
+
+  /**
+   * Where the benchmark keeps its runs/ and tasks/ directories when they are not in the data directory. The task files
+   * the public site withholds stay in the data directory, so the published directory holds only what is published.
+   */
+  huggingFace?: HuggingFaceDirectory;
 }
 
 /** A check of a task's grading, with the path of its code (or, for a model review, its rubric) in the task's directory. */
@@ -225,9 +242,9 @@ export async function openRecords(read: DataReader): Promise<void> {
   const catalog = await readJson<Catalog>('catalog.json');
   const benchmarks = await Promise.all(catalog.benchmarks.map(async id => {
     const [record, tasks, runs, hunts, releases] = await Promise.all([
-      readJson<BenchmarkRecord>(`benchmarks/${id}/benchmark.json`), readJson<TaskRecord[]>(`benchmarks/${id}/tasks.json`),
-      readJson<RunFact[]>(`benchmarks/${id}/runs.json`), readJson<HuntRecord[]>(`benchmarks/${id}/hunts.json`),
-      readJson<PublishedRelease[]>(`benchmarks/${id}/releases.json`),
+      readJson<BenchmarkRecord>(dataDirectoryPathOf(id, 'benchmark.json')), readJson<TaskRecord[]>(dataDirectoryPathOf(id, 'tasks.json')),
+      readJson<RunFact[]>(dataDirectoryPathOf(id, 'runs.json')), readJson<HuntRecord[]>(dataDirectoryPathOf(id, 'hunts.json')),
+      readJson<PublishedRelease[]>(dataDirectoryPathOf(id, 'releases.json')),
     ]);
     return { record, tasks, runs, hunts, releases };
   }));
@@ -251,14 +268,43 @@ export function recordedRunOf(runId: string): LocatedRun {
   return located;
 }
 
-export function readRunRecord(benchmarkId: string, runId: string): Promise<RunRecord> {
-  return readJson<RunRecord>(`benchmarks/${benchmarkId}/runs/${runId}/run.json`);
+/** A file of a benchmark's directory in the data directory. */
+export function dataDirectoryPathOf(benchmarkId: string, path: string): string {
+  return `benchmarks/${benchmarkId}/${path}`;
 }
 
-export function readTrajectory(benchmarkId: string, runId: string): Promise<Trajectory> {
-  return readJson<Trajectory>(`benchmarks/${benchmarkId}/runs/${runId}/trajectory.json`);
+/** Where a file of a benchmark's runs/ or tasks/ is read: the benchmark's directory on Hugging Face, or the data directory. */
+export function benchmarkFileLocation(record: BenchmarkRecord, path: string): string {
+  const { huggingFace } = record;
+  return huggingFace
+    ? `${HUGGING_FACE_ORIGIN}/datasets/${huggingFace.repo}/resolve/${huggingFace.revision}/${huggingFace.directory}/${path}`
+    : dataDirectoryPathOf(record.id, path);
 }
 
-export function readTaskFile(benchmarkId: string, taskId: string, path: string): Promise<string> {
-  return readText(`benchmarks/${benchmarkId}/tasks/${taskId}/${path}`);
+/** The Hugging Face page that shows a directory of a benchmark's runs/ or tasks/, when the benchmark keeps them there. */
+export function huggingFacePageOf(record: BenchmarkRecord, path: string): string | undefined {
+  const { huggingFace } = record;
+  return huggingFace && `${HUGGING_FACE_ORIGIN}/datasets/${huggingFace.repo}/tree/${huggingFace.revision}/${huggingFace.directory}/${path}`;
+}
+
+export function runDirectoryOf(runId: string): string {
+  return `runs/${runId}`;
+}
+
+export function taskDirectoryOf(taskId: string): string {
+  return `tasks/${taskId}`;
+}
+
+export function readRunRecord(record: BenchmarkRecord, runId: string): Promise<RunRecord> {
+  return readJson<RunRecord>(benchmarkFileLocation(record, `${runDirectoryOf(runId)}/run.json`));
+}
+
+export function readTrajectory(record: BenchmarkRecord, runId: string): Promise<Trajectory> {
+  return readJson<Trajectory>(benchmarkFileLocation(record, `${runDirectoryOf(runId)}/trajectory.json`));
+}
+
+/** A task file's text: a withheld file from the data directory, any other from where the benchmark keeps its tasks. */
+export function readTaskFile(record: BenchmarkRecord, taskId: string, file: TaskFileEntry): Promise<string> {
+  const path = `${taskDirectoryOf(taskId)}/${file.path}`;
+  return readText(file.withheld ? dataDirectoryPathOf(record.id, path) : benchmarkFileLocation(record, path));
 }

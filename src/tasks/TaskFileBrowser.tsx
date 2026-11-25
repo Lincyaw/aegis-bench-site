@@ -5,6 +5,7 @@ import type { TaskEntryKind, TaskFile } from '../api/types';
 import { Loading, Tag } from '../ui/content';
 import content from '../ui/content.module.css';
 import { ChevronIcon, MoreButton } from '../ui/controls';
+import controls from '../ui/controls.module.css';
 import { directoriesHolding, formatSize, nameOf } from './taskFiles';
 import styles from './TaskFileBrowser.module.css';
 
@@ -41,9 +42,12 @@ interface Tree {
 
 /**
  * A task's Harbor directory: its tree on one side, the open file on the other. The directories that hold the open file
- * start expanded; `className` sizes the browser for the page it sits in.
+ * start expanded; `className` sizes the browser for the page it sits in. A task whose files are kept on Hugging Face
+ * links its directory there.
  */
-export function TaskFileBrowser({ source, open, onOpen, note, className }: { source: TaskFileSource; open: string; onOpen: (file: string) => void; note: string; className?: string }) {
+export function TaskFileBrowser({ source, open, onOpen, note, huggingFaceUrl, className }: {
+  source: TaskFileSource; open: string; onOpen: (file: string) => void; note: string; huggingFaceUrl?: string; className?: string;
+}) {
   const { t } = useTranslation();
   // The open file stays in view until the next one arrives.
   const shown = useDeferredValue(open);
@@ -66,7 +70,15 @@ export function TaskFileBrowser({ source, open, onOpen, note, className }: { sou
             <DirectoryEntries tree={tree} directory="" />
           </Suspense>
         </div>
-        <p className={clsx(styles.note, 't-micro c-faint')}>{note}</p>
+        <div className={clsx(styles.note, 't-micro c-faint')}>
+          <p>{note}</p>
+          {huggingFaceUrl && (
+            <p className={styles.hosted}>
+              {t('tasks.huggingFace')}
+              <a className={clsx(controls.textLink, 't-micro')} href={huggingFaceUrl} target="_blank" rel="noreferrer">{t('ui.openOnHuggingFace')}</a>
+            </p>
+          )}
+        </div>
       </nav>
       <section className={styles.viewer} aria-label={t('tasks.file')}>
         <Suspense fallback={<Loading />}>

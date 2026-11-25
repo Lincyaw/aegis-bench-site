@@ -35,6 +35,7 @@ export const zh = {
     copied: '已复制',
     previousPage: '上一页',
     nextPage: '下一页',
+    openOnHuggingFace: '在 Hugging Face 打开',
   },
   landing: {
     updated: '最近更新：{{date, datetime}} · 第 3 版',
@@ -170,6 +171,7 @@ export const zh = {
     filter: { all: '全部结果', failed: '只看未通过', passed: '只看通过' },
     outcome: { passed: '通过', failed: '未通过', executionFailed: '执行失败' },
     notCounted: '执行失败（不计入成绩）',
+    huggingFace: '这次运行的记录与轨迹存放在 Hugging Face，可以在那里查看和下载原始文件。',
     tasks: '任务',
     runs: '运行',
     passRate: '通过率 {{rate}}%',
@@ -285,6 +287,7 @@ export const zh = {
     truncated: '文件超过 256 KB，只显示开头部分。',
     binary: '二进制文件，不提供预览。',
     viewFile: '在任务文件中查看',
+    huggingFace: '公开的任务文件存放在 Hugging Face，可以在那里查看和下载。',
   },
   console: consoleZh,
 };

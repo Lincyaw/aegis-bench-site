@@ -1,6 +1,7 @@
 import type { CombinationRuns, Locale, TaskSummary } from '../api/types';
 import { benchmarkOf } from './benchmarks';
 import { RECORD_LOCALE, harnessRef, modelRef } from './catalog';
+import { huggingFacePageOf, taskDirectoryOf } from './records';
 import { rankingOf } from './results';
 
 /** The page size the task list answers with when the request names none, as the API declares. */
@@ -31,7 +32,11 @@ export function taskSummariesOf(benchmarkId: string): TaskSummary[] {
   if (cached) {
     return cached;
   }
-  const summaries = benchmarkOf(benchmarkId).tasks.map(task => ({ id: task.id, title: task.title, passRate: passRateOf(taskRunsOf(benchmarkId, task.id, RECORD_LOCALE)) }));
+  const { record, tasks } = benchmarkOf(benchmarkId);
+  const summaries = tasks.map(task => {
+    const huggingFaceUrl = huggingFacePageOf(record, taskDirectoryOf(task.id));
+    return { id: task.id, title: task.title, passRate: passRateOf(taskRunsOf(benchmarkId, task.id, RECORD_LOCALE)), ...(huggingFaceUrl && { huggingFaceUrl }) };
+  });
   summaryCache.set(benchmarkId, summaries);
   return summaries;
 }

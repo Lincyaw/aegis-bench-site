@@ -93,7 +93,7 @@ export function TaskFilesTab({ task, file }: { task: ConsoleTaskDetail; file: st
   };
   return (
     <TaskFileBrowser
-      className={styles.browser} source={source} note={t('console.task.files.note')} open={file}
+      className={styles.browser} source={source} note={t('console.task.files.note')} huggingFaceUrl={task.huggingFaceUrl} open={file}
       onOpen={next => setParams({ tab: 'files', file: next }, { replace: true, preventScrollReset: true })}
     />
   );
