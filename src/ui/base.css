@@ -55,6 +55,7 @@
   --ease-out: cubic-bezier(.3, .8, .2, 1);
   --control-transition: background-color var(--duration-base), border-color var(--duration-base), color var(--duration-base), box-shadow var(--duration-slow), transform var(--duration-fast);
   --blur-glass: 14px;
+  --saturate-glass: 180%;
   --shadow-float: 0 14px 36px -16px var(--effect-shadow);
   --shadow-glow: 0 8px 28px -10px var(--brand-dev), 0 8px 28px -12px var(--brand-ops);
   /* Keeps text legible where it lies over a drawing. */

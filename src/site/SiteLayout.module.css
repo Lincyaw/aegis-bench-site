@@ -17,7 +17,10 @@
   transition: max-width var(--duration-slow) var(--ease-out), height var(--duration-slow) var(--ease-out), margin-top var(--duration-slow) var(--ease-out),
     padding var(--duration-slow) var(--ease-out), border-radius var(--duration-slow) var(--ease-out), border-color var(--duration-base), background-color var(--duration-base), box-shadow var(--duration-slow);
 }
-/* Once the page scrolls, the bar floats as a centred glass pill that stays in reach; its end controls sit concentric with it. */
+/*
+ * Once the page scrolls, the bar floats as a centred pill of frosted glass that stays in reach: thin enough that the page
+ * shows through it, blurred and saturated. Its end controls sit concentric with it.
+ */
 .floating .bar {
   max-width: 67.5rem;
   height: var(--space-12);
@@ -25,7 +28,8 @@
   padding: 0 calc((var(--space-12) - var(--control-medium)) / 2) 0 var(--space-5);
   border-color: var(--border-glass);
   border-radius: var(--radius-full);
-  background: var(--bg-glass-strong);
+  background: var(--bg-glass-thin);
+  backdrop-filter: blur(var(--blur-glass)) saturate(var(--saturate-glass));
   box-shadow: var(--shadow-float);
 }
 

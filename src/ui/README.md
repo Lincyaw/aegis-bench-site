@@ -92,7 +92,7 @@
 
 | 类别 | 令牌 | 用途 |
 |---|---|---|
-| 表面 | `--bg-page`、`--bg-panel`、`--bg-muted`、`--bg-inverted`、`--bg-glass`、`--bg-glass-strong` | 页面；凸起的面板和代码；悬停与轨道；实心按钮和提示气泡；浮在内容上的导航与弹层 |
+| 表面 | `--bg-page`、`--bg-panel`、`--bg-muted`、`--bg-inverted`、`--bg-glass`、`--bg-glass-strong`、`--bg-glass-thin` | 页面；凸起的面板和代码；悬停与轨道；实心按钮和提示气泡；浮在内容上的导航与弹层；滚动后浮起的导航药丸，透出下面的页面 |
 | 文字 | `--text-main`、`--text-muted`、`--text-faint`、`--text-on-inverted` | 主要文字；次要文字；元信息和占位；反色表面上的文字 |
 | 边线 | `--border-hairline`、`--border-emphasis`、`--border-glass` | 分隔线；控件描边；玻璃表面的边 |
 | 循环两半 | `--brand-dev`、`--brand-ops` | 研发一半为蓝，运维一半为琥珀；容器写 `data-half="dev"` 或 `"ops"`，内部统一读取 `--half-color` 和 `--half-color-soft` |
