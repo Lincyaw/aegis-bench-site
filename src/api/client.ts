@@ -9,11 +9,21 @@ export type * from './types';
 
 export const api = createClient<paths>({ baseUrl: API_ROOT });
 
-/** The body of an openapi-fetch response; an API error becomes a thrown error, which the route's error boundary shows. */
+/** An answer of the API outside the operation's success, with its status for the error boundary that shows it. */
+export class ApiError extends Error {
+  readonly status: number;
+
+  constructor(response: Response, body: unknown) {
+    super(`${response.status} ${response.url}: ${JSON.stringify(body)}`);
+    this.status = response.status;
+  }
+}
+
+/** The body of an openapi-fetch response; an API error becomes a thrown ApiError, which the route's error boundary shows. */
 export async function responseBody<T>(request: Promise<{ data?: T; error?: unknown; response: Response }>): Promise<T> {
   const { data, error, response } = await request;
   if (data === undefined) {
-    throw new Error(`${response.status} ${response.url}: ${JSON.stringify(error)}`);
+    throw new ApiError(response, error);
   }
   return data;
 }

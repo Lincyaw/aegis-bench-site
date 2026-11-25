@@ -1,10 +1,15 @@
 import "@typespec/http";
 import "./atif.tsp";
+import "./console/session.tsp";
+import "./console/results.tsp";
 
 using Http;
 
-/** Public read API of the Aegis Bench site: benchmarks, leaderboards, run records and models. */
-@service(#{ title: "Aegis Bench Public API" })
+/**
+ * The Aegis Bench API. The public site reads benchmarks, leaderboards, run records and models without signing in; the
+ * console's operations, under /console, serve signed-in staff (see the AegisBench.Console namespace).
+ */
+@service(#{ title: "Aegis Bench API" })
 @server("/api", "Served by the demo's mock server: in the browser's service worker, or locally with npm run mock")
 namespace AegisBench;
 

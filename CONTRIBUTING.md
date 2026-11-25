@@ -8,26 +8,28 @@
 
 | 目录 | 职责 |
 |---|---|
-| `src/benchmarks`、`src/leaderboard`、`src/runs`、`src/tasks`、`src/models`、`src/reports`、`src/lifecycle`、`src/landing` | 各业务领域 |
+| `src/benchmarks`、`src/leaderboard`、`src/runs`、`src/tasks`、`src/models`、`src/results`、`src/reports`、`src/lifecycle`、`src/landing` | 各业务领域；对外站点与中台的页面都按领域放在这里 |
 | `src/ui` | 设计系统：令牌、全局样式、通用组件，不依赖任何业务领域 |
-| `src/site` | 站点框架：导航、页脚、站点地图（所有路径）、主题切换 |
+| `src/site` | 对外站点框架：导航、页脚、站点地图（所有路径）、主题切换 |
+| `src/console` | 中台框架：顶栏、侧栏、登录、中台的路径 |
 | `src/i18n` | 语言路由与界面文案 |
 | `src/articles`、`content` | MD/MDX 文档的编译、自定义块和正文 |
-| `src/api` | 由 spec 生成的 OpenAPI 文档与类型、模型类型（`types.ts`）、接口路径（`server.ts`）与请求客户端（`client.ts`） |
+| `src/api` | 由 spec 生成的 OpenAPI 文档与类型、模型类型（`types.ts`）、接口路径（`server.ts`）、请求客户端（对外站点 `client.ts`，中台 `consoleClient.ts`） |
 | `src/mocks` | mock 服务端，实现接口声明的全部操作 |
 
 依赖方向：
-- 业务领域可以依赖 `ui`、`site`、`i18n`、`api`、`articles`。
+- 业务领域可以依赖 `ui`、`site`、`console`、`i18n`、`api`、`articles`。
 - 领域之间可以使用对方导出的组件和展示规则（例如 `models` 的 `ModelLink`），但不使用对方的页面。
 - 站点的任何代码都不得引用 `src/mocks`，入口文件启动 mock 服务除外。（检查）
 - `src/mocks` 只能引用 `src/api` 生成的类型和它自己的模块。（检查）
 
 ## 接口先行
 
-接口以 `spec/main.tsp`（TypeSpec）为唯一来源：
+接口以 `spec/`（TypeSpec）为唯一来源。`spec/main.tsp` 是入口，声明对外站点的接口，并引入 `spec/console/` 下按领域划分的中台接口：
 1. 修改接口时先改 spec，再运行 `npm run gen`（`dev`、`build` 和 `mock` 会自动运行）。它会生成 OpenAPI 文档 `src/api/openapi.json` 和类型 `src/api/schema.ts`，两者都不入库。
-2. 前端只通过 `src/api/client.ts` 的查询函数取数据。查询函数基于 `openapi-fetch`，路径、参数和响应体都按 spec 做类型检查。模型类型在 `src/api/types.ts`，站点和 mock 共用；接口挂载的路径取自 spec 的 `@server`。
+2. 前端只通过 `src/api/client.ts`（对外站点）和 `src/api/consoleClient.ts`（中台）的查询函数取数据。查询函数基于 `openapi-fetch`，路径、参数和响应体都按 spec 做类型检查。模型类型在 `src/api/types.ts`，站点和 mock 共用；接口挂载的路径取自 spec 的 `@server`。
 3. 闭集合（视图、运行结果、时间线标记、语言等）在 spec 中声明为枚举，前端使用生成的 `*Values` 数组，不再另写一份。
+4. 对外站点的接口无需登录。中台的接口都在 `/console` 下：登录后由会话 cookie 维持身份，没有会话的请求一律返回 401，中台页面随即转到登录页，登录后回到原页面。
 
 ### mock 只通过接口交互
 
@@ -57,7 +59,7 @@ mock 服务端的作用除了提供演示数据，还在于检验接口设计是
 
 - 中文页面在根路径，英文页面在 `/en`。站内链接和跳转一律通过 `LocaleLink`、`LocaleNavLink` 和 `useLocalizedNavigate`，保持读者当前的语言。
 - 站点支持的语言就是 spec 中 `Locale` 枚举声明的语言。新增语言时先改 spec，类型检查会列出所有需要补齐的地方。
-- 界面文案放在 `src/i18n/zh.ts` 和 `en.ts`。`zh.ts` 决定文案结构，`en.ts` 必须与之结构相同（检查）；表示数量的文案用 `_one` 和 `_other` 两个键。
+- 界面文案放在 `src/i18n/zh.ts` 和 `en.ts`，中台的文案放在 `console.zh.ts` 和 `console.en.ts`，由前两者引入。中文文件决定文案结构，英文文件必须与之结构相同（检查）；表示数量的文案用 `_one` 和 `_other` 两个键。
 - 中文文案不得与英文相同；确实应当相同的条目连同理由列入 `scripts/check-locale.ts` 的允许表。（检查）
 - 名称、简介、标签由接口按 `Accept-Language` 返回对应语言；评测记录（任务原文、轨迹、检查项标题、复核结论）保持产生时的语言。
   - `Accept-Language` 按 HTTP 标准协商，例如 `en-US,en;q=0.9`；

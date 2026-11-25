@@ -1,6 +1,6 @@
-# Aegis Bench 对外站点 demo
+# Aegis Bench 前端 demo
 
-Aegis Bench 对外站点的前端演示。页面按 Figma 文件 [Aegis Bench](https://www.figma.com/design/tozbvKVPYuRZEWHUhoSthz) 中「01 · 对外站点」的设计实现。接口用 TypeSpec 声明；数据由浏览器中的 mock 服务端提供，它只实现接口声明的操作，因此不需要后端。
+Aegis Bench 的前端演示，包括对外站点和内部的评测中台。对外站点按 Figma 文件 [Aegis Bench](https://www.figma.com/design/tozbvKVPYuRZEWHUhoSthz) 中「01 · 对外站点」的设计实现；中台按「02 · 内部中台」的页面结构实现，并与对外站点共用一套设计系统。接口用 TypeSpec 声明；数据由浏览器中的 mock 服务端提供，它只实现接口声明的操作，因此不需要后端。
 
 ## 运行
 
@@ -21,7 +21,8 @@ npm run mock     # 在本地启动 mock 服务：接口 http://127.0.0.1:4010/ap
 
 | 位置 | 内容 |
 |---|---|
-| `spec/main.tsp` | 对外接口：环节、评测基准、排行榜、任务、运行、模型、语言 |
+| `spec/main.tsp` | 接口入口与对外接口：环节、评测基准、排行榜、任务、运行、模型、语言 |
+| `spec/console/` | 中台接口，按领域分文件：登录会话、汇总结果、运行 |
 | `spec/atif.tsp` | 运行轨迹的格式，ATIF-v1.8，按 Harbor 的参考模型（`harbor.models.trajectories`）声明 |
 | `src/` | 按业务领域组织的站点代码，各目录的职责见工程规范 |
 | `content/` | 各评测基准的介绍页与研究报告（MD/MDX） |
@@ -30,6 +31,10 @@ npm run mock     # 在本地启动 mock 服务：接口 http://127.0.0.1:4010/ap
 ## 运行记录
 
 每个评测基准有一个运行记录页：左栏任务，中栏各组合的 5 次运行，右栏是选中运行的详情。详情固定五个标签：给模型的输入、模型的输出、评分方式（含检查代码）、失败原因、执行轨迹。窄屏上逐层进入。
+
+## 评测中台
+
+中台在 `/console`（英文 `/en/console`），整个中台都要登录。演示环境里任意账号都能登录，密码是 `aegis`；账号由字母、数字、点、下划线或连字符组成。中台汇集每个评测基准的全部记录：执行失败的运行列出但不计入结果，失败运行经复核分为模型错误、评分错误和任务缺陷。
 
 ## 轨迹校验
 

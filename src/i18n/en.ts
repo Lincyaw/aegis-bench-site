@@ -1,3 +1,5 @@
+// The locale check runs the catalogues in Node, which resolves only file names with their extension.
+import { consoleEn } from './console.en.ts';
 import type { Messages } from './zh';
 
 export const en: Messages = {
@@ -277,4 +279,5 @@ export const en: Messages = {
     binary: 'Binary file; no preview.',
     viewFile: 'View in the task files',
   },
+  console: consoleEn,
 };

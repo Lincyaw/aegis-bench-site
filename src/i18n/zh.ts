@@ -1,3 +1,6 @@
+// The locale check runs the catalogues in Node, which resolves only file names with their extension.
+import { consoleZh } from './console.zh.ts';
+
 /** The site's Chinese text; its shape is every language's message shape. Keys with _one and _other take a count. */
 export const zh = {
   site: {
@@ -276,6 +279,7 @@ export const zh = {
     binary: '二进制文件，不提供预览。',
     viewFile: '在任务文件中查看',
   },
+  console: consoleZh,
 };
 
 export type Messages = typeof zh;

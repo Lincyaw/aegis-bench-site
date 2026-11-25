@@ -1,4 +1,4 @@
-import type { CombinationRuns, GradingCheck, LabeledValue, Locale, RunDetail, RunOutcome, TaskSummary } from '../api/types';
+import type { CombinationRuns, FailureClass, GradingCheck, LabeledValue, Locale, RunDetail, RunOutcome, TaskSummary } from '../api/types';
 import { benchmarkById, benchmarkRef, hasBenchmark, rankingEntryOf, type TaskKind } from './benchmarks';
 import { HARNESSES, MODELS, PUBLISHED_ON, RECORD_LOCALE, RUNS_PER_TASK, harnessRef, modelRef } from './catalog';
 import { fractionOf, hashOf, pickOf } from './hash';
@@ -150,6 +150,44 @@ export function checksOf(kind: TaskKind, taskId: string): Omit<GradingCheck, 'pa
   }
 }
 
+/** Every run of the round started on one day, and its steps follow one another at a steady pace. */
+export const RUN_DAY_START = Date.parse('2026-11-18T09:00:00Z');
+export const SECONDS_PER_STEP = 26;
+
+/** When a run's step happened; step 0 is the run's start, and its last step its end. */
+export function stepTimeOf(runId: string, step: number): string {
+  const start = RUN_DAY_START + (hashOf(runId) % 86400) * 1000;
+  return new Date(start + step * SECONDS_PER_STEP * 1000).toISOString();
+}
+
+/** Steps in a run's trajectory: a run whose environment failed stops early; the showcase run follows the design. */
+export function stepCountOf(runId: string, outcome: RunOutcome): number {
+  if (runId === SHOWCASE_RUN_ID) {
+    return 41;
+  }
+  return outcome === 'executionFailed' ? 6 + (hashOf(`len:${runId}`) % 8) : 18 + (hashOf(`len:${runId}`) % 50);
+}
+
+/** A run's cost: its combination's average cost, scaled by how long the run was against a typical 36 steps. */
+export function costUsdOf(key: RunKey, steps: number): number {
+  const entry = rankingEntryOf(key.benchmarkId, key.modelId, key.harnessId);
+  return Math.round((entry?.avgCostUsd ?? 0.5) * (steps / 36) * 100) / 100;
+}
+
+/** Whether a human has reviewed a failed run: about three failures in five, the showcase run among them. */
+export function isReviewed(runId: string): boolean {
+  return runId === SHOWCASE_RUN_ID || fractionOf(`review:${runId}`) < 0.6;
+}
+
+/** The class a review gives a failed run: mostly the model's own error, now and then the grading's or the task's. */
+export function failureClassOf(runId: string): FailureClass {
+  if (runId === SHOWCASE_RUN_ID) {
+    return 'modelError';
+  }
+  const draw = fractionOf(`class:${runId}`);
+  return draw < 0.82 ? 'modelError' : draw < 0.93 ? 'gradingError' : 'constructionProblem';
+}
+
 /** A run's length, submissions and failing checks, drawn from its id; the showcase run follows the design. */
 export function planOf(runId: string): RunPlan | undefined {
   const key = parseRunId(runId);
@@ -163,10 +201,10 @@ export function planOf(runId: string): RunPlan | undefined {
   const kind = benchmarkById(key.benchmarkId).kind;
   const outcome = outcomeOf(key);
   const checks = checksOf(kind, task.id);
+  const steps = stepCountOf(runId, outcome);
   if (runId === SHOWCASE_RUN_ID) {
-    return { key, runId, task, kind, outcome, steps: 41, submitSteps: [26, 41], checks, failingIds: ['C07', 'C11', 'C15'], module: 'orders' };
+    return { key, runId, task, kind, outcome, steps, submitSteps: [26, 41], checks, failingIds: ['C07', 'C11', 'C15'], module: 'orders' };
   }
-  const steps = outcome === 'executionFailed' ? 6 + (hashOf(`len:${runId}`) % 8) : 18 + (hashOf(`len:${runId}`) % 50);
   const submitCount = kind === 'coding' && outcome !== 'executionFailed' ? 1 + (hashOf(`sub:${runId}`) % 3) : 1;
   const submitSteps = Array.from({ length: submitCount }, (_, index) => Math.round((steps * (index + 1)) / submitCount));
   const candidates = checks.filter(check => check.method !== 'modelReview' && check.id !== 'S1');
@@ -315,6 +353,13 @@ export function conclusionOf(plan: RunPlan, failedTitles: string[]): string {
     return '模型在第 26 步看到 4 项检查未通过后，只补充了状态参数的枚举校验，没有重新运行测试便再次提交。空状态、越界游标与鉴权三项在最后一次提交中仍未处理。';
   }
   const listed = failedTitles.join('、');
+  const failureClass = failureClassOf(plan.runId);
+  if (failureClass === 'gradingError') {
+    return `复核认为评分有误：最终提交满足任务要求，「${listed}」的检查与任务说明不一致，应修订评分后重新评分。`;
+  }
+  if (failureClass === 'constructionProblem') {
+    return `复核认为题目有缺陷：「${listed}」检查的要求在任务说明中没有写明，也无法从可获取的数据推知。`;
+  }
   switch (plan.kind) {
     case 'coding': return plan.submitSteps.length > 1
       ? `模型在第 ${plan.submitSteps[0]} 步看到检查未通过后，只修改了部分实现便再次提交；「${listed}」在最后一次提交中仍未处理。`
@@ -333,7 +378,7 @@ export function failureOf(plan: RunPlan, grading: RunDetail['grading']): RunDeta
   const failed = grading.checks.filter(check => !check.passed);
   const showcaseCodes = plan.task.id === 'task-017' ? SHOWCASE_CHECK_CODE : {};
   const failedChecks = failed.map(check => ({ id: check.id, title: check.title, detail: showcaseCodes[check.id]?.detail ?? `${check.title}：本次运行未满足。` }));
-  const reviewed = plan.runId === SHOWCASE_RUN_ID || fractionOf(`review:${plan.runId}`) < 0.6;
+  const reviewed = isReviewed(plan.runId);
   const last = plan.submitSteps[plan.submitSteps.length - 1];
   const evidenceSteps = plan.submitSteps.length > 1 ? [plan.submitSteps[0], last] : [Math.max(2, last - 5), last];
   return reviewed
@@ -351,7 +396,6 @@ export function runRecordOf(runId: string, locale: Locale): RunRecord | undefine
     return undefined;
   }
   const { key, kind, task } = plan;
-  const entry = rankingEntryOf(key.benchmarkId, key.modelId, key.harnessId);
   const grading = gradingOf(plan);
   const lastSubmit = plan.submitSteps[plan.submitSteps.length - 1];
   const harness = harnessRef(key.harnessId, locale);
@@ -360,7 +404,7 @@ export function runRecordOf(runId: string, locale: Locale): RunRecord | undefine
     model: modelRef(key.modelId, locale), harness, attempt: key.attempt, attemptCount: RUNS_PER_TASK, outcome: plan.outcome,
     metrics: {
       steps: plan.steps, durationMinutes: Math.max(2, Math.round(plan.steps * 0.44)), submissions: plan.submitSteps.length,
-      outputTokens: plan.steps * 1460, costUsd: Math.round((entry?.avgCostUsd ?? 0.5) * (plan.steps / 36) * 100) / 100,
+      outputTokens: plan.steps * 1460, costUsd: costUsdOf(key, plan.steps),
       endReason: plan.outcome === 'executionFailed' ? 'executionError' : 'submitted',
     },
     input: {

@@ -22,6 +22,16 @@ export function spelledNumber(locale: Locale, value: number): string {
   return new Intl.NumberFormat(locale === 'zh-CN' ? 'zh-CN-u-nu-hanidec' : locale).format(value);
 }
 
+/** A count with the locale's digit grouping, such as 22,145. */
+export function groupedNumber(locale: Locale, value: number): string {
+  return new Intl.NumberFormat(locale).format(value);
+}
+
+/** A moment as the locale writes a date and a time of day, in UTC like the records. */
+export function dateTimeOf(locale: Locale, iso: string): string {
+  return new Intl.DateTimeFormat(locale, { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZone: 'UTC' }).format(new Date(iso));
+}
+
 /** A site path, such as /benchmarks, as it is reached in the locale. */
 export function localizedPath(locale: Locale, path: string): string {
   return path === '/' ? LOCALE_PREFIX[locale] || '/' : `${LOCALE_PREFIX[locale]}${path}`;

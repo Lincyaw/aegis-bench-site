@@ -42,6 +42,22 @@ export function FactList({ facts, layout }: { facts: Fact[]; layout: 'stacked' |
   );
 }
 
+/** One figure of a page's headline figures: its name, the figure and what it leaves out. */
+export function StatTile({ label, value, note }: { label: string; value: ReactNode; note?: string }) {
+  return (
+    <div className={styles.stat}>
+      <dt className="t-micro c-muted">{label}</dt>
+      <dd className={styles.statValue}>{value}</dd>
+      {note && <dd className="t-micro c-faint">{note}</dd>}
+    </div>
+  );
+}
+
+/** A row of stat tiles that wraps on narrow screens. */
+export function StatTiles({ children }: { children: ReactNode }) {
+  return <dl className={styles.stats}>{children}</dl>;
+}
+
 export function Loading() {
   const { t } = useTranslation();
   return <p className={clsx(styles.loading, 't-small c-faint')} role="status">{t('ui.loading')}</p>;

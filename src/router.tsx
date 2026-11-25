@@ -1,5 +1,9 @@
 import { createBrowserRouter, type RouteObject } from 'react-router-dom';
+import { BenchmarkOverviewPage } from './benchmarks/BenchmarkOverviewPage';
 import { BenchmarkPage } from './benchmarks/BenchmarkPage';
+import { ConsoleLayout } from './console/ConsoleLayout';
+import { ConsoleError, ConsoleHome, ConsoleNotFound } from './console/ConsolePages';
+import { SignInPage } from './console/SignInPage';
 import { BenchmarksPage } from './benchmarks/BenchmarksPage';
 import { LocaleRoot } from './i18n/LocaleRouting';
 import { LOCALES, LOCALE_PREFIX } from './i18n/locales';
@@ -34,6 +38,19 @@ export function sitePages(): RouteObject[] {
           { path: 'reports', element: <ReportsPage /> },
           { path: 'reports/:slug', element: <ReportPage /> },
           { path: '*', element: <PendingPage /> },
+        ],
+      }],
+    },
+    { path: 'console/sign-in', element: <SignInPage />, errorElement: <PageError /> },
+    {
+      path: 'console',
+      element: <ConsoleLayout />,
+      children: [{
+        errorElement: <ConsoleError />,
+        children: [
+          { index: true, element: <ConsoleHome /> },
+          { path: 'benchmarks/:benchmarkId', element: <BenchmarkOverviewPage /> },
+          { path: '*', element: <ConsoleNotFound /> },
         ],
       }],
     },

@@ -23,10 +23,15 @@ export const router = new OpenAPIRouter({ definition: DEFINITION, apiRoot: API_R
 /** Checks requests and responses against their operations, formats such as dates included. */
 export const validator = new OpenAPIValidator({ definition: DEFINITION, router, lazyCompileValidators: true, customizeAjv: ajv => addFormats(ajv) });
 
-/** A fetch request as openapi-backend reads it. */
-export function apiRequestOf(request: Request): ApiRequest {
+/** A fetch request as openapi-backend reads it; every request body the spec declares is JSON. */
+export async function apiRequestOf(request: Request): Promise<ApiRequest> {
   const url = new URL(request.url);
-  return { method: request.method, path: url.pathname, query: url.search.slice(1), headers: Object.fromEntries(request.headers) };
+  // A request without a body may still carry an empty stream, as Node's requests do.
+  const text = await request.clone().text();
+  return {
+    method: request.method, path: url.pathname, query: url.search.slice(1), headers: Object.fromEntries(request.headers),
+    ...(text && { body: JSON.parse(text) as unknown }),
+  };
 }
 
 /**
@@ -36,7 +41,7 @@ export function apiRequestOf(request: Request): ApiRequest {
  */
 export function contractHandler(implementation: RequestHandler[]) {
   return http.all(`${API_ROOT}/*`, async ({ request }) => {
-    const apiRequest = apiRequestOf(request);
+    const apiRequest = await apiRequestOf(request);
     const operation = router.matchOperation(apiRequest);
     if (!operation) {
       return HttpResponse.json({ message: `the API declares no ${apiRequest.method} ${apiRequest.path}` }, { status: 404 });

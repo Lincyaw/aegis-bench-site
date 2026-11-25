@@ -26,6 +26,10 @@
 
 .loading { padding: var(--space-10) 0; }
 
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); gap: var(--space-4); }
+.stat { display: grid; align-content: start; gap: var(--space-1); padding: var(--space-4) var(--space-5); border: var(--rule-hairline); border-radius: var(--radius-lg); background: var(--bg-panel); }
+.statValue { font: var(--type-title); font-variant-numeric: tabular-nums; }
+
 @media (max-width: 760px) {
   .rows > div { grid-template-columns: 6rem 1fr; }
 }

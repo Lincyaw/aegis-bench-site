@@ -2,7 +2,7 @@ import type { Locale, RecentRun, RunDetail, SubmissionVerdict, TimelineMark, Tim
 import { benchmarkById, type TaskKind } from './benchmarks';
 import { RECORD_LOCALE } from './catalog';
 import { hashOf, pickOf } from './hash';
-import { SHOWCASE_RUN_ID, planOf, runIdOf, runRecordOf, type RunPlan, type RunRecord } from './runs';
+import { SHOWCASE_RUN_ID, planOf, runIdOf, runRecordOf, stepTimeOf, type RunPlan, type RunRecord } from './runs';
 
 /** The tools a generated run cycles through, by task kind. */
 export const TOOL_PLAN: Record<TaskKind, string[]> = {
@@ -86,9 +86,6 @@ export function submissionStepOf(plan: RunPlan, index: number): { message: strin
 /** Trajectory steps per page when a request names no limit, as the spec declares. */
 export const DEFAULT_TRAJECTORY_PAGE_SIZE = 25;
 
-const RUN_DAY_START = Date.parse('2026-11-18T09:00:00Z');
-const SECONDS_PER_STEP = 26;
-
 /** The run's trajectory in ATIF-v1.8, a record in its original language: the task as the user step, then one agent step per tool call. */
 export function trajectoryOf(runId: string): Trajectory | undefined {
   const plan = planOf(runId);
@@ -96,8 +93,7 @@ export function trajectoryOf(runId: string): Trajectory | undefined {
   if (!plan || !detail) {
     return undefined;
   }
-  const start = RUN_DAY_START + (hashOf(runId) % 86400) * 1000;
-  const timestampOf = (step: number) => new Date(start + step * SECONDS_PER_STEP * 1000).toISOString();
+  const timestampOf = (step: number) => stepTimeOf(runId, step);
   const steps: TrajectoryStep[] = [{ step_id: 1, timestamp: timestampOf(0), source: 'user', message: `${detail.input.instruction}\n\n${detail.input.reportSchema}` }];
   const tools = TOOL_PLAN[plan.kind];
   let promptTokens = 2400;

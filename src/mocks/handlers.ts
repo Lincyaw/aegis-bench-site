@@ -1,12 +1,9 @@
 import { delay } from 'msw';
-import Negotiator from 'negotiator';
-import { createOpenApiHttp } from 'openapi-msw';
-import { localeValues, type paths } from '../api/schema';
-import { API_ROOT } from '../api/server';
-import type { Locale } from '../api/types';
 import { BENCHMARKS, DEFAULT_LEADERBOARD_PAGE_SIZE, benchmarkDetail, benchmarkSummary, hasBenchmark, leaderboardView, stagesWithBenchmarks } from './benchmarks';
 import { RUNS_PER_TASK } from './catalog';
+import { consoleHandlers } from './consoleHandlers';
 import { hasModel, modelProfile } from './models';
+import { http, localeOf, pageOf, writtenIn } from './protocol';
 import { passRateOf, taskRunsOf, taskSummariesOf } from './runs';
 import { DEFAULT_ENTRY_PAGE_SIZE, directoryEntriesOf, taskFileOf, taskFilesOf, withheldUnder } from './taskFiles';
 import { DEFAULT_TASK_PAGE_SIZE, taskOf } from './tasks';
@@ -18,31 +15,8 @@ import { DEFAULT_TRAJECTORY_PAGE_SIZE, recentRunsOf, runDetailOf, trajectoryOf }
  * will talk to the real server, and anything the site needs but the spec lacks shows up as a gap in the spec.
  */
 
-/** Handlers typed by the API's paths: a path, parameter, status or body the spec does not declare fails to compile. */
-const http = createOpenApiHttp<paths>({ baseUrl: API_ROOT });
-
-/** The locale the API answers in when the reader's languages match none it serves, as the spec declares. */
-export const DEFAULT_LOCALE: Locale = 'zh-CN';
-
-/** The locale to answer in: the best match for the request's Accept-Language among the locales the API serves. */
-export function localeOf(request: Request): Locale {
-  const negotiated = new Negotiator({ headers: { 'accept-language': request.headers.get('Accept-Language') ?? undefined } }).language([...localeValues]);
-  return localeValues.find(locale => locale === negotiated) ?? DEFAULT_LOCALE;
-}
-
-/** The headers of a response written in a locale. */
-export function writtenIn(locale: Locale) {
-  return { headers: { 'Content-Language': locale } };
-}
-
-/** The page of a list a request asks for with the spec's PageQuery parameters, and the length of the whole list. */
-export function pageOf<Item>(list: readonly Item[], query: { get(name: 'offset' | 'limit'): string | null }, defaultSize: number) {
-  const offset = Number(query.get('offset') ?? 0);
-  const limit = Number(query.get('limit') ?? defaultSize);
-  return { items: list.slice(offset, offset + limit), total: list.length };
-}
-
-export const handlers = [
+/** The public site's operations, which answer without a session. */
+export const publicHandlers = [
   http.get('/stages', ({ request, response }) => {
     const locale = localeOf(request);
     return response(200).json(stagesWithBenchmarks(locale), writtenIn(locale));
@@ -164,3 +138,5 @@ export const handlers = [
     return response(200).json(modelProfile(params.modelId, locale), writtenIn(locale));
   }),
 ];
+
+export const handlers = [...publicHandlers, ...consoleHandlers];

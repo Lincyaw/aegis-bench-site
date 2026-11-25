@@ -1,0 +1,14 @@
+/* The sign-in card sits alone in the middle of the window. */
+.page { display: grid; place-items: center; min-height: 100dvh; padding: var(--space-6); }
+.card {
+  display: grid;
+  gap: var(--space-5);
+  width: 100%;
+  max-width: 25rem;
+  padding: var(--space-8);
+  border: var(--rule-hairline);
+  border-radius: var(--radius-lg);
+  background: var(--bg-panel);
+}
+.brand { display: inline-flex; align-items: center; gap: var(--space-3); }
+.head { display: grid; gap: var(--space-2); }

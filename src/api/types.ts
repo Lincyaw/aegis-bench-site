@@ -39,3 +39,15 @@ export type CheckMethod = Schemas['CheckMethod'];
 export type ModelProfile = Schemas['ModelProfile'];
 export type Trajectory = Schemas['ATIF.Trajectory'];
 export type TrajectoryStep = Schemas['ATIF.Step'];
+
+export type ConsoleUser = Schemas['Console.ConsoleUser'];
+export type SessionState = Schemas['Console.SessionState'];
+export type SignInRequest = Schemas['Console.SignInRequest'];
+export type ConsoleBenchmark = Schemas['Console.ConsoleBenchmark'];
+export type ResultCounts = Schemas['Console.ResultCounts'];
+export type EntrantResult = Schemas['Console.EntrantResult'];
+export type PendingKind = Schemas['Console.PendingKind'];
+export type PendingWork = Schemas['Console.PendingWork'];
+export type BenchmarkOverview = Schemas['Console.BenchmarkOverview'];
+export type FailureClass = Schemas['Console.FailureClass'];
+export type RunRow = Schemas['Console.RunRow'];

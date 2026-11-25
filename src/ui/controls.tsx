@@ -16,6 +16,30 @@ export function Button({ variant, onClick, children }: { variant: ButtonVariant;
   return <button type="button" className={clsx(styles.pill, styles.large, variant === 'solid' && styles.solid, 'loop-edge')} onClick={onClick}>{children}</button>;
 }
 
+/** A solid button that submits its form; it waits, faint, while the submission is under way. */
+export function SubmitButton({ pending, children }: { pending: boolean; children: ReactNode }) {
+  return <button type="submit" className={clsx(styles.pill, styles.large, styles.solid, 'loop-edge')} disabled={pending} aria-busy={pending}>{children}</button>;
+}
+
+/**
+ * A labelled pill field for a line of text; the label sits above it. A field with a pattern has the browser hold back
+ * the form until the text matches, and its hint says what matches.
+ */
+export function TextField({ label, type, autoComplete, value, onChange, pattern }: {
+  label: string; type: 'text' | 'password'; autoComplete: string; value: string; onChange: (value: string) => void; pattern?: { regex: string; hint: string };
+}) {
+  return (
+    <label className={styles.textField}>
+      <span className="t-micro c-muted">{label}</span>
+      <input
+        className={clsx(styles.pill, styles.large, styles.input)} type={type} autoComplete={autoComplete} required value={value}
+        pattern={pattern?.regex} title={pattern?.hint} onChange={event => onChange(event.target.value)}
+      />
+      {pattern && <span className="t-micro c-faint">{pattern.hint}</span>}
+    </label>
+  );
+}
+
 /** Copies a text and confirms beside the button, drawing a check, once the text is on the clipboard. */
 export function CopyButton({ label, text }: { label: string; text: () => string }) {
   const { t } = useTranslation();
