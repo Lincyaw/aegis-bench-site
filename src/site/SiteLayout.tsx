@@ -61,13 +61,13 @@ export function MenuIcon() {
   return <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M2 4.5h12M2 8h12M2 11.5h12" stroke="currentColor" strokeWidth="1.5" /></svg>;
 }
 
-/** Links to the page being read in the other languages. */
+/** Links to the page being read in the other languages; a quiet control, since every bar that holds it has its own pill. */
 export function LanguageSwitch() {
   const locale = useLocale();
   const { pathname, search } = useLocation();
   const path = sitePath(locale, pathname);
   return LOCALES.filter(other => other !== locale).map(other => (
-    <Link key={other} className={clsx(controls.pill, controls.medium, 'loop-edge')} to={`${localizedPath(other, path)}${search}`} hrefLang={other} lang={other}>{LOCALE_NAMES[other]}</Link>
+    <Link key={other} className={clsx(controls.pill, controls.medium, controls.quiet)} to={`${localizedPath(other, path)}${search}`} hrefLang={other} lang={other}>{LOCALE_NAMES[other]}</Link>
   ));
 }
 
@@ -102,7 +102,7 @@ export function SiteNav({ sections }: { sections: PageSections | null }) {
         </div>
         <div className={styles.end}>
           <LanguageSwitch />
-          <IconButton label={t('site.toggleTheme')} onClick={toggleTheme}><ThemeIcon /></IconButton>
+          <IconButton label={t('site.toggleTheme')} onClick={toggleTheme} variant="quiet"><ThemeIcon /></IconButton>
           <LocaleLink className={styles.signIn} to={CONSOLE_PATH}>{t('site.signIn')}</LocaleLink>
           <LocaleLink className={clsx(controls.pill, controls.medium, styles.contact, 'loop-edge')} to={CONTACT_PATH}>{t('site.contact')}</LocaleLink>
           <span className={styles.menuButton}>

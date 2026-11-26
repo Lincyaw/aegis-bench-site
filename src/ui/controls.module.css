@@ -12,6 +12,10 @@
 }
 .pill:hover, .pill:is([aria-pressed="true"], [aria-current="true"], [aria-expanded="true"], [data-state="open"]) { background: var(--bg-muted); }
 
+/* A quiet control keeps the pill's shape and size but not its outline, its text muted until the pointer reaches it; a bar of them leaves its one outlined pill to stand out. */
+.quiet { border-color: transparent; color: var(--text-muted); }
+.quiet:hover { color: var(--text-main); }
+
 .large { height: var(--control-large); padding: 0 var(--space-5); font: var(--type-label); line-height: 1; }
 .medium { height: var(--control-medium); padding: 0 var(--space-4); font: var(--type-small); line-height: 1; }
 .small { height: var(--control-small); padding: 0 var(--space-2); gap: var(--space-1); font: var(--type-micro); line-height: 1; color: var(--text-muted); }

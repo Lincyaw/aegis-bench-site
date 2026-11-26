@@ -86,8 +86,18 @@ export function CopyButton({ label, text }: { label: string; text: () => string 
 }
 
 /** A round button whose icon turns when hovered; a disabled one stays still and faint. */
-export function IconButton({ label, onClick, expanded, disabled, children }: { label: string; onClick: () => void; expanded?: boolean; disabled?: boolean; children: ReactNode }) {
-  return <button type="button" className={clsx(styles.pill, styles.icon, !disabled && 'loop-edge')} aria-label={label} aria-expanded={expanded} disabled={disabled} onClick={onClick}>{children}</button>;
+/** How a control without words stands: outlined with the ∞ edge, or quiet, its outline left out, as a bar's lesser controls are. */
+export type IconButtonVariant = 'line' | 'quiet';
+
+export function IconButton({ label, onClick, expanded, disabled, variant = 'line', children }: {
+  label: string; onClick: () => void; expanded?: boolean; disabled?: boolean; variant?: IconButtonVariant; children: ReactNode;
+}) {
+  const quiet = variant === 'quiet';
+  return (
+    <button type="button" className={clsx(styles.pill, styles.icon, quiet && styles.quiet, !disabled && !quiet && 'loop-edge')} aria-label={label} aria-expanded={expanded} disabled={disabled} onClick={onClick}>
+      {children}
+    </button>
+  );
 }
 
 /** Appends a list's next page; its label says how much is shown, and it waits while the page loads. */

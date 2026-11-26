@@ -52,9 +52,9 @@ export function ConsoleBar({ user, benchmarkId, menuOpen, onMenu }: { user: Cons
         <span className="t-small c-muted">{t('console.name')}</span>
       </LocaleLink>
       <div className={styles.end}>
-        <LocaleLink className={clsx(controls.pill, controls.medium, styles.publicSite, 'loop-edge')} to={benchmarkId ? benchmarkPath(benchmarkId) : '/'}>{t('console.publicSite')}</LocaleLink>
+        <LocaleLink className={clsx(controls.pill, controls.medium, controls.quiet, styles.publicSite)} to={benchmarkId ? benchmarkPath(benchmarkId) : '/'}>{t('console.publicSite')}</LocaleLink>
         <LanguageSwitch />
-        <IconButton label={t('site.toggleTheme')} onClick={toggleTheme}><ThemeIcon /></IconButton>
+        <IconButton label={t('site.toggleTheme')} onClick={toggleTheme} variant="quiet"><ThemeIcon /></IconButton>
         <AccountMenu user={user} />
       </div>
     </header>
