@@ -1,5 +1,5 @@
 import { clsx } from 'clsx';
-import type { ModelRef } from '../../api/client';
+import type { ModelRef } from '../../api/types';
 import { LocaleLink } from '../../i18n/LocaleRouting';
 import { modelPath } from '../../routes/site';
 import styles from './ModelBadge.module.css';

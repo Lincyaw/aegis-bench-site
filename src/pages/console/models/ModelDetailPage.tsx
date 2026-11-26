@@ -2,28 +2,24 @@ import { clsx } from 'clsx';
 import { useDeferredValue } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { useConsoleBenchmark, useConsoleModel, useModelTaskPage, type ModelTaskQuery } from '../../../api/consoleClient';
+import { useConsoleBenchmark, useConsoleModel, useModelTaskPage } from '../../../api/consoleClient';
 import { consoleTaskOrderValues, consoleTaskSpreadValues } from '../../../api/schema';
-import type { HarnessResult, ModelTaskRow, TaskOrder, TaskSpread } from '../../../api/types';
+import type { ModelTaskQuery, TaskOrder, TaskSpread } from '../../../api/types';
 import { VendorBadge } from '../../../components/model/ModelBadge';
-import { FailureBar, FailureLegend } from '../../../components/result/FailureBar';
-import { PassRate } from '../../../components/result/PassRate';
+import { HarnessTable, ModelTaskTable } from '../../../components/model/ModelResults';
+import { FailureLegend } from '../../../components/result/FailureBar';
 import { formatCost, formatRate } from '../../../components/result/presentation';
-import { OutcomeDot } from '../../../components/run/Outcome';
 import { ConsoleHeader } from '../../../components/shell/ConsoleHeader';
 import { LocaleLink } from '../../../i18n/LocaleRouting';
 import { useLocale } from '../../../i18n/localeContext';
 import { groupedNumber } from '../../../i18n/locales';
 import { EVERY_CHOICE, consoleBenchmarkPath } from '../../../routes/console';
 import { MODEL_TASK_PAGE_SIZE, consoleModelPath, consoleModelsPath, modelTaskSearch, parseModelTaskQuery } from '../../../routes/consoleModels';
-import { consoleRunPath } from '../../../routes/consoleRuns';
-import { consoleTaskPath } from '../../../routes/consoleTasks';
 import { StatTile, StatTiles } from '../../../ui/content';
 import { SearchField, SegmentedControl, Select } from '../../../ui/controls';
 import controls from '../../../ui/controls.module.css';
 import { Hint } from '../../../ui/hint';
 import { Pager } from '../../../ui/navigation';
-import table from '../../../ui/table.module.css';
 import styles from './ModelPages.module.css';
 
 /**
@@ -70,7 +66,7 @@ export function ModelDetailPage() {
       </StatTiles>
       <section className={styles.section}>
         <h2 className="t-heading">{t('console.model.byHarness')}</h2>
-        <HarnessTable results={detail.byHarness} current={query.harness} onPick={harness => update({ harness })} />
+        <HarnessTable benchmarkId={benchmark.id} modelId={detail.model.id} query={query} results={detail.byHarness} />
       </section>
       <section className={styles.section}>
         <header className={styles.sectionHead}>
@@ -130,64 +126,5 @@ export function TaskChip({ benchmarkId, modelId, query }: { benchmarkId: string;
         {t('console.model.task.name', { task: query.task })}<span aria-hidden="true">×</span>
       </LocaleLink>
     </Hint>
-  );
-}
-
-/** The model's result with each harness; a row narrows the page to that harness. */
-export function HarnessTable({ results, current, onPick }: { results: HarnessResult[]; current: string; onPick: (harness: string) => void }) {
-  const { t } = useTranslation();
-  return (
-    <div className={clsx(table.table, styles.harnesses)} role="table" aria-label={t('console.model.byHarness')}>
-      <div className={clsx(table.row, table.head, 't-micro c-faint')} role="row">
-        <span role="columnheader">{t('console.model.harnessLabel')}</span>
-        <span role="columnheader">{t('console.models.column.passRate')}</span>
-        <span role="columnheader">{t('console.models.column.everyTime')}</span>
-        <span role="columnheader">{t('console.models.column.once')}</span>
-        <span role="columnheader">{t('console.models.column.cost')}</span>
-        <span role="columnheader">{t('console.models.column.failures')}</span>
-      </div>
-      {results.map(({ harness, result }) => (
-        <div key={harness.id} className={clsx(table.row, table.link, harness.id === current && styles.current)} role="row" aria-current={harness.id === current ? 'true' : undefined} onClick={() => onPick(harness.id)}>
-          <span role="cell" className="t-label">{harness.name}</span>
-          <span role="cell"><PassRate rate={result.passRate} /></span>
-          <span role="cell" className="t-numeric c-muted">{t('console.overview.tasksOf', { solved: result.solvedEveryTime, total: result.tasks })}</span>
-          <span role="cell" className="t-numeric c-muted">{t('console.overview.tasksOf', { solved: result.solvedOnce, total: result.tasks })}</span>
-          <span role="cell" className="t-numeric c-muted">{result.meanCostUsd === undefined ? '—' : formatCost(result.meanCostUsd)}</span>
-          <span role="cell"><FailureBar result={result} /></span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-/** The model's runs on each task, grouped by harness; each dot opens its run. */
-export function ModelTaskTable({ benchmarkId, modelId, harness, rows }: { benchmarkId: string; modelId: string; harness: string; rows: ModelTaskRow[] }) {
-  const { t } = useTranslation();
-  return (
-    <div className={clsx(table.table, styles.tasks)} role="table" aria-label={t('console.model.tasks')}>
-      <div className={clsx(table.row, table.head, 't-micro c-faint')} role="row">
-        <span role="columnheader">{t('console.model.column.task')}</span>
-        <span role="columnheader">{t('console.model.column.runs')}</span>
-        <span role="columnheader">{t('console.model.column.passRate')}</span>
-        <span role="columnheader">{t('console.model.column.failures')}</span>
-      </div>
-      {rows.map(row => (
-        <div key={row.task.id} className={table.row} role="row">
-          <span role="cell" className={styles.task}><LocaleLink to={consoleTaskPath(benchmarkId, row.task.id, { tab: 'runs', model: modelId, harness: harness || undefined })} className="t-label">{row.task.title}</LocaleLink><span className="t-mono c-faint">{row.task.id}</span></span>
-          <span role="cell" className={styles.runGroups}>
-            {[...Map.groupBy(row.runs, run => run.harness.id).values()].map(runs => (
-              <span key={runs[0].harness.id} className={styles.runGroup}>
-                {runs.map(run => {
-                  const label = t('console.model.runOf', { harness: run.harness.name, attempt: run.attempt, outcome: t(`runs.outcome.${run.outcome}`) });
-                  return <LocaleLink key={run.id} className={styles.runDot} to={consoleRunPath(benchmarkId, run.id)} title={label} aria-label={label}><OutcomeDot outcome={run.outcome} /></LocaleLink>;
-                })}
-              </span>
-            ))}
-          </span>
-          <span role="cell"><PassRate rate={row.result.passRate} /></span>
-          <span role="cell"><FailureBar result={row.result} /></span>
-        </div>
-      ))}
-    </div>
   );
 }

@@ -1,6 +1,5 @@
-import type { ConsoleRunQuery } from '../api/consoleClient';
 import { consoleReviewFilterValues, runOutcomeValues } from '../api/schema';
-import type { PendingKind, ReviewFilter, RunOutcome } from '../api/types';
+import type { ConsoleRunQuery, PendingKind, ReviewFilter, RunOutcome } from '../api/types';
 import { consoleBenchmarkPath } from './console';
 import { RUN_TABS } from './runRecords';
 

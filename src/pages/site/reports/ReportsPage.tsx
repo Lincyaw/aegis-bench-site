@@ -6,7 +6,7 @@ import { reportOf, reportsIn } from '../../../articles/library';
 import { Replay, RunNumber } from '../../../articles/runBlocks';
 import { LocaleLink } from '../../../i18n/LocaleRouting';
 import { useLocale } from '../../../i18n/localeContext';
-import { reportPath } from '../../../routes/site';
+import { REPORTS_PATH, reportPath } from '../../../routes/site';
 import { Breadcrumbs } from '../../../ui/navigation';
 import styles from './ReportsPage.module.css';
 
@@ -44,7 +44,7 @@ export function ReportPage() {
     <div className="page">
       <article className={styles.article}>
         <header className={styles.articleHead}>
-          <Breadcrumbs crumbs={[{ label: t('reports.title'), to: '/reports' }, { label: report.title }]} />
+          <Breadcrumbs crumbs={[{ label: t('reports.title'), to: REPORTS_PATH }, { label: report.title }]} />
           <h1 className="t-title">{report.title}</h1>
           <p className="t-lead c-muted">{report.summary}</p>
           <p className="t-mono c-faint">{report.date}</p>

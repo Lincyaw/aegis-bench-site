@@ -2,8 +2,8 @@ import { useMutation, useQueryClient, useSuspenseInfiniteQuery, useSuspenseQueri
 import { useLocale } from '../i18n/localeContext';
 import { SITE_QUERY, api, languageHeader, nextPageOffset, responseBody } from './client';
 import type {
-  HuntVerdict, Invitation, NewReport, ReleaseContent, ReportDraft, ReportEdit, ReviewFilter, ReviewRequest, RevisionChange, Role, RunEventKind, RunOutcome,
-  SessionState, SettingsChange, SignInRequest, TaskOrder, TaskSpread,
+  ChangelogQuery, ConsoleRunQuery, ConsoleTaskQuery, HuntTrialQuery, Invitation, ModelTaskQuery, NewReport, ReleaseContent, ReportDraft, ReportEdit,
+  ReviewRequest, Role, RunEventQuery, SessionState, SettingsChange, SignInRequest, TaskOrder,
 } from './types';
 
 /** Every console query key starts with this, so signing in or out can drop what the previous session read. */
@@ -30,18 +30,11 @@ export const DEMO_ACCOUNTS: { account: string; role: Role }[] = [
   { account: 'he.ming', role: 'viewer' },
 ];
 
-/**
- * Who is signed in on this browser; the console's layout reads it before anything else. The demo opens without asking:
- * a browser nobody is signed in on is signed in as the first demo account, and one that signs out stays out until the
- * page is loaded again.
- */
+/** Who is signed in on this browser; the console's layout reads it before anything else. */
 export function useConsoleSession() {
   return useSuspenseQuery({
     queryKey: SESSION_QUERY_KEY,
-    queryFn: async () => {
-      const session = await responseBody(api.GET('/console/session'));
-      return session.user ? session : responseBody(api.POST('/console/session', { body: { account: DEMO_ACCOUNTS[0].account, password: DEMO_PASSWORD } }));
-    },
+    queryFn: () => responseBody(api.GET('/console/session')),
   }).data;
 }
 
@@ -144,15 +137,6 @@ export function useConsoleBenchmark(benchmarkId: string) {
   return benchmark;
 }
 
-/** What the console's task list asks for: the filters and the page. */
-export interface ConsoleTaskQuery {
-  q: string;
-  tag: string;
-  spread?: TaskSpread;
-  order: TaskOrder;
-  offset: number;
-}
-
 /** One page of a benchmark's tasks; the page stays the same in every language, but its combination names do not. */
 export function useConsoleTaskPage(benchmarkId: string, query: ConsoleTaskQuery, pageSize: number) {
   const locale = useLocale();
@@ -238,21 +222,6 @@ export function useConsoleTaskFile(benchmarkId: string, taskId: string, path: st
   }).data;
 }
 
-/** What the console's run list asks for: the filters and the page. */
-export interface ConsoleRunQuery {
-  q: string;
-
-  /** A model's id; every model when empty */
-  model: string;
-
-  /** A model and harness pair as "<model id>-<harness id>"; every pair when empty */
-  combination: string;
-
-  outcome?: RunOutcome;
-  review?: ReviewFilter;
-  offset: number;
-}
-
 export function useConsoleRunPage(benchmarkId: string, query: ConsoleRunQuery, pageSize: number) {
   const locale = useLocale();
   return useSuspenseQuery({
@@ -292,13 +261,6 @@ export function useConsoleTrajectoryPage(runId: string, offset: number, pageSize
   }).data;
 }
 
-/** What the event list of a run asks for. */
-export interface RunEventQuery {
-  kind?: RunEventKind;
-  q: string;
-  offset: number;
-}
-
 export function useRunEvents(runId: string, query: RunEventQuery, pageSize: number) {
   return useSuspenseQuery({
     queryKey: [CONSOLE_QUERY, 'events', runId, query, pageSize],
@@ -314,7 +276,6 @@ export function useConsoleModels(benchmarkId: string) {
   }).data;
 }
 
-/** A model's results over the tasks of one collection that match a search; every task when both are empty. */
 /** A model over the tasks its page keeps to; the page's search narrows only its task list. */
 export function useConsoleModel(benchmarkId: string, modelId: string, { tag, task }: Pick<ModelTaskQuery, 'tag' | 'task'>) {
   const locale = useLocale();
@@ -322,22 +283,6 @@ export function useConsoleModel(benchmarkId: string, modelId: string, { tag, tas
     queryKey: [CONSOLE_QUERY, 'model', benchmarkId, modelId, tag, task, locale],
     queryFn: () => responseBody(api.GET('/console/benchmarks/{benchmarkId}/models/{modelId}', { params: { path: { benchmarkId, modelId }, query: { tag, task }, header: languageHeader(locale) } })),
   }).data;
-}
-
-/** What a model's page asks for: one harness or all, the collection it keeps to, the filters and the page. */
-export interface ModelTaskQuery {
-  harness: string;
-
-  /** The tag of the collection the page keeps to; every task when empty */
-  tag: string;
-
-  /** The one task the page keeps to; every task when empty */
-  task: string;
-
-  q: string;
-  spread?: TaskSpread;
-  order: TaskOrder;
-  offset: number;
 }
 
 export function useModelTaskPage(benchmarkId: string, modelId: string, query: ModelTaskQuery, pageSize: number) {
@@ -387,13 +332,6 @@ export function useHunts(benchmarkId: string) {
   }).data;
 }
 
-/** What a hunt's trial list asks for: a facet or all, a verdict or all, and the page. */
-export interface HuntTrialQuery {
-  facet: string;
-  verdict?: HuntVerdict;
-  offset: number;
-}
-
 export function useHuntTrials(benchmarkId: string, huntId: string, query: HuntTrialQuery, pageSize: number) {
   const locale = useLocale();
   return useSuspenseQuery({
@@ -417,13 +355,6 @@ export function useWorkbench() {
     queryKey: [CONSOLE_QUERY, 'workbench', locale],
     queryFn: () => responseBody(api.GET('/console/workbench', { params: { header: languageHeader(locale) } })),
   }).data;
-}
-
-/** What the changelog asks for: one benchmark or all, one kind of change or all, and the page. */
-export interface ChangelogQuery {
-  benchmarkId: string;
-  change?: RevisionChange;
-  offset: number;
 }
 
 /** Task versions are records, the same in every language. */

@@ -117,7 +117,7 @@ export function EntryRow({ tree, entry }: { tree: Tree; entry: BrowsedEntry }) {
   return (
     <button
       type="button"
-      className={clsx(styles.entry, directory && styles.directory, expanded && styles.expanded)}
+      className={clsx(styles.entry, directory && styles.directory)}
       disabled={closed}
       aria-expanded={directory && !closed ? expanded : undefined}
       aria-current={entry.path === tree.open ? 'true' : undefined}

@@ -1,10 +1,11 @@
 import { useTranslation } from 'react-i18next';
-import { Navigate, useLocation, useRouteError } from 'react-router-dom';
-import { ApiError, HuggingFaceUnreachableError } from '../../api/client';
-import { ConsoleHeader } from '../../components/shell/ConsoleHeader';
+import { useLocation, useRouteError } from 'react-router-dom';
+import { ApiError, HuggingFaceUnreachableError } from '../../api/errors';
 import { UnreachableRecords } from '../../components/run/HuggingFace';
+import { ConsoleHeader } from '../../components/shell/ConsoleHeader';
+import { LocaleNavigate } from '../../i18n/LocaleRouting';
 import { useLocale } from '../../i18n/localeContext';
-import { localizedPath, sitePath } from '../../i18n/locales';
+import { sitePath } from '../../i18n/locales';
 import { CONSOLE_PATH, signInPath } from '../../routes/console';
 import { ButtonLink } from '../../ui/controls';
 
@@ -15,7 +16,7 @@ export function ConsoleError() {
   const locale = useLocale();
   const { pathname, search } = useLocation();
   if (error instanceof ApiError && error.status === 401) {
-    return <Navigate replace to={localizedPath(locale, signInPath(`${sitePath(locale, pathname)}${search}`))} />;
+    return <LocaleNavigate replace to={signInPath(`${sitePath(locale, pathname)}${search}`)} />;
   }
   return (
     <div role="alert">
@@ -24,19 +25,6 @@ export function ConsoleError() {
       <ButtonLink to={CONSOLE_PATH} variant="line">{t('console.error.toConsole')}</ButtonLink>
     </div>
   );
-}
-
-/**
- * A change the API refused, said where it was asked for, in the reader's language when the place knows what the status
- * means there; a refused role always is. Any other failure is the page's error.
- */
-export function ChangeFailure({ error, reasons = {} }: { error: Error | null; reasons?: Partial<Record<number, string>> }) {
-  const { t } = useTranslation();
-  if (error !== null && !(error instanceof ApiError)) {
-    throw error;
-  }
-  const message = error && (reasons[error.status] ?? (error.status === 403 ? t('console.forbidden') : error.reason));
-  return error && <p className="t-small c-bad" role="alert">{t('console.failed', { message })}</p>;
 }
 
 export function ConsoleNotFound() {

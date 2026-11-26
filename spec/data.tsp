@@ -112,7 +112,7 @@ model BenchmarkFile {
 
 /** The pages whose parts differ by benchmark, each with the blocks it is made of for this benchmark. */
 model BenchmarkBlocks {
-  /** The console's comparison of a task's runs */
+  /** The comparison of a task's runs, on the console's task page and the public run records alike */
   @minItems(1)
   @uniqueItems
   comparison: ComparisonBlock[];

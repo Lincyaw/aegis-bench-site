@@ -2,8 +2,6 @@
 .page > header { margin-bottom: 0; }
 
 .section { display: grid; gap: var(--space-3); }
-.entrants { --columns: minmax(13rem, 1.6fr) minmax(10rem, 1.2fr) repeat(2, minmax(6rem, .8fr)) repeat(2, minmax(5rem, .6fr)); }
-.entrant { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-3); }
 
 .columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); align-items: start; }
 .panel { gap: var(--space-2); padding: var(--space-5); }
@@ -11,17 +9,7 @@
 /* Each item opens what it names; it lights up across the panel's padding. */
 .list > li > a { margin: 0 calc(-1 * var(--space-3)); padding: var(--space-3); border-radius: var(--radius-md); transition: background-color var(--duration-base); }
 .list > li > a:hover { background: var(--bg-muted); }
-.failure { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-1) var(--space-4); align-items: center; }
-.who { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-3); }
-.failure > :nth-child(2) { grid-column: 1; }
-.meta { display: flex; flex-direction: column; align-items: flex-end; gap: var(--space-1); grid-row: 1 / span 2; grid-column: 2; }
-.pending { display: grid; gap: var(--space-1); }
 
 @media (max-width: 1100px) {
   .columns { grid-template-columns: minmax(0, 1fr); }
-}
-
-@media (max-width: 760px) {
-  .entrants { --columns: minmax(0, 1fr) auto; }
-  .entrants [role="row"] > :is(:nth-child(3), :nth-child(4), :nth-child(5), :nth-child(6)) { display: none; }
 }

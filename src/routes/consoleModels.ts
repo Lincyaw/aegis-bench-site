@@ -1,6 +1,5 @@
-import type { ModelTaskQuery } from '../api/consoleClient';
 import { consoleTaskOrderValues, consoleTaskSpreadValues } from '../api/schema';
-import type { TaskOrder, TaskSpread } from '../api/types';
+import type { ModelTaskQuery, TaskOrder, TaskSpread } from '../api/types';
 import { consoleBenchmarkPath } from './console';
 import { TASK_ORDER_DEFAULT } from './consoleTasks';
 

@@ -1,7 +1,7 @@
 import { clsx } from 'clsx';
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { Half, Stage } from '../../api/client';
+import type { Half, Stage } from '../../api/types';
 import { LocaleLink } from '../../i18n/LocaleRouting';
 import { useLocalizedNavigate } from '../../i18n/localeContext';
 import { benchmarkPath } from '../../routes/site';

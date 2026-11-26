@@ -2,15 +2,15 @@ import * as Popover from '@radix-ui/react-popover';
 import { clsx } from 'clsx';
 import { Suspense, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Navigate, Outlet, useLocation, useMatches } from 'react-router-dom';
+import { Outlet, useLocation, useMatches } from 'react-router-dom';
 import { useConsoleBenchmarks, useConsoleSession, useSettings, useSignOut } from '../../api/consoleClient';
 import type { ConsoleUser } from '../../api/types';
 import { BrandMark } from '../../components/shell/BrandMark';
 import { LanguageSwitch } from '../../components/shell/LanguageSwitch';
 import { NavIconOf } from '../../components/shell/NavIcons';
-import { LocaleLink } from '../../i18n/LocaleRouting';
+import { LocaleLink, LocaleNavigate } from '../../i18n/LocaleRouting';
 import { useLocale, useLocalizedNavigate } from '../../i18n/localeContext';
-import { groupedNumber, localizedPath, sitePath } from '../../i18n/locales';
+import { groupedNumber, sitePath } from '../../i18n/locales';
 import { CONSOLE_PATH, benchmarkSectionOf, benchmarkSectionPath, signInPath } from '../../routes/console';
 import { benchmarkPath } from '../../routes/site';
 import { Loading } from '../../ui/content';
@@ -31,7 +31,7 @@ export function ConsoleLayout() {
   const [menuOpen, setMenuOpen] = useState(false);
   const benchmarkId = useMatches().at(-1)?.params.benchmarkId;
   if (!session.user) {
-    return <Navigate replace to={localizedPath(locale, signInPath(`${sitePath(locale, pathname)}${search}`))} />;
+    return <LocaleNavigate replace to={signInPath(`${sitePath(locale, pathname)}${search}`)} />;
   }
   return (
     <div className={styles.console}>
@@ -51,7 +51,7 @@ export function ConsoleBar({ user, benchmarkId, menuOpen, onMenu }: { user: Cons
   return (
     <header className={styles.bar}>
       <span className={styles.menuButton}><IconButton label={t('console.openMenu')} expanded={menuOpen} onClick={onMenu}><MenuIcon /></IconButton></span>
-      <LocaleLink className={styles.brand} to="/console" aria-label={t('console.home')}>
+      <LocaleLink className={styles.brand} to={CONSOLE_PATH} aria-label={t('console.home')}>
         <BrandMark />
         <span className="t-small c-muted">{t('console.name')}</span>
       </LocaleLink>
@@ -100,7 +100,7 @@ export function ConsoleSidebar({ benchmarkId, open, onNavigate }: { benchmarkId:
   const current = benchmarkSectionOf(path);
   const benchmark = benchmarks.find(candidate => candidate.id === benchmarkId);
   return (
-    <nav className={clsx(styles.sidebar, open && styles.open)} aria-label={t('console.mainNav')}>
+    <nav className={styles.sidebar} data-state={open ? 'open' : 'closed'} aria-label={t('console.mainNav')}>
       <Select
         label={t('console.context')}
         className={styles.context}

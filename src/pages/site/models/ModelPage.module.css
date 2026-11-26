@@ -4,33 +4,12 @@
 .name { --badge-size: var(--space-8); display: flex; align-items: center; gap: var(--space-4); }
 .map { width: 100%; max-width: var(--measure-intro); justify-self: end; }
 
-.section { padding-bottom: var(--space-96); }
-.standings { --columns: 8.75rem 1fr 1fr 7rem 1.4fr 5rem; }
-.standings [role="row"] > span:first-child { display: inline-flex; align-items: center; gap: var(--space-2); }
-.score { display: grid; grid-template-columns: 6.25rem auto; align-items: center; gap: var(--space-3); }
-
-.harnesses { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-6); }
-.harness { display: grid; gap: var(--space-3); align-content: start; padding-top: var(--space-4); border-top: var(--rule-hairline); }
-.harnessRow { display: grid; grid-template-columns: 1fr auto; gap: var(--space-1); }
-.harnessRow > :last-child { grid-column: 1 / -1; }
-
-.reports a { display: grid; grid-template-columns: 6rem 1fr var(--space-6); gap: var(--space-3); align-items: center; padding: var(--space-4) 0; border-top: var(--rule-hairline); }
-.reports li:last-child a { border-bottom: var(--rule-hairline); }
-.reports a:hover span:nth-child(2) { text-decoration: underline; text-underline-offset: var(--space-1); }
-
 @media (max-width: 1100px) {
   .hero { grid-template-columns: 1fr; }
   .map { justify-self: stretch; }
-  .harnesses { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 760px) {
   .page { padding-top: var(--space-6); }
   .hero { padding-bottom: var(--space-10); }
-  .section { padding-bottom: var(--space-64); }
-  .standings { --columns: 1fr auto; }
-  .standings [role="row"] > :is(:nth-child(1), :nth-child(3), :nth-child(6)) { display: none; }
-  .harnesses { grid-template-columns: 1fr; }
-  .reports a { grid-template-columns: 1fr var(--space-6); }
-  .reports a span:first-child { display: none; }
 }

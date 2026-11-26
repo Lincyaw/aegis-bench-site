@@ -6,7 +6,7 @@ import { FailureBar, FailureLegend } from '../../../components/result/FailureBar
 import { PassRate } from '../../../components/result/PassRate';
 import { ConsoleHeader } from '../../../components/shell/ConsoleHeader';
 import { LocaleLink } from '../../../i18n/LocaleRouting';
-import { useLocale, useLocalizedNavigate } from '../../../i18n/localeContext';
+import { useLocale } from '../../../i18n/localeContext';
 import { groupedNumber } from '../../../i18n/locales';
 import { consoleBenchmarkPath } from '../../../routes/console';
 import { collectionPath } from '../../../routes/consoleCollections';
@@ -17,7 +17,6 @@ import styles from './CollectionPages.module.css';
 export function CollectionListPage() {
   const { t } = useTranslation();
   const locale = useLocale();
-  const navigate = useLocalizedNavigate();
   const { benchmarkId = '' } = useParams();
   const benchmark = useConsoleBenchmark(benchmarkId);
   const collections = useCollections(benchmark.id);
@@ -35,8 +34,8 @@ export function CollectionListPage() {
         {collections.map(({ tag, taskCount, result }) => {
           const to = collectionPath(benchmark.id, tag);
           return (
-            <div key={tag} className={clsx(table.row, table.link)} role="row" onClick={event => { if (!(event.target as HTMLElement).closest('a')) { navigate(to); } }}>
-              <span role="cell"><LocaleLink to={to} className="t-label">{tag}</LocaleLink></span>
+            <div key={tag} className={clsx(table.row, table.link)} role="row">
+              <span role="cell"><LocaleLink to={to} className={clsx(table.primary, 't-label')}>{tag}</LocaleLink></span>
               <span role="cell" className="t-numeric c-muted">{groupedNumber(locale, taskCount)}</span>
               <span role="cell"><PassRate rate={result.passRate} /></span>
               <span role="cell" className="t-numeric c-muted">{groupedNumber(locale, result.passed + result.failed)}</span>

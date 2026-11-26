@@ -1,0 +1,67 @@
+.scene { position: fixed; inset: 0; z-index: 0; display: block; width: 100%; height: 100%; }
+.veil { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
+.veilSide { opacity: 0; background: linear-gradient(90deg, color-mix(in srgb, var(--bg-page) 96%, transparent) 0%, color-mix(in srgb, var(--bg-page) 86%, transparent) 36%, transparent 58%); }
+.veilDim { opacity: 0; background: var(--bg-page); }
+.veilHero { background: radial-gradient(ellipse 46% 34% at 50% 46%, color-mix(in srgb, var(--bg-page) 78%, transparent) 0%, color-mix(in srgb, var(--bg-page) 40%, transparent) 55%, transparent 100%); }
+.tether { position: fixed; inset: 0; z-index: 2; width: 100%; height: 100%; pointer-events: none; }
+.tether line { opacity: 0; stroke: var(--half-color); stroke-width: 1; stroke-dasharray: 2 4; }
+
+/* Above the copy so that nodes and scenes can be clicked; the layers themselves let clicks through. */
+.overlay { position: fixed; inset: 0; z-index: 4; overflow: hidden; pointer-events: none; }
+.stationLabel, .lobe { position: absolute; left: 0; top: 0; opacity: 0; white-space: nowrap; will-change: transform, opacity; }
+.stationLabel { padding-bottom: var(--space-3); color: var(--text-main); font: var(--type-small); text-shadow: var(--shadow-text-halo); cursor: pointer; }
+.stationLabel b { margin-right: var(--space-2); color: var(--text-faint); font: var(--type-mono); }
+.stationLabel.planned { color: var(--text-muted); cursor: default; }
+.lobe { display: flex; flex-direction: column; align-items: center; gap: var(--space-px); }
+.lobe strong { padding-left: 0.4em; color: var(--half-color); font: var(--type-label); letter-spacing: 0.4em; }
+.lobe span { padding-left: 0.36em; color: var(--text-faint); font: var(--type-mono); letter-spacing: 0.36em; }
+
+/* A node's hotspot rings it on hover and names its benchmarks; a node still being built only says so. */
+.hotspot { --hotspot: calc(var(--space-8) + var(--space-px)); position: absolute; left: 0; top: 0; width: var(--hotspot); height: var(--hotspot); margin: calc(var(--hotspot) / -2) 0 0 calc(var(--hotspot) / -2); border-radius: var(--radius-full); opacity: 0; pointer-events: none; }
+.hotspot::before { content: ""; position: absolute; inset: var(--space-2); border: var(--rule-hairline); border-color: var(--half-color); border-radius: var(--radius-full); opacity: 0; transition: opacity var(--duration-base) var(--ease-out); }
+.hotspot::after {
+  content: attr(data-tip);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + var(--space-2));
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  background: var(--bg-inverted);
+  color: var(--text-on-inverted);
+  font: var(--type-micro);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, var(--space-1));
+  transition: opacity var(--duration-base) var(--ease-out), transform var(--duration-base) var(--ease-out);
+}
+.hotspot:hover::before, .hotspot:focus-visible::before { opacity: 1; }
+.hotspot:hover::after, .hotspot:focus-visible::after { opacity: 1; transform: translate(-50%, 0); }
+.hotspot.planned { cursor: default; }
+.hotspot.planned::before { border-style: dashed; border-color: var(--text-faint); }
+
+.rail { position: fixed; top: 50%; right: max(var(--space-5), calc(env(safe-area-inset-right, 0rem) + var(--space-3))); z-index: 10; display: flex; flex-direction: column; gap: var(--space-1); transform: translateY(-50%); }
+.rail button { position: relative; display: flex; align-items: center; justify-content: flex-end; gap: var(--space-2); padding: var(--space-1); color: var(--text-faint); font: var(--type-mono); }
+.rail button[aria-current] { color: var(--text-main); }
+.railDot { width: var(--size-dot); height: var(--size-dot); border: var(--size-stroke) dashed var(--text-faint); border-radius: var(--radius-full); transition: background-color var(--duration-base) var(--ease-out), border-color var(--duration-base) var(--ease-out); }
+.covered .railDot { border: var(--size-stroke) solid var(--half-color); background: var(--half-color); }
+.rail button[aria-current] .railDot { outline: var(--size-border-thick) solid color-mix(in srgb, var(--half-color, var(--text-faint)) 30%, transparent); outline-offset: var(--size-border-thick); }
+.railName { position: absolute; right: var(--space-10); color: var(--text-main); font: var(--type-micro); white-space: nowrap; opacity: 0; pointer-events: none; transform: translateX(var(--space-1)); transition: opacity var(--duration-base) var(--ease-out), transform var(--duration-base) var(--ease-out); }
+.rail button:hover .railName, .rail button:focus-visible .railName { opacity: 1; transform: none; }
+.rail hr { width: var(--size-dot); margin: var(--space-1) var(--space-1) var(--space-1) auto; border: 0; border-top: var(--rule-emphasis); }
+
+/* The chooser approaches from its anchor's side, as menus do, and never zooms. */
+@keyframes approach { from { opacity: 0; transform: translateY(calc(-1 * var(--space-1))); } }
+.chooser { z-index: 40; display: grid; min-width: 13.75rem; padding: var(--space-1); border: var(--size-hairline) solid var(--border-glass); border-radius: var(--radius-lg); background: var(--bg-glass-strong); backdrop-filter: blur(var(--blur-glass)); box-shadow: var(--shadow-float); }
+.chooser[data-state="open"] { animation: approach var(--duration-base) var(--ease-out); }
+/* The chooser only holds focus until the reader tabs to a benchmark, which then shows the ring. */
+.chooser:focus-visible { outline: none; }
+.chooser p { padding: var(--space-1) var(--space-3) var(--space-2); }
+.chooser a { display: flex; justify-content: space-between; gap: var(--space-4); padding: var(--space-2) var(--space-3); border-radius: var(--radius-md); font: var(--type-label); }
+.chooser a::after { content: "→"; color: var(--text-faint); font-weight: 400; }
+.chooser a:hover { background: var(--bg-muted); }
+
+@media (max-width: 760px) {
+  .rail { display: none; }
+  .veilSide { background: linear-gradient(0deg, color-mix(in srgb, var(--bg-page) 97%, transparent) 0%, color-mix(in srgb, var(--bg-page) 82%, transparent) 44%, transparent 62%); }
+}

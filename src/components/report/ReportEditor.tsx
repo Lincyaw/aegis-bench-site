@@ -1,0 +1,114 @@
+import { clsx } from 'clsx';
+import { useRef, useState, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
+import { localeValues } from '../../api/schema';
+import type { Locale, ReportDraft, ReportSources } from '../../api/types';
+import { reportFileOf } from '../../articles/library';
+import { useLocale } from '../../i18n/localeContext';
+import { dateTimeOf } from '../../i18n/locales';
+import { Tag } from '../../ui/content';
+import content from '../../ui/content.module.css';
+import { Button, SegmentedControl } from '../../ui/controls';
+import controls from '../../ui/controls.module.css';
+import styles from './ReportEditor.module.css';
+
+/** How the editor lays out a document: its source beside its preview, or either alone. */
+const EDITOR_VIEWS = ['split', 'source', 'preview'] as const;
+type EditorView = (typeof EDITOR_VIEWS)[number];
+
+/** The blocks the toolbar inserts at the cursor; a run block waits for the run's id. */
+const INSERTS = [
+  { label: 'console.report.insert.callout', snippet: '<Callout>\n\n</Callout>' },
+  { label: 'console.report.insert.facts', snippet: '<Facts>\n  <Fact label="">\n  </Fact>\n</Facts>' },
+  { label: 'console.report.insert.replay', snippet: '<Replay run="" />' },
+  { label: 'console.report.insert.number', snippet: '<RunNumber run="" field="steps" />' },
+] as const;
+
+/**
+ * A document in one language at a time, its source beside its preview or either alone, with blocks to insert while it
+ * is editable. The page renders the preview of the language and format shown.
+ */
+export function DocumentEditor({ slug, sources, editing, onChange, preview }: {
+  slug: string; sources: ReportSources; editing: boolean; onChange: (sources: ReportSources) => void; preview: (source: string, format: 'md' | 'mdx') => ReactNode;
+}) {
+  const { t } = useTranslation();
+  const [language, setLanguage] = useState<Locale>(useLocale());
+  const [view, setView] = useState<EditorView>('split');
+  const source = useRef<HTMLTextAreaElement>(null);
+  const file = reportFileOf(slug, language);
+  const insert = (snippet: string) => {
+    const area = source.current;
+    if (!area) {
+      throw new Error('the toolbar shows only beside the source');
+    }
+    const text = sources[language];
+    onChange({ ...sources, [language]: `${text.slice(0, area.selectionStart)}${snippet}${text.slice(area.selectionEnd)}` });
+  };
+  return (
+    <>
+      <div className={styles.toolbar}>
+        <SegmentedControl label={t('console.report.language')} value={language} onChange={setLanguage} choices={localeValues.map(value => ({ value, label: t(`console.report.languages.${value}`) }))} />
+        <SegmentedControl label={t('console.report.view')} value={view} onChange={setView} choices={EDITOR_VIEWS.map(value => ({ value, label: t(`console.report.views.${value}`) }))} />
+        {editing && view !== 'preview' && (
+          <div className={styles.inserts} role="group" aria-label={t('console.report.insert.label')}>
+            {INSERTS.map(entry => <Button key={entry.label} variant="line" onClick={() => insert(entry.snippet)}>{t(entry.label)}</Button>)}
+          </div>
+        )}
+      </div>
+      <div className={styles.panes} data-view={view}>
+        {view !== 'preview' && (
+          <label className={styles.sourcePane}>
+            <span className="t-mono c-faint">{file.slice(1)}</span>
+            <textarea ref={source} className={styles.source} spellCheck={false} readOnly={!editing} value={sources[language]} onChange={event => onChange({ ...sources, [language]: event.target.value })} />
+          </label>
+        )}
+        {view !== 'source' && preview(sources[language], file.endsWith('.md') ? 'md' : 'mdx')}
+      </div>
+    </>
+  );
+}
+
+/** An approved draft's files, each to download and commit at the path it names. */
+export function ExportPanel({ report }: { report: ReportDraft }) {
+  const { t } = useTranslation();
+  return (
+    <section className={clsx(content.panel, styles.action)}>
+      <h2 className="t-heading">{t('console.report.export.title')}</h2>
+      <p className="t-small c-muted">{t('console.report.export.lead')}</p>
+      <ul className={styles.files}>
+        {localeValues.map(locale => {
+          const file = reportFileOf(report.slug, locale).slice(1);
+          return (
+            <li key={locale}>
+              <span className="t-mono">{file}</span>
+              <a className={clsx(controls.pill, controls.medium, 'loop-edge')} href={`data:text/markdown;charset=utf-8,${encodeURIComponent(report.sources[locale])}`} download={file.split('/').at(-1)}>{t('console.report.export.download')}</a>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+}
+
+/** Every review of the draft, oldest first, across its submissions. */
+export function ReviewHistory({ report }: { report: ReportDraft }) {
+  const { t } = useTranslation();
+  const locale = useLocale();
+  return (
+    <section className={styles.section}>
+      <h2 className="t-heading">{t('console.report.history')}</h2>
+      <ol className={styles.reviews}>
+        {report.reviews.map(entry => (
+          <li key={`${entry.reviewer}-${entry.at}`}>
+            <span className={styles.reviewHead}>
+              <span className="t-label">{entry.reviewer}</span>
+              <Tag dashed={entry.verdict === 'requestChanges'}>{t(`console.report.verdict.${entry.verdict}`)}</Tag>
+              <span className="t-mono c-faint">{dateTimeOf(locale, entry.at)}</span>
+            </span>
+            {entry.comment && <span className="t-small c-muted">{entry.comment}</span>}
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
+}

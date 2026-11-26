@@ -1,6 +1,5 @@
-import type { ConsoleTaskQuery } from '../api/consoleClient';
 import { consoleTaskOrderValues, consoleTaskSpreadValues } from '../api/schema';
-import type { TaskOrder, TaskSpread } from '../api/types';
+import type { ConsoleTaskQuery, TaskOrder, TaskSpread } from '../api/types';
 import { parseComparisonView, setComparisonParams, type ComparisonView } from './comparison';
 import { consoleBenchmarkPath } from './console';
 

@@ -8,6 +8,8 @@ import { FailureClassTag } from '../../../components/result/FailureClassTag';
 import { formatCost } from '../../../components/result/presentation';
 import { HuggingFaceBoundary, HuggingFaceNote } from '../../../components/run/HuggingFace';
 import { OutcomeBadge } from '../../../components/run/Outcome';
+import { FailureTab, GradingTab, InputTab, OutputTab } from '../../../components/run/RunDetail';
+import { RunUsageTab } from '../../../components/run/RunUsage';
 import { ConsoleHeader } from '../../../components/shell/ConsoleHeader';
 import { TrajectoryView } from '../../../components/trajectory/TrajectoryView';
 import { useLocale } from '../../../i18n/localeContext';
@@ -20,9 +22,8 @@ import { FactList, Loading } from '../../../ui/content';
 import { ButtonLink } from '../../../ui/controls';
 import { TabRow } from '../../../ui/navigation';
 import navigation from '../../../ui/navigation.module.css';
-import { FailureTab, GradingTab, InputTab, OutputTab } from '../../site/runs/RunDetailPanel';
 import { RunHuntsTab } from './RunHuntsTab';
-import { RunEventsTab, RunUsageTab } from './RunRecordTabs';
+import { RunEventsTab } from './RunRecordTabs';
 import styles from './RunDetailPage.module.css';
 
 /**

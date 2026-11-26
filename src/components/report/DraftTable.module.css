@@ -1,0 +1,8 @@
+.drafts { --columns: minmax(14rem, 2fr) 7rem 6rem 7rem 9rem; }
+.stacked { display: grid; gap: var(--space-px); min-width: 0; }
+.stacked a:hover { text-decoration: underline; text-underline-offset: var(--space-1); }
+
+@media (max-width: 760px) {
+  .drafts { --columns: minmax(0, 1fr) auto; }
+  .drafts [role="row"] > :is(:nth-child(3), :nth-child(4), :nth-child(5)) { display: none; }
+}

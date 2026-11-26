@@ -1,6 +1,6 @@
 import { Suspense, useEffect, useState, type ComponentProps } from 'react';
 import { I18nextProvider } from 'react-i18next';
-import { Link, NavLink, Outlet, ScrollRestoration, useLocation } from 'react-router-dom';
+import { Link, NavLink, Navigate, Outlet, ScrollRestoration, useLocation } from 'react-router-dom';
 import { I18N } from './i18n';
 import { LocaleContext, useLocale } from './localeContext';
 import { localizedPath, sitePath, type Locale } from './locales';
@@ -40,4 +40,9 @@ export function LocaleLink({ to, ...props }: Omit<ComponentProps<typeof Link>, '
 
 export function LocaleNavLink({ to, ...props }: Omit<ComponentProps<typeof NavLink>, 'to'> & { to: string }) {
   return <NavLink to={localizedPath(useLocale(), to)} {...props} />;
+}
+
+/** A redirect to a site path in the current locale. */
+export function LocaleNavigate({ to, ...props }: Omit<ComponentProps<typeof Navigate>, 'to'> & { to: string }) {
+  return <Navigate to={localizedPath(useLocale(), to)} {...props} />;
 }

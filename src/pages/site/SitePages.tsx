@@ -4,7 +4,7 @@ import { useLocation, useRouteError } from 'react-router-dom';
 import { useSiteInfo } from '../../api/client';
 import { useLocale } from '../../i18n/localeContext';
 import { sitePath } from '../../i18n/locales';
-import { BENCHMARKS_PATH, CONTACT_ANCHOR } from '../../routes/site';
+import { ABOUT_PATH, BENCHMARKS_PATH, CONTACT_ANCHOR } from '../../routes/site';
 import { ButtonLink } from '../../ui/controls';
 import { FOOTER_LINKS } from './siteNav';
 import styles from './SiteLayout.module.css';
@@ -19,7 +19,7 @@ export function PendingPage() {
     <div className={clsx('page', styles.pending)}>
       <h1 className="t-display">{link ? t(link.label) : t('site.notFound.title')}</h1>
       <p className="t-lead c-muted">{link ? t('site.pending') : t('site.notFound.body')}</p>
-      {path === '/about' && <p id={CONTACT_ANCHOR} className="t-body">{t('site.contactLead')}<a className="c-main" href={`mailto:${contactEmail}`}>{contactEmail}</a></p>}
+      {path === ABOUT_PATH &&<p id={CONTACT_ANCHOR} className="t-body">{t('site.contactLead')}<a className="c-main" href={`mailto:${contactEmail}`}>{contactEmail}</a></p>}
       <ButtonLink to={BENCHMARKS_PATH} variant="line">{t('site.toBenchmarks')}</ButtonLink>
     </div>
   );

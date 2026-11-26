@@ -1,43 +1,29 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { clsx } from 'clsx';
-import { useDeferredValue, useRef, useState, type FormEvent } from 'react';
+import { useDeferredValue, useState, type FormEvent } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import {
   useConsoleBenchmark, useConsoleUser, useDiscardReport, useReportDraft, useReviewReport, useSettings, useSubmitReport, useUpdateReport,
 } from '../../../api/consoleClient';
-import { localeValues } from '../../../api/schema';
-import type { Locale, ReportDraft, ReportSources } from '../../../api/types';
+import type { ReportDraft } from '../../../api/types';
 import { DocumentBody } from '../../../articles/Document';
 import { evaluateDocument } from '../../../articles/evaluate';
-import { ReportFrontmatter, reportFileOf } from '../../../articles/library';
+import { ReportFrontmatter } from '../../../articles/library';
 import { Replay, RunNumber } from '../../../articles/runBlocks';
+import { DocumentEditor, ExportPanel, ReviewHistory } from '../../../components/report/ReportEditor';
+import { ReportStatusTag } from '../../../components/report/ReportLabels';
+import { ChangeFailure } from '../../../components/shell/ChangeFailure';
 import { ConsoleHeader } from '../../../components/shell/ConsoleHeader';
 import { useLocale, useLocalizedNavigate } from '../../../i18n/localeContext';
 import { dateTimeOf } from '../../../i18n/locales';
 import { consoleBenchmarkPath } from '../../../routes/console';
 import { consoleReportsPath } from '../../../routes/consoleReports';
-import { Tag } from '../../../ui/content';
 import content from '../../../ui/content.module.css';
-import { Button, SegmentedControl, SubmitButton, TextArea, ToggleChip } from '../../../ui/controls';
-import controls from '../../../ui/controls.module.css';
-import { ChangeFailure } from '../ConsolePages';
+import { Button, SubmitButton, TextArea, ToggleChip } from '../../../ui/controls';
 import { mayEdit } from '../roles';
-import { ReportStatusTag } from './ReportListPage';
 import styles from './ReportPages.module.css';
-
-/** How the editor lays out a document: its source beside its preview, or either alone. */
-const EDITOR_VIEWS = ['split', 'source', 'preview'] as const;
-type EditorView = (typeof EDITOR_VIEWS)[number];
-
-/** The blocks the toolbar inserts at the cursor; a run block waits for the run's id. */
-const INSERTS = [
-  { label: 'console.report.insert.callout', snippet: '<Callout>\n\n</Callout>' },
-  { label: 'console.report.insert.facts', snippet: '<Facts>\n  <Fact label="">\n  </Fact>\n</Facts>' },
-  { label: 'console.report.insert.replay', snippet: '<Replay run="" />' },
-  { label: 'console.report.insert.number', snippet: '<RunNumber run="" field="steps" />' },
-] as const;
 
 /** A report draft: its documents in each language beside their preview, the checks before review, its reviews and its files. */
 export function ReportEditorPage() {
@@ -80,7 +66,7 @@ export function ReportEditor({ report }: { report: ReportDraft }) {
   const ready = !unsaved && checks.every(check => checked.includes(check));
   return (
     <>
-      <DocumentEditor slug={report.slug} sources={sources} editing={editing} onChange={setSources} />
+      <DocumentEditor slug={report.slug} sources={sources} editing={editing} onChange={setSources} preview={(source, format) => <ReportPreview source={source} format={format} />} />
       <section className={clsx(content.panel, styles.checks)}>
         <div className={styles.checksHead}>
           <h2 className="t-heading">{t('console.report.checks')}</h2>
@@ -102,45 +88,6 @@ export function ReportEditor({ report }: { report: ReportDraft }) {
       )}
       <ChangeFailure error={update.error} reasons={{ 409: t('console.report.changedElsewhere'), 422: t('console.report.badFrontmatter') }} />
       <ChangeFailure error={submit.error} reasons={{ 409: t('console.report.checksFirst') }} />
-    </>
-  );
-}
-
-/** A document in one language at a time, its source beside its preview or either alone, with blocks to insert while it is editable. */
-export function DocumentEditor({ slug, sources, editing, onChange }: { slug: string; sources: ReportSources; editing: boolean; onChange: (sources: ReportSources) => void }) {
-  const { t } = useTranslation();
-  const [language, setLanguage] = useState<Locale>(useLocale());
-  const [view, setView] = useState<EditorView>('split');
-  const source = useRef<HTMLTextAreaElement>(null);
-  const file = reportFileOf(slug, language);
-  const insert = (snippet: string) => {
-    const area = source.current;
-    if (!area) {
-      throw new Error('the toolbar shows only beside the source');
-    }
-    const text = sources[language];
-    onChange({ ...sources, [language]: `${text.slice(0, area.selectionStart)}${snippet}${text.slice(area.selectionEnd)}` });
-  };
-  return (
-    <>
-      <div className={styles.toolbar}>
-        <SegmentedControl label={t('console.report.language')} value={language} onChange={setLanguage} choices={localeValues.map(value => ({ value, label: t(`console.report.languages.${value}`) }))} />
-        <SegmentedControl label={t('console.report.view')} value={view} onChange={setView} choices={EDITOR_VIEWS.map(value => ({ value, label: t(`console.report.views.${value}`) }))} />
-        {editing && view !== 'preview' && (
-          <div className={styles.inserts} role="group" aria-label={t('console.report.insert.label')}>
-            {INSERTS.map(entry => <Button key={entry.label} variant="line" onClick={() => insert(entry.snippet)}>{t(entry.label)}</Button>)}
-          </div>
-        )}
-      </div>
-      <div className={styles.panes} data-view={view}>
-        {view !== 'preview' && (
-          <label className={styles.sourcePane}>
-            <span className="t-mono c-faint">{file.slice(1)}</span>
-            <textarea ref={source} className={styles.source} spellCheck={false} readOnly={!editing} value={sources[language]} onChange={event => onChange({ ...sources, [language]: event.target.value })} />
-          </label>
-        )}
-        {view !== 'source' && <ReportPreview source={sources[language]} format={file.endsWith('.md') ? 'md' : 'mdx'} />}
-      </div>
     </>
   );
 }
@@ -196,51 +143,6 @@ export function ReviewPanel({ report }: { report: ReportDraft }) {
         </>
       )}
       <ChangeFailure error={review.error} reasons={{ 409: t('console.report.review.conflict') }} />
-    </section>
-  );
-}
-
-/** An approved draft's files, each to download and commit at the path it names. */
-export function ExportPanel({ report }: { report: ReportDraft }) {
-  const { t } = useTranslation();
-  return (
-    <section className={clsx(content.panel, styles.action)}>
-      <h2 className="t-heading">{t('console.report.export.title')}</h2>
-      <p className="t-small c-muted">{t('console.report.export.lead')}</p>
-      <ul className={styles.files}>
-        {localeValues.map(locale => {
-          const file = reportFileOf(report.slug, locale).slice(1);
-          return (
-            <li key={locale}>
-              <span className="t-mono">{file}</span>
-              <a className={clsx(controls.pill, controls.medium, 'loop-edge')} href={`data:text/markdown;charset=utf-8,${encodeURIComponent(report.sources[locale])}`} download={file.split('/').at(-1)}>{t('console.report.export.download')}</a>
-            </li>
-          );
-        })}
-      </ul>
-    </section>
-  );
-}
-
-/** Every review of the draft, oldest first, across its submissions. */
-export function ReviewHistory({ report }: { report: ReportDraft }) {
-  const { t } = useTranslation();
-  const locale = useLocale();
-  return (
-    <section className={styles.section}>
-      <h2 className="t-heading">{t('console.report.history')}</h2>
-      <ol className={styles.reviews}>
-        {report.reviews.map(entry => (
-          <li key={`${entry.reviewer}-${entry.at}`}>
-            <span className={styles.reviewHead}>
-              <span className="t-label">{entry.reviewer}</span>
-              <Tag dashed={entry.verdict === 'requestChanges'}>{t(`console.report.verdict.${entry.verdict}`)}</Tag>
-              <span className="t-mono c-faint">{dateTimeOf(locale, entry.at)}</span>
-            </span>
-            {entry.comment && <span className="t-small c-muted">{entry.comment}</span>}
-          </li>
-        ))}
-      </ol>
     </section>
   );
 }

@@ -2,20 +2,14 @@ import { clsx } from 'clsx';
 import { useDeferredValue } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { useConsoleBenchmark, useHuntTrials, useHunts, type HuntTrialQuery } from '../../../api/consoleClient';
+import { useConsoleBenchmark, useHuntTrials, useHunts } from '../../../api/consoleClient';
 import { consoleHuntVerdictValues } from '../../../api/schema';
-import type { Hunt, HuntFacet, HuntTrial, HuntVerdict } from '../../../api/types';
-import { ModelLabel } from '../../../components/model/ModelBadge';
-import { formatRate } from '../../../components/result/presentation';
+import type { Hunt, HuntTrialQuery, HuntVerdict } from '../../../api/types';
+import { FacetPanel, HuntCoverageTiles } from '../../../components/hunt/Hunt';
+import { HuntTrialRow } from '../../../components/hunt/HuntTrials';
 import { ConsoleHeader } from '../../../components/shell/ConsoleHeader';
-import { LocaleLink } from '../../../i18n/LocaleRouting';
-import { useLocale } from '../../../i18n/localeContext';
-import { groupedNumber } from '../../../i18n/locales';
 import { EVERY_CHOICE, consoleBenchmarkPath } from '../../../routes/console';
 import { HUNT_TRIAL_PAGE_SIZE, analysisPath, huntTrialSearch, parseHuntTrialQuery } from '../../../routes/consoleAnalysis';
-import { consoleRunPath } from '../../../routes/consoleRuns';
-import { StatTile, StatTiles, Tag } from '../../../ui/content';
-import content from '../../../ui/content.module.css';
 import { Select } from '../../../ui/controls';
 import { Pager } from '../../../ui/navigation';
 import table from '../../../ui/table.module.css';
@@ -47,68 +41,6 @@ export function HuntPage() {
       </section>
       <HuntTrials benchmarkId={benchmark.id} hunt={hunt} query={query} onChange={update} />
     </div>
-  );
-}
-
-export function HuntCoverageTiles({ hunt }: { hunt: Hunt }) {
-  const { t } = useTranslation();
-  const locale = useLocale();
-  const { coverage, calibration } = hunt;
-  return (
-    <>
-      <StatTiles>
-        <StatTile label={t('console.analysis.stats.found')} value={groupedNumber(locale, hunt.found)} note={t('console.analysis.stats.foundNote')} />
-        <StatTile label={t('console.analysis.stats.read')} value={groupedNumber(locale, coverage.read)} note={t('console.analysis.stats.readNote', { trajectories: coverage.trajectories })} />
-        <StatTile label={t('console.analysis.stats.marked')} value={groupedNumber(locale, coverage.marked)} />
-        <StatTile
-          label={t('console.analysis.stats.missUpper')} value={coverage.missShareUpper === undefined ? '—' : formatRate(coverage.missShareUpper)}
-          note={t('console.analysis.stats.missNote', { reads: coverage.randomReads, finds: coverage.randomFinds })}
-        />
-      </StatTiles>
-      {calibration.agreement !== undefined && <p className="t-small c-muted">{t('console.analysis.calibration', { pairs: calibration.pairs, agreement: formatRate(calibration.agreement) })}</p>}
-    </>
-  );
-}
-
-/** A kind of behaviour: what counts and what does not, how often it was confirmed and marked, and how its probes held up. */
-export function FacetPanel({ facet, onTrials }: { facet: HuntFacet; onTrials: () => void }) {
-  const { t } = useTranslation();
-  return (
-    <article className={clsx(content.panel, styles.facet)}>
-      <header className={styles.facetHead}>
-        <span className="t-label">{facet.name}</span>
-        {facet.edge && <Tag>{t(`console.analysis.edge.${facet.edge}`)}</Tag>}
-        <button type="button" className={clsx(styles.facetCounts, 't-micro')} onClick={onTrials}>{t('console.analysis.facetCounts', { found: facet.found, marked: facet.marked })} →</button>
-      </header>
-      <p className="t-small">{facet.definition}</p>
-      <p className="t-micro c-faint">{t('console.analysis.excludes', { excludes: facet.excludes })}</p>
-      <div className={clsx(table.table, styles.probes)} role="table" aria-label={facet.name}>
-        <div className={clsx(table.row, table.head, 't-micro c-faint')} role="row">
-          <span role="columnheader">{t('console.analysis.probe.name')}</span>
-          <span role="columnheader">{t('console.analysis.probe.kind')}</span>
-          <span role="columnheader">{t('console.analysis.probe.hits')}</span>
-          <span role="columnheader">{t('console.analysis.probe.read')}</span>
-          <span role="columnheader">{t('console.analysis.probe.found')}</span>
-          <span role="columnheader">{t('console.analysis.probe.precision')}</span>
-          <span role="columnheader">{t('console.analysis.probe.unread')}</span>
-        </div>
-        {facet.probes.map(probe => (
-          <div key={probe.name} className={table.row} role="row">
-            <span role="cell" className="t-mono">{probe.name}</span>
-            <span role="cell" className="t-small c-muted">{probe.kind}</span>
-            <span role="cell" className="t-numeric">{probe.hits}</span>
-            <span role="cell" className="t-numeric c-muted">{probe.read}</span>
-            <span role="cell" className="t-numeric c-muted">{probe.found}</span>
-            <span role="cell" className="t-numeric">
-              {probe.precision === undefined || !probe.precisionInterval ? '—' : t('console.analysis.precision', {
-                value: formatRate(probe.precision), lower: formatRate(probe.precisionInterval[0]), upper: formatRate(probe.precisionInterval[1]),
-              })}
-            </span>
-            <span role="cell" className="t-numeric c-muted">{probe.unread}</span>
-          </div>
-        ))}
-      </div>
-    </article>
   );
 }
 
@@ -151,30 +83,5 @@ export function HuntTrials({ benchmarkId, hunt, query, onChange }: { benchmarkId
         />
       )}
     </section>
-  );
-}
-
-export function HuntTrialRow({ benchmarkId, hunt, trial }: { benchmarkId: string; hunt: Hunt; trial: HuntTrial }) {
-  const { t } = useTranslation();
-  const { run } = trial;
-  const nameOf = (facetId: string) => hunt.facets.find(facet => facet.id === facetId)?.name ?? facetId;
-  const markedOnly = trial.markedFacets.filter(facetId => !trial.confirmedFacets.includes(facetId));
-  return (
-    <div className={table.row} role="row">
-      <span role="cell" className={styles.run}>
-        <LocaleLink to={consoleRunPath(benchmarkId, run.id, { tab: 'hunts' })} className="t-label">{run.task.title}</LocaleLink>
-        <span className="t-mono c-faint">{run.task.id} · {t('console.runs.attempt', { attempt: run.attempt })}</span>
-      </span>
-      <span role="cell" className={styles.entrant}><ModelLabel model={run.model} /><span className="t-small c-muted">{run.harness.name}</span></span>
-      <span role="cell"><Tag dashed={trial.verdict === 'unread'}>{t(`console.analysis.verdict.${trial.verdict}`)}</Tag></span>
-      <span role="cell" className={styles.tags}>
-        {trial.confirmedFacets.map(facetId => <Tag key={facetId}>{nameOf(facetId)}</Tag>)}
-        {markedOnly.map(facetId => <Tag key={facetId} dashed>{nameOf(facetId)}</Tag>)}
-      </span>
-      <span role="cell" className="t-numeric c-muted">{trial.marks}</span>
-      <span role="cell">
-        {trial.firstStep !== undefined && <LocaleLink className="t-micro" to={consoleRunPath(benchmarkId, run.id, { tab: 'trajectory', step: trial.firstStep })}>{t('console.analysis.step', { step: trial.firstStep })} →</LocaleLink>}
-      </span>
-    </div>
   );
 }

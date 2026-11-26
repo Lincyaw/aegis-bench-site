@@ -6,11 +6,11 @@
 .steps { display: grid; border-top: var(--rule-hairline); }
 /* Clears the run detail tabs that stay at the top of the pane. */
 .step { border-bottom: var(--rule-hairline); scroll-margin-top: var(--anchor-gap); }
-.open { margin: var(--space-2) 0; border: var(--rule-hairline); border-radius: var(--radius-md); background: var(--bg-panel); }
+.step:has(> .stepHead[aria-expanded="true"]) { margin: var(--space-2) 0; border: var(--rule-hairline); border-radius: var(--radius-md); background: var(--bg-panel); }
 .evidence { box-shadow: inset var(--size-border-thick) 0 0 var(--accent-warning); }
 .stepHead { display: flex; width: 100%; padding: var(--space-3); text-align: left; transition: background-color var(--duration-base); }
 .stepHead:hover { background: var(--bg-muted); }
-.open .stepHead:hover { background: none; }
+.stepHead[aria-expanded="true"]:hover { background: none; }
 .detail { padding: 0 var(--space-3) var(--space-4); }
 
 @media (max-width: 760px) {

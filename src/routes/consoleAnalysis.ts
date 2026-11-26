@@ -1,6 +1,5 @@
-import type { HuntTrialQuery } from '../api/consoleClient';
 import { consoleHuntVerdictValues } from '../api/schema';
-import type { HuntVerdict } from '../api/types';
+import type { HuntTrialQuery, HuntVerdict } from '../api/types';
 import { consoleBenchmarkPath } from './console';
 
 /** Trials per page of a hunt's trial list. */

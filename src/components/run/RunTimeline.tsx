@@ -1,7 +1,7 @@
 import { clsx } from 'clsx';
 import { useTranslation } from 'react-i18next';
-import type { TimelineLegend, TimelineStep } from '../../api/client';
 import { timelineMarkValues } from '../../api/schema';
+import type { TimelineLegend, TimelineStep } from '../../api/types';
 import styles from './RunTimeline.module.css';
 
 /** A run as a row of marks, one per agent step as the server marked it: ordinary steps, the benchmark's key action, and submissions. */
@@ -19,7 +19,10 @@ export function RunScrubber({ timeline, current, onSelect }: { timeline: Timelin
   return (
     <span className={styles.timeline}>
       {timeline.map(step => (
-        <button key={step.stepId} type="button" className={clsx(styles.mark, styles[step.mark], step.stepId === current && styles.current)} onClick={() => onSelect(step.stepId)} aria-label={t('runs.step', { step: step.stepId })} />
+        <button
+          key={step.stepId} type="button" className={clsx(styles.mark, styles[step.mark])} aria-current={step.stepId === current ? 'step' : undefined}
+          onClick={() => onSelect(step.stepId)} aria-label={t('runs.step', { step: step.stepId })}
+        />
       ))}
     </span>
   );

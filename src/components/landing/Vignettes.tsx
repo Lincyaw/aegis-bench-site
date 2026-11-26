@@ -1,6 +1,6 @@
 import { clsx } from 'clsx';
 import { useTranslation } from 'react-i18next';
-import type { Stage } from '../../api/client';
+import type { Stage } from '../../api/types';
 import { benchmarkNames } from '../lifecycle/stages';
 import { PART } from './landingMarkup';
 import styles from './Vignettes.module.css';
@@ -162,15 +162,18 @@ export function MaintenanceDrawing() {
 }
 
 /** A stage's scene card, shown above its station while the stage is read; a covered stage's card opens its benchmarks. */
-export function VignetteCard({ stage, index, onOpen }: { stage: Stage; index: number; onOpen: (anchor: HTMLElement) => void }) {
+export function VignetteCard({ stage, index, name, onOpen }: { stage: Stage; index: number; name: string; onOpen: (anchor: HTMLElement) => void }) {
   const Drawing = [
     RequirementsDrawing, DesignDrawing, ImplementationDrawing, ReviewDrawing, TestingDrawing, ReleaseDrawing, OperationsDrawing, MaintenanceDrawing,
   ][index];
   const covered = stage.benchmarks.length > 0;
   return (
-    <div className={clsx(styles.card, covered && styles.covered)} data-part={PART.vignette} data-half={stage.half} onClick={covered ? event => onOpen(event.currentTarget) : undefined}>
+    <button
+      type="button" className={clsx(styles.card, covered && styles.covered)} data-part={PART.vignette} data-half={stage.half} aria-label={name}
+      onClick={covered ? event => onOpen(event.currentTarget) : undefined}
+    >
       <Drawing />
       {covered && <span className={clsx(styles.go, 't-micro')}>{benchmarkNames(stage)} →</span>}
-    </div>
+    </button>
   );
 }

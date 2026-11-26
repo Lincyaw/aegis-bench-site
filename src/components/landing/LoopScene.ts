@@ -2,8 +2,8 @@ import * as THREE from 'three';
 import { Line2 } from 'three/addons/lines/Line2.js';
 import { LineGeometry } from 'three/addons/lines/LineGeometry.js';
 import { LineMaterial, type LineMaterialParameters } from 'three/addons/lines/LineMaterial.js';
-import type { Half, Stage } from '../../api/client';
 import { halfValues } from '../../api/schema';
+import type { Half, Stage } from '../../api/types';
 import { NARROW_QUERY, REDUCED_MOTION_QUERY } from '../../ui/media';
 import { PART, partOf, type LandingElements } from './landingMarkup';
 import { LAP_START, STATION_AT, loopPoint } from './lemniscate';
@@ -68,6 +68,15 @@ interface Station {
   ripple: Line2 | null;
   label: HTMLElement;
   hotspot: HTMLElement;
+}
+
+/** A label, hotspot or scene card answers the pointer, the keyboard and screen readers while it shows, and none of them otherwise. */
+export function setReachable(part: HTMLElement, reachable: boolean) {
+  part.style.pointerEvents = reachable ? 'auto' : 'none';
+  // inert is an attribute, and setting an attribute changes the DOM even to the same value, so it is set only on a change.
+  if (part.inert === reachable) {
+    part.inert = !reachable;
+  }
 }
 
 export interface LoopSceneOptions {
@@ -423,12 +432,12 @@ export class LoopScene {
     }
     const position = station.base.getWorldPosition(new THREE.Vector3());
     this.pin(station.label, position.clone().add(LABEL_LIFT), mapWeight * reached);
-    station.label.style.pointerEvents = station.covered && mapWeight * reached > 0.5 ? 'auto' : 'none';
+    setReachable(station.label, station.covered && mapWeight * reached > 0.5);
     const screen = this.toScreen(position);
     const active = Math.max(mapWeight, focus) * reached;
     station.hotspot.style.transform = `translate(${screen.x.toFixed(1)}px, ${screen.y.toFixed(1)}px)`;
     station.hotspot.style.opacity = active > 0.3 && screen.inView ? '1' : '0';
-    station.hotspot.style.pointerEvents = active > 0.5 && screen.inView ? 'auto' : 'none';
+    setReachable(station.hotspot, active > 0.5 && screen.inView);
   }
 
   toScreen(point: THREE.Vector3): { x: number; y: number; inView: boolean } {
@@ -462,7 +471,7 @@ export class LoopScene {
       const left = Math.min(innerWidth - box.width - 16, Math.max(16, screen.x - box.width / 2));
       const top = Math.max(76, screen.y - box.height - (narrow ? 34 : 46));
       vignette.card.style.opacity = (focus * focus).toFixed(3);
-      vignette.card.style.pointerEvents = focus > 0.5 && station.covered ? 'auto' : 'none';
+      setReachable(vignette.card, focus > 0.5 && station.covered);
       vignette.card.style.transform = `translate(${left.toFixed(1)}px, ${(top + (1 - focus) * 16).toFixed(1)}px)`;
       if (focus > 0.5) {
         tether.dataset.half = station.half;

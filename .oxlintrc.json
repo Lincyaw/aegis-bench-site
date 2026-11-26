@@ -1,6 +1,7 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
+  "plugins": ["react", "typescript", "oxc", "jsx-a11y"],
+  "jsPlugins": ["./scripts/lint-rules.js"],
   "rules": {
     "react/rules-of-hooks": "error",
     "react/exhaustive-deps": "error",
@@ -8,20 +9,130 @@
     "curly": ["error", "all"],
     "typescript/consistent-type-imports": "error",
     "typescript/no-non-null-assertion": "error",
-    "typescript/switch-exhaustiveness-check": "error"
+    "typescript/switch-exhaustiveness-check": "error",
+    // Tables are grids of divs with ARIA roles, so their rows lay out with CSS grid and stay keyboard-navigable as rows.
+    "jsx-a11y/prefer-tag-over-role": "off",
+    "jsx-a11y/control-has-associated-label": "error",
+    "jsx-a11y/anchor-has-content": "error",
+    "jsx-a11y/anchor-is-valid": "error",
+    "jsx-a11y/alt-text": "error",
+    "jsx-a11y/aria-props": "error",
+    "jsx-a11y/aria-proptypes": "error",
+    "jsx-a11y/aria-role": "error",
+    "jsx-a11y/role-has-required-aria-props": "error",
+    "jsx-a11y/role-supports-aria-props": "error",
+    "jsx-a11y/no-redundant-roles": "error",
+    "react/button-has-type": "error",
+    "jsx-a11y/no-autofocus": "error",
+    "aegis/english-comments": "error"
   },
   "overrides": [
     {
       "files": ["src/*/**"],
       "rules": {
-        "no-restricted-imports": ["error", { "patterns": [{ "group": ["**/mocks/*"], "message": "The site reaches data only through the API client; the mock server answers its requests." }] }]
+        "no-restricted-imports": ["error", { "patterns": [{ "group": ["**/mocks/*"], "message": "The site reaches data only through the API client; the mock server answers its requests." }] }],
+        "no-restricted-globals": ["error", { "name": "fetch", "message": "The site reads the API through the clients in src/api, which the spec types." }]
       }
+    },
+    {
+      "files": ["src/api/**"],
+      "rules": { "no-restricted-globals": "off" }
     },
     {
       "files": ["src/mocks/**"],
       "rules": {
-        "no-restricted-imports": ["error", { "patterns": [{ "group": ["../**", "!../api/**"], "message": "The mock server implements the API: it imports only the API's types and its own modules." }] }]
+        "no-restricted-imports": ["error", { "patterns": [{ "group": ["../**", "!../api/**"], "message": "The mock server implements the API: it imports only the API's types and its own modules." }] }],
+        "no-restricted-globals": "off"
       }
+    },
+    {
+      "files": ["src/ui/**"],
+      "rules": {
+        "no-restricted-imports": ["error", {
+          "paths": [{ "name": "react-router-dom", "importNames": ["Link", "NavLink", "Navigate", "useNavigate"], "message": "Link and redirect through LocaleLink, LocaleNavLink, LocaleNavigate and useLocalizedNavigate, which keep the reader's language." }],
+          "patterns": [{ "group": ["**/api/**", "**/articles/**", "**/components/**", "**/mocks/*", "**/pages/**", "**/routes/**"], "message": "The design system knows no business domain: it reaches the site only through the locale's links." }]
+        }]
+      }
+    },
+    {
+      "files": ["src/routes/**"],
+      "rules": {
+        "no-restricted-imports": ["error", { "patterns": [{ "group": ["../**", "!../api/**", "../api/client", "../api/consoleClient"], "message": "An address is built from the API's types alone: pages and components read the routes, and the routes read neither." }] }]
+      }
+    },
+    {
+      "files": ["src/components/**"],
+      "rules": {
+        "no-restricted-imports": ["error", {
+          "paths": [
+            { "name": "react-router-dom", "importNames": ["useLocation", "useMatches", "useParams", "useSearchParams"], "message": "A component does not read the address: the page reads it and passes down what the component shows." },
+            { "name": "react-router-dom", "importNames": ["Link", "NavLink", "Navigate", "useNavigate"], "message": "Link and redirect through LocaleLink, LocaleNavLink, LocaleNavigate and useLocalizedNavigate, which keep the reader's language." }
+          ],
+          "patterns": [
+            { "group": ["**/mocks/*"], "message": "The site reaches data only through the API client; the mock server answers its requests." },
+            { "group": ["**/api/client", "**/api/consoleClient"], "message": "A component renders what its props give it: the page reads the data and passes it down." },
+            { "group": ["**/pages/**"], "message": "A component knows no page: pages compose components." }
+          ]
+        }]
+      }
+    },
+    {
+      "files": ["src/components/shell/LanguageSwitch.tsx"],
+      "rules": {
+        "no-restricted-imports": ["error", {
+          "paths": [
+            { "name": "react-router-dom", "importNames": ["useLocation", "useMatches", "useParams", "useSearchParams"], "message": "A component does not read the address: the page reads it and passes down what the component shows." },
+            { "name": "react-router-dom", "importNames": ["NavLink", "Navigate", "useNavigate"], "message": "The language switch alone links across locales with a plain Link; everything else keeps the reader's language." }
+          ],
+          "patterns": [
+            { "group": ["**/mocks/*"], "message": "The site reaches data only through the API client; the mock server answers its requests." },
+            { "group": ["**/api/client", "**/api/consoleClient"], "message": "A component renders what its props give it: the page reads the data and passes it down." },
+            { "group": ["**/pages/**"], "message": "A component knows no page: pages compose components." }
+          ]
+        }]
+      }
+    },
+    {
+      "files": ["src/articles/**"],
+      "rules": {
+        "no-restricted-imports": ["error", {
+          "paths": [{ "name": "react-router-dom", "importNames": ["Link", "NavLink", "Navigate", "useNavigate"], "message": "Link and redirect through LocaleLink, LocaleNavLink, LocaleNavigate and useLocalizedNavigate, which keep the reader's language." }],
+          "patterns": [
+            { "group": ["**/mocks/*"], "message": "The site reaches data only through the API client; the mock server answers its requests." },
+            { "group": ["**/pages/**"], "message": "A document knows no page: the pages that show documents compose them." }
+          ]
+        }]
+      }
+    },
+    {
+      "files": ["src/pages/site/**"],
+      "rules": {
+        "no-restricted-imports": ["error", {
+          "paths": [{ "name": "react-router-dom", "importNames": ["Link", "NavLink", "Navigate", "useNavigate"], "message": "Link and redirect through LocaleLink, LocaleNavLink, LocaleNavigate and useLocalizedNavigate, which keep the reader's language." }],
+          "patterns": [
+            { "group": ["**/mocks/*"], "message": "The site reaches data only through the API client; the mock server answers its requests." },
+            { "group": ["**/pages/console/**", "../console/**", "../../console/**"], "message": "The public site and the console share components and routes, never each other's pages." },
+            { "group": ["**/components/**/*.css"], "message": "A page lays itself out with its own styles and the design system's; a component's styles stay with the component." }
+          ]
+        }]
+      }
+    },
+    {
+      "files": ["src/pages/console/**"],
+      "rules": {
+        "no-restricted-imports": ["error", {
+          "paths": [{ "name": "react-router-dom", "importNames": ["Link", "NavLink", "Navigate", "useNavigate"], "message": "Link and redirect through LocaleLink, LocaleNavLink, LocaleNavigate and useLocalizedNavigate, which keep the reader's language." }],
+          "patterns": [
+            { "group": ["**/mocks/*"], "message": "The site reaches data only through the API client; the mock server answers its requests." },
+            { "group": ["**/pages/site/**", "../site/**", "../../site/**"], "message": "The public site and the console share components and routes, never each other's pages." },
+            { "group": ["**/components/**/*.css"], "message": "A page lays itself out with its own styles and the design system's; a component's styles stay with the component." }
+          ]
+        }]
+      }
+    },
+    {
+      "files": ["src/pages/**", "src/components/**"],
+      "rules": { "aegis/paths-from-routes": "error" }
     }
   ]
 }

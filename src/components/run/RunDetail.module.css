@@ -1,0 +1,37 @@
+.header { display: grid; gap: var(--space-1); padding: var(--space-5) 0 var(--space-3); }
+.titleRow { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-3); }
+
+.section { display: grid; gap: var(--space-3); }
+.sectionHead { display: flex; justify-content: space-between; align-items: center; gap: var(--space-3); padding-bottom: var(--space-2); border-bottom: var(--rule-hairline); }
+.prose { white-space: pre-wrap; }
+.code { white-space: pre-wrap; overflow-wrap: anywhere; }
+
+.files li { border-bottom: var(--rule-hairline); }
+.files summary { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2) 0; cursor: pointer; }
+.files summary > :last-child { margin-left: auto; }
+.chevron { flex: none; color: var(--text-faint); transition: transform var(--duration-base) var(--ease-out); }
+.files details[open] > summary .chevron { transform: rotate(90deg); }
+.files details > p, .files details > pre { margin-bottom: var(--space-3); }
+.diff { display: block; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; }
+
+.links { display: flex; flex-wrap: wrap; gap: var(--space-5); }
+.summary { display: flex; align-items: center; gap: var(--space-4); }
+.summary > a { margin-left: auto; }
+
+/* A check's detail lines up under its title, past the number column and the gap. */
+.checks { --check-number: 2.75rem; --columns: var(--check-number) 1fr 9.5rem 4.5rem; }
+.checkRow { width: 100%; padding: var(--space-3) 0; text-align: left; }
+.checkRow:not([role="row"]) { cursor: pointer; }
+.checkDetail { display: grid; gap: var(--space-2); padding: var(--space-2) 0 var(--space-4) calc(var(--check-number) + var(--space-3)); border-bottom: var(--rule-hairline); }
+
+.failedList li { display: grid; grid-template-columns: var(--size-dot) 1fr auto; gap: var(--space-3); align-items: start; padding: var(--space-3) 0; border-bottom: var(--rule-hairline); }
+.failedList button { white-space: nowrap; }
+.ring { width: var(--size-dot); height: var(--size-dot); margin-top: var(--space-2); border: var(--size-stroke) solid var(--accent-warning); border-radius: var(--radius-full); }
+.evidence { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-5); }
+
+@media (max-width: 760px) {
+  .header { padding-top: 0; }
+  .checks { --check-number: 2.25rem; --columns: var(--check-number) 1fr 4rem; }
+  .checks .checkRow > :nth-child(3) { display: none; }
+  .checkDetail { padding-left: 0; }
+}

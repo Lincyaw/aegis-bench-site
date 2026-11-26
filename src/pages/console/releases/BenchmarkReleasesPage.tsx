@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import { useBenchmarkReleases, useConsoleBenchmark, useConsoleUser, useCreateDraft } from '../../../api/consoleClient';
 import { ReleaseChangesText, ReleaseStatusTag, ReleaseVersion } from '../../../components/release/ReleaseLabels';
+import { ChangeFailure } from '../../../components/shell/ChangeFailure';
 import { ConsoleHeader } from '../../../components/shell/ConsoleHeader';
 import { LocaleLink } from '../../../i18n/LocaleRouting';
 import { useLocale, useLocalizedNavigate } from '../../../i18n/localeContext';
@@ -11,7 +12,6 @@ import { consoleBenchmarkPath } from '../../../routes/console';
 import { releasePath } from '../../../routes/consoleReleases';
 import { Button, ButtonLink } from '../../../ui/controls';
 import table from '../../../ui/table.module.css';
-import { ChangeFailure } from '../ConsolePages';
 import { mayEdit } from '../roles';
 import styles from './ReleasePages.module.css';
 
@@ -48,8 +48,8 @@ export function BenchmarkReleasesPage() {
         {releases.map(release => {
           const to = releasePath(benchmark.id, release.id);
           return (
-            <div key={release.id} className={clsx(table.row, table.link)} role="row" onClick={event => { if (!(event.target as HTMLElement).closest('a')) { navigate(to); } }}>
-              <span role="cell"><LocaleLink to={to}><ReleaseVersion release={release} /></LocaleLink></span>
+            <div key={release.id} className={clsx(table.row, table.link)} role="row">
+              <span role="cell"><LocaleLink className={table.primary} to={to}><ReleaseVersion release={release} /></LocaleLink></span>
               <span role="cell"><ReleaseStatusTag status={release.status} /></span>
               <span role="cell" className="t-small">{release.note ?? '—'}</span>
               <span role="cell"><ReleaseChangesText changes={release.changes} /></span>

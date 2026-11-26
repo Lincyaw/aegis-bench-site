@@ -1,7 +1,7 @@
 import { clsx } from 'clsx';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { RunOutcome } from '../../api/client';
+import type { RunOutcome } from '../../api/types';
 import styles from './Outcome.module.css';
 
 /** A run's outcome as a dot: filled when passed, a ring when failed, dashed when the run did not count. */

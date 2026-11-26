@@ -15,7 +15,8 @@
     "gen": "tsp compile spec && openapi-typescript src/api/openapi.json --enum-values -o src/api/schema.ts",
     "mock": "npm run gen && tsx scripts/mock-server.ts",
     "predev": "npm run gen",
-    "prebuild": "npm run gen"
+    "prebuild": "npm run gen",
+    "precheck": "npm run gen"
   },
   "dependencies": {
     "@mdx-js/mdx": "^3.1.1",

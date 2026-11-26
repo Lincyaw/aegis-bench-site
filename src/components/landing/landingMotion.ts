@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import type { Stage } from '../../api/client';
+import type { Stage } from '../../api/types';
 import { REDUCED_MOTION_QUERY } from '../../ui/media';
 import { landingElements } from './landingMarkup';
 import { LoopScene } from './LoopScene';

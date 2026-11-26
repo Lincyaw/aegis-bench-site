@@ -21,12 +21,20 @@ export default {
     'color-named': 'never',
     // px survives only as a media query breakpoint, because custom properties cannot be used inside @media.
     'unit-disallowed-list': [['px', 'ms', 's'], { ignoreMediaFeatureNames: { px: ['max-width', 'min-width'] } }],
+    // A property a component's user or a script sets is a component parameter, read with a default as var(--name, value).
     'csstools/value-no-unknown-custom-properties': [true, { importFrom: [...TOKEN_FILES, LIBRARY_PROPERTIES] }],
+    'declaration-property-value-allowed-list': [{ 'font-weight': ['400', '500', '600'] }, { message: 'Use the weights 400, 500 and 600: PingFang SC, the Chinese face, goes no heavier than 600.' }],
+    'declaration-property-value-disallowed-list': [{ 'font-style': ['italic', 'oblique'] }, { message: 'Interface text is never italic; emphasis comes from weight and colour.' }],
+    'function-disallowed-list': [['cubic-bezier', 'steps'], { message: 'Take easing from the tokens: every change decelerates with --ease-out and never bounces.' }],
+    'comment-pattern': [/^[^\p{Script=Han}]*$/u, { message: 'Write comments in English.' }],
+    'selector-class-pattern': [
+      /^(?!(?:active|selected|current|open|opened|expanded|collapsed|checked|pressed|chosen)$)/,
+      { message: 'Style a state from its ARIA attribute (aria-pressed, aria-current, aria-expanded, aria-selected) or Radix\'s data-state, not from a class of its own.' },
+    ],
     // Breakpoints are written the way the scripts' media queries are, as max-width.
     'media-feature-range-notation': null,
     // CSS modules scope their own class names, and a module reaches a drawing's plain classes through :global.
     'selector-pseudo-class-no-unknown': [true, { ignorePseudoClasses: ['global'] }],
-    'selector-class-pattern': null,
     'custom-property-pattern': null,
     'keyframes-name-pattern': null,
     // The stylesheets keep short rules on one line.
@@ -40,9 +48,9 @@ export default {
   },
   overrides: [
     {
-      // The token files define the raw values everything else reads.
+      // The token files define the raw values everything else reads, and name the Figma collections they are exported from.
       files: TOKEN_FILES,
-      rules: { 'color-no-hex': null, 'unit-disallowed-list': null },
+      rules: { 'color-no-hex': null, 'unit-disallowed-list': null, 'function-disallowed-list': null, 'comment-pattern': null },
     },
   ],
 };

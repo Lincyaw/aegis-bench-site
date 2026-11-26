@@ -11,9 +11,17 @@
   transition: background-color var(--duration-base);
 }
 .head { min-height: var(--space-10); border-top: var(--rule-hairline); }
-.link { cursor: pointer; }
+/*
+ * A row that opens something does so from anywhere on it: its primary link stretches over the row, which takes the
+ * keyboard at the link, and the row's other links and buttons stay above the stretch. Nothing between the primary
+ * link and its row may be positioned or transformed, or the stretch stops there.
+ */
+.link { position: relative; isolation: isolate; cursor: pointer; }
 .link:hover { background: var(--bg-muted); }
-.arrow { color: var(--text-faint); transition: transform var(--duration-base), color var(--duration-base); }
+.primary::after { content: ""; position: absolute; inset: 0; z-index: 1; }
+/* A mark that explains itself on hover stays above the stretch too, so its title still shows. */
+.link :is(a, button):not(.primary), .link [title] { position: relative; z-index: 2; }
+.arrow { display: inline-block; color: var(--text-faint); transition: transform var(--duration-base), color var(--duration-base); }
 .link:hover .arrow { color: var(--text-main); transform: translateX(var(--space-1)); }
 
 @media (max-width: 760px) {

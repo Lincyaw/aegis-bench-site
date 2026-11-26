@@ -12,7 +12,7 @@ import { PassRate } from '../../../components/result/PassRate';
 import { formatCost } from '../../../components/result/presentation';
 import { ConsoleHeader } from '../../../components/shell/ConsoleHeader';
 import { LocaleLink } from '../../../i18n/LocaleRouting';
-import { useLocale, useLocalizedNavigate } from '../../../i18n/localeContext';
+import { useLocale } from '../../../i18n/localeContext';
 import { groupedNumber } from '../../../i18n/locales';
 import { consoleBenchmarkPath } from '../../../routes/console';
 import { COLLECTION_CHARTS, COLLECTION_TABS, MATRIX_PAGE_SIZE, collectionPath, collectionSearch, collectionsPath, parseCollectionView, type CollectionView } from '../../../routes/consoleCollections';
@@ -79,7 +79,7 @@ export function CollectionMatrix({ benchmark, tag, view, onView }: { benchmark: 
       <div className={styles.matrixScroll}>
         <div className={clsx(table.table, styles.matrix)} style={columns} role="table" aria-label={t('console.collection.tabs.matrix')}>
           <div className={clsx(table.row, table.head)} role="row">
-            <span role="columnheader" />
+            <span role="columnheader"><span className="visually-hidden">{t('console.collection.column.task')}</span></span>
             {page.models.map(model => <span key={model.id} role="columnheader" className={styles.matrixHead}><VendorBadge model={model} /><span className="t-micro">{model.name}</span></span>)}
           </div>
           {page.items.map(row => (
@@ -118,7 +118,6 @@ export function CollectionMatrix({ benchmark, tag, view, onView }: { benchmark: 
 export function CollectionModels({ benchmark, tag }: { benchmark: ConsoleBenchmark; tag: string }) {
   const { t } = useTranslation();
   const locale = useLocale();
-  const navigate = useLocalizedNavigate();
   const models = useCollectionModels(benchmark.id, tag);
   return (
     <div className={styles.section}>
@@ -133,8 +132,8 @@ export function CollectionModels({ benchmark, tag }: { benchmark: ConsoleBenchma
           <span role="columnheader">{t('console.models.column.failures')}</span>
         </div>
         {models.map(({ model, result, onCostFrontier }) => (
-          <div key={model.id} className={clsx(table.row, table.link)} role="row" onClick={() => navigate(consoleModelPath(benchmark.id, model.id, { tag }))}>
-            <span role="cell" className={styles.model}><VendorBadge model={model} /><span className="t-label">{model.name}</span>{onCostFrontier && <Tag dashed>{t('console.collection.frontier')}</Tag>}</span>
+          <div key={model.id} className={clsx(table.row, table.link)} role="row">
+            <span role="cell" className={styles.model}><VendorBadge model={model} /><LocaleLink className={clsx(table.primary, 't-label')} to={consoleModelPath(benchmark.id, model.id, { tag })}>{model.name}</LocaleLink>{onCostFrontier && <Tag dashed>{t('console.collection.frontier')}</Tag>}</span>
             <span role="cell"><PassRate rate={result.passRate} /></span>
             <span role="cell" className="t-numeric c-muted">{t('console.overview.tasksOf', { solved: result.solvedEveryTime, total: result.tasks })}</span>
             <span role="cell" className="t-numeric c-muted">{t('console.overview.tasksOf', { solved: result.solvedOnce, total: result.tasks })}</span>

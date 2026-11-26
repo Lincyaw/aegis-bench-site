@@ -1,9 +1,9 @@
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
-import { ApiError } from '../../api/client';
 import { DEMO_ACCOUNTS, DEMO_PASSWORD, useSignIn } from '../../api/consoleClient';
 import { ACCOUNT_PATTERN } from '../../api/constraints';
+import { ApiError } from '../../api/errors';
 import { BrandMark } from '../../components/shell/BrandMark';
 import { useLocalizedNavigate } from '../../i18n/localeContext';
 import { nextPathOf } from '../../routes/console';

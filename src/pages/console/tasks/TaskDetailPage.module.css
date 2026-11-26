@@ -6,34 +6,11 @@
 .tabs { --tab-gap: var(--space-6); border-bottom: var(--rule-hairline); }
 .count { margin-left: var(--space-1); color: var(--text-faint); font-variant-numeric: tabular-nums; }
 
-.columns { display: grid; grid-template-columns: minmax(0, 1fr) minmax(18rem, 24rem); gap: var(--space-4); align-items: start; }
-.main, .aside, .section { display: grid; gap: var(--space-4); align-content: start; }
+.section { display: grid; gap: var(--space-4); align-content: start; }
 .panel { gap: var(--space-3); padding: var(--space-5); }
-.prose { white-space: pre-wrap; }
-.code { margin: 0; padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); background: var(--bg-muted); font: var(--type-code); white-space: pre-wrap; overflow-wrap: anywhere; }
-.chips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
-.chip { padding: var(--space-1) var(--space-2); border-radius: var(--radius-sm); background: var(--bg-muted); }
-.points > li { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-3); padding: var(--space-2) 0; border-top: var(--rule-hairline); }
-
-.checks { border-top: var(--rule-hairline); }
-.checks > li { border-bottom: var(--rule-hairline); }
-.check { display: grid; gap: var(--space-2); padding: var(--space-3) var(--space-4); }
-.check[open] { padding-bottom: var(--space-4); background: var(--bg-panel); }
-.check summary { display: grid; grid-template-columns: 3rem minmax(0, 1fr) auto; align-items: center; gap: var(--space-3); cursor: pointer; list-style: none; }
-.check summary::-webkit-details-marker { display: none; }
-.checkMeta { display: inline-flex; align-items: center; gap: var(--space-3); }
-.fileHead { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
-
 .switch { justify-self: start; }
 .entrantRuns { --columns: minmax(13rem, 1.6fr) minmax(6rem, .8fr) 4rem 5rem minmax(9rem, 1.1fr) minmax(7rem, .9fr); }
-.entrant { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-3); }
-.runDots { display: flex; gap: var(--space-1); }
-/* Each run's dot opens the run; the hit area is larger than the dot. */
-.runDot { display: inline-grid; place-items: center; width: var(--space-5); height: var(--space-5); border-radius: var(--radius-full); transition: background-color var(--duration-base); }
-.runDot:hover { background: var(--bg-muted); }
 .validations > li { border-top: var(--rule-hairline); }
-.validation { display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto; align-items: center; gap: var(--space-4); padding: var(--space-3) 0; }
-.validationAgent { display: grid; gap: var(--space-px); }
 
 /* The matrix scrolls sideways on its own when its combinations outgrow the page. */
 .matrixScroll { overflow-x: auto; }
@@ -49,15 +26,9 @@
 
 .browser { height: calc(100dvh - var(--nav-height) - var(--space-12)); min-height: 30rem; }
 
-@media (max-width: 1100px) {
-  .columns { grid-template-columns: minmax(0, 1fr); }
-}
-
 @media (max-width: 760px) {
   .entrantRuns { --columns: minmax(0, 1fr) auto; }
   .entrantRuns [role="row"] > :is(:nth-child(3), :nth-child(4), :nth-child(5), :nth-child(6)) { display: none; }
-  .validation { grid-template-columns: minmax(0, 1fr) auto; }
-  .validation > :last-child { grid-column: 1 / -1; }
   .revisions { --columns: minmax(0, 1fr) auto; }
   .revisions [role="row"] > :is(:nth-child(3), :nth-child(4), :nth-child(6)) { display: none; }
   /* Narrow rows have no side padding, so the marked row keeps only its shade. */

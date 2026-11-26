@@ -1,10 +1,9 @@
 import { clsx } from 'clsx';
 import type { CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSiteInfo, type BenchmarkSummary, type Stage } from '../../api/client';
+import type { BenchmarkSummary, Stage } from '../../api/types';
 import { Citation } from '../../articles/blocks';
 import { LocaleLink } from '../../i18n/LocaleRouting';
-import { SiteFooter } from '../../pages/site/SiteLayout';
 import { BENCHMARKS_PATH, benchmarkPath, leaderboardPath } from '../../routes/site';
 import { Tag } from '../../ui/content';
 import { ButtonLink, CopyButton } from '../../ui/controls';
@@ -12,6 +11,7 @@ import { REDUCED_MOTION_QUERY, useMediaQuery } from '../../ui/media';
 import { HALF_LABELS } from '../lifecycle/stages';
 import { VendorBadge } from '../model/ModelBadge';
 import { formatScore } from '../result/presentation';
+import { SiteFooter, type FooterLink } from '../shell/SiteFooter';
 import { PART } from './landingMarkup';
 import { LOOP_MARK } from './lemniscate';
 import { beatAttributes, stageBeatAttributes } from './scrollStory';
@@ -124,9 +124,8 @@ export function Updates() {
 }
 
 /** The team, the citation and the contact, then the footer, where the loop settles into the mark. */
-export function Closing() {
+export function Closing({ contactEmail, footerLinks }: { contactEmail: string; footerLinks: readonly FooterLink[] }) {
   const { t } = useTranslation();
-  const { contactEmail } = useSiteInfo();
   return (
     <section className={styles.closing} {...beatAttributes('mark')}>
       <div className={clsx(styles.copy, styles.wide)}>
@@ -155,7 +154,7 @@ export function Closing() {
         </div>
       </div>
       <div className={styles.markSlot} data-part={PART.markSlot}><LoopMark /></div>
-      <SiteFooter />
+      <SiteFooter links={footerLinks} />
     </section>
   );
 }

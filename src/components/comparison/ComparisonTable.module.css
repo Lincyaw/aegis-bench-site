@@ -16,8 +16,9 @@
 
 .label { display: grid; align-content: start; justify-items: start; gap: var(--space-2); min-width: 0; padding: var(--space-3) var(--space-4); border-right: var(--rule-hairline); }
 .title { display: flex; align-items: center; gap: var(--space-1); }
+/* An item row places its difference dot, and an expandable one the stretch of its label's button. */
+.item { position: relative; }
 .item .label { padding-left: var(--space-6); }
-.differs { position: relative; }
 .differs::before {
   content: "";
   position: absolute;
@@ -29,9 +30,8 @@
   background: var(--ink-warn);
 }
 
-/* A row that opens in place answers the pointer anywhere on it; its chevron turns as it opens. */
-.expandable { cursor: pointer; transition: background-color var(--duration-base); }
-.expandable:hover { background: var(--bg-muted); }
+/* A row that opens in place answers the pointer anywhere on it, as a table's link row does; its chevron turns as it opens. */
+.expandable { transition: background-color var(--duration-base); }
 .toggle { display: flex; align-items: flex-start; gap: var(--space-2); text-align: left; }
 .chevron { flex: none; margin-top: var(--space-1); color: var(--text-faint); transition: transform var(--duration-base) var(--ease-out); }
 .toggle[aria-expanded="true"] .chevron { transform: rotate(90deg); }

@@ -2,8 +2,10 @@ import { clsx } from 'clsx';
 import { Suspense, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Outlet, useLocation, useMatches } from 'react-router-dom';
-import { BrandMark } from '../../components/shell/BrandMark';
+import type { PageSections } from '../../components/benchmark/SectionBar';
+import { BrandLink } from '../../components/shell/BrandMark';
 import { LanguageSwitch } from '../../components/shell/LanguageSwitch';
+import { SiteFooter } from '../../components/shell/SiteFooter';
 import { LocaleLink, LocaleNavLink } from '../../i18n/LocaleRouting';
 import { useLocale } from '../../i18n/localeContext';
 import { sitePath } from '../../i18n/locales';
@@ -14,7 +16,7 @@ import { IconButton, MenuIcon, ThemeIcon } from '../../ui/controls';
 import controls from '../../ui/controls.module.css';
 import { SectionLinks } from '../../ui/navigation';
 import { toggleTheme } from '../../ui/theme';
-import { PageSectionsContext, type PageSections } from './pageSections';
+import { PageSectionsContext } from './pageSections';
 import { FOOTER_LINKS, NAV_LINKS } from './siteNav';
 import styles from './SiteLayout.module.css';
 
@@ -33,7 +35,7 @@ export function SiteLayout() {
       <main>
         <Suspense fallback={<div className="page"><Loading /></div>}><Outlet /></Suspense>
       </main>
-      {!fillsWindow && <SiteFooter />}
+      {!fillsWindow && <SiteFooter links={FOOTER_LINKS} />}
     </PageSectionsContext.Provider>
   );
 }
@@ -59,12 +61,12 @@ export function SiteNav({ sections }: { sections: PageSections | null }) {
     <header className={clsx(styles.nav, floating && styles.floating)}>
       <div className={styles.bar}>
         <div className={styles.start}>
-          <LocaleLink className={styles.brand} to="/" aria-label={t('site.home')}><BrandMark /></LocaleLink>
+          <BrandLink />
           {sections ? (
             <nav className={styles.sectionNav} aria-label={t('site.pageSections')}><SectionLinks sections={sections.sections} current={sections.current} className={styles.sections} /></nav>
           ) : (
             <nav className={styles.links} aria-label={t('site.mainNav')}>
-              {NAV_LINKS.map(link => <LocaleNavLink key={link.to} to={link.to} className={({ isActive }) => (isActive ? styles.current : undefined)}>{t(link.label)}</LocaleNavLink>)}
+              {NAV_LINKS.map(link => <LocaleNavLink key={link.to} to={link.to}>{t(link.label)}</LocaleNavLink>)}
             </nav>
           )}
         </div>
@@ -85,25 +87,5 @@ export function SiteNav({ sections }: { sections: PageSections | null }) {
         </nav>
       )}
     </header>
-  );
-}
-
-export function SiteFooter() {
-  const { t } = useTranslation();
-  return (
-    <footer className={styles.footer}>
-      <div className="page">
-        <div className={styles.footerTop}>
-          <LocaleLink className={styles.brand} to="/" aria-label={t('site.home')}><BrandMark /></LocaleLink>
-          <span className="t-micro c-muted">{t('site.tagline')}</span>
-        </div>
-        <div className={styles.footerBottom}>
-          <span className="t-micro c-faint">{t('site.footnote')}</span>
-          <nav aria-label={t('site.footerNav')} className={styles.footerLinks}>
-            {FOOTER_LINKS.map(link => <LocaleLink key={link.to} to={link.to} className="t-micro c-muted">{t(link.label)}</LocaleLink>)}
-          </nav>
-        </div>
-      </div>
-    </footer>
   );
 }

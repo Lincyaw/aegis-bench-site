@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+import { LocaleLink } from '../../i18n/LocaleRouting';
 import { lobePath } from '../lifecycle/loop';
 import styles from './BrandMark.module.css';
 
@@ -11,4 +13,10 @@ export function BrandMark({ width = 38 }: { width?: number }) {
       <path d={lobePath('ops', width / 2, height / 2, a, 48)} />
     </svg>
   );
+}
+
+/** The mark as the public site's link to its home page. */
+export function BrandLink() {
+  const { t } = useTranslation();
+  return <LocaleLink className={styles.brand} to="/" aria-label={t('site.home')}><BrandMark /></LocaleLink>;
 }

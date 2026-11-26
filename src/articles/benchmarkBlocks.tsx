@@ -60,7 +60,7 @@ export function RecentRunsTable({ benchmarkId }: { benchmarkId: string }) {
       <div className={clsx(table.row, table.head, 't-micro c-faint')} role="row">
         <span role="columnheader">{t('benchmarks.column.model')}</span><span role="columnheader">{t('benchmarks.column.task')}</span>
         <span role="columnheader">{t('benchmarks.column.process')}</span><span role="columnheader">{t('benchmarks.column.result')}</span>
-        <span role="columnheader">{t('benchmarks.column.steps')}</span><span role="columnheader">{t('benchmarks.column.duration')}</span><span role="columnheader" />
+        <span role="columnheader">{t('benchmarks.column.steps')}</span><span role="columnheader">{t('benchmarks.column.duration')}</span><span role="columnheader"><span className="visually-hidden">{t('benchmarks.column.replay')}</span></span>
       </div>
       {recentRuns.map(run => (
         <LocaleLink key={run.runId} role="row" className={clsx(table.row, table.link)} to={runRecordsPath(benchmarkId, { task: run.task.id, run: run.runId, tab: 'trajectory' })}>

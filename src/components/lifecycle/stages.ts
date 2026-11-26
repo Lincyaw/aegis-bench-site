@@ -1,4 +1,4 @@
-import type { BenchmarkSummary, Half, ModelProfile, Stage } from '../../api/client';
+import type { BenchmarkSummary, Half, ModelProfile, Stage } from '../../api/types';
 import { formatScore } from '../result/presentation';
 
 /** Message keys of the two halves of the loop. */

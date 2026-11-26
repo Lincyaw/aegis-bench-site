@@ -5,13 +5,13 @@ import { DEMO_PASSWORD, useChangeRole, useConsoleUser, useInviteMember, useMembe
 import { ACCOUNT_PATTERN } from '../../../api/constraints';
 import { consoleRoleValues } from '../../../api/schema';
 import type { Member, Role } from '../../../api/types';
+import { ChangeFailure } from '../../../components/shell/ChangeFailure';
 import { ConsoleHeader } from '../../../components/shell/ConsoleHeader';
 import { useLocale } from '../../../i18n/localeContext';
 import { dateTimeOf } from '../../../i18n/locales';
 import content from '../../../ui/content.module.css';
 import { Button, Select, SubmitButton, TextField } from '../../../ui/controls';
 import table from '../../../ui/table.module.css';
-import { ChangeFailure } from '../ConsolePages';
 import { mayAdminister } from '../roles';
 import styles from './MembersPage.module.css';
 
@@ -30,7 +30,7 @@ export function MembersPage() {
           <span role="columnheader">{t('console.members.column.role')}</span>
           <span role="columnheader">{t('console.members.column.joined')}</span>
           <span role="columnheader">{t('console.members.column.lastSignedIn')}</span>
-          <span role="columnheader" />
+          <span role="columnheader"><span className="visually-hidden">{t('console.members.column.actions')}</span></span>
         </div>
         {members.map(member => <MemberRow key={member.account} member={member} self={member.account === user.account} administering={administering} />)}
       </div>

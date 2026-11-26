@@ -3,17 +3,12 @@ import type { CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { useTaskCheckResults, useTaskResults } from '../../../api/consoleClient';
-import type { ConsoleTaskDetail, TaskEntrantRuns, ValidationRun } from '../../../api/types';
-import { ModelLabel } from '../../../components/model/ModelBadge';
-import { PassRate } from '../../../components/result/PassRate';
-import { OutcomeBadge, OutcomeDot } from '../../../components/run/Outcome';
-import { useLocale } from '../../../i18n/localeContext';
-import { dateTimeOf } from '../../../i18n/locales';
+import type { ConsoleTaskDetail } from '../../../api/types';
+import { EntrantRunsRow, ValidationRow } from '../../../components/task/TaskRuns';
 import { LocaleLink } from '../../../i18n/LocaleRouting';
-import { consoleRunPath, consoleRunsPath } from '../../../routes/consoleRuns';
+import { consoleRunsPath } from '../../../routes/consoleRuns';
 import { TASK_RUN_VIEWS, inFocus, taskPageSearch, type TaskFocus, type TaskPageView } from '../../../routes/consoleTasks';
 import { combinationKey } from '../../../routes/runRecords';
-import { Tag } from '../../../ui/content';
 import content from '../../../ui/content.module.css';
 import { SegmentedControl } from '../../../ui/controls';
 import controls from '../../../ui/controls.module.css';
@@ -66,43 +61,6 @@ export function EntrantRuns({ task, focus }: { task: ConsoleTaskDetail; focus: T
   );
 }
 
-export function EntrantRunsRow({ benchmarkId, entrant }: { benchmarkId: string; entrant: TaskEntrantRuns }) {
-  const { t } = useTranslation();
-  const { result } = entrant;
-  const reviewed = result.failed - result.unreviewed;
-  return (
-    <div className={table.row} role="row">
-      <span role="cell" className={styles.entrant}><ModelLabel model={entrant.model} /><span className="t-small c-muted">{entrant.harness.name}</span></span>
-      <span role="cell" className={styles.runDots}>
-        {entrant.runs.map(run => {
-          const label = t('console.task.runs.runOf', { attempt: run.attempt, outcome: t(`runs.outcome.${run.outcome}`) });
-          return <LocaleLink key={run.id} className={styles.runDot} to={consoleRunPath(benchmarkId, run.id)} title={label} aria-label={label}><OutcomeDot outcome={run.outcome} /></LocaleLink>;
-        })}
-      </span>
-      <span role="cell" className="t-numeric">{result.passed}</span>
-      <span role="cell" className="t-numeric c-muted">{result.executionFailed}</span>
-      <span role="cell"><PassRate rate={result.passRate} /></span>
-      <span role="cell" className="t-micro c-muted">{result.failed === 0 ? t('console.task.runs.noFailure') : t('console.task.runs.reviewed', { reviewed, failed: result.failed })}</span>
-    </div>
-  );
-}
-
-export function ValidationRow({ run }: { run: ValidationRun }) {
-  const { t } = useTranslation();
-  const locale = useLocale();
-  return (
-    <li className={styles.validation}>
-      <span className={styles.validationAgent}>
-        <span className="t-label">{t(`console.task.runs.agent.${run.agent}`)}</span>
-        <span className="t-micro c-muted">{t(`console.task.runs.agentNote.${run.agent}`)}</span>
-      </span>
-      <OutcomeBadge outcome={run.outcome} />
-      <Tag dashed={!run.expected}>{run.expected ? t('console.task.runs.expected') : t('console.task.runs.unexpected')}</Tag>
-      <span className="t-mono c-faint">{run.version} · {dateTimeOf(locale, run.finishedAt)}</span>
-    </li>
-  );
-}
-
 /** Each check against each combination; the cells darken with the share of counted runs that failed the check. */
 export function CheckMatrix({ task, focus }: { task: ConsoleTaskDetail; focus: TaskFocus }) {
   const { t } = useTranslation();
@@ -115,7 +73,7 @@ export function CheckMatrix({ task, focus }: { task: ConsoleTaskDetail; focus: T
       <div className={styles.matrixScroll}>
         <div className={clsx(table.table, styles.matrix)} style={columns} role="table" aria-label={t('console.task.runs.view.checks')}>
           <div className={clsx(table.row, table.head)} role="row">
-            <span role="columnheader" />
+            <span role="columnheader"><span className="visually-hidden">{t('console.task.runs.column.check')}</span></span>
             {kept.map(index => {
               const { model, harness } = results.entrants[index];
               return (

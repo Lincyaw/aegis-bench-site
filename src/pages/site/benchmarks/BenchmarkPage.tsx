@@ -1,5 +1,5 @@
 import { clsx } from 'clsx';
-import { useContext, useEffect, useRef, useState } from 'react';
+import { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import { useBenchmark, useStages, type BenchmarkDetail } from '../../../api/client';
@@ -7,6 +7,7 @@ import { Document } from '../../../articles/Document';
 import { BenchmarkContext } from '../../../articles/benchmarkContext';
 import { LeaderboardBlock, RecentRunsBlock } from '../../../articles/benchmarkBlocks';
 import { CITATION_ANCHOR, benchmarkDocumentPath, documentSections } from '../../../articles/library';
+import { SectionBar } from '../../../components/benchmark/SectionBar';
 import { LifecycleMiniMap } from '../../../components/lifecycle/LifecycleMap';
 import { StageScene } from '../../../components/lifecycle/StageScene';
 import { HALF_LABELS } from '../../../components/lifecycle/stages';
@@ -17,8 +18,7 @@ import { BENCHMARKS_PATH, leaderboardPath, stagePath } from '../../../routes/sit
 import { FactList, Tag } from '../../../ui/content';
 import { ButtonLink } from '../../../ui/controls';
 import controls from '../../../ui/controls.module.css';
-import { navHeight, readingLine } from '../../../ui/media';
-import { Breadcrumbs, SectionLinks, type PageSection } from '../../../ui/navigation';
+import { Breadcrumbs } from '../../../ui/navigation';
 import { PageSectionsContext } from '../pageSections';
 import styles from './BenchmarkPage.module.css';
 
@@ -27,12 +27,13 @@ export function BenchmarkPage() {
   const { benchmarkId = '' } = useParams();
   const locale = useLocale();
   const benchmark = useBenchmark(benchmarkId);
+  const handToNav = useContext(PageSectionsContext);
   const document = benchmarkDocumentPath(benchmark.id, locale);
   return (
     <BenchmarkContext.Provider value={benchmark}>
       <div data-half={benchmark.stage.half}>
         <BenchmarkHero benchmark={benchmark} />
-        <SectionBar sections={documentSections(document)} />
+        <SectionBar sections={documentSections(document)} handToNav={handToNav} />
         <div className={clsx('page', styles.body)}>
           <Document path={document} blocks={{ Leaderboard: LeaderboardBlock, RecentRuns: RecentRunsBlock }} />
         </div>
@@ -76,50 +77,5 @@ export function BenchmarkHero({ benchmark }: { benchmark: BenchmarkDetail }) {
         </div>
       </div>
     </section>
-  );
-}
-
-/**
- * The document's sections under the head, with the one being read marked. Once the bar scrolls under the nav, the
- * floating nav carries the sections instead.
- */
-export function SectionBar({ sections }: { sections: PageSection[] }) {
-  const { t } = useTranslation();
-  const handToNav = useContext(PageSectionsContext);
-  const bar = useRef<HTMLElement>(null);
-  const [current, setCurrent] = useState(sections[0]?.id ?? '');
-  const [scrolledPast, setScrolledPast] = useState(false);
-  useEffect(() => {
-    const observer = new IntersectionObserver(entries => {
-      const reading = entries.filter(entry => entry.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
-      if (reading) {
-        setCurrent(reading.target.id);
-      }
-    }, { rootMargin: `-${readingLine()}px 0px -60% 0px` });
-    sections.forEach(section => {
-      const heading = document.getElementById(section.id);
-      if (!heading) {
-        throw new Error(`The document has no heading #${section.id}`);
-      }
-      observer.observe(heading);
-    });
-    return () => observer.disconnect();
-  }, [sections]);
-  useEffect(() => {
-    const barElement = bar.current;
-    if (!barElement) {
-      throw new Error('The section bar observes itself before it has rendered');
-    }
-    const top = navHeight();
-    const observer = new IntersectionObserver(([entry]) => setScrolledPast(!entry.isIntersecting && entry.boundingClientRect.top < top), { rootMargin: `-${top}px 0px 0px 0px` });
-    observer.observe(barElement);
-    return () => observer.disconnect();
-  }, []);
-  useEffect(() => handToNav(scrolledPast ? { sections, current } : null), [handToNav, scrolledPast, sections, current]);
-  useEffect(() => () => handToNav(null), [handToNav]);
-  return (
-    <nav ref={bar} className={styles.sectionBar} aria-label={t('site.pageSections')}>
-      <SectionLinks sections={sections} current={current} className="page" />
-    </nav>
   );
 }

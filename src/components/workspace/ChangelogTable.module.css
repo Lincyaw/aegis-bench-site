@@ -1,0 +1,9 @@
+.changelog { --columns: 9rem minmax(14rem, 1.6fr) 4rem 6rem minmax(12rem, 1.6fr) 6rem; }
+.changelog a:hover { text-decoration: underline; text-underline-offset: var(--space-1); }
+.task { display: grid; gap: var(--space-px); min-width: 0; }
+.task a { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+@media (max-width: 760px) {
+  .changelog { --columns: minmax(0, 1fr) auto; }
+  .changelog [role="row"] > :is(:nth-child(1), :nth-child(4), :nth-child(5), :nth-child(6)) { display: none; }
+}

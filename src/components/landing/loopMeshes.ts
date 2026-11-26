@@ -4,7 +4,7 @@ import { LineGeometry } from 'three/addons/lines/LineGeometry.js';
 import type { LineMaterial } from 'three/addons/lines/LineMaterial.js';
 import { LineSegments2 } from 'three/addons/lines/LineSegments2.js';
 import { LineSegmentsGeometry } from 'three/addons/lines/LineSegmentsGeometry.js';
-import type { Half } from '../../api/client';
+import type { Half } from '../../api/types';
 import { LOOP_RISE, LOOP_SIZE, devShare } from './lemniscate';
 import type { SceneColors } from './vignetteMotion';
 

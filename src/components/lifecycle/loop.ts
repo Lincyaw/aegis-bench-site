@@ -1,4 +1,4 @@
-import type { Half } from '../../api/client';
+import type { Half } from '../../api/types';
 
 /**
  * The lifecycle loop is a lemniscate of Bernoulli: x = a·cos t / (1 + sin²t), y = a·sin t·cos t / (1 + sin²t).

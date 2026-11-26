@@ -1,4 +1,4 @@
-import type { SubmissionVerdict, TrajectoryStep } from '../../api/client';
+import type { SubmissionVerdict, TrajectoryStep } from '../../api/types';
 
 /** The verdict a submit step carries as `extra.submission` on its observation result, as the API declares. */
 export function submissionOf(step: TrajectoryStep): SubmissionVerdict | undefined {

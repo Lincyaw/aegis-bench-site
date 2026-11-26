@@ -1,0 +1,4 @@
+.run, .entrant { display: grid; gap: var(--space-px); min-width: 0; }
+.run a { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.run a:hover { text-decoration: underline; text-underline-offset: var(--space-1); }
+.tags { display: flex; flex-wrap: wrap; gap: var(--space-1); }

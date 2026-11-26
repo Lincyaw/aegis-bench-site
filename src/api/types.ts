@@ -145,6 +145,69 @@ export type ReportEdit = Schemas['Console.ReportEdit'];
 export type ReviewRequest = Schemas['Console.ReviewRequest'];
 export type HuggingFaceUnreachableAnswer = Schemas['HuggingFaceUnreachableError'];
 
+/* What the console's lists ask for, as the pages' addresses keep it and the client sends it. */
+
+/** What the console's task list asks for: the filters and the page. */
+export interface ConsoleTaskQuery {
+  q: string;
+  tag: string;
+  spread?: TaskSpread;
+  order: TaskOrder;
+  offset: number;
+}
+
+/** What the console's run list asks for: the filters and the page. */
+export interface ConsoleRunQuery {
+  q: string;
+
+  /** A model's id; every model when empty */
+  model: string;
+
+  /** A model and harness pair as "<model id>-<harness id>"; every pair when empty */
+  combination: string;
+
+  outcome?: RunOutcome;
+  review?: ReviewFilter;
+  offset: number;
+}
+
+/** What the event list of a run asks for. */
+export interface RunEventQuery {
+  kind?: RunEventKind;
+  q: string;
+  offset: number;
+}
+
+/** What a model's page asks for: one harness or all, the collection it keeps to, the filters and the page. */
+export interface ModelTaskQuery {
+  harness: string;
+
+  /** The tag of the collection the page keeps to; every task when empty */
+  tag: string;
+
+  /** The one task the page keeps to; every task when empty */
+  task: string;
+
+  q: string;
+  spread?: TaskSpread;
+  order: TaskOrder;
+  offset: number;
+}
+
+/** What a hunt's trial list asks for: a facet or all, a verdict or all, and the page. */
+export interface HuntTrialQuery {
+  facet: string;
+  verdict?: HuntVerdict;
+  offset: number;
+}
+
+/** What the changelog asks for: one benchmark or all, one kind of change or all, and the page. */
+export interface ChangelogQuery {
+  benchmarkId: string;
+  change?: RevisionChange;
+  offset: number;
+}
+
 /* The data files' formats, as spec/data.tsp declares them; only the mock server reads them. */
 export type Catalog = Schemas['Data.Catalog'];
 export type BenchmarkFile = Schemas['Data.BenchmarkFile'];

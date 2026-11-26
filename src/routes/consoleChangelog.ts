@@ -1,6 +1,5 @@
-import type { ChangelogQuery } from '../api/consoleClient';
 import { consoleRevisionChangeValues } from '../api/schema';
-import type { RevisionChange } from '../api/types';
+import type { ChangelogQuery, RevisionChange } from '../api/types';
 
 /** Task versions per page of the changelog. */
 export const CHANGELOG_PAGE_SIZE = 25;

@@ -36,11 +36,10 @@
 .start, .end { display: flex; align-items: center; gap: var(--space-10); }
 .start { min-width: 0; }
 .end { flex: none; gap: var(--space-3); }
-.brand { display: inline-flex; align-items: center; gap: var(--space-3); color: var(--text-main); }
 
 .links { display: flex; gap: var(--space-6); font: var(--type-label); }
 .links a { color: var(--text-muted); transition: color var(--duration-base); }
-.links a:hover, .links a.current { color: var(--text-main); }
+.links a:hover, .links a[aria-current="page"] { color: var(--text-main); }
 .signIn { padding: 0 var(--space-2); color: var(--text-muted); font: var(--type-small); transition: color var(--duration-base); }
 .signIn:hover { color: var(--text-main); }
 /* The page's sections scroll sideways inside the pill rather than run under its buttons. */
@@ -61,12 +60,6 @@
 }
 .drawer a { padding: var(--space-3) 0; border-bottom: var(--rule-hairline); }
 
-.footer { margin-top: var(--space-120); padding: var(--space-10) 0 var(--space-8); }
-.footerTop { display: flex; align-items: center; gap: var(--space-6); padding-bottom: var(--space-6); border-bottom: var(--rule-hairline); }
-.footerBottom { display: flex; justify-content: space-between; gap: var(--space-6); padding-top: var(--space-5); }
-.footerLinks { display: flex; flex-wrap: wrap; gap: var(--space-5); }
-.footerLinks a:hover { color: var(--text-main); }
-
 .pending { display: grid; gap: var(--space-4); justify-items: start; padding-top: var(--space-96); }
 
 @media (max-width: 760px) {
@@ -74,6 +67,5 @@
   .start { gap: var(--space-4); }
   .links, .contact { display: none; }
   .menuButton { display: inline-flex; }
-  .footerTop, .footerBottom { flex-direction: column; align-items: flex-start; gap: var(--space-3); }
   .pending { padding-top: var(--space-10); }
 }

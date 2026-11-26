@@ -1,24 +1,20 @@
 import { clsx } from 'clsx';
-import { useId, useState, type FormEvent } from 'react';
+import { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import { useConsoleBenchmark, useConsoleUser, useDiscardDraft, usePublishRelease, useRelease, useRestoreRelease, useUpdateDraft } from '../../../api/consoleClient';
-import type { Combination, ConsoleBenchmark, EntrantKey, ReleaseContent, ReleaseDetail } from '../../../api/types';
-import { ModelLabel } from '../../../components/model/ModelBadge';
-import { isEntrant } from '../../../components/release/entrants';
+import type { ConsoleBenchmark, ReleaseDetail } from '../../../api/types';
+import { EntrantChoice, ReleaseContentView, ReleaseNoteForm, ReplayEditor } from '../../../components/release/ReleaseContent';
 import { ReleaseChangesText, ReleaseStatusTag } from '../../../components/release/ReleaseLabels';
+import { ChangeFailure } from '../../../components/shell/ChangeFailure';
 import { ConsoleHeader } from '../../../components/shell/ConsoleHeader';
-import { LocaleLink } from '../../../i18n/LocaleRouting';
 import { useLocale, useLocalizedNavigate } from '../../../i18n/localeContext';
 import { dateTimeOf } from '../../../i18n/locales';
 import { consoleBenchmarkPath } from '../../../routes/console';
 import { benchmarkReleasesPath, releasePath } from '../../../routes/consoleReleases';
-import { consoleRunPath } from '../../../routes/consoleRuns';
 import { benchmarkPath } from '../../../routes/site';
-import { FactList } from '../../../ui/content';
 import content from '../../../ui/content.module.css';
-import { Button, ButtonLink, SubmitButton, TextArea, TextField, ToggleChip } from '../../../ui/controls';
-import { ChangeFailure } from '../ConsolePages';
+import { Button, ButtonLink, SubmitButton, TextArea } from '../../../ui/controls';
 import { mayEdit } from '../roles';
 import styles from './ReleasePages.module.css';
 
@@ -58,34 +54,6 @@ export function ReleasePage() {
         />
       )}
     </div>
-  );
-}
-
-/** What a published release shows: the summary in each language, the ranked combinations and the example runs. */
-export function ReleaseContentView({ benchmark, shown }: { benchmark: ConsoleBenchmark; shown: ReleaseContent }) {
-  const { t } = useTranslation();
-  return (
-    <>
-      <section className={styles.section}>
-        <h2 className="t-heading">{t('console.release.summary')}</h2>
-        <FactList layout="rows" facts={[{ label: t('console.release.summaryZh'), value: shown.summary['zh-CN'] }, { label: t('console.release.summaryEn'), value: shown.summary.en }]} />
-      </section>
-      <section className={styles.section}>
-        <h2 className="t-heading">{t('console.release.entrants')}</h2>
-        <ul className={styles.entrants}>
-          {benchmark.entrants.filter(entrant => shown.entrants.some(key => isEntrant(key, entrant))).map(({ model, harness }) => (
-            <li key={`${model.id}-${harness.id}`}><ModelLabel model={model} /><span className="t-small c-muted">{harness.name}</span></li>
-          ))}
-        </ul>
-      </section>
-      <section className={styles.section}>
-        <h2 className="t-heading">{t('console.release.replays')}</h2>
-        <p className="t-micro c-faint">{t('console.release.replaysNote')}</p>
-        <ol className={styles.replays}>
-          {shown.replays.map(runId => <li key={runId}><LocaleLink className="t-mono" to={consoleRunPath(benchmark.id, runId)}>{runId}</LocaleLink></li>)}
-        </ol>
-      </section>
-    </>
   );
 }
 
@@ -130,60 +98,6 @@ export function DraftEditor({ benchmark, release }: { benchmark: ConsoleBenchmar
   );
 }
 
-/** Which of the benchmark's combinations the leaderboard ranks; the last one chosen cannot be dropped. */
-export function EntrantChoice({ entrants, chosen, onChange }: { entrants: Combination[]; chosen: EntrantKey[]; onChange: (chosen: EntrantKey[]) => void }) {
-  const { t } = useTranslation();
-  return (
-    <section className={styles.section}>
-      <h2 className="t-heading">{t('console.release.entrants')}</h2>
-      <p className="t-micro c-faint">{t('console.release.entrantsNote')}</p>
-      <div className={styles.chips} role="group" aria-label={t('console.release.entrants')}>
-        {entrants.map(entrant => {
-          const pressed = chosen.some(key => isEntrant(key, entrant));
-          return (
-            <ToggleChip
-              key={`${entrant.model.id}-${entrant.harness.id}`} pressed={pressed} disabled={pressed && chosen.length === 1}
-              onToggle={() => onChange(pressed ? chosen.filter(key => !isEntrant(key, entrant)) : [...chosen, { modelId: entrant.model.id, harnessId: entrant.harness.id }])}
-            >
-              {entrant.model.name} · {entrant.harness.name}
-            </ToggleChip>
-          );
-        })}
-      </div>
-    </section>
-  );
-}
-
-/** A draft's example runs: each can be dropped, and a run is added by its id; a run already listed stays where it is. */
-export function ReplayEditor({ benchmarkId, replays, onChange }: { benchmarkId: string; replays: string[]; onChange: (replays: string[]) => void }) {
-  const { t } = useTranslation();
-  const [runId, setRunId] = useState('');
-  const add = (event: FormEvent) => {
-    event.preventDefault();
-    const added = runId.trim();
-    onChange(replays.includes(added) ? replays : [...replays, added]);
-    setRunId('');
-  };
-  return (
-    <section className={styles.section}>
-      <h2 className="t-heading">{t('console.release.replays')}</h2>
-      <p className="t-micro c-faint">{t('console.release.replaysNote')}</p>
-      <ol className={styles.replays}>
-        {replays.map(replay => (
-          <li key={replay}>
-            <LocaleLink className="t-mono" to={consoleRunPath(benchmarkId, replay)}>{replay}</LocaleLink>
-            <Button variant="line" onClick={() => onChange(replays.filter(id => id !== replay))}>{t('console.release.remove')}</Button>
-          </li>
-        ))}
-      </ol>
-      <form className={styles.addReplay} onSubmit={add}>
-        <TextField label={t('console.release.replayId')} type="text" autoComplete="off" value={runId} onChange={setRunId} />
-        <SubmitButton variant="line" pending={false}>{t('console.release.addReplay')}</SubmitButton>
-      </form>
-    </section>
-  );
-}
-
 /** Dropping a draft, which asks again first; the benchmark's releases open afterwards. */
 export function DiscardDraft({ benchmarkId, releaseId }: { benchmarkId: string; releaseId: string }) {
   const { t } = useTranslation();
@@ -200,21 +114,4 @@ export function DiscardDraft({ benchmarkId, releaseId }: { benchmarkId: string; 
       </div>
     </div>
   ) : <div className={styles.buttons}><Button variant="line" onClick={() => setAsking(true)}>{t('console.release.discard')}</Button></div>;
-}
-
-/** Publishing a release, a draft or one restored, which asks for the note the release history keeps. */
-export function ReleaseNoteForm({ title, lead, confirm, pending, error, onSubmit }: {
-  title: string; lead: string; confirm: string; pending: boolean; error: Error | null; onSubmit: (note: string) => void;
-}) {
-  const { t } = useTranslation();
-  const [note, setNote] = useState('');
-  return (
-    <form className={clsx(content.panel, styles.action)} onSubmit={event => { event.preventDefault(); onSubmit(note); }}>
-      <h2 className="t-heading">{title}</h2>
-      <p className="t-small c-muted">{lead}</p>
-      <TextArea label={t('console.release.note')} rows={2} value={note} onChange={setNote} />
-      <ChangeFailure error={error} reasons={{ 409: t('console.release.changedElsewhere') }} />
-      <div className={styles.buttons}><SubmitButton variant="solid" pending={pending}>{confirm}</SubmitButton></div>
-    </form>
-  );
 }

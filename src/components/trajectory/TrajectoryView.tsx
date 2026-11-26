@@ -1,7 +1,7 @@
 import { clsx } from 'clsx';
 import { useDeferredValue, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { TimelineLegend, TimelineStep, TrajectoryPage } from '../../api/client';
+import type { TimelineLegend, TimelineStep, TrajectoryPage } from '../../api/types';
 import { TRAJECTORY_PAGE_SIZE, trajectoryPageStartOf } from '../../routes/runRecords';
 import { ArrowIcon, IconButton } from '../../ui/controls';
 import { Pager } from '../../ui/navigation';
@@ -68,7 +68,7 @@ export function TrajectoryView({ usePage, timeline, legend, evidence, selected, 
         {page.items.map(step => {
           const open = step.step_id === selected;
           return (
-            <li key={step.step_id} ref={open ? selectedRow : undefined} className={clsx(styles.step, open && styles.open, evidence.includes(step.step_id) && styles.evidence)}>
+            <li key={step.step_id} ref={open ? selectedRow : undefined} className={clsx(styles.step, evidence.includes(step.step_id) && styles.evidence)}>
               <button type="button" className={styles.stepHead} onClick={() => onSelect(open ? undefined : step.step_id)} aria-expanded={open}>
                 <AtifStepSummary step={step} />
               </button>

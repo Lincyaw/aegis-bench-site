@@ -1,3 +1,4 @@
+.brand { display: inline-flex; align-items: center; gap: var(--space-3); color: var(--text-main); }
 .mark { display: block; flex: none; }
 .mark path { fill: none; stroke-width: 1.6; stroke-linejoin: round; }
 .mark path:first-child { stroke: var(--brand-dev); }

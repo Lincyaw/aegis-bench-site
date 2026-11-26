@@ -4,29 +4,20 @@ import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import { useConsoleBenchmark, useConsoleUser, useCreateReport, useReportDrafts } from '../../../api/consoleClient';
 import { REPORT_SLUG_PATTERN } from '../../../api/constraints';
-import type { ReportDraftSummary, ReportStatus } from '../../../api/types';
 import { reportSourceOf, REPORTS } from '../../../articles/library';
 import { newReportSources } from '../../../articles/newReport';
+import { DraftTable } from '../../../components/report/DraftTable';
+import { ChangeFailure } from '../../../components/shell/ChangeFailure';
 import { ConsoleHeader } from '../../../components/shell/ConsoleHeader';
 import { LocaleLink } from '../../../i18n/LocaleRouting';
 import { useLocale, useLocalizedNavigate } from '../../../i18n/localeContext';
-import { dateTimeOf } from '../../../i18n/locales';
 import { consoleBenchmarkPath } from '../../../routes/console';
 import { consoleReportPath } from '../../../routes/consoleReports';
 import { reportPath } from '../../../routes/site';
-import { Tag } from '../../../ui/content';
 import content from '../../../ui/content.module.css';
 import { Button, SubmitButton, TextField } from '../../../ui/controls';
-import table from '../../../ui/table.module.css';
-import { ChangeFailure } from '../ConsolePages';
 import { mayEdit } from '../roles';
 import styles from './ReportPages.module.css';
-
-/** Where a report draft stands; one still being written is dashed, as it is not settled yet. */
-export function ReportStatusTag({ status }: { status: ReportStatus }) {
-  const { t } = useTranslation();
-  return <Tag dashed={status === 'draft'}>{t(`console.reports.status.${status}`)}</Tag>;
-}
 
 /**
  * A benchmark's reports: the drafts being written and reviewed here, and the reports the public site shows, which an
@@ -69,36 +60,6 @@ export function ReportListPage() {
         )}
       </section>
       {editing && <NewReportForm benchmarkId={benchmark.id} />}
-    </div>
-  );
-}
-
-/** One row per draft; the row opens the draft's editor. */
-export function DraftTable({ benchmarkId, drafts }: { benchmarkId: string; drafts: ReportDraftSummary[] }) {
-  const { t } = useTranslation();
-  const locale = useLocale();
-  const navigate = useLocalizedNavigate();
-  return (
-    <div className={clsx(table.table, styles.drafts)} role="table" aria-label={t('console.reports.drafts')}>
-      <div className={clsx(table.row, table.head, 't-micro c-faint')} role="row">
-        <span role="columnheader">{t('console.reports.column.report')}</span>
-        <span role="columnheader">{t('console.reports.column.status')}</span>
-        <span role="columnheader">{t('console.reports.column.approvals')}</span>
-        <span role="columnheader">{t('console.reports.column.author')}</span>
-        <span role="columnheader">{t('console.reports.column.updated')}</span>
-      </div>
-      {drafts.map(draft => {
-        const to = consoleReportPath(benchmarkId, draft.id);
-        return (
-          <div key={draft.id} className={clsx(table.row, table.link)} role="row" onClick={event => { if (!(event.target as HTMLElement).closest('a')) { navigate(to); } }}>
-            <span role="cell" className={styles.stacked}><LocaleLink className="t-label" to={to}>{draft.title[locale]}</LocaleLink><span className="t-mono c-faint">{draft.slug}</span></span>
-            <span role="cell"><ReportStatusTag status={draft.status} /></span>
-            <span role="cell" className="t-numeric c-muted">{t('console.reports.approvalsOf', { approvals: draft.approvals, required: draft.approvalsRequired })}</span>
-            <span role="cell" className="t-mono c-muted">{draft.author}</span>
-            <span role="cell" className="t-mono c-faint">{dateTimeOf(locale, draft.updatedAt)}</span>
-          </div>
-        );
-      })}
     </div>
   );
 }

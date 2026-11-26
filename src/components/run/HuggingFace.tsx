@@ -2,7 +2,7 @@ import { clsx } from 'clsx';
 import type { ReactNode } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { useTranslation } from 'react-i18next';
-import { HuggingFaceUnreachableError } from '../../api/client';
+import { HuggingFaceUnreachableError } from '../../api/errors';
 import controls from '../../ui/controls.module.css';
 import styles from './HuggingFace.module.css';
 
