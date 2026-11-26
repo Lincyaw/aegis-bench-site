@@ -2,6 +2,7 @@ import { clsx } from 'clsx';
 import { useLayoutEffect, useRef, type HTMLAttributes, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LocaleLink } from '../i18n/LocaleRouting';
+import { useReturnPath } from '../i18n/trail';
 import { ArrowIcon, IconButton } from './controls';
 import styles from './navigation.module.css';
 
@@ -12,14 +13,16 @@ export interface Crumb {
   to?: string;
 }
 
+/** The pages above the current one; each leads back to its page as the reader last had it, filters included. */
 export function Breadcrumbs({ crumbs, className }: { crumbs: Crumb[]; className?: string }) {
   const { t } = useTranslation();
+  const returnPath = useReturnPath();
   return (
     <nav className={clsx(styles.crumbs, 't-small', className)} aria-label={t('ui.breadcrumbs')}>
       {crumbs.map((crumb, index) => (
         <span key={crumb.label}>
           {index > 0 && <span className={styles.slash}>/</span>}
-          {crumb.to ? <LocaleLink to={crumb.to}>{crumb.label}</LocaleLink> : <span aria-current="page" className="c-main">{crumb.label}</span>}
+          {crumb.to ? <LocaleLink to={returnPath(crumb.to)}>{crumb.label}</LocaleLink> : <span aria-current="page" className="c-main">{crumb.label}</span>}
         </span>
       ))}
     </nav>
