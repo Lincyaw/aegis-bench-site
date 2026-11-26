@@ -7,6 +7,12 @@ export const SESSION_COOKIE = 'aegis_console';
 /** Every member of the demo signs in with this password; the sign-in page tells the reader so. */
 export const DEMO_PASSWORD = 'demo';
 
+/**
+ * The demo opens signed in as this administrator on a browser that carries no session cookie at all; a browser that
+ * signed out carries an empty one, so it stays out until it signs in or closes.
+ */
+export const DEMO_ACCOUNT = 'lin.fang';
+
 /** The session lasts a working day. */
 export const SESSION_SECONDS = 8 * 60 * 60;
 
@@ -24,10 +30,16 @@ export function sessionUserOf(cookies: Record<string, string>): ConsoleUser | un
   return member && consoleUserOf(member);
 }
 
+/** Whether the browser signed out: it carries the session cookie, emptied. */
+export function signedOut(cookies: Record<string, string>): boolean {
+  return cookies[SESSION_COOKIE] === '';
+}
+
 export function signedInCookie(account: string): string {
   return `${SESSION_COOKIE}=${account}; Path=/; Max-Age=${SESSION_SECONDS}; SameSite=Lax`;
 }
 
+/** Empties the session cookie for as long as the browser's session lasts, which tells a sign-out from no sign-in yet. */
 export function signedOutCookie(): string {
-  return `${SESSION_COOKIE}=; Path=/; Max-Age=0; SameSite=Lax`;
+  return `${SESSION_COOKIE}=; Path=/; SameSite=Lax`;
 }

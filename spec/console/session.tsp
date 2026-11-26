@@ -71,6 +71,10 @@ model SignInRequest {
 
 @route("/console/session")
 interface ConsoleSession {
+  /**
+   * Who is signed in. A demo server may sign a browser that has neither signed in nor out in as its demo member; the
+   * response then sets the session cookie.
+   */
   @get read(): SessionState;
 
   /** Signs in: the response sets the session cookie */

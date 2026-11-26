@@ -3,7 +3,7 @@ import { hasBenchmark } from './benchmarks';
 import { changeRole, inviteMember, leavesNoAdministrator, mayAdminister, memberOf, membersInOrder, recordSignIn, refusalFor, removeMember } from './members';
 import { http, localeOf, pageOf, writtenIn } from './protocol';
 import { openedIndexes } from './records';
-import { DEMO_PASSWORD, SIGN_IN_REQUIRED, consoleUserOf, sessionUserOf, signedInCookie, signedOutCookie } from './session';
+import { DEMO_ACCOUNT, DEMO_PASSWORD, SIGN_IN_REQUIRED, consoleUserOf, sessionUserOf, signedInCookie, signedOut, signedOutCookie } from './session';
 import { currentSettings, updateSettings } from './settings';
 import { DEFAULT_CHANGELOG_PAGE_SIZE, changelogOf, workbenchOf } from './workspace';
 
@@ -14,7 +14,18 @@ import { DEFAULT_CHANGELOG_PAGE_SIZE, changelogOf, workbenchOf } from './workspa
 export const workspaceHandlers = [
   http.get('/console/session', ({ cookies, response }) => {
     const user = sessionUserOf(cookies);
-    return response(200).json(user ? { user } : {});
+    if (user) {
+      return response(200).json({ user });
+    }
+    if (signedOut(cookies)) {
+      return response(200).json({});
+    }
+    const member = memberOf(DEMO_ACCOUNT);
+    if (!member) {
+      throw new Error(`the demo account ${DEMO_ACCOUNT} is no longer a member`);
+    }
+    recordSignIn(member);
+    return response(200).json({ user: consoleUserOf(member) }, { headers: { 'Set-Cookie': signedInCookie(member.account) } });
   }),
 
   http.post('/console/session', async ({ request, response }) => {
