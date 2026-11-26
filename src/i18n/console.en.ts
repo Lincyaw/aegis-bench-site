@@ -553,6 +553,11 @@ export const consoleEn: ConsoleMessages = {
     },
     resizeTrajectory: 'Resize the trajectory column',
     resizePanel: 'Resize the side panel',
+    collapseTrajectory: 'Collapse the trajectory column',
+    expandTrajectory: 'Expand the trajectory column',
+    fullscreen: 'View full screen',
+    leaveFullscreen: 'Exit full screen',
+    zoom: { label: 'Zoom', out: 'Zoom out', in: 'Zoom in', reset: 'Reset to actual size', fit: 'Zoom to fit the window' },
     panel: {
       label: 'Details of node {{node}}',
       close: 'Close the details',

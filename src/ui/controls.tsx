@@ -220,6 +220,27 @@ export function FileIcon() {
   return <svg viewBox="0 0 12 12" width="12" height="12" data-upright aria-hidden="true"><path d="M3 1.5h4l2.5 2.5v6.5H3zM7 1.5V4h2.5" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" /></svg>;
 }
 
+/** Four corners pointing out, to fill the screen, or in, to leave it; in an icon button they keep upright on hover. */
+export function FullscreenIcon({ leave }: { leave: boolean }) {
+  const corners = leave ? 'M4.5 1.5v3h-3M7.5 1.5v3h3M4.5 10.5v-3h-3M7.5 10.5v-3h3' : 'M1.5 4.5v-3h3M10.5 4.5v-3h-3M1.5 7.5v3h3M10.5 7.5v3h-3';
+  return <svg viewBox="0 0 12 12" width="12" height="12" data-upright aria-hidden="true"><path d={corners} fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" /></svg>;
+}
+
+/** A plus or a minus, for making something larger or smaller; in an icon button it keeps upright on hover. */
+export function ZoomIcon({ direction }: { direction: 'in' | 'out' }) {
+  return <svg viewBox="0 0 12 12" width="12" height="12" data-upright aria-hidden="true"><path d={direction === 'in' ? 'M6 2.5v7M2.5 6h7' : 'M2.5 6h7'} stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /></svg>;
+}
+
+/** A square inside four corners, for fitting a drawing to the room it has; in an icon button it keeps upright on hover. */
+export function FitIcon() {
+  return (
+    <svg viewBox="0 0 12 12" width="12" height="12" data-upright aria-hidden="true">
+      <path d="M1.5 4V1.5H4M8 1.5h2.5V4M10.5 8v2.5H8M4 10.5H1.5V8" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+      <rect x="4.25" y="4.25" width="3.5" height="3.5" rx=".5" fill="none" stroke="currentColor" strokeWidth="1.2" />
+    </svg>
+  );
+}
+
 /**
  * A pill that opens a glass list of choices; the chosen one carries a check. A quiet one keeps its chevron, so it still
  * reads as a choice to open. `className` lets the parent place it.

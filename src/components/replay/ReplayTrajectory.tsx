@@ -1,6 +1,7 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Touch, TouchKind, TrajectoryStep, WorldEvent, WorldLayer } from '../../api/types';
+import { ArrowIcon, IconButton } from '../../ui/controls';
 import { InfoHint } from '../../ui/hint';
 import { REDUCED_MOTION_QUERY, useMediaQuery } from '../../ui/media';
 import { AtifFields, AtifStepSummary } from '../trajectory/AtifStep';
@@ -12,8 +13,9 @@ import styles from './ReplayTrajectory.module.css';
  * The trajectory beside the world: every step a row as ATIF records it, with a cell per layer for what the step did
  * to it. The current step opens in place to what it did in the record's own words: its calls' arguments, the nodes it
  * touched and the events it caused, each node a way to open it in the panel. The steps still to come are faded.
+ * Folded, it is a strip that keeps the current step in sight and opens it again, leaving its room to the world.
  */
-export function ReplayTrajectory({ steps, layers, layerTouches, touches, events, current, onStep, onSelect }: {
+export function ReplayTrajectory({ steps, layers, layerTouches, touches, events, current, collapsed, onCollapse, onStep, onSelect }: {
   steps: TrajectoryStep[];
   layers: WorldLayer[];
   layerTouches: Map<number, Map<string, TouchKind>>;
@@ -23,6 +25,8 @@ export function ReplayTrajectory({ steps, layers, layerTouches, touches, events,
   events: WorldEvent[];
 
   current: number;
+  collapsed: boolean;
+  onCollapse: (collapsed: boolean) => void;
   onStep: (step: number) => void;
   onSelect: (node: string) => void;
 }) {
@@ -40,6 +44,14 @@ export function ReplayTrajectory({ steps, layers, layerTouches, touches, events,
       <div className={styles.lines}>{lines}</div>
     </div>
   );
+  if (collapsed) {
+    return (
+      <section className={styles.strip} aria-label={t('console.replay.trajectory')}>
+        <IconButton label={t('console.replay.expandTrajectory')} size="small" variant="quiet" onClick={() => onCollapse(false)}><ArrowIcon direction="right" /></IconButton>
+        <span className="t-micro c-muted">{`${t('console.replay.trajectory')} · ${t('console.replay.playback.position', { step: current, last: steps.at(-1)?.step_id ?? current })}`}</span>
+      </section>
+    );
+  }
   return (
     <section className={styles.trajectory} aria-label={t('console.replay.trajectory')}>
       <header className={styles.head}>
@@ -47,9 +59,10 @@ export function ReplayTrajectory({ steps, layers, layerTouches, touches, events,
           <span className="t-label">{t('console.replay.trajectory')}</span>
           <span className="t-micro c-faint">{t('console.replay.steps', { count: steps.length })}</span>
         </span>
-        <span className={styles.title}>
+        <span className={styles.tools}>
           <span className="t-micro c-faint">{t('console.replay.layerCells.label')}</span>
           <InfoHint label={t('console.replay.layerCells.label')}>{t('console.replay.layerCells.hint', { layers: layers.map(layer => layer.name).join(t('console.replay.layerCells.separator')) })}</InfoHint>
+          <IconButton label={t('console.replay.collapseTrajectory')} size="small" variant="quiet" onClick={() => onCollapse(true)}><ArrowIcon direction="left" /></IconButton>
         </span>
       </header>
       <ol className={styles.rows}>

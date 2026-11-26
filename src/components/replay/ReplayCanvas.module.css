@@ -4,13 +4,20 @@
  * comes appears. A line whose nodes move goes before them and comes back after, so no line is ever left behind by its
  * nodes; a line whose nodes stand, or whose whole band moves, stays and moves with them.
  */
+/*
+ * The canvas's frame holds the scroller and, over its corner, the zoom. The drawing is scaled inside a box of its
+ * scaled size, so the scroller scrolls just as far as the zoomed drawing reaches.
+ */
+.frame { position: relative; display: grid; grid-template: minmax(0, 1fr) / minmax(0, 1fr); min-width: 0; min-height: 0; }
 .scroller { position: relative; min-width: 0; min-height: 0; overflow: auto; overscroll-behavior: contain; }
+.sizer { overflow: clip; }
 .canvas {
   --beat-out: var(--duration-fast);
   --beat-move: var(--duration-slow);
   --beat-in: var(--duration-base);
   --move: var(--beat-move) var(--ease-out) var(--beat-out);
   position: relative;
+  transform-origin: 0 0;
 }
 
 .bands { position: absolute; inset: 0; pointer-events: none; }
@@ -113,3 +120,32 @@
 .fold[aria-expanded="true"] svg { transform: rotate(180deg); }
 
 .badge { position: absolute; top: calc(-1 * var(--space-2)); right: calc(-1 * var(--space-2)); }
+
+/* The zoom floats over the canvas's corner on glass, out of the drawing's way. */
+.zoom {
+  position: absolute;
+  right: var(--space-4);
+  bottom: var(--space-4);
+  display: flex;
+  align-items: center;
+  gap: var(--space-px);
+  padding: var(--space-px);
+  border: var(--size-hairline) solid var(--border-glass);
+  border-radius: var(--radius-full);
+  background: var(--bg-glass);
+  box-shadow: var(--shadow-float);
+  backdrop-filter: blur(var(--blur-glass));
+}
+.scale {
+  min-width: 3.25rem;
+  height: var(--control-small);
+  padding: 0 var(--space-2);
+  border: 0;
+  border-radius: var(--radius-full);
+  background: none;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out);
+}
+.scale:hover { background: var(--bg-muted); color: var(--text-main); }

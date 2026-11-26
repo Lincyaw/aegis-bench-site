@@ -17,7 +17,8 @@ import { OutcomeBadge } from '../../../components/run/Outcome';
 import { consoleBenchmarkPath } from '../../../routes/console';
 import { REPLAY_VIEWS, parseReplayView, replaySearch, type ReplayView } from '../../../routes/consoleReplay';
 import { consoleRunPath, consoleRunsPath } from '../../../routes/consoleRuns';
-import { SegmentedControl, ToggleChip } from '../../../ui/controls';
+import { FullscreenIcon, IconButton, SegmentedControl, ToggleChip } from '../../../ui/controls';
+import { useFullscreen } from '../../../ui/fullscreen';
 import { InfoHint } from '../../../ui/hint';
 import { Breadcrumbs } from '../../../ui/navigation';
 import { ResizeHandle } from '../../../ui/resizer';
@@ -37,8 +38,9 @@ export const CANVAS_MIN = 240;
 /**
  * A run replayed over its task's world, filling the window: the trajectory down the left, the world's layers beside
  * it, the open node in a side panel, and the playback along the foot. The reader sizes the trajectory and the panel,
- * and the panel can take the canvas's room. The step, the view, the hidden layers, the folds, the open node and how
- * its panel shows it live in the address; playing moves the step one beat at a time.
+ * folds the trajectory to a strip, and lets the panel take the canvas's room; on the whole screen the head keeps only
+ * its controls. The step, the view, the hidden layers, the folds, the open node and how its panel shows it live in
+ * the address; playing moves the step one beat at a time.
  */
 export function RunReplayPage() {
   const { t } = useTranslation();
@@ -51,11 +53,14 @@ export function RunReplayPage() {
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState<ReplaySpeed>('1');
   const [maximized, setMaximized] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
+  const [fullscreen, setFullscreen] = useFullscreen();
   const [body, bodyWidth] = useWidth<HTMLDivElement>();
   // Until the columns have laid out their room is unknown, and no width is cut down to fit it.
   const widest = (room: number) => (bodyWidth > 0 ? Math.max(COLUMN_MIN, room) : Number.POSITIVE_INFINITY);
   const [trajectoryWidth, setTrajectoryWidth] = useStoredSize(TRAJECTORY_WIDTH_KEY, TRAJECTORY_WIDTH, COLUMN_MIN, widest(bodyWidth / 2));
-  const [panelWidth, setPanelWidth] = useStoredSize(PANEL_WIDTH_KEY, PANEL_WIDTH, COLUMN_MIN, widest(bodyWidth - trajectoryWidth - CANVAS_MIN));
+  const trajectoryRoom = collapsed ? 0 : trajectoryWidth;
+  const [panelWidth, setPanelWidth] = useStoredSize(PANEL_WIDTH_KEY, PANEL_WIDTH, COLUMN_MIN, widest(bodyWidth - trajectoryRoom - CANVAS_MIN));
   const parsed = parseReplayView(params);
   const stepIds = trajectory.steps.map(entry => entry.step_id);
   const step = parsed.step ?? stepIds[0];
@@ -117,7 +122,7 @@ export function RunReplayPage() {
   const scope = seen ? view.scope ?? 'seen' : 'whole';
 
   return (
-    <div className={styles.page} data-half={benchmark.stage.half}>
+    <div className={styles.page} data-half={benchmark.stage.half} data-fullscreen={fullscreen ? '' : undefined}>
       <header className={styles.head}>
         <div className={styles.text}>
           <Breadcrumbs crumbs={[
@@ -148,15 +153,18 @@ export function RunReplayPage() {
             })}
           </div>
           <InfoHint label={t('console.replay.legend.label')}><ReplayLegend /></InfoHint>
+          <IconButton label={t(fullscreen ? 'console.replay.leaveFullscreen' : 'console.replay.fullscreen')} onClick={() => setFullscreen(!fullscreen)}>
+            <FullscreenIcon leave={fullscreen} />
+          </IconButton>
         </div>
       </header>
       <div
         ref={body} className={styles.body} data-panel={selected ? '' : undefined} data-maximized={selected && maximized ? '' : undefined}
-        style={{ '--trajectory-width': `${trajectoryWidth}px`, '--panel-width': `${panelWidth}px` } as CSSProperties}
+        data-collapsed={collapsed ? '' : undefined} style={{ '--trajectory-width': collapsed ? 'auto' : `${trajectoryWidth}px`, '--panel-width': `${panelWidth}px` } as CSSProperties}
       >
         <ReplayTrajectory
           steps={trajectory.steps} layers={shownLayers} layerTouches={layerTouches} current={step} onStep={id => onView({ step: id })} onSelect={onSelect}
-          touches={footprint.touches.filter(touch => touch.step === step)} events={events.get(step) ?? []}
+          touches={footprint.touches.filter(touch => touch.step === step)} events={events.get(step) ?? []} collapsed={collapsed} onCollapse={setCollapsed}
         />
         <ResizeHandle
           label={t('console.replay.resizeTrajectory')} size={trajectoryWidth} min={COLUMN_MIN} max={Math.max(COLUMN_MIN, bodyWidth / 2)} grows="end"
@@ -169,7 +177,7 @@ export function RunReplayPage() {
         {selected && (
           <>
             <ResizeHandle
-              label={t('console.replay.resizePanel')} size={panelWidth} min={COLUMN_MIN} max={Math.max(COLUMN_MIN, bodyWidth - trajectoryWidth - CANVAS_MIN)} grows="start"
+              label={t('console.replay.resizePanel')} size={panelWidth} min={COLUMN_MIN} max={Math.max(COLUMN_MIN, bodyWidth - trajectoryRoom - CANVAS_MIN)} grows="start"
               onResize={setPanelWidth} onReset={() => setPanelWidth(PANEL_WIDTH)}
             />
             <NodePanel

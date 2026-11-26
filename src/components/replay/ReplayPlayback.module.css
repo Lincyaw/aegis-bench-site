@@ -1,8 +1,9 @@
 /*
  * The playback runs along the foot of the replay. Its time is a grid: a label, then a column per step, so the marks,
- * the lanes and the events line up step by step; a long run narrows its columns to fit.
+ * the lanes and the events line up step by step; a long run narrows its columns to fit. Its rows are low, so the
+ * foot leaves the world as much height as it can.
  */
-.playback { display: flex; align-items: center; gap: var(--space-8); padding: var(--space-4) var(--space-6); border-top: var(--rule-hairline); }
+.playback { display: flex; align-items: center; gap: var(--space-8); padding: var(--space-2) var(--space-6); border-top: var(--rule-hairline); }
 .controls { display: flex; flex: none; align-items: center; gap: var(--space-2); }
 .timeline {
   display: grid;
@@ -10,7 +11,6 @@
   grid-template-columns: 5rem repeat(var(--steps, 1), minmax(0, 1fr));
   grid-auto-rows: var(--space-4);
   align-items: center;
-  row-gap: var(--space-1);
   min-width: 0;
 }
 .slot { display: grid; place-items: center; height: 100%; transition: opacity var(--duration-base) var(--ease-out); }
@@ -18,7 +18,7 @@
 .mark {
   justify-self: center;
   width: min(100%, var(--space-2));
-  height: var(--space-3);
+  height: var(--space-2);
   padding: 0;
   border: 0;
   border-radius: var(--radius-sm);
@@ -31,7 +31,7 @@
 .mark[data-mark="submitFailed"] { background: var(--accent-warning); }
 .mark[data-later] { opacity: .5; }
 .mark:hover { outline: var(--size-hairline) solid var(--text-muted); outline-offset: var(--size-hairline); }
-.mark[aria-current="step"] { height: var(--space-4); background: var(--text-main); opacity: 1; }
+.mark[aria-current="step"] { height: var(--space-3); background: var(--text-main); opacity: 1; }
 
 @media (max-width: 760px) {
   .playback { flex-wrap: wrap; gap: var(--space-3); padding: var(--space-3) var(--page-gutter); }

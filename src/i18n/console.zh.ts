@@ -549,6 +549,11 @@ export const consoleZh = {
     },
     resizeTrajectory: '调整轨迹栏宽度',
     resizePanel: '调整侧栏宽度',
+    collapseTrajectory: '收起轨迹栏',
+    expandTrajectory: '展开轨迹栏',
+    fullscreen: '全屏查看',
+    leaveFullscreen: '退出全屏',
+    zoom: { label: '缩放', out: '缩小', in: '放大', reset: '恢复原始大小', fit: '缩放到适合窗口' },
     panel: {
       label: '节点 {{node}} 的详情',
       close: '关闭详情',

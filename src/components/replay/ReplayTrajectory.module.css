@@ -1,7 +1,15 @@
 /* The trajectory column scrolls on its own; its head names the layers whose cells end every row. */
 .trajectory { display: grid; grid-template-rows: auto minmax(0, 1fr); min-width: 0; min-height: 0; border-right: var(--rule-hairline); }
-.head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); padding: var(--space-3) var(--space-4); border-bottom: var(--rule-hairline); }
+.head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4); border-bottom: var(--rule-hairline); }
 .title { display: inline-flex; align-items: baseline; gap: var(--space-2); }
+.tools { display: inline-flex; align-items: center; gap: var(--space-2); }
+/* Folded, the column is a strip down the side: the way to open it, and the current step written along it. */
+.strip { display: flex; flex-direction: column; align-items: center; gap: var(--space-3); min-height: 0; padding: var(--space-2) var(--space-1); border-right: var(--rule-hairline); }
+.strip > span { white-space: nowrap; writing-mode: vertical-rl; }
+@media (max-width: 760px) {
+  .strip { flex-direction: row; padding: var(--space-1) var(--space-4); border-right: 0; }
+  .strip > span { writing-mode: horizontal-tb; }
+}
 .cells { display: inline-grid; grid-auto-columns: var(--space-4); grid-auto-flow: column; flex: none; justify-items: center; }
 .slot { display: grid; place-items: center; }
 .rows { margin: 0; padding: 0; overflow-y: auto; overscroll-behavior: contain; list-style: none; }
