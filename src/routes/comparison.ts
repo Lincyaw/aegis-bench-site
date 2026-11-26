@@ -1,5 +1,6 @@
-/** The most runs a comparison holds, as the spec declares, and the most whose trajectories the side panel sets side by side. */
-export const MAX_COMPARED_RUNS = 4;
+import { MAX_COMPARED_RUNS } from '../api/constraints';
+
+/** The most runs whose trajectories the side panel sets side by side. */
 export const MAX_PANEL_TRAJECTORIES = 2;
 
 /**

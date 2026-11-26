@@ -2,11 +2,11 @@ import * as Popover from '@radix-ui/react-popover';
 import { clsx } from 'clsx';
 import { Suspense, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { MAX_COMPARED_RUNS } from '../../api/constraints';
 import type { ComparedRun, HarnessRef, ModelRef, RunOutcome, TaskComparison, Trajectory } from '../../api/types';
 import { LocaleLink } from '../../i18n/LocaleRouting';
 import {
-  LIST_SEPARATOR, MAX_COMPARED_RUNS, MAX_PANEL_TRAJECTORIES, withComparedRun, withExpanded, withLabel, withPanelRun, withTrajectory,
-  type ComparisonView,
+  LIST_SEPARATOR, MAX_PANEL_TRAJECTORIES, withComparedRun, withExpanded, withLabel, withPanelRun, withTrajectory, type ComparisonView,
 } from '../../routes/comparison';
 import { Loading } from '../../ui/content';
 import controls from '../../ui/controls.module.css';
@@ -24,8 +24,8 @@ import styles from './TaskComparison.module.css';
 
 /*
  * A task's runs side by side, as the console's task page and the public run records both show them: the task's runs to
- * choose from, the overview with a column per run, and the runs opened below whole. Each site lends the comparison how
- * it reads what it shows and where a run's own page is.
+ * choose from, a column per run whose rows open in place, and a side panel for whole trajectories. Each site lends the
+ * comparison how it reads what it shows and where a run's own page is.
  */
 
 /** A combination with its runs of the task, which the comparison offers to choose from. */

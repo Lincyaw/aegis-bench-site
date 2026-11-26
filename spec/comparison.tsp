@@ -49,8 +49,8 @@ model StepAnnotation {
 }
 
 /**
- * The blocks a comparison of a task's runs is made of. Each shows one row of the overview, a cell per run, and its whole
- * content for the runs opened in detail. A benchmark's configuration lists the blocks it uses, in order.
+ * The blocks a comparison of a task's runs is made of. Each shows its rows with a cell per run, and a row opens in place
+ * to show its whole content. A benchmark's configuration lists the blocks it uses, in order.
  */
 enum ComparisonBlock {
   /** The files the last submission changed, with their diffs */
@@ -66,8 +66,11 @@ enum ComparisonBlock {
   trajectory,
 }
 
-/** No comparison holds more runs than this. */
-const MAX_COMPARED_RUNS = 4;
+/** The runs a comparison sets side by side, each a different run of the task; no comparison holds more than four. */
+@minItems(1)
+@maxItems(4)
+@TypeSpec.JsonSchema.uniqueItems
+model ComparedRunIds is string[];
 
 /** One run of a comparison: who ran it, what came of it, what it said, and the labels on its steps. */
 model ComparedRun {

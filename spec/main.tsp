@@ -1,4 +1,5 @@
 import "@typespec/http";
+import "@typespec/json-schema";
 import "./atif.tsp";
 import "./comparison.tsp";
 import "./console/session.tsp";
@@ -682,11 +683,9 @@ interface Benchmarks {
     @path benchmarkId: string,
     @path taskId: string,
 
-    /** The runs to compare, each a run of the task */
+    /** The runs to compare */
     @query(#{ explode: true })
-    @minItems(1)
-    @maxItems(MAX_COMPARED_RUNS)
-    runs: string[],
+    runs: ComparedRunIds,
 
     ...LanguageHeader,
   ): Localized<PublicTaskComparison> | NotFoundError | HuggingFaceUnreachableError;

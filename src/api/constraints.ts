@@ -24,3 +24,6 @@ export const REPORT_REVIEWER_CHOICES = Array.from(
 
 /** The most checks a report may require. */
 export const MAX_REPORT_CHECKS = PUBLICATION_RULES.reportChecks.maxItems;
+
+/** The most runs a comparison holds. */
+export const MAX_COMPARED_RUNS = openapi.components.schemas.ComparedRunIds.maxItems;
