@@ -243,8 +243,7 @@ export function useConsoleRun(runId: string) {
   }).data;
 }
 
-/** One page of a run's trajectory as the console reads it; a trajectory is a record, the same in every language. */
-/** A run's whole trajectory, every step at once. */
+/** A run's whole trajectory, every step at once; a trajectory is a record, the same in every language. */
 export function useConsoleTrajectory(runId: string) {
   return useSuspenseQuery({
     queryKey: [CONSOLE_QUERY, 'trajectory', runId],
@@ -252,6 +251,7 @@ export function useConsoleTrajectory(runId: string) {
   }).data;
 }
 
+/** One page of a run's trajectory as the console reads it. */
 export function useConsoleTrajectoryPage(runId: string, offset: number, pageSize: number) {
   return useSuspenseQuery({
     queryKey: [CONSOLE_QUERY, 'trajectory', runId, offset, pageSize],

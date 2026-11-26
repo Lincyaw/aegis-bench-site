@@ -69,17 +69,6 @@ export function RunHeader({ run }: { run: RunDetail }) {
   const { t } = useTranslation();
   return (
     <header className={styles.header}>
-      <RunTitle run={run} />
-      {run.huggingFaceUrl && <HuggingFaceNote text={t('runs.huggingFace')} url={run.huggingFaceUrl} />}
-    </header>
-  );
-}
-
-/** A run's model, harness, attempt and outcome, its task, and its figures. */
-export function RunTitle({ run }: { run: RunDetail }) {
-  const { t } = useTranslation();
-  return (
-    <>
       <div className={styles.titleRow}>
         <VendorBadge model={run.model} />
         <h2 className="t-heading">{run.model.name} · {run.harness.name}</h2>
@@ -95,7 +84,8 @@ export function RunTitle({ run }: { run: RunDetail }) {
         { label: t('runs.metrics.cost'), value: `$${run.metrics.costUsd.toFixed(2)}` },
         { label: t('runs.metrics.endReason'), value: t(`runs.endReason.${run.metrics.endReason}`) },
       ]} />
-    </>
+      {run.huggingFaceUrl && <HuggingFaceNote text={t('runs.huggingFace')} url={run.huggingFaceUrl} />}
+    </header>
   );
 }
 

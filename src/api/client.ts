@@ -1,4 +1,4 @@
-import { useSuspenseInfiniteQuery, useSuspenseQueries, useSuspenseQuery } from '@tanstack/react-query';
+import { useSuspenseInfiniteQuery, useSuspenseQuery } from '@tanstack/react-query';
 import createClient from 'openapi-fetch';
 import { useLocale } from '../i18n/localeContext';
 import type { paths } from './schema';
@@ -166,29 +166,11 @@ export function useTaskRuns(benchmarkId: string, taskId: string) {
   }).data;
 }
 
-/** The query of a run's detail, shared by every view that reads runs so each is fetched once. */
-export function runQueryOf(runId: string, locale: Locale) {
-  return {
+export function useRun(runId: string) {
+  const locale = useLocale();
+  return useSuspenseQuery({
     queryKey: ['run', runId, locale],
     queryFn: () => responseBody(api.GET('/runs/{runId}', { params: { path: { runId }, header: languageHeader(locale) } })),
-  };
-}
-
-export function useRun(runId: string) {
-  return useSuspenseQuery(runQueryOf(runId, useLocale())).data;
-}
-
-/** Several runs' details, in the order asked for. */
-export function useRuns(runIds: string[]) {
-  const locale = useLocale();
-  return useSuspenseQueries({ queries: runIds.map(runId => runQueryOf(runId, locale)) }).map(query => query.data);
-}
-
-/** A run's whole trajectory, every step at once. A trajectory is a record, so it is the same in every language. */
-export function useRunTrajectory(runId: string) {
-  return useSuspenseQuery({
-    queryKey: ['trajectoryWhole', runId],
-    queryFn: () => responseBody(api.GET('/runs/{runId}/trajectory', { params: { path: { runId } } })),
   }).data;
 }
 
