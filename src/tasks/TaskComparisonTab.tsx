@@ -1,6 +1,6 @@
 import * as Popover from '@radix-ui/react-popover';
 import { clsx } from 'clsx';
-import { Suspense, useDeferredValue, useState, type ReactNode } from 'react';
+import { Suspense, useDeferredValue, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { useTaskComparison, useTaskResults } from '../api/consoleClient';
@@ -86,8 +86,26 @@ export function RunChoice({ task, view, onView }: { task: ConsoleTaskDetail; vie
 export function EntrantRuns({ task, view, onView }: { task: ConsoleTaskDetail; view: TaskComparisonView; onView: (view: TaskComparisonView) => void }) {
   const { t } = useTranslation();
   const { entrants } = useTaskResults(task.benchmark.id, task.id);
+  const list = useRef<HTMLUListElement>(null);
+  const [widths, setWidths] = useState<{ name: number; runs: number }>();
+  useLayoutEffect(() => {
+    const listElement = list.current;
+    if (!listElement) {
+      throw new Error('The run choice renders its list before its layout effect runs');
+    }
+    // A range spans a part's contents at their own width, whatever width the part itself is given.
+    const widest = (selector: string) => Math.ceil(Math.max(...[...listElement.querySelectorAll(selector)].map(part => {
+      const range = document.createRange();
+      range.selectNodeContents(part);
+      return range.getBoundingClientRect().width;
+    })));
+    const measure = () => setWidths({ name: widest(`.${styles.entrantName}`), runs: widest(`.${styles.chips}`) });
+    measure();
+    // Names change width when the fonts arrive.
+    void document.fonts.ready.then(measure);
+  }, [entrants]);
   return (
-    <ul className={styles.entrants}>
+    <ul ref={list} className={styles.entrants} style={widths && { '--name-width': `${widths.name}px`, '--runs-width': `${widths.runs}px` } as CSSProperties}>
       {entrants.map(({ model, harness, runs }) => (
         <li key={`${model.id}-${harness.id}`} className={styles.entrant}>
           <span className={styles.entrantName}><VendorBadge model={model} /><span className="t-small">{model.name}</span><span className="t-micro c-faint">{harness.name}</span></span>

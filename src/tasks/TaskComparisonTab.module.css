@@ -9,9 +9,20 @@
 .schema { max-width: var(--measure); margin: 0; padding: var(--space-2) var(--space-3); border-radius: var(--radius-md); background: var(--bg-panel); font: var(--type-mono); white-space: pre-wrap; }
 
 .choice { display: grid; gap: var(--space-3); }
-.entrants { display: grid; grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr)); gap: var(--space-2) var(--space-6); }
-.entrant { display: flex; justify-content: space-between; align-items: center; gap: var(--space-3); padding: var(--space-1) 0; }
-.entrantName { display: flex; align-items: center; gap: var(--space-2); min-width: 0; white-space: nowrap; }
+/*
+ * Every column is one pairing wide, the widest name and then the widest row of runs as measured, so the runs of all
+ * pairings start on one line; the columns spread across the width. A window too narrow for that puts the runs under
+ * the name.
+ */
+.entrants {
+  --pairing-width: calc(var(--name-width, 0rem) + var(--space-3) + var(--runs-width, 0rem));
+  display: grid;
+  grid-template-columns: repeat(auto-fill, min(100%, var(--pairing-width)));
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-8);
+}
+.entrant { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); padding: var(--space-1) 0; }
+.entrantName { display: flex; flex: none; align-items: center; gap: var(--space-2); width: var(--name-width, auto); white-space: nowrap; }
 .chips { display: flex; flex: none; gap: var(--space-1); }
 .chips button:disabled { opacity: .35; cursor: not-allowed; }
 
