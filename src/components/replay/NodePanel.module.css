@@ -1,0 +1,32 @@
+/* The side panel: a head that stays while its body scrolls, sections of rows that each go to a step or a node. */
+.panel { display: grid; grid-template-rows: auto minmax(0, 1fr); min-height: 0; border-left: var(--rule-hairline); background: var(--bg-page); animation: panel-in var(--duration-slow) var(--ease-out); }
+@keyframes panel-in {
+  from { opacity: 0; transform: translateX(var(--space-4)); }
+}
+.head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); padding: var(--space-3) var(--space-3) var(--space-3) var(--space-5); border-bottom: var(--rule-hairline); }
+.title { display: grid; gap: var(--space-px); min-width: 0; overflow-wrap: anywhere; }
+.body { display: grid; align-content: start; gap: var(--space-6); padding: var(--space-5); overflow-y: auto; overscroll-behavior: contain; }
+.section { display: grid; gap: var(--space-2); }
+.section h2 { margin: 0; font-weight: 400; }
+.rows { display: grid; gap: var(--space-px); margin: 0; padding: 0; list-style: none; }
+.row {
+  display: grid;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-1) var(--space-2);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--text-main);
+  text-align: left;
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-out), opacity var(--duration-base) var(--ease-out);
+}
+.row > :last-child { overflow-wrap: anywhere; }
+.row:hover { background: var(--bg-muted); }
+.row[aria-current="step"] { background: var(--bg-muted); }
+.row[data-later] { opacity: .45; }
+.touchRow { grid-template-columns: var(--space-6) var(--space-2) max-content minmax(0, 1fr); }
+.eventRow { grid-template-columns: var(--space-6) max-content minmax(0, 1fr); }
+.nodeRow { grid-template-columns: max-content minmax(0, 1fr); }

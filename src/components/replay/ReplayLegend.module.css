@@ -1,0 +1,6 @@
+/* A legend: each mark drawn as the canvas draws it, beside what it means. */
+.legend { display: grid; gap: var(--space-3); }
+.items { display: grid; gap: var(--space-2); margin: 0; padding: 0; list-style: none; }
+.item { display: grid; grid-template-columns: 4.5rem minmax(0, 1fr); align-items: center; gap: var(--space-3); }
+.node { justify-self: start; height: var(--space-6); padding: 0 var(--space-2); }
+.swatches { display: inline-flex; align-items: center; gap: var(--space-1); }

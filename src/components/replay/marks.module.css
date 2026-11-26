@@ -1,0 +1,57 @@
+/*
+ * How a replay marks what a run did: a node's box by the strongest touch so far, filled while the current step touches
+ * it, outlined while it is linked to that step across a layer, faded once an event removes it; a layer's cell by what a
+ * step did to the layer; a badge by the kind of change.
+ */
+.node {
+  --mark-color: var(--text-faint);
+  display: flex;
+  align-items: center;
+  height: 100%;
+  border: var(--size-hairline) solid var(--border-hairline);
+  border-radius: var(--radius-sm);
+  background: var(--bg-panel);
+  color: var(--text-faint);
+  transition:
+    transform var(--duration-slow) var(--ease-out), width var(--duration-slow) var(--ease-out), background-color var(--duration-base) var(--ease-out),
+    border-color var(--duration-base) var(--ease-out), color var(--duration-base) var(--ease-out), box-shadow var(--duration-slow) var(--ease-out),
+    opacity var(--duration-base) var(--ease-out);
+}
+.node[data-mark="seen"] { border-style: dashed; border-color: var(--text-muted); background: var(--bg-page); color: var(--text-muted); }
+.node[data-mark="read"] { --mark-color: var(--replay-tool); }
+.node[data-mark="write"] { --mark-color: var(--replay-edit); }
+.node:is([data-mark="read"], [data-mark="write"]) { border-color: var(--mark-color); background: color-mix(in srgb, var(--mark-color) 18%, var(--bg-page)); color: var(--text-main); }
+.node[data-mark="linked"] { border-color: var(--text-main); background: var(--bg-muted); color: var(--text-main); }
+.node[data-mark="removed"] { border-style: dashed; border-color: var(--text-faint); background: transparent; opacity: .5; text-decoration: line-through; }
+.node[data-current="seen"] { border-style: dashed; border-color: var(--text-main); color: var(--text-main); box-shadow: 0 0 0 var(--space-1) var(--bg-muted); }
+.node[data-current="read"] { --mark-color: var(--replay-tool); }
+.node[data-current="write"] { --mark-color: var(--replay-edit); }
+.node:is([data-current="read"], [data-current="write"]) {
+  border-color: var(--mark-color);
+  background: var(--mark-color);
+  color: var(--text-on-inverted);
+  box-shadow: 0 0 0 var(--space-1) color-mix(in srgb, var(--mark-color) 30%, transparent);
+}
+
+.status { display: inline-flex; align-items: center; gap: var(--space-1); font: var(--type-micro); white-space: nowrap; }
+.status::before { content: ""; width: var(--size-dot-sm); height: var(--size-dot-sm); border-radius: var(--radius-full); background: currentcolor; }
+.status[data-status="degraded"] { color: var(--ink-warn); }
+.status[data-status="down"] { color: var(--accent-warning); }
+.node:is([data-current="read"], [data-current="write"]) .status { color: var(--text-on-inverted); }
+
+.cell { width: var(--space-2); height: var(--space-2); border-radius: var(--radius-sm); }
+.cell[data-kind="seen"] { border: var(--size-hairline) dashed var(--text-muted); }
+.cell[data-kind="read"] { background: var(--replay-tool); }
+.cell[data-kind="write"] { background: var(--replay-edit); }
+
+.badge {
+  display: inline-grid;
+  place-items: center;
+  width: var(--space-4);
+  height: var(--space-4);
+  border-radius: var(--radius-full);
+  background: var(--bg-inverted);
+  color: var(--text-on-inverted);
+  font: var(--type-mono);
+  line-height: 1;
+}

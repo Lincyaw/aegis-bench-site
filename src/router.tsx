@@ -1,7 +1,7 @@
 import { createBrowserRouter, type RouteObject } from 'react-router-dom';
 import { LocaleRoot } from './i18n/LocaleRouting';
 import { LOCALES, LOCALE_PREFIX } from './i18n/locales';
-import { ConsoleLayout } from './pages/console/ConsoleLayout';
+import { ConsoleLayout, type ConsoleRouteHandle } from './pages/console/ConsoleLayout';
 import { ConsoleError, ConsoleNotFound } from './pages/console/ConsolePages';
 import { SignInPage } from './pages/console/SignInPage';
 import { AnalysisPage } from './pages/console/analysis/AnalysisPage';
@@ -76,6 +76,12 @@ export function sitePages(): RouteObject[] {
           { path: 'benchmarks/:benchmarkId/tasks/:taskId', element: <TaskDetailPage /> },
           { path: 'benchmarks/:benchmarkId/runs', element: <RunListPage /> },
           { path: 'benchmarks/:benchmarkId/runs/:runId', element: <RunDetailPage /> },
+          // The replay lays out its graphs with dagre, so it loads on its own.
+          {
+            path: 'benchmarks/:benchmarkId/runs/:runId/replay',
+            lazy: async () => ({ Component: (await import('./pages/console/runs/RunReplayPage')).RunReplayPage }),
+            handle: { fillsWindow: true } satisfies ConsoleRouteHandle,
+          },
           { path: 'benchmarks/:benchmarkId/models', element: <ModelListPage /> },
           { path: 'benchmarks/:benchmarkId/models/:modelId', element: <ModelDetailPage /> },
           { path: 'benchmarks/:benchmarkId/analysis', element: <AnalysisPage /> },

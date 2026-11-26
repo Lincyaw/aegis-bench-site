@@ -1,0 +1,84 @@
+/*
+ * The canvas scrolls in its own column. Bands, lines and nodes are placed by transforms, so when a frame moves them
+ * they slide to their new places; a node that enters fades in where it lands.
+ */
+.scroller { position: relative; min-width: 0; min-height: 0; overflow: auto; overscroll-behavior: contain; }
+.canvas { position: relative; }
+
+.bands { position: absolute; inset: 0; pointer-events: none; }
+.band {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-6);
+  border-top: var(--rule-hairline);
+  transition: transform var(--duration-slow) var(--ease-out), height var(--duration-slow) var(--ease-out);
+}
+.band:first-child { border-top: 0; }
+
+.lines { position: absolute; top: 0; left: 0; overflow: visible; pointer-events: none; }
+.lines g { transition: transform var(--duration-slow) var(--ease-out); }
+.guide, .edge, .link { fill: none; stroke-linecap: round; }
+.guide, .edge { stroke: var(--border-hairline); stroke-width: var(--size-hairline); }
+.edge[data-touched] { stroke: var(--border-emphasis); }
+.link { stroke-width: var(--size-stroke); opacity: .85; animation: node-in var(--duration-slow) var(--ease-out); }
+.link[data-kind="read"] { stroke: var(--replay-tool); }
+.link[data-kind="write"] { stroke: var(--replay-edit); }
+
+.box {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border: var(--rule-hairline);
+  border-radius: var(--radius-md);
+  transition: transform var(--duration-slow) var(--ease-out), width var(--duration-slow) var(--ease-out), height var(--duration-slow) var(--ease-out);
+}
+
+.node { position: absolute; top: 0; left: 0; animation: node-in var(--duration-slow) var(--ease-out); }
+.node:has(> [aria-pressed="true"]) { outline: var(--size-border-thick) solid var(--accent-brand); outline-offset: var(--space-px); }
+@keyframes node-in {
+  from { opacity: 0; }
+}
+
+.select {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  height: 100%;
+  padding: 0 var(--space-2);
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.select > :first-child { overflow: hidden; text-overflow: ellipsis; }
+
+.fold {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: var(--space-5);
+  height: var(--space-5);
+  margin-right: var(--space-px);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+.fold:hover { background: var(--bg-muted); }
+.fold svg { transition: transform var(--duration-base) var(--ease-out); }
+.fold[aria-expanded="true"] svg { transform: rotate(180deg); }
+
+.badge { position: absolute; top: calc(-1 * var(--space-2)); right: calc(-1 * var(--space-2)); }

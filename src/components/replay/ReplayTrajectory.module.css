@@ -1,0 +1,29 @@
+/* The trajectory column scrolls on its own; its head names the layers whose cells end every row. */
+.trajectory { display: grid; grid-template-rows: auto minmax(0, 1fr); min-width: 0; min-height: 0; border-right: var(--rule-hairline); }
+.head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); padding: var(--space-3) var(--space-4); border-bottom: var(--rule-hairline); }
+.title { display: inline-flex; align-items: baseline; gap: var(--space-2); }
+.cells { display: inline-grid; grid-auto-columns: var(--space-4); grid-auto-flow: column; flex: none; justify-items: center; }
+.slot { display: grid; place-items: center; }
+.rows { margin: 0; padding: 0; overflow-y: auto; overscroll-behavior: contain; list-style: none; }
+.step { border-bottom: var(--rule-hairline); transition: opacity var(--duration-base) var(--ease-out); }
+.step[data-later] { opacity: .55; }
+.step:has([aria-current="step"]) { background: linear-gradient(var(--replay-edit), var(--replay-edit)) left / var(--size-border-thick) 100% no-repeat, var(--bg-muted); }
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-2) var(--space-4);
+  border: 0;
+  background: none;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.row:hover { background: var(--bg-muted); }
+.detail { display: grid; gap: var(--space-2); padding: 0 var(--space-4) var(--space-3) var(--space-10); }
+.field { display: grid; grid-template-columns: 5rem minmax(0, 1fr); gap: var(--space-2); }
+.lines { display: grid; gap: var(--space-1); min-width: 0; }
+.line { display: grid; grid-template-columns: 4rem minmax(0, 1fr); gap: var(--space-2); }
+.node { justify-self: start; padding: 0; border: 0; background: none; color: var(--text-main); font: var(--type-mono); text-align: left; overflow-wrap: anywhere; cursor: pointer; }
+.node:hover { text-decoration: underline; }

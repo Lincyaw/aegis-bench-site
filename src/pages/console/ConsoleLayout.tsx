@@ -20,6 +20,11 @@ import { toggleTheme } from '../../ui/theme';
 import { BENCHMARK_NAV, WORKSPACE_CHOICE, WORKSPACE_NAV } from './consoleNav';
 import styles from './ConsoleLayout.module.css';
 
+/** What a console route tells the layout: a tool page that fills the window takes the sidebar's width too, which then opens from the menu at every width. */
+export interface ConsoleRouteHandle {
+  fillsWindow?: boolean;
+}
+
 /**
  * Every console page but the sign-in page: the bar along the top, the sidebar of the benchmark being read and the page.
  * A browser that has signed out goes to the sign-in page, which brings it back here.
@@ -29,12 +34,14 @@ export function ConsoleLayout() {
   const locale = useLocale();
   const { pathname, search } = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
-  const benchmarkId = useMatches().at(-1)?.params.benchmarkId;
+  const matches = useMatches();
+  const benchmarkId = matches.at(-1)?.params.benchmarkId;
+  const fillsWindow = matches.some(match => (match.handle as ConsoleRouteHandle | undefined)?.fillsWindow);
   if (!session.user) {
     return <LocaleNavigate replace to={signInPath(`${sitePath(locale, pathname)}${search}`)} />;
   }
   return (
-    <div className={styles.console}>
+    <div className={styles.console} data-fills-window={fillsWindow ? '' : undefined}>
       <ConsoleBar user={session.user} benchmarkId={benchmarkId} menuOpen={menuOpen} onMenu={() => setMenuOpen(!menuOpen)} />
       <ConsoleSidebar benchmarkId={benchmarkId} open={menuOpen} onNavigate={() => setMenuOpen(false)} />
       <main className={styles.main}>

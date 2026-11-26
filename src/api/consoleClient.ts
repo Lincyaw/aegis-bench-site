@@ -253,6 +253,15 @@ export function useConsoleTrajectories(runIds: string[]) {
   }).map(query => query.data);
 }
 
+/** A run replayed over its task's world: the benchmark's layers, the world before the run, and the run's footprint. */
+export function useConsoleRunReplay(runId: string) {
+  const locale = useLocale();
+  return useSuspenseQuery({
+    queryKey: [CONSOLE_QUERY, 'replay', runId, locale],
+    queryFn: () => responseBody(api.GET('/console/runs/{runId}/replay', { params: { path: { runId }, header: languageHeader(locale) } })),
+  }).data;
+}
+
 /** One page of a run's trajectory as the console reads it. */
 export function useConsoleTrajectoryPage(runId: string, offset: number, pageSize: number) {
   return useSuspenseQuery({

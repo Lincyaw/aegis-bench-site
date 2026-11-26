@@ -1,0 +1,28 @@
+/*
+ * The replay fills the window under the console's bar: a short head, then the trajectory, the canvas and the open node
+ * side by side, each scrolling on its own, and the playback along the foot. A narrow screen stacks them and scrolls the
+ * window instead.
+ */
+.page { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; height: calc(100dvh - var(--nav-height)); }
+.head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--space-3) var(--space-6); padding: var(--space-3) var(--space-6); border-bottom: var(--rule-hairline); }
+.text { display: grid; gap: var(--space-1); min-width: 0; }
+.heading { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); }
+.heading h1 { margin: 0; }
+.controls { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
+.layers { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.body { display: grid; grid-template-columns: minmax(18rem, 27rem) minmax(0, 1fr); min-height: 0; }
+.body[data-panel] { grid-template-columns: minmax(18rem, 27rem) minmax(0, 1fr) 22rem; }
+
+@media (max-width: 1100px) {
+  .body { grid-template-columns: minmax(16rem, 22rem) minmax(0, 1fr); }
+  .body[data-panel] { grid-template-columns: minmax(16rem, 22rem) minmax(0, 1fr) 18rem; }
+}
+
+@media (max-width: 760px) {
+  .page { height: auto; }
+  .head { padding: var(--space-3) var(--page-gutter); }
+  .body, .body[data-panel] { grid-template-columns: minmax(0, 1fr); }
+  .body > :first-child { max-height: 18rem; border-right: 0; border-bottom: var(--rule-hairline); }
+  .body > :nth-child(2) { height: 28rem; }
+  .body > :nth-child(3) { border-left: 0; border-top: var(--rule-hairline); }
+}
