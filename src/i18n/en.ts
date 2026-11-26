@@ -11,6 +11,7 @@ export const en: Messages = {
     footerNav: 'Footer',
     toggleTheme: 'Switch between dark and light',
     openMenu: 'Open navigation',
+    signIn: 'Sign in',
     contact: 'Contact us',
     contactLead: 'Contact us: ',
     tagline: 'Agent evaluation across the whole software engineering lifecycle',

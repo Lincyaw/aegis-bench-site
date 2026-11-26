@@ -11,6 +11,7 @@ export const zh = {
     footerNav: '页脚',
     toggleTheme: '切换深色或浅色主题',
     openMenu: '打开导航',
+    signIn: '登录',
     contact: '联系我们',
     contactLead: '联系我们：',
     tagline: '覆盖软件工程全生命周期的智能体评测',

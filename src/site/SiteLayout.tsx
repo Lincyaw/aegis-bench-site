@@ -5,6 +5,7 @@ import { Link, Outlet, useLocation, useMatches } from 'react-router-dom';
 import { LocaleLink, LocaleNavLink } from '../i18n/LocaleRouting';
 import { useLocale } from '../i18n/localeContext';
 import { LOCALES, LOCALE_NAMES, localizedPath, sitePath } from '../i18n/locales';
+import { CONSOLE_PATH } from '../console/consoleMap';
 import { lobePath } from '../lifecycle/loop';
 import { Loading } from '../ui/content';
 import { IconButton } from '../ui/controls';
@@ -102,6 +103,7 @@ export function SiteNav({ sections }: { sections: PageSections | null }) {
         <div className={styles.end}>
           <LanguageSwitch />
           <IconButton label={t('site.toggleTheme')} onClick={toggleTheme}><ThemeIcon /></IconButton>
+          <LocaleLink className={styles.signIn} to={CONSOLE_PATH}>{t('site.signIn')}</LocaleLink>
           <LocaleLink className={clsx(controls.pill, controls.medium, styles.contact, 'loop-edge')} to={CONTACT_PATH}>{t('site.contact')}</LocaleLink>
           <span className={styles.menuButton}>
             <IconButton label={t('site.openMenu')} expanded={open} onClick={() => { setOpen(!open); setOpenedAt(pathname); }}><MenuIcon /></IconButton>
