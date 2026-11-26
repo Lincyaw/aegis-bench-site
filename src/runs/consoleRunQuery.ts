@@ -30,6 +30,11 @@ export function parseRunQuery(params: URLSearchParams): ConsoleRunQuery {
   };
 }
 
+/** Whether a run list keeps to a search or a filter rather than listing every run. */
+export function isFilteredRunQuery(query: ConsoleRunQuery): boolean {
+  return Boolean(query.q || query.model || query.combination || query.outcome || query.review);
+}
+
 /** Address parameters for a run list or a run's view, leaving out what is unset; an offset of 0 is the first page and goes unsaid. */
 export function runQuerySearch(query: Partial<ConsoleRunQuery> | Partial<ConsoleRunView>): URLSearchParams {
   const params = new URLSearchParams();

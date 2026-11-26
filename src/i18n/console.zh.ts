@@ -404,6 +404,8 @@ export const consoleZh = {
     title: '运行',
     lead_one: '共 {{count, number}} 次运行，最新的在前。执行失败的运行列出，但不计入结果。',
     lead_other: '共 {{count, number}} 次运行，最新的在前。执行失败的运行列出，但不计入结果。',
+    leadFiltered_one: '符合筛选的 {{count, number}} 次运行，共 {{total, number}} 次，最新的在前。执行失败的运行列出，但不计入结果。',
+    leadFiltered_other: '符合筛选的 {{count, number}} 次运行，共 {{total, number}} 次，最新的在前。执行失败的运行列出，但不计入结果。',
     filters: '筛选运行',
     search: '搜索任务编号或标题',
     modelFocus: {

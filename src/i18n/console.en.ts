@@ -405,6 +405,8 @@ export const consoleEn: ConsoleMessages = {
     title: 'Runs',
     lead_one: '{{count, number}} run, newest first. Execution failures are listed but not counted.',
     lead_other: '{{count, number}} runs, newest first. Execution failures are listed but not counted.',
+    leadFiltered_one: '{{count, number}} of {{total, number}} runs match, newest first. Execution failures are listed but not counted.',
+    leadFiltered_other: '{{count, number}} of {{total, number}} runs match, newest first. Execution failures are listed but not counted.',
     filters: 'Filter runs',
     search: 'Search task id or title',
     modelFocus: {

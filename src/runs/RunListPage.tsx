@@ -18,7 +18,7 @@ import controls from '../ui/controls.module.css';
 import { Hint } from '../ui/hint';
 import { Pager } from '../ui/navigation';
 import table from '../ui/table.module.css';
-import { RUN_LIST_PAGE_SIZE, consoleRunPath, parseRunQuery, runQuerySearch } from './consoleRunQuery';
+import { RUN_LIST_PAGE_SIZE, consoleRunPath, isFilteredRunQuery, parseRunQuery, runQuerySearch } from './consoleRunQuery';
 import { OutcomeBadge } from './Outcome';
 import { combinationKey } from './runRecordsQuery';
 import styles from './RunListPage.module.css';
@@ -36,7 +36,9 @@ export function RunListPage() {
   const last = Math.min(query.offset + RUN_LIST_PAGE_SIZE, page.total);
   return (
     <div className={styles.page} data-half={benchmark.stage.half}>
-      <ConsoleHeader crumbs={[{ label: benchmark.name, to: consoleBenchmarkPath(benchmark.id) }, { label: t('console.runs.title') }]} title={t('console.runs.title')} lead={t('console.runs.lead', { count: benchmark.runCount })} />
+      <ConsoleHeader crumbs={[{ label: benchmark.name, to: consoleBenchmarkPath(benchmark.id) }, { label: t('console.runs.title') }]} title={t('console.runs.title')}
+        lead={isFilteredRunQuery(query) ? t('console.runs.leadFiltered', { count: page.total, total: benchmark.runCount }) : t('console.runs.lead', { count: benchmark.runCount })}
+      />
       <RunFilters benchmark={benchmark} query={query} onChange={update} />
       {page.items.length === 0 ? <p className="t-small c-muted">{t('console.runs.empty')}</p> : <RunTable benchmarkId={benchmark.id} rows={page.items} />}
       {page.total > RUN_LIST_PAGE_SIZE && (
