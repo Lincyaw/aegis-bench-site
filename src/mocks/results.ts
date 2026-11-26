@@ -74,6 +74,7 @@ export function consoleBenchmarkOf(benchmarkId: string, locale: Locale): Console
     entrants: rankingOf(benchmarkId).map(ranked => ({ model: modelRef(ranked.modelId, locale), harness: harnessRef(ranked.harnessId, locale) })),
     runCount: runs.length,
     timelineLegend: { action: action[locale], change: change[locale], submitPassed: submitPassed[locale], submitFailed: submitFailed[locale] },
+    replayable: record.worldLayers !== undefined,
   };
 }
 

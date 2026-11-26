@@ -143,6 +143,11 @@ interface ConsoleRunRecords {
   @route("/trajectory/steps")
   trajectorySteps(@path runId: string, ...PageQuery<25>): TrajectoryPage | SignInRequiredError | NotFoundError | HuggingFaceUnreachableError;
 
+  /** The run replayed over its task's world; only a benchmark that declares world layers has replays */
+  @get
+  @route("/replay")
+  replay(@path runId: string, ...LanguageHeader): Localized<RunReplay> | SignInRequiredError | NotFoundError | HuggingFaceUnreachableError;
+
   /** The events of the run's trajectory, a page at a time */
   @get
   @route("/events")

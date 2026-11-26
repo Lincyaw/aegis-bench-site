@@ -22,6 +22,9 @@ model ConsoleBenchmark {
 
   /** What each mark on a run's timeline means on this benchmark */
   timelineLegend: TimelineLegend;
+
+  /** Whether its runs replay over their tasks' worlds, which only a benchmark that declares world layers does */
+  replayable: boolean;
 }
 
 /**

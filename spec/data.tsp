@@ -19,6 +19,8 @@ using AegisBench.Console;
  *   benchmarks/<benchmark>/runs/<run>/run.json         RunFile
  *   benchmarks/<benchmark>/runs/<run>/trajectory.json  TrajectoryFile
  *   benchmarks/<benchmark>/runs/<run>/annotations.json AnnotationListFile, for a benchmark that declares annotation categories
+ *   benchmarks/<benchmark>/runs/<run>/footprint.json   FootprintFile, for a benchmark that declares world layers
+ *   benchmarks/<benchmark>/worlds/<task>.json WorldFile, for a benchmark that declares world layers
  *   benchmarks/<benchmark>/hunts.json         HuntListFile
  *   benchmarks/<benchmark>/releases.json      ReleaseListFile
  *
@@ -106,6 +108,10 @@ model BenchmarkFile {
   /** The labels annotators give the benchmark's trajectory steps; when present, every run has annotations.json */
   annotationCategories?: AnnotationCategoryRecord[];
 
+  /** The layers of the benchmark's worlds, in the order a replay stacks them; when present, every task has a world and every run a footprint */
+  @minItems(1)
+  worldLayers?: WorldLayerRecord[];
+
   /** Where the benchmark keeps its runs/ and tasks/ when they are not in the data directory */
   huggingFace?: HuggingFaceDirectory;
 }
@@ -116,6 +122,11 @@ model BenchmarkBlocks {
   @minItems(1)
   @uniqueItems
   comparison: ComparisonBlock[];
+}
+
+model WorldLayerRecord {
+  ...OmitProperties<WorldLayer, "name">;
+  name: TextByLocale;
 }
 
 model AnnotationCategoryRecord {
@@ -288,6 +299,19 @@ model TrajectoryFile is ATIF.Trajectory;
 
 /** benchmarks/<benchmark>/runs/<run>/annotations.json: the labels annotators gave the run's steps, in step order. */
 model AnnotationListFile is StepAnnotation[];
+
+/**
+ * benchmarks/<benchmark>/worlds/<task>.json: the task's world before any run acts on it. Every node lies in one of the
+ * benchmark's layers, and its parent, when it has one, in the same layer.
+ */
+model WorldFile is World;
+
+/**
+ * benchmarks/<benchmark>/runs/<run>/footprint.json: what the run did to its task's world. Every touch and event names a
+ * step of the trajectory, and a tool call of that step when it names one; every node it names is in the world at that
+ * step.
+ */
+model FootprintFile is Footprint;
 
 /** benchmarks/<benchmark>/hunts.json: the hunts recorded over the benchmark's trajectories. */
 model HuntListFile is HuntRecord[];

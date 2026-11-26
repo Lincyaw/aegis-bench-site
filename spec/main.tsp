@@ -2,6 +2,7 @@ import "@typespec/http";
 import "@typespec/json-schema";
 import "./atif.tsp";
 import "./comparison.tsp";
+import "./replay.tsp";
 import "./console/session.tsp";
 import "./console/results.tsp";
 import "./console/tasks.tsp";

@@ -13,6 +13,7 @@ import { http, localeOf, pageOf, writtenIn } from './protocol';
 import { openedIndexes } from './records';
 import { contentProblemOf, createDraft, discardDraft, draftOf, makeCurrent, releaseById, releaseDetailOf, releaseSummaryOf, releasesOf, restoreRelease, updateDraft } from './releases';
 import { mayEdit, refusalFor } from './members';
+import { replayOf } from './replays';
 import { releaseOverview } from './workspace';
 import { consoleBenchmarkOf, overviewOf } from './results';
 import { DEFAULT_ENTRY_PAGE_SIZE, taskFileOf } from './taskFiles';
@@ -430,6 +431,16 @@ export const consoleHandlers = [
     const trajectory = await trajectoryOf(params.runId);
     await delay(120);
     return trajectory ? response(200).json(trajectory) : response(404).json({ message: `no run ${params.runId}` });
+  }),
+
+  http.get('/console/runs/{runId}/replay', async ({ cookies, params, request, response }) => {
+    if (!sessionUserOf(cookies)) {
+      return response(401).json(SIGN_IN_REQUIRED);
+    }
+    const locale = localeOf(request);
+    const replay = await replayOf(params.runId, locale);
+    await delay(120);
+    return replay ? response(200).json(replay, writtenIn(locale)) : response(404).json({ message: `no replay of run ${params.runId}` });
   }),
 
   http.get('/console/runs/{runId}/trajectory/steps', async ({ cookies, params, query, response }) => {

@@ -1,5 +1,5 @@
 import type {
-  BenchmarkFile, Catalog, HuntRecord, PublishedRelease, RunFact, RunFile, StepAnnotation, TaskFileRecord, TaskRecord, Trajectory,
+  BenchmarkFile, Catalog, FootprintFile, HuntRecord, PublishedRelease, RunFact, RunFile, StepAnnotation, TaskFileRecord, TaskRecord, Trajectory, WorldFile,
 } from '../api/types';
 
 /*
@@ -164,6 +164,19 @@ export function readTrajectory(record: BenchmarkFile, runId: string): Promise<Tr
 /** The labels annotators gave a run's steps; only a benchmark that declares annotation categories has them. */
 export function readAnnotations(record: BenchmarkFile, runId: string): Promise<StepAnnotation[]> {
   return readFromDirectory(record, runDirectoryOf(runId), 'annotations.json', location => readJson<StepAnnotation[]>(location));
+}
+
+/** What a run did to its task's world; only a benchmark that declares world layers has footprints. */
+export function readFootprint(record: BenchmarkFile, runId: string): Promise<FootprintFile> {
+  return readFromDirectory(record, runDirectoryOf(runId), 'footprint.json', location => readJson<FootprintFile>(location));
+}
+
+/** The directory of a benchmark's worlds, which stays in the data directory wherever the benchmark keeps its runs. */
+export const WORLD_DIRECTORY = 'worlds';
+
+/** A task's world before any run acts on it; only a benchmark that declares world layers has worlds. */
+export function readWorld(benchmarkId: string, taskId: string): Promise<WorldFile> {
+  return readJson<WorldFile>(dataDirectoryPathOf(benchmarkId, `${WORLD_DIRECTORY}/${taskId}.json`));
 }
 
 /** A task file's text: a withheld file from the data directory, any other from where the benchmark keeps its tasks. */

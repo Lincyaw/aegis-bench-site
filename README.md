@@ -72,13 +72,15 @@ uv run python -m harbor.utils.trajectory_validator path/to/trajectory.json
 public/data/
   catalog.json                          环节、模型、框架，以及评测基准的目录名和顺序
   benchmarks/<评测基准>/
-    benchmark.json                      名称、版本、所属环节、指标、时间线规则、评分规则、各页面的 block 配置、标注类别
+    benchmark.json                      名称、版本、所属环节、指标、时间线规则、评分规则、各页面的 block 配置、标注类别、世界分层
     tasks.json                          每道任务：说明、检查项、文件清单、版本历史、验证运行
     tasks/<任务>/…                      任务的 Harbor 目录，文件原样存放（放在 Hugging Face 时，这里只留不公开的文件）
     runs.json                           每次运行的索引：组合、结果、得分、步数、成本、复核分类、未通过的检查
     runs/<运行>/run.json                运行的其余记录：输入、输出、评分、失败原因与复核（或放在 Hugging Face）
     runs/<运行>/trajectory.json         运行轨迹，ATIF-v1.8（或放在 Hugging Face）
     runs/<运行>/annotations.json        标注模型给各步打的标签：步骤、类别、标注者、时间、理由（声明了标注类别的评测基准才有）
+    runs/<运行>/footprint.json          运行在世界上留下的足迹：各步碰到的节点，以及世界的变化（声明了世界分层的评测基准才有）
+    worlds/<任务>.json                  任务的世界：运行开始前各层的节点和边（声明了世界分层的评测基准才有，总在数据目录里）
     hunts.json                          轨迹分析：每次分析的问题、维度、探针与逐条判定
     releases.json                       已发布的各个版本，其中一个是当前版本
 ```
@@ -96,6 +98,11 @@ public/data/
 按评测基准变化的部分写在 `benchmark.json` 里：
 - `blocks` 写明可配置的页面各用哪些 block、按什么顺序。目前只有任务的运行对照 `comparison`，中台的任务页和对外的运行记录页共用这份配置，可选的 block 有 `fileChanges`、`checks`、`reply`、`trajectory`。
 - `annotationCategories` 声明标注模型使用的标签：编号、中英文名称、含义，以及严重程度（`error`、`warning`、`note`，决定高亮颜色）。声明之后，这个评测基准的每次运行都要有 `annotations.json`，空数组表示没有标出任何步骤。标签由模型生成，站点只负责展示；`npm run check:data` 会检查标签用的类别是否已声明、所标的步骤是否存在于轨迹中。
+- `worldLayers` 声明回放用的世界分层：编号、中英文名称和画法（`tree` 按父子嵌套，如目录和文件；`graph` 是有向图，如服务调用；`groups` 把节点画在父节点的框里，如主机上的 pod），顺序就是回放里自上而下的顺序。声明之后，每道任务都要有 `worlds/<任务>.json`，每次运行都要有 `footprint.json`。两者都由离线的映射程序从环境和轨迹生成，站点只负责回放：
+  - 节点的编号写成 `<类型>:<路径>`，例如 `file:config/payment.yaml`、`svc:payment`、`pod:payment-7d9f4-x2k`，映射程序从工具调用的参数就能写出它碰到的节点；
+  - 两端在不同层的边就是层与层的关联，例如配置文件到服务、服务到它的 pod；
+  - 足迹里的 `touches` 记录每一步碰到的节点和方式（`seen` 只在输出里出现、`read` 读取、`write` 修改），`events` 记录世界的变化（增删节点和边、改变状态或属性），由工具调用引起的写明调用的编号。
+  - `npm run check:data` 会检查节点所在的层是否已声明、父节点是否在同一层、边的两端是否存在，足迹引用的步骤和调用是否在轨迹里、碰到的节点在那一步是否存在。
 
 接入真实数据时注意：
 - **只记录事实，汇总由服务端计算。** 排行榜的分数和成本是各组合计入运行的 `score` 与 `costUsd` 的均值，任务数、通过率、各类计数也都从 `runs.json` 和 `tasks.json` 算出，不另存汇总值。一次运行的记录分在 `runs.json` 的一项和它的 `run.json` 里，同一个字段只出现在一处。

@@ -3,10 +3,10 @@ import addFormats from 'ajv-formats';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import type { Catalog } from '../src/api/types';
+import type { Catalog, FootprintFile, Trajectory, WorldFile } from '../src/api/types';
 import {
-  DATA_DIRECTORY, dataDirectoryPathOf, openRecords, openedIndexes, readAnnotations, readRunFile, readTaskFile, readTrajectory, runDirectoryOf, taskDirectoryOf,
-  type BenchmarkIndexes,
+  DATA_DIRECTORY, WORLD_DIRECTORY, dataDirectoryPathOf, openRecords, openedIndexes, readAnnotations, readFootprint, readRunFile, readTaskFile, readTrajectory,
+  readWorld, runDirectoryOf, taskDirectoryOf, type BenchmarkIndexes,
 } from '../src/mocks/records';
 import { dataReaderAt } from './dataReader';
 
@@ -70,6 +70,8 @@ export function checkIndexes(catalog: Catalog, benchmark: BenchmarkIndexes, dire
   expect(catalog.stages.some(stage => stage.id === record.stageId), at('benchmark.json'), `stage ${record.stageId} is not in catalog.json`);
   const categoryIds = record.annotationCategories?.map(category => category.id) ?? [];
   expect(new Set(categoryIds).size === categoryIds.length, at('benchmark.json'), 'an annotation category id appears twice');
+  const layerIds = record.worldLayers?.map(layer => layer.id) ?? [];
+  expect(new Set(layerIds).size === layerIds.length, at('benchmark.json'), 'a world layer id appears twice');
   const taskIds = new Set(tasks.map(task => task.id));
   expect(taskIds.size === tasks.length, at('tasks.json'), 'a task id appears twice');
   for (const task of tasks) {
@@ -102,6 +104,63 @@ export function checkIndexes(catalog: Catalog, benchmark: BenchmarkIndexes, dire
   }
 }
 
+/** What a task's world says of itself: every node in a declared layer, parents in their child's layer, edges between nodes it has. */
+export function checkWorld(world: WorldFile, layerIds: Set<string>, file: string) {
+  checkAgainst('WorldFile', file, world);
+  const nodes = new Map(world.nodes.map(node => [node.id, node]));
+  expect(nodes.size === world.nodes.length, file, 'a node id appears twice');
+  for (const node of world.nodes) {
+    expect(layerIds.has(node.layer), file, `${node.id} lies in layer ${node.layer}, which benchmark.json does not declare`);
+    expect(node.parent === undefined || nodes.get(node.parent)?.layer === node.layer, file, `${node.id} sits in ${node.parent}, which is not a node of its layer`);
+  }
+  expect(world.edges.every(edge => nodes.has(edge.from) && nodes.has(edge.to)), file, 'an edge ends at a node the world does not have');
+}
+
+/**
+ * What a run's footprint says of its trajectory and its task's world: touches and events in step order, at steps and
+ * tool calls the trajectory has, naming nodes the world has at that step. A step's touches may name a node the step's
+ * own events add or remove.
+ */
+export function checkFootprint(footprint: FootprintFile, trajectory: Trajectory, world: WorldFile, file: string) {
+  checkAgainst('FootprintFile', file, footprint);
+  const steps = new Map(trajectory.steps.map(step => [step.step_id, step]));
+  for (const entry of [...footprint.touches, ...footprint.events]) {
+    const step = steps.get(entry.step);
+    expect(step !== undefined, file, `names step ${entry.step}, which the trajectory does not have`);
+    expect(!step || entry.toolCallId === undefined || (step.tool_calls ?? []).some(call => call.tool_call_id === entry.toolCallId), file, `names call ${entry.toolCallId}, which step ${entry.step} does not make`);
+  }
+  const inOrder = (list: { step: number }[]) => list.every((entry, index) => index === 0 || list[index - 1].step <= entry.step);
+  expect(inOrder(footprint.touches) && inOrder(footprint.events), file, 'is not in step order');
+  const present = new Set(world.nodes.map(node => node.id));
+  const edges = new Set(world.edges.map(edge => `${edge.from}→${edge.to}`));
+  for (const step of [...new Set([...footprint.touches, ...footprint.events].map(entry => entry.step))].toSorted((a, b) => a - b)) {
+    const before = new Set(present);
+    for (const { change } of footprint.events.filter(event => event.step === step)) {
+      switch (change.type) {
+        case 'addNode':
+          expect(!present.has(change.node.id), file, `step ${step} adds ${change.node.id}, which the world has already`);
+          present.add(change.node.id);
+          break;
+        case 'removeNode':
+          expect(present.delete(change.node), file, `step ${step} removes ${change.node}, which the world does not have`);
+          [...edges].filter(key => key.startsWith(`${change.node}→`) || key.endsWith(`→${change.node}`)).forEach(key => edges.delete(key));
+          break;
+        case 'setNode':
+          expect(present.has(change.node), file, `step ${step} changes ${change.node}, which the world does not have`);
+          break;
+        case 'addEdge':
+          expect(present.has(change.edge.from) && present.has(change.edge.to), file, `step ${step} adds an edge to a node the world does not have`);
+          edges.add(`${change.edge.from}→${change.edge.to}`);
+          break;
+        case 'removeEdge':
+          expect(edges.delete(`${change.edge.from}→${change.edge.to}`), file, `step ${step} removes an edge the world does not have`);
+          break;
+      }
+    }
+    footprint.touches.filter(touch => touch.step === step).forEach(touch => expect(before.has(touch.node) || present.has(touch.node), file, `step ${step} touches ${touch.node}, which the world does not have then`));
+  }
+}
+
 /**
  * Reads of every run's and task's files, each noting what it finds, and how many files are left unread: the runs and
  * published task files a benchmark keeps on Hugging Face, unless the flag asks for them.
@@ -111,10 +170,17 @@ export function fileReadsOf(benchmark: BenchmarkIndexes): { reads: (() => Promis
   const leaveKept = record.huggingFace !== undefined && !withHuggingFace;
   const named = (path: string) => `${dataDirectoryPathOf(record.id, path)}${record.huggingFace ? ' (Hugging Face)' : ''}`;
   const categories = new Set(record.annotationCategories?.map(category => category.id));
+  const layerIds = new Set(record.worldLayers?.map(layer => layer.id));
+  const worldFile = (taskId: string) => dataDirectoryPathOf(record.id, `${WORLD_DIRECTORY}/${taskId}.json`);
+  const worldReads = record.worldLayers ? tasks.map(task => async () => checkWorld(await readWorld(record.id, task.id), layerIds, worldFile(task.id))) : [];
   const runReads = runs.map(fact => async () => {
     const [run, trajectory, annotations] = await Promise.all([
       readRunFile(record, fact.id), readTrajectory(record, fact.id), record.annotationCategories ? readAnnotations(record, fact.id) : [],
     ]);
+    if (record.worldLayers) {
+      const [footprint, world] = await Promise.all([readFootprint(record, fact.id), readWorld(record.id, fact.taskId)]);
+      checkFootprint(footprint, trajectory, world, named(`${runDirectoryOf(fact.id)}/footprint.json`));
+    }
     checkAgainst('RunFile', named(`${runDirectoryOf(fact.id)}/run.json`), run);
     checkAgainst('TrajectoryFile', named(`${runDirectoryOf(fact.id)}/trajectory.json`), trajectory);
     expect(trajectory.steps.length === fact.steps, named(`${runDirectoryOf(fact.id)}/trajectory.json`), `has ${trajectory.steps.length} steps, runs.json says ${fact.steps}`);
@@ -133,8 +199,8 @@ export function fileReadsOf(benchmark: BenchmarkIndexes): { reads: (() => Promis
     const text = await readTaskFile(record, task.id, file);
     expect(new TextEncoder().encode(text).length === file.size, named(`${taskDirectoryOf(task.id)}/${file.path}`), `is not the ${file.size} bytes tasks.json says`);
   });
-  const filesPerRun = record.annotationCategories ? 3 : 2;
-  return { reads: [...(leaveKept ? [] : runReads), ...taskReads], unread: (leaveKept ? runs.length * filesPerRun : 0) + taskFiles.length - readable.length };
+  const filesPerRun = 2 + (record.annotationCategories ? 1 : 0) + (record.worldLayers ? 1 : 0);
+  return { reads: [...worldReads, ...(leaveKept ? [] : runReads), ...taskReads], unread: (leaveKept ? runs.length * filesPerRun : 0) + taskFiles.length - readable.length };
 }
 
 await openRecords(dataReaderAt(directory));
