@@ -41,9 +41,41 @@
     "edit_file"
   ],
   "passRule": "全部检查通过才判为通过，任一检查未通过即判为失败。模型复核类检查取裁判多次评分的中位数。",
+  "blocks": {
+    "comparison": ["fileChanges", "checks", "reply", "trajectory"]
+  },
+  "annotationCategories": [
+    {
+      "id": "error",
+      "name": { "zh-CN": "错误", "en": "Error" },
+      "description": {
+        "zh-CN": "这一步做错了：引入了缺陷、改错了地方，或者执行的命令因操作不当而失败。",
+        "en": "The step went wrong: it introduced a defect, changed the wrong place, or ran a command that failed through the agent's own mistake."
+      },
+      "severity": "error"
+    },
+    {
+      "id": "questionable",
+      "name": { "zh-CN": "有问题", "en": "Questionable" },
+      "description": {
+        "zh-CN": "这一步值得怀疑：跳过了应有的验证、超出了任务范围，或者所说的与实际不符。",
+        "en": "The step is questionable: it skipped a check it should have made, went beyond the task, or claimed what the run does not bear out."
+      },
+      "severity": "warning"
+    },
+    {
+      "id": "key",
+      "name": { "zh-CN": "关键步骤", "en": "Key step" },
+      "description": {
+        "zh-CN": "这一步决定了结果：让某项检查通过或未通过的那处改动或判断。",
+        "en": "The step decided the outcome: the change or judgment that made a check pass or fail."
+      },
+      "severity": "note"
+    }
+  ],
   "huggingFace": {
     "repo": "PolarBear2026/agent-eval-demo",
-    "revision": "a64297dc251e12366f4e83cb3930282467dd6d16",
+    "revision": "fbdc284053ad79bcb438be6d08fd7f0d3f294359",
     "directory": "benchmarks/bench-a"
   }
 }

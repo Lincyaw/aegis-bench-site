@@ -1,5 +1,5 @@
 import type {
-  BenchmarkFile, Catalog, HuntRecord, PublishedRelease, RunFact, RunFile, TaskFileRecord, TaskRecord, Trajectory,
+  BenchmarkFile, Catalog, HuntRecord, PublishedRelease, RunFact, RunFile, StepAnnotation, TaskFileRecord, TaskRecord, Trajectory,
 } from '../api/types';
 
 /*
@@ -159,6 +159,11 @@ export function readRunFile(record: BenchmarkFile, runId: string): Promise<RunFi
 
 export function readTrajectory(record: BenchmarkFile, runId: string): Promise<Trajectory> {
   return readFromDirectory(record, runDirectoryOf(runId), 'trajectory.json', location => readJson<Trajectory>(location));
+}
+
+/** The labels annotators gave a run's steps; only a benchmark that declares annotation categories has them. */
+export function readAnnotations(record: BenchmarkFile, runId: string): Promise<StepAnnotation[]> {
+  return readFromDirectory(record, runDirectoryOf(runId), 'annotations.json', location => readJson<StepAnnotation[]>(location));
 }
 
 /** A task file's text: a withheld file from the data directory, any other from where the benchmark keeps its tasks. */

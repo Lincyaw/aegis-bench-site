@@ -41,6 +41,9 @@
     "write_test"
   ],
   "passRule": "测试须在正确版本上全部通过，并检出全部缺陷版本，才判为通过。",
+  "blocks": {
+    "comparison": ["fileChanges", "checks", "reply", "trajectory"]
+  },
   "huggingFace": {
     "repo": "PolarBear2026/agent-eval-demo",
     "revision": "a64297dc251e12366f4e83cb3930282467dd6d16",

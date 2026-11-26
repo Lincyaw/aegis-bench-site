@@ -42,6 +42,9 @@
     "edit_config"
   ],
   "passRule": "服务健康检查通过、错误率恢复到基线且根因判定正确，才判为通过。",
+  "blocks": {
+    "comparison": ["reply", "fileChanges", "checks", "trajectory"]
+  },
   "huggingFace": {
     "repo": "PolarBear2026/agent-eval-demo",
     "revision": "a64297dc251e12366f4e83cb3930282467dd6d16",

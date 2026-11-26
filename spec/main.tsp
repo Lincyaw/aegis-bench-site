@@ -3,6 +3,7 @@ import "./atif.tsp";
 import "./console/session.tsp";
 import "./console/results.tsp";
 import "./console/tasks.tsp";
+import "./console/comparison.tsp";
 import "./console/models.tsp";
 import "./console/collections.tsp";
 import "./console/analysis.tsp";

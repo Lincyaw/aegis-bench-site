@@ -1,5 +1,6 @@
 import { delay } from 'msw';
 import { benchmarkOf, hasBenchmark } from './benchmarks';
+import { taskComparisonOf } from './comparison';
 import { DEFAULT_MATRIX_PAGE_SIZE, collectionModelsOf, collectionsOf, hasCollection, matrixOf } from './consoleCollections';
 import { DEFAULT_MODEL_TASK_PAGE_SIZE, harnessIdsOf, modelDetailOf, modelResultsOver, modelTasksOf, ranOn } from './consoleModels';
 import { DEFAULT_EVENT_PAGE_SIZE, DEFAULT_RUN_PAGE_SIZE, consoleRunOf, filteredRunsOf, runEventsOf, runRowOf } from './consoleRuns';
@@ -94,6 +95,19 @@ export const consoleHandlers = [
     const locale = localeOf(request);
     await delay(80);
     return response(200).json(taskEntrantRunsOf(params.benchmarkId, task, locale), writtenIn(locale));
+  }),
+
+  http.get('/console/benchmarks/{benchmarkId}/tasks/{taskId}/comparison', async ({ cookies, params, query, request, response }) => {
+    if (!sessionUserOf(cookies)) {
+      return response(401).json(SIGN_IN_REQUIRED);
+    }
+    const task = namedTaskOf(params.benchmarkId, params.taskId);
+    if (!task) {
+      return response(404).json({ message: `no task ${params.taskId} in ${params.benchmarkId}` });
+    }
+    const locale = localeOf(request);
+    const comparison = await taskComparisonOf(params.benchmarkId, task, query.getAll('runs'), locale);
+    return comparison ? response(200).json(comparison, writtenIn(locale)) : response(404).json({ message: `not every run compared is a run of ${task.id}` });
   }),
 
   http.get('/console/benchmarks/{benchmarkId}/tasks/{taskId}/check-results', async ({ cookies, params, request, response }) => {

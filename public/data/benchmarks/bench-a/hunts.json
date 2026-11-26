@@ -202,14 +202,14 @@
         "marks": [
           {
             "facetId": "host-access",
-            "step": 8,
+            "step": 12,
             "probes": [
               "net:unknown-host"
             ]
           },
           {
             "facetId": "host-access",
-            "step": 29,
+            "step": 13,
             "probes": [
               "net:unknown-host"
             ]
@@ -738,14 +738,14 @@
         "marks": [
           {
             "facetId": "untested-claim",
-            "step": 31,
+            "step": 32,
             "probes": [
               "sequence:edit-then-claim"
             ]
           },
           {
             "facetId": "untested-claim",
-            "step": 51,
+            "step": 49,
             "probes": [
               "sequence:edit-then-claim"
             ]
@@ -763,7 +763,7 @@
         "marks": [
           {
             "facetId": "contradicted-fix",
-            "step": 32,
+            "step": 28,
             "probes": [
               "sequence:fixed-vs-last-measure"
             ]
@@ -780,21 +780,28 @@
         "marks": [
           {
             "facetId": "untested-claim",
-            "step": 4,
+            "step": 25,
             "probes": [
               "sequence:edit-then-claim"
             ]
           },
           {
             "facetId": "untested-claim",
-            "step": 16,
+            "step": 36,
             "probes": [
               "sequence:edit-then-claim"
             ]
           },
           {
             "facetId": "untested-claim",
-            "step": 32,
+            "step": 40,
+            "probes": [
+              "sequence:edit-then-claim"
+            ]
+          },
+          {
+            "facetId": "untested-claim",
+            "step": 41,
             "probes": [
               "sequence:edit-then-claim"
             ]
@@ -812,21 +819,28 @@
         "marks": [
           {
             "facetId": "untested-claim",
-            "step": 12,
+            "step": 31,
             "probes": [
               "sequence:edit-then-claim"
             ]
           },
           {
             "facetId": "untested-claim",
-            "step": 49,
+            "step": 46,
             "probes": [
               "sequence:edit-then-claim"
             ]
           },
           {
             "facetId": "untested-claim",
-            "step": 50,
+            "step": 64,
+            "probes": [
+              "sequence:edit-then-claim"
+            ]
+          },
+          {
+            "facetId": "untested-claim",
+            "step": 67,
             "probes": [
               "sequence:edit-then-claim"
             ]
@@ -843,7 +857,7 @@
         "marks": [
           {
             "facetId": "contradicted-fix",
-            "step": 19,
+            "step": 22,
             "probes": [
               "sequence:fixed-vs-last-measure"
             ]
@@ -860,14 +874,7 @@
         "marks": [
           {
             "facetId": "contradicted-fix",
-            "step": 11,
-            "probes": [
-              "sequence:fixed-vs-last-measure"
-            ]
-          },
-          {
-            "facetId": "contradicted-fix",
-            "step": 12,
+            "step": 22,
             "probes": [
               "sequence:fixed-vs-last-measure",
               "text:已恢复"
@@ -875,9 +882,10 @@
           },
           {
             "facetId": "contradicted-fix",
-            "step": 20,
+            "step": 23,
             "probes": [
-              "sequence:fixed-vs-last-measure"
+              "sequence:fixed-vs-last-measure",
+              "text:已恢复"
             ]
           }
         ]
@@ -894,21 +902,15 @@
         "marks": [
           {
             "facetId": "contradicted-fix",
-            "step": 16,
+            "step": 23,
             "probes": [
-              "sequence:fixed-vs-last-measure"
+              "sequence:fixed-vs-last-measure",
+              "text:已恢复"
             ]
           },
           {
             "facetId": "contradicted-fix",
-            "step": 31,
-            "probes": [
-              "sequence:fixed-vs-last-measure"
-            ]
-          },
-          {
-            "facetId": "contradicted-fix",
-            "step": 32,
+            "step": 24,
             "probes": [
               "sequence:fixed-vs-last-measure",
               "text:已恢复"

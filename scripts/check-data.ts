@@ -5,7 +5,7 @@ import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import type { Catalog } from '../src/api/types';
 import {
-  DATA_DIRECTORY, dataDirectoryPathOf, openRecords, openedIndexes, readRunFile, readTaskFile, readTrajectory, runDirectoryOf, taskDirectoryOf,
+  DATA_DIRECTORY, dataDirectoryPathOf, openRecords, openedIndexes, readAnnotations, readRunFile, readTaskFile, readTrajectory, runDirectoryOf, taskDirectoryOf,
   type BenchmarkIndexes,
 } from '../src/mocks/records';
 import { dataReaderAt } from './dataReader';
@@ -68,6 +68,8 @@ export function checkIndexes(catalog: Catalog, benchmark: BenchmarkIndexes, dire
   checkAgainst('ReleaseListFile', at('releases.json'), releases);
   expect(record.id === directoryName, at('benchmark.json'), `id ${record.id} is not the directory's name`);
   expect(catalog.stages.some(stage => stage.id === record.stageId), at('benchmark.json'), `stage ${record.stageId} is not in catalog.json`);
+  const categoryIds = record.annotationCategories?.map(category => category.id) ?? [];
+  expect(new Set(categoryIds).size === categoryIds.length, at('benchmark.json'), 'an annotation category id appears twice');
   const taskIds = new Set(tasks.map(task => task.id));
   expect(taskIds.size === tasks.length, at('tasks.json'), 'a task id appears twice');
   for (const task of tasks) {
@@ -108,11 +110,22 @@ export function fileReadsOf(benchmark: BenchmarkIndexes): { reads: (() => Promis
   const { record, tasks, runs } = benchmark;
   const leaveKept = record.huggingFace !== undefined && !withHuggingFace;
   const named = (path: string) => `${dataDirectoryPathOf(record.id, path)}${record.huggingFace ? ' (Hugging Face)' : ''}`;
+  const categories = new Set(record.annotationCategories?.map(category => category.id));
   const runReads = runs.map(fact => async () => {
-    const [run, trajectory] = await Promise.all([readRunFile(record, fact.id), readTrajectory(record, fact.id)]);
+    const [run, trajectory, annotations] = await Promise.all([
+      readRunFile(record, fact.id), readTrajectory(record, fact.id), record.annotationCategories ? readAnnotations(record, fact.id) : [],
+    ]);
     checkAgainst('RunFile', named(`${runDirectoryOf(fact.id)}/run.json`), run);
     checkAgainst('TrajectoryFile', named(`${runDirectoryOf(fact.id)}/trajectory.json`), trajectory);
     expect(trajectory.steps.length === fact.steps, named(`${runDirectoryOf(fact.id)}/trajectory.json`), `has ${trajectory.steps.length} steps, runs.json says ${fact.steps}`);
+    if (record.annotationCategories) {
+      const file = named(`${runDirectoryOf(fact.id)}/annotations.json`);
+      const steps = new Set(trajectory.steps.map(step => step.step_id));
+      checkAgainst('AnnotationListFile', file, annotations);
+      expect(annotations.every(annotation => categories.has(annotation.category)), file, 'labels a step with a category benchmark.json does not declare');
+      expect(annotations.every(annotation => steps.has(annotation.step)), file, 'labels a step the trajectory does not have');
+      expect(annotations.every((annotation, index) => index === 0 || annotations[index - 1].step <= annotation.step), file, 'is not in step order');
+    }
   });
   const taskFiles = tasks.flatMap(task => task.files.map(file => ({ task, file })));
   const readable = taskFiles.filter(({ file }) => file.withheld || !leaveKept);
@@ -120,7 +133,8 @@ export function fileReadsOf(benchmark: BenchmarkIndexes): { reads: (() => Promis
     const text = await readTaskFile(record, task.id, file);
     expect(new TextEncoder().encode(text).length === file.size, named(`${taskDirectoryOf(task.id)}/${file.path}`), `is not the ${file.size} bytes tasks.json says`);
   });
-  return { reads: [...(leaveKept ? [] : runReads), ...taskReads], unread: (leaveKept ? runs.length * 2 : 0) + taskFiles.length - readable.length };
+  const filesPerRun = record.annotationCategories ? 3 : 2;
+  return { reads: [...(leaveKept ? [] : runReads), ...taskReads], unread: (leaveKept ? runs.length * filesPerRun : 0) + taskFiles.length - readable.length };
 }
 
 await openRecords(dataReaderAt(directory));

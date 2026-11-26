@@ -18,6 +18,7 @@ using AegisBench.Console;
  *   benchmarks/<benchmark>/runs.json          RunIndexFile
  *   benchmarks/<benchmark>/runs/<run>/run.json         RunFile
  *   benchmarks/<benchmark>/runs/<run>/trajectory.json  TrajectoryFile
+ *   benchmarks/<benchmark>/runs/<run>/annotations.json AnnotationListFile, for a benchmark that declares annotation categories
  *   benchmarks/<benchmark>/hunts.json         HuntListFile
  *   benchmarks/<benchmark>/releases.json      ReleaseListFile
  *
@@ -99,8 +100,34 @@ model BenchmarkFile {
   /** How grading decides that a run passed */
   passRule: string;
 
+  /** Which blocks each configurable page shows for the benchmark, in order */
+  blocks: BenchmarkBlocks;
+
+  /** The labels annotators give the benchmark's trajectory steps; when present, every run has annotations.json */
+  annotationCategories?: AnnotationCategoryRecord[];
+
   /** Where the benchmark keeps its runs/ and tasks/ when they are not in the data directory */
   huggingFace?: HuggingFaceDirectory;
+}
+
+/** The pages whose parts differ by benchmark, each with the blocks it is made of for this benchmark. */
+model BenchmarkBlocks {
+  /** The console's comparison of a task's runs */
+  @minItems(1)
+  @uniqueItems
+  comparison: ComparisonBlock[];
+}
+
+model AnnotationCategoryRecord {
+  /** Unique among the benchmark's categories */
+  id: string;
+
+  name: TextByLocale;
+
+  /** What a step with the label is */
+  description: TextByLocale;
+
+  severity: AnnotationSeverity;
 }
 
 model MetricRecord {
@@ -258,6 +285,9 @@ model RunInputRecord {
 
 /** benchmarks/<benchmark>/runs/<run>/trajectory.json: the run's trajectory in ATIF-v1.8. */
 model TrajectoryFile is ATIF.Trajectory;
+
+/** benchmarks/<benchmark>/runs/<run>/annotations.json: the labels annotators gave the run's steps, in step order. */
+model AnnotationListFile is StepAnnotation[];
 
 /** benchmarks/<benchmark>/hunts.json: the hunts recorded over the benchmark's trajectories. */
 model HuntListFile is HuntRecord[];
