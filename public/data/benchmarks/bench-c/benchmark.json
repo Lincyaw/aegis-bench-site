@@ -45,9 +45,35 @@
   "blocks": {
     "comparison": ["reply", "fileChanges", "checks", "trajectory"]
   },
+  "worldLayers": [
+    {
+      "id": "code",
+      "name": {
+        "zh-CN": "代码",
+        "en": "Code"
+      },
+      "shape": "tree"
+    },
+    {
+      "id": "services",
+      "name": {
+        "zh-CN": "服务",
+        "en": "Services"
+      },
+      "shape": "graph"
+    },
+    {
+      "id": "deploy",
+      "name": {
+        "zh-CN": "部署",
+        "en": "Deployment"
+      },
+      "shape": "groups"
+    }
+  ],
   "huggingFace": {
     "repo": "PolarBear2026/agent-eval-demo",
-    "revision": "a64297dc251e12366f4e83cb3930282467dd6d16",
+    "revision": "ab7372db41fda0077aac6cb790832f1562aa9b8d",
     "directory": "benchmarks/bench-c"
   }
 }

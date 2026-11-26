@@ -1,0 +1,865 @@
+{
+  "nodes": [
+    {
+      "id": "dir:config",
+      "layer": "code",
+      "type": "dir",
+      "label": "config/"
+    },
+    {
+      "id": "file:config/gateway.yaml",
+      "layer": "code",
+      "type": "file",
+      "label": "gateway.yaml",
+      "parent": "dir:config"
+    },
+    {
+      "id": "file:config/order-api.yaml",
+      "layer": "code",
+      "type": "file",
+      "label": "order-api.yaml",
+      "parent": "dir:config"
+    },
+    {
+      "id": "file:config/user-center.yaml",
+      "layer": "code",
+      "type": "file",
+      "label": "user-center.yaml",
+      "parent": "dir:config"
+    },
+    {
+      "id": "file:config/search-api.yaml",
+      "layer": "code",
+      "type": "file",
+      "label": "search-api.yaml",
+      "parent": "dir:config"
+    },
+    {
+      "id": "file:config/inventory.yaml",
+      "layer": "code",
+      "type": "file",
+      "label": "inventory.yaml",
+      "parent": "dir:config"
+    },
+    {
+      "id": "file:config/payment-api.yaml",
+      "layer": "code",
+      "type": "file",
+      "label": "payment-api.yaml",
+      "parent": "dir:config"
+    },
+    {
+      "id": "file:config/payment-callback.yaml",
+      "layer": "code",
+      "type": "file",
+      "label": "payment-callback.yaml",
+      "parent": "dir:config"
+    },
+    {
+      "id": "file:config/billing-worker.yaml",
+      "layer": "code",
+      "type": "file",
+      "label": "billing-worker.yaml",
+      "parent": "dir:config"
+    },
+    {
+      "id": "file:config/notify.yaml",
+      "layer": "code",
+      "type": "file",
+      "label": "notify.yaml",
+      "parent": "dir:config"
+    },
+    {
+      "id": "file:config/order-db.yaml",
+      "layer": "code",
+      "type": "file",
+      "label": "order-db.yaml",
+      "parent": "dir:config"
+    },
+    {
+      "id": "file:config/redis.yaml",
+      "layer": "code",
+      "type": "file",
+      "label": "redis.yaml",
+      "parent": "dir:config"
+    },
+    {
+      "id": "file:config/mq.yaml",
+      "layer": "code",
+      "type": "file",
+      "label": "mq.yaml",
+      "parent": "dir:config"
+    },
+    {
+      "id": "dir:deploy",
+      "layer": "code",
+      "type": "dir",
+      "label": "deploy/"
+    },
+    {
+      "id": "file:deploy/gateway.yaml",
+      "layer": "code",
+      "type": "file",
+      "label": "gateway.yaml",
+      "parent": "dir:deploy"
+    },
+    {
+      "id": "file:deploy/order-api.yaml",
+      "layer": "code",
+      "type": "file",
+      "label": "order-api.yaml",
+      "parent": "dir:deploy"
+    },
+    {
+      "id": "file:deploy/user-center.yaml",
+      "layer": "code",
+      "type": "file",
+      "label": "user-center.yaml",
+      "parent": "dir:deploy"
+    },
+    {
+      "id": "file:deploy/search-api.yaml",
+      "layer": "code",
+      "type": "file",
+      "label": "search-api.yaml",
+      "parent": "dir:deploy"
+    },
+    {
+      "id": "file:deploy/inventory.yaml",
+      "layer": "code",
+      "type": "file",
+      "label": "inventory.yaml",
+      "parent": "dir:deploy"
+    },
+    {
+      "id": "file:deploy/payment-api.yaml",
+      "layer": "code",
+      "type": "file",
+      "label": "payment-api.yaml",
+      "parent": "dir:deploy"
+    },
+    {
+      "id": "file:deploy/payment-callback.yaml",
+      "layer": "code",
+      "type": "file",
+      "label": "payment-callback.yaml",
+      "parent": "dir:deploy"
+    },
+    {
+      "id": "file:deploy/billing-worker.yaml",
+      "layer": "code",
+      "type": "file",
+      "label": "billing-worker.yaml",
+      "parent": "dir:deploy"
+    },
+    {
+      "id": "file:deploy/notify.yaml",
+      "layer": "code",
+      "type": "file",
+      "label": "notify.yaml",
+      "parent": "dir:deploy"
+    },
+    {
+      "id": "file:deploy/order-db.yaml",
+      "layer": "code",
+      "type": "file",
+      "label": "order-db.yaml",
+      "parent": "dir:deploy"
+    },
+    {
+      "id": "file:deploy/redis.yaml",
+      "layer": "code",
+      "type": "file",
+      "label": "redis.yaml",
+      "parent": "dir:deploy"
+    },
+    {
+      "id": "file:deploy/mq.yaml",
+      "layer": "code",
+      "type": "file",
+      "label": "mq.yaml",
+      "parent": "dir:deploy"
+    },
+    {
+      "id": "svc:gateway",
+      "layer": "services",
+      "type": "service",
+      "label": "gateway",
+      "status": "degraded",
+      "attrs": {
+        "replicas": 2
+      }
+    },
+    {
+      "id": "svc:order-api",
+      "layer": "services",
+      "type": "service",
+      "label": "order-api",
+      "status": "healthy",
+      "attrs": {
+        "replicas": 2
+      }
+    },
+    {
+      "id": "svc:user-center",
+      "layer": "services",
+      "type": "service",
+      "label": "user-center",
+      "status": "healthy",
+      "attrs": {
+        "replicas": 2
+      }
+    },
+    {
+      "id": "svc:search-api",
+      "layer": "services",
+      "type": "service",
+      "label": "search-api",
+      "status": "healthy",
+      "attrs": {
+        "replicas": 2
+      }
+    },
+    {
+      "id": "svc:inventory",
+      "layer": "services",
+      "type": "service",
+      "label": "inventory",
+      "status": "healthy",
+      "attrs": {
+        "replicas": 2
+      }
+    },
+    {
+      "id": "svc:payment-api",
+      "layer": "services",
+      "type": "service",
+      "label": "payment-api",
+      "status": "healthy",
+      "attrs": {
+        "replicas": 2
+      }
+    },
+    {
+      "id": "svc:payment-callback",
+      "layer": "services",
+      "type": "service",
+      "label": "payment-callback",
+      "status": "degraded",
+      "attrs": {
+        "replicas": 2
+      }
+    },
+    {
+      "id": "svc:billing-worker",
+      "layer": "services",
+      "type": "service",
+      "label": "billing-worker",
+      "status": "healthy",
+      "attrs": {
+        "replicas": 2
+      }
+    },
+    {
+      "id": "svc:notify",
+      "layer": "services",
+      "type": "service",
+      "label": "notify",
+      "status": "healthy",
+      "attrs": {
+        "replicas": 2
+      }
+    },
+    {
+      "id": "svc:order-db",
+      "layer": "services",
+      "type": "service",
+      "label": "order-db",
+      "status": "healthy",
+      "attrs": {
+        "replicas": 1
+      }
+    },
+    {
+      "id": "svc:redis",
+      "layer": "services",
+      "type": "service",
+      "label": "redis",
+      "status": "healthy",
+      "attrs": {
+        "replicas": 1
+      }
+    },
+    {
+      "id": "svc:mq",
+      "layer": "services",
+      "type": "service",
+      "label": "mq",
+      "status": "healthy",
+      "attrs": {
+        "replicas": 1
+      }
+    },
+    {
+      "id": "host:node-1",
+      "layer": "deploy",
+      "type": "host",
+      "label": "node-1"
+    },
+    {
+      "id": "host:node-2",
+      "layer": "deploy",
+      "type": "host",
+      "label": "node-2"
+    },
+    {
+      "id": "host:node-3",
+      "layer": "deploy",
+      "type": "host",
+      "label": "node-3"
+    },
+    {
+      "id": "pod:gateway-37a18-bcw",
+      "layer": "deploy",
+      "type": "pod",
+      "label": "gateway-37a18-bcw",
+      "parent": "host:node-1",
+      "attrs": {
+        "phase": "Running",
+        "restarts": 0
+      }
+    },
+    {
+      "id": "pod:gateway-37a18-8lf",
+      "layer": "deploy",
+      "type": "pod",
+      "label": "gateway-37a18-8lf",
+      "parent": "host:node-2",
+      "attrs": {
+        "phase": "Running",
+        "restarts": 0
+      }
+    },
+    {
+      "id": "pod:order-api-7ef23-vk9",
+      "layer": "deploy",
+      "type": "pod",
+      "label": "order-api-7ef23-vk9",
+      "parent": "host:node-1",
+      "attrs": {
+        "phase": "Running",
+        "restarts": 0
+      }
+    },
+    {
+      "id": "pod:order-api-7ef23-dg6",
+      "layer": "deploy",
+      "type": "pod",
+      "label": "order-api-7ef23-dg6",
+      "parent": "host:node-2",
+      "attrs": {
+        "phase": "Running",
+        "restarts": 0
+      }
+    },
+    {
+      "id": "pod:user-center-82621-zdd",
+      "layer": "deploy",
+      "type": "pod",
+      "label": "user-center-82621-zdd",
+      "parent": "host:node-1",
+      "attrs": {
+        "phase": "Running",
+        "restarts": 0
+      }
+    },
+    {
+      "id": "pod:user-center-82621-dpw",
+      "layer": "deploy",
+      "type": "pod",
+      "label": "user-center-82621-dpw",
+      "parent": "host:node-2",
+      "attrs": {
+        "phase": "Running",
+        "restarts": 0
+      }
+    },
+    {
+      "id": "pod:search-api-a64cd-ffb",
+      "layer": "deploy",
+      "type": "pod",
+      "label": "search-api-a64cd-ffb",
+      "parent": "host:node-1",
+      "attrs": {
+        "phase": "Running",
+        "restarts": 0
+      }
+    },
+    {
+      "id": "pod:search-api-a64cd-n88",
+      "layer": "deploy",
+      "type": "pod",
+      "label": "search-api-a64cd-n88",
+      "parent": "host:node-2",
+      "attrs": {
+        "phase": "Running",
+        "restarts": 0
+      }
+    },
+    {
+      "id": "pod:inventory-2018c-6vm",
+      "layer": "deploy",
+      "type": "pod",
+      "label": "inventory-2018c-6vm",
+      "parent": "host:node-1",
+      "attrs": {
+        "phase": "Running",
+        "restarts": 0
+      }
+    },
+    {
+      "id": "pod:inventory-2018c-xdn",
+      "layer": "deploy",
+      "type": "pod",
+      "label": "inventory-2018c-xdn",
+      "parent": "host:node-2",
+      "attrs": {
+        "phase": "Running",
+        "restarts": 0
+      }
+    },
+    {
+      "id": "pod:payment-api-7ed8f-p44",
+      "layer": "deploy",
+      "type": "pod",
+      "label": "payment-api-7ed8f-p44",
+      "parent": "host:node-1",
+      "attrs": {
+        "phase": "Running",
+        "restarts": 0
+      }
+    },
+    {
+      "id": "pod:payment-api-7ed8f-cqb",
+      "layer": "deploy",
+      "type": "pod",
+      "label": "payment-api-7ed8f-cqb",
+      "parent": "host:node-2",
+      "attrs": {
+        "phase": "Running",
+        "restarts": 0
+      }
+    },
+    {
+      "id": "pod:payment-callback-047a3-n5r",
+      "layer": "deploy",
+      "type": "pod",
+      "label": "payment-callback-047a3-n5r",
+      "parent": "host:node-1",
+      "attrs": {
+        "phase": "Running",
+        "restarts": 3
+      }
+    },
+    {
+      "id": "pod:payment-callback-047a3-6f4",
+      "layer": "deploy",
+      "type": "pod",
+      "label": "payment-callback-047a3-6f4",
+      "parent": "host:node-2",
+      "attrs": {
+        "phase": "Running",
+        "restarts": 3
+      }
+    },
+    {
+      "id": "pod:billing-worker-1e315-lqp",
+      "layer": "deploy",
+      "type": "pod",
+      "label": "billing-worker-1e315-lqp",
+      "parent": "host:node-1",
+      "attrs": {
+        "phase": "Running",
+        "restarts": 0
+      }
+    },
+    {
+      "id": "pod:billing-worker-1e315-57k",
+      "layer": "deploy",
+      "type": "pod",
+      "label": "billing-worker-1e315-57k",
+      "parent": "host:node-2",
+      "attrs": {
+        "phase": "Running",
+        "restarts": 0
+      }
+    },
+    {
+      "id": "pod:notify-0bce6-sq4",
+      "layer": "deploy",
+      "type": "pod",
+      "label": "notify-0bce6-sq4",
+      "parent": "host:node-1",
+      "attrs": {
+        "phase": "Running",
+        "restarts": 0
+      }
+    },
+    {
+      "id": "pod:notify-0bce6-qxb",
+      "layer": "deploy",
+      "type": "pod",
+      "label": "notify-0bce6-qxb",
+      "parent": "host:node-2",
+      "attrs": {
+        "phase": "Running",
+        "restarts": 0
+      }
+    },
+    {
+      "id": "pod:order-db-0",
+      "layer": "deploy",
+      "type": "pod",
+      "label": "order-db-0",
+      "parent": "host:node-3",
+      "attrs": {
+        "phase": "Running",
+        "restarts": 0
+      }
+    },
+    {
+      "id": "pod:redis-0",
+      "layer": "deploy",
+      "type": "pod",
+      "label": "redis-0",
+      "parent": "host:node-3",
+      "attrs": {
+        "phase": "Running",
+        "restarts": 0
+      }
+    },
+    {
+      "id": "pod:mq-0",
+      "layer": "deploy",
+      "type": "pod",
+      "label": "mq-0",
+      "parent": "host:node-3",
+      "attrs": {
+        "phase": "Running",
+        "restarts": 0
+      }
+    }
+  ],
+  "edges": [
+    {
+      "from": "file:config/gateway.yaml",
+      "to": "svc:gateway",
+      "type": "configures"
+    },
+    {
+      "from": "file:config/order-api.yaml",
+      "to": "svc:order-api",
+      "type": "configures"
+    },
+    {
+      "from": "file:config/user-center.yaml",
+      "to": "svc:user-center",
+      "type": "configures"
+    },
+    {
+      "from": "file:config/search-api.yaml",
+      "to": "svc:search-api",
+      "type": "configures"
+    },
+    {
+      "from": "file:config/inventory.yaml",
+      "to": "svc:inventory",
+      "type": "configures"
+    },
+    {
+      "from": "file:config/payment-api.yaml",
+      "to": "svc:payment-api",
+      "type": "configures"
+    },
+    {
+      "from": "file:config/payment-callback.yaml",
+      "to": "svc:payment-callback",
+      "type": "configures"
+    },
+    {
+      "from": "file:config/billing-worker.yaml",
+      "to": "svc:billing-worker",
+      "type": "configures"
+    },
+    {
+      "from": "file:config/notify.yaml",
+      "to": "svc:notify",
+      "type": "configures"
+    },
+    {
+      "from": "file:config/order-db.yaml",
+      "to": "svc:order-db",
+      "type": "configures"
+    },
+    {
+      "from": "file:config/redis.yaml",
+      "to": "svc:redis",
+      "type": "configures"
+    },
+    {
+      "from": "file:config/mq.yaml",
+      "to": "svc:mq",
+      "type": "configures"
+    },
+    {
+      "from": "file:deploy/gateway.yaml",
+      "to": "svc:gateway",
+      "type": "deploys"
+    },
+    {
+      "from": "file:deploy/order-api.yaml",
+      "to": "svc:order-api",
+      "type": "deploys"
+    },
+    {
+      "from": "file:deploy/user-center.yaml",
+      "to": "svc:user-center",
+      "type": "deploys"
+    },
+    {
+      "from": "file:deploy/search-api.yaml",
+      "to": "svc:search-api",
+      "type": "deploys"
+    },
+    {
+      "from": "file:deploy/inventory.yaml",
+      "to": "svc:inventory",
+      "type": "deploys"
+    },
+    {
+      "from": "file:deploy/payment-api.yaml",
+      "to": "svc:payment-api",
+      "type": "deploys"
+    },
+    {
+      "from": "file:deploy/payment-callback.yaml",
+      "to": "svc:payment-callback",
+      "type": "deploys"
+    },
+    {
+      "from": "file:deploy/billing-worker.yaml",
+      "to": "svc:billing-worker",
+      "type": "deploys"
+    },
+    {
+      "from": "file:deploy/notify.yaml",
+      "to": "svc:notify",
+      "type": "deploys"
+    },
+    {
+      "from": "file:deploy/order-db.yaml",
+      "to": "svc:order-db",
+      "type": "deploys"
+    },
+    {
+      "from": "file:deploy/redis.yaml",
+      "to": "svc:redis",
+      "type": "deploys"
+    },
+    {
+      "from": "file:deploy/mq.yaml",
+      "to": "svc:mq",
+      "type": "deploys"
+    },
+    {
+      "from": "svc:gateway",
+      "to": "svc:order-api",
+      "type": "calls"
+    },
+    {
+      "from": "svc:gateway",
+      "to": "svc:user-center",
+      "type": "calls"
+    },
+    {
+      "from": "svc:gateway",
+      "to": "svc:search-api",
+      "type": "calls"
+    },
+    {
+      "from": "svc:gateway",
+      "to": "svc:payment-callback",
+      "type": "calls"
+    },
+    {
+      "from": "svc:order-api",
+      "to": "svc:inventory",
+      "type": "calls"
+    },
+    {
+      "from": "svc:order-api",
+      "to": "svc:payment-api",
+      "type": "calls"
+    },
+    {
+      "from": "svc:order-api",
+      "to": "svc:order-db",
+      "type": "calls"
+    },
+    {
+      "from": "svc:payment-api",
+      "to": "svc:redis",
+      "type": "calls"
+    },
+    {
+      "from": "svc:payment-callback",
+      "to": "svc:order-db",
+      "type": "calls"
+    },
+    {
+      "from": "svc:payment-callback",
+      "to": "svc:redis",
+      "type": "calls"
+    },
+    {
+      "from": "svc:payment-callback",
+      "to": "svc:mq",
+      "type": "publishes"
+    },
+    {
+      "from": "svc:billing-worker",
+      "to": "svc:mq",
+      "type": "consumes"
+    },
+    {
+      "from": "svc:billing-worker",
+      "to": "svc:order-db",
+      "type": "calls"
+    },
+    {
+      "from": "svc:notify",
+      "to": "svc:mq",
+      "type": "consumes"
+    },
+    {
+      "from": "svc:search-api",
+      "to": "svc:redis",
+      "type": "calls"
+    },
+    {
+      "from": "svc:user-center",
+      "to": "svc:redis",
+      "type": "calls"
+    },
+    {
+      "from": "svc:inventory",
+      "to": "svc:order-db",
+      "type": "calls"
+    },
+    {
+      "from": "svc:gateway",
+      "to": "pod:gateway-37a18-bcw",
+      "type": "runs"
+    },
+    {
+      "from": "svc:gateway",
+      "to": "pod:gateway-37a18-8lf",
+      "type": "runs"
+    },
+    {
+      "from": "svc:order-api",
+      "to": "pod:order-api-7ef23-vk9",
+      "type": "runs"
+    },
+    {
+      "from": "svc:order-api",
+      "to": "pod:order-api-7ef23-dg6",
+      "type": "runs"
+    },
+    {
+      "from": "svc:user-center",
+      "to": "pod:user-center-82621-zdd",
+      "type": "runs"
+    },
+    {
+      "from": "svc:user-center",
+      "to": "pod:user-center-82621-dpw",
+      "type": "runs"
+    },
+    {
+      "from": "svc:search-api",
+      "to": "pod:search-api-a64cd-ffb",
+      "type": "runs"
+    },
+    {
+      "from": "svc:search-api",
+      "to": "pod:search-api-a64cd-n88",
+      "type": "runs"
+    },
+    {
+      "from": "svc:inventory",
+      "to": "pod:inventory-2018c-6vm",
+      "type": "runs"
+    },
+    {
+      "from": "svc:inventory",
+      "to": "pod:inventory-2018c-xdn",
+      "type": "runs"
+    },
+    {
+      "from": "svc:payment-api",
+      "to": "pod:payment-api-7ed8f-p44",
+      "type": "runs"
+    },
+    {
+      "from": "svc:payment-api",
+      "to": "pod:payment-api-7ed8f-cqb",
+      "type": "runs"
+    },
+    {
+      "from": "svc:payment-callback",
+      "to": "pod:payment-callback-047a3-n5r",
+      "type": "runs"
+    },
+    {
+      "from": "svc:payment-callback",
+      "to": "pod:payment-callback-047a3-6f4",
+      "type": "runs"
+    },
+    {
+      "from": "svc:billing-worker",
+      "to": "pod:billing-worker-1e315-lqp",
+      "type": "runs"
+    },
+    {
+      "from": "svc:billing-worker",
+      "to": "pod:billing-worker-1e315-57k",
+      "type": "runs"
+    },
+    {
+      "from": "svc:notify",
+      "to": "pod:notify-0bce6-sq4",
+      "type": "runs"
+    },
+    {
+      "from": "svc:notify",
+      "to": "pod:notify-0bce6-qxb",
+      "type": "runs"
+    },
+    {
+      "from": "svc:order-db",
+      "to": "pod:order-db-0",
+      "type": "runs"
+    },
+    {
+      "from": "svc:redis",
+      "to": "pod:redis-0",
+      "type": "runs"
+    },
+    {
+      "from": "svc:mq",
+      "to": "pod:mq-0",
+      "type": "runs"
+    }
+  ]
+}
