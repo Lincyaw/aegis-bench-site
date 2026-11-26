@@ -1,9 +1,17 @@
 /*
- * The canvas scrolls in its own column. Bands, lines and nodes are placed by transforms, so when a frame moves them
- * they slide to their new places; a node that enters fades in where it lands.
+ * The canvas scrolls in its own column. Bands, lines and nodes are placed by transforms. A frame changes in three beats
+ * that follow one another, so a reader can follow it: what goes fades out, the nodes move to their places, and what
+ * comes appears. A line whose nodes move goes before them and comes back after, so no line is ever left behind by its
+ * nodes; a line whose nodes stand, or whose whole band moves, stays and moves with them.
  */
 .scroller { position: relative; min-width: 0; min-height: 0; overflow: auto; overscroll-behavior: contain; }
-.canvas { position: relative; }
+.canvas {
+  --beat-out: var(--duration-fast);
+  --beat-move: var(--duration-slow);
+  --beat-in: var(--duration-base);
+  --move: var(--beat-move) var(--ease-out) var(--beat-out);
+  position: relative;
+}
 
 .bands { position: absolute; inset: 0; pointer-events: none; }
 .band {
@@ -16,28 +24,20 @@
   gap: var(--space-2);
   padding: var(--space-3) var(--space-6);
   border-top: var(--rule-hairline);
-  transition: transform var(--duration-slow) var(--ease-out), height var(--duration-slow) var(--ease-out);
+  transition: transform var(--move), height var(--move);
 }
 .band:first-child { border-top: 0; }
 
 .lines { position: absolute; top: 0; left: 0; overflow: visible; pointer-events: none; }
-.lines g { transition: transform var(--duration-slow) var(--ease-out); }
-/*
- * A frame changes in two beats, so a reader can follow it: first the nodes move to their places, then the lines catch
- * up. A line that stays reshapes to its nodes' new places, a line that goes fades, and a line that comes appears; a
- * link the step reaches across layers draws itself out from the node it acts on.
- */
-.guide, .edge, .link {
-  fill: none;
-  stroke-linecap: round;
-  transition: d var(--duration-base) var(--ease-out) var(--duration-slow), stroke var(--duration-base) var(--ease-out) var(--duration-slow);
-}
-.guide, .edge { stroke: var(--border-hairline); stroke-width: var(--size-hairline); animation: fade-in var(--duration-base) var(--ease-out) var(--duration-slow) backwards; }
+.lines g { transition: transform var(--move); }
+.guide, .edge, .link { fill: none; stroke-linecap: round; }
+.guide, .edge { stroke: var(--border-hairline); stroke-width: var(--size-hairline); animation: fade-in var(--beat-in) var(--ease-out) calc(var(--beat-out) + var(--beat-move)) backwards; }
 .edge[data-touched] { stroke: var(--border-emphasis); }
-.link { stroke-width: var(--size-stroke); stroke-dasharray: 1; opacity: .85; animation: link-in var(--duration-slow) var(--ease-out) var(--duration-slow) backwards; }
+/* A link the step reaches across layers draws itself out from the node it acts on. */
+.link { stroke-width: var(--size-stroke); stroke-dasharray: 1; opacity: .85; animation: link-in var(--beat-in) var(--ease-out) calc(var(--beat-out) + var(--beat-move)) backwards; }
 .link[data-kind="read"] { stroke: var(--replay-tool); }
 .link[data-kind="write"] { stroke: var(--replay-edit); }
-.lines [data-leaving] { stroke-dasharray: none; animation: fade-out var(--duration-base) var(--ease-out) var(--duration-slow) forwards; }
+.lines [data-leaving] { stroke-dasharray: none; animation: fade-out var(--beat-out) var(--ease-out) forwards; }
 @keyframes link-in {
   from { stroke-dashoffset: 1; }
 }
@@ -48,23 +48,21 @@
   to { opacity: 0; }
 }
 
-.box {
+.box { position: absolute; top: 0; left: 0; border: var(--rule-hairline); border-radius: var(--radius-md); transition: transform var(--move), width var(--move), height var(--move); }
+
+.canvas .node {
   position: absolute;
   top: 0;
   left: 0;
-  border: var(--rule-hairline);
-  border-radius: var(--radius-md);
-  transition: transform var(--duration-slow) var(--ease-out), width var(--duration-slow) var(--ease-out), height var(--duration-slow) var(--ease-out);
+  transition:
+    transform var(--move), width var(--move), background-color var(--duration-base) var(--ease-out), border-color var(--duration-base) var(--ease-out),
+    color var(--duration-base) var(--ease-out), box-shadow var(--duration-slow) var(--ease-out), opacity var(--duration-base) var(--ease-out);
+  animation: fade-in var(--beat-move) var(--ease-out) var(--beat-out) backwards;
 }
-
-.node { position: absolute; top: 0; left: 0; animation: node-in var(--duration-slow) var(--ease-out); }
 .node:has(> [aria-pressed="true"]) { outline: var(--size-border-thick) solid var(--accent-brand); outline-offset: var(--space-px); }
-@keyframes node-in {
-  from { opacity: 0; }
-}
-.leaving { pointer-events: none; animation: fade-out var(--duration-slow) var(--ease-out) forwards; }
+.canvas .leaving { pointer-events: none; animation: fade-out var(--beat-out) var(--ease-out) forwards; }
 
-/* The cursor glides from node to node as the run's attention moves, across layers too; it dims while the step touches nothing drawn. */
+/* The cursor glides from node to node with the nodes' beat as the run's attention moves; it dims while the step touches nothing drawn. */
 .cursor {
   position: absolute;
   top: 0;
@@ -73,9 +71,7 @@
   border-radius: var(--radius-md);
   opacity: .6;
   pointer-events: none;
-  transition:
-    transform var(--duration-slow) var(--ease-out), width var(--duration-slow) var(--ease-out), height var(--duration-slow) var(--ease-out),
-    border-color var(--duration-base) var(--ease-out), opacity var(--duration-base) var(--ease-out);
+  transition: transform var(--move), width var(--move), height var(--move), border-color var(--duration-base) var(--ease-out), opacity var(--duration-base) var(--ease-out);
 }
 .cursor[data-current] { border-color: var(--text-main); opacity: 1; }
 

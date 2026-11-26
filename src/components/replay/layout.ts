@@ -263,6 +263,11 @@ export interface BandLine {
   kind: 'guide' | 'edge';
 }
 
+/** A line's identity from frame to frame: what it joins and the path it takes, so a line whose path changes goes and comes anew. */
+export function pathKey(line: { key: string; d: string }): string {
+  return `${line.key} ${line.d}`;
+}
+
 /** Every line the bands draw, keyed by its band and what it joins, so a frame can tell the lines that stay from those that go. */
 export function bandLines(drawing: { bands: Band[] }): BandLine[] {
   return drawing.bands.flatMap(({ layer, origin, placement }) => [
