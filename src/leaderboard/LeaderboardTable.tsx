@@ -23,7 +23,8 @@ export function LeaderboardTable({ benchmarkId, entries, metric }: { benchmarkId
       </div>
       {entries.map(entry => {
         const key = combinationKey(entry.model.id, entry.harness.id);
-        const runs = runRecordsPath(benchmarkId, { combination: key });
+        // A combination's row opens its own runs task by task.
+        const runs = runRecordsPath(benchmarkId, { by: 'model', combination: key });
         return (
           <div key={key} role="row" className={clsx(table.row, table.link)} onClick={event => { if (!(event.target as HTMLElement).closest('a')) { navigate(runs); } }}>
             <span role="cell" className="t-numeric c-muted">{entry.rank}</span>

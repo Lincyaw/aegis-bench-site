@@ -1,5 +1,6 @@
 import { delay } from 'msw';
 import { DEFAULT_LEADERBOARD_PAGE_SIZE, benchmarkDetail, benchmarkOf, benchmarkSummary, hasBenchmark, leaderboardView, stagesWithBenchmarks, taskOf } from './benchmarks';
+import { RECORD_LOCALE } from './catalog';
 import { consoleHandlers } from './consoleHandlers';
 import { hasModel, modelProfile } from './models';
 import { answeringUnreachableRecords, http, localeOf, pageOf, writtenIn } from './protocol';
@@ -9,7 +10,7 @@ import { reportHandlers } from './reportHandlers';
 import { runDetailOf } from './runs';
 import { currentSettings } from './settings';
 import { DEFAULT_ENTRY_PAGE_SIZE, directoryEntriesOf, taskFileOf, withheldUnder } from './taskFiles';
-import { DEFAULT_TASK_PAGE_SIZE, passRateOf, taskRunsOf, taskSummariesOf } from './tasks';
+import { DEFAULT_TASK_PAGE_SIZE, combinationTasksOf, passRateOf, taskRunsOf, taskSummariesOf } from './tasks';
 import { DEFAULT_TRAJECTORY_PAGE_SIZE, trajectoryOf } from './trajectories';
 import { workspaceHandlers } from './workspaceHandlers';
 
@@ -69,6 +70,19 @@ export const publicHandlers = [
     return response(200).json(publishedEntriesOf(params.benchmarkId, locale).map(entry => ({ model: entry.model, harness: entry.harness })), writtenIn(locale));
   }),
 
+  http.get('/benchmarks/{benchmarkId}/combinations/{combination}/tasks', async ({ params, query, response }) => {
+    const entry = hasBenchmark(params.benchmarkId)
+      ? publishedEntriesOf(params.benchmarkId, RECORD_LOCALE).find(({ model, harness }) => `${model.id}-${harness.id}` === params.combination)
+      : undefined;
+    if (!entry) {
+      return response(404).json({ message: `no published combination ${params.combination} in ${params.benchmarkId}` });
+    }
+    const q = (query.get('q') ?? '').trim();
+    const matching = combinationTasksOf(params.benchmarkId, entry.model.id, entry.harness.id).filter(({ task }) => !q || task.id.includes(q) || task.title.includes(q));
+    await delay(80);
+    return response(200).json(pageOf(matching, query, DEFAULT_TASK_PAGE_SIZE));
+  }),
+
   http.get('/benchmarks/{benchmarkId}/tasks', async ({ params, query, response }) => {
     if (!hasBenchmark(params.benchmarkId)) {
       return response(404).json({ message: `no benchmark ${params.benchmarkId}` });
@@ -122,7 +136,7 @@ export const publicHandlers = [
     const combinations = publishedTaskRuns(params.benchmarkId, taskRunsOf(params.benchmarkId, task.id, locale));
     await delay(80);
     return response(200).json({
-      task: { id: task.id, title: task.title, passRate: passRateOf(combinations) }, runsPerTask: benchmarkOf(params.benchmarkId).record.runsPerTask, combinations,
+      task: { id: task.id, title: task.title, passRate: passRateOf(combinations.flatMap(combination => combination.runs)) }, runsPerTask: benchmarkOf(params.benchmarkId).record.runsPerTask, combinations,
     }, writtenIn(locale));
   }),
 

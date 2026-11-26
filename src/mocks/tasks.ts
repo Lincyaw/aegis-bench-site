@@ -1,4 +1,4 @@
-import type { CombinationRuns, Locale, TaskSummary } from '../api/types';
+import type { CombinationRuns, CombinationTaskRuns, Locale, RunRef, TaskRecord, TaskSummary } from '../api/types';
 import { benchmarkOf } from './benchmarks';
 import { RECORD_LOCALE, harnessRef, modelRef } from './catalog';
 import { huggingFacePageOf, taskDirectoryOf } from './records';
@@ -20,9 +20,15 @@ export function taskRunsOf(benchmarkId: string, taskId: string, locale: Locale):
 }
 
 /** Share of passed runs among the runs that count; execution failures are not model results. */
-export function passRateOf(combinations: CombinationRuns[]): number {
-  const counted = combinations.flatMap(combination => combination.runs).filter(run => run.outcome !== 'executionFailed');
+export function passRateOf(runs: RunRef[]): number {
+  const counted = runs.filter(run => run.outcome !== 'executionFailed');
   return counted.filter(run => run.outcome === 'passed').length / counted.length;
+}
+
+/** A task's summary with its pass rate over the given runs. */
+export function taskSummaryOf(benchmarkId: string, task: TaskRecord, runs: RunRef[]): TaskSummary {
+  const huggingFaceUrl = huggingFacePageOf(benchmarkOf(benchmarkId).record, taskDirectoryOf(task.id));
+  return { id: task.id, title: task.title, passRate: passRateOf(runs), ...(huggingFaceUrl && { huggingFaceUrl }) };
 }
 
 const summaryCache = new Map<string, TaskSummary[]>();
@@ -32,11 +38,19 @@ export function taskSummariesOf(benchmarkId: string): TaskSummary[] {
   if (cached) {
     return cached;
   }
-  const { record, tasks } = benchmarkOf(benchmarkId);
-  const summaries = tasks.map(task => {
-    const huggingFaceUrl = huggingFacePageOf(record, taskDirectoryOf(task.id));
-    return { id: task.id, title: task.title, passRate: passRateOf(taskRunsOf(benchmarkId, task.id, RECORD_LOCALE)), ...(huggingFaceUrl && { huggingFaceUrl }) };
-  });
+  const summaries = benchmarkOf(benchmarkId).tasks.map(task => taskSummaryOf(benchmarkId, task, taskRunsOf(benchmarkId, task.id, RECORD_LOCALE).flatMap(combination => combination.runs)));
   summaryCache.set(benchmarkId, summaries);
   return summaries;
+}
+
+/** A combination's runs of each task it ran, in the benchmark's task order, each by attempt. */
+export function combinationTasksOf(benchmarkId: string, modelId: string, harnessId: string): CombinationTaskRuns[] {
+  const { tasks, runs } = benchmarkOf(benchmarkId);
+  return tasks
+    .map(task => {
+      const taskRuns = runs.filter(fact => fact.taskId === task.id && fact.modelId === modelId && fact.harnessId === harnessId)
+        .toSorted((a, b) => a.attempt - b.attempt).map(fact => ({ id: fact.id, attempt: fact.attempt, outcome: fact.outcome }));
+      return { task: taskSummaryOf(benchmarkId, task, taskRuns), runs: taskRuns };
+    })
+    .filter(row => row.runs.length > 0);
 }

@@ -303,6 +303,14 @@ model TaskRuns {
   combinations: CombinationRuns[];
 }
 
+/** One combination's runs of one task; the task's pass rate is over those runs. */
+model CombinationTaskRuns {
+  task: TaskSummary;
+  runs: RunRef[];
+}
+
+model CombinationTaskPage is Page<CombinationTaskRuns>;
+
 model RunMetrics {
   /** Steps in the run's trajectory */
   steps: int32;
@@ -598,6 +606,21 @@ interface Benchmarks {
   @get
   @route("/{benchmarkId}/combinations")
   combinations(@path benchmarkId: string, ...LanguageHeader): Localized<Combination[]> | NotFoundError;
+
+  /** A published combination's runs, a page of tasks at a time in the benchmark's order */
+  @get
+  @route("/{benchmarkId}/combinations/{combination}/tasks")
+  combinationTasks(
+    @path benchmarkId: string,
+
+    /** A model and harness pair as "<model id>-<harness id>" */
+    @path combination: string,
+
+    /** Matches the task id or title */
+    @query(#{ explode: true }) q?: string,
+
+    ...PageQuery<14>,
+  ): CombinationTaskPage | NotFoundError;
 
   /** Tasks are records: their titles stay in the language the task was written in */
   @get

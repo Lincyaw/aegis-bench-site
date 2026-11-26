@@ -27,6 +27,8 @@
 .task:hover { background: var(--bg-muted); }
 .task[aria-current="true"] { background: linear-gradient(var(--brand-dev), var(--brand-ops)) left / var(--size-border-thick) 100% no-repeat, var(--bg-muted); }
 .taskTop { display: flex; justify-content: space-between; align-items: center; }
+.entrant { display: flex; align-items: center; gap: var(--space-2); }
+.modeSwitch { margin-top: var(--space-3); }
 .empty { padding: var(--space-4); }
 .more { padding: var(--space-3); border-top: var(--rule-hairline); }
 
@@ -39,6 +41,16 @@
 
 .detail { padding: 0 var(--space-6) var(--space-5); overflow-y: auto; overscroll-behavior: contain; }
 .detailBack { align-self: flex-start; margin-bottom: var(--space-3); }
+
+/*
+ * Comparing a task's runs takes the width of its runs and the run detail together and scrolls as one; its parts keep
+ * their height, since a table that scrolls sideways would otherwise give its height up to the pane.
+ */
+.compareArea { display: grid; grid-column: span 2; grid-auto-rows: max-content; gap: var(--space-5); padding: var(--space-4) var(--space-6) var(--space-6); overflow-y: auto; overscroll-behavior: contain; }
+/* An anchor scrolls to the top of the pane, which no nav covers. */
+.compareArea [id] { scroll-margin-top: var(--space-4); }
+.compareHead { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
+.compareHead > :last-child { margin-left: auto; }
 
 @media (max-width: 1280px) {
   .legend { display: none; }
@@ -62,4 +74,5 @@
   .task, .combination { padding-left: 0; padding-right: 0; }
   .task[aria-current="true"] { background: var(--bg-muted); }
   .detail { padding: var(--space-2) 0 0; overflow: visible; }
+  .compareArea { padding: var(--space-2) 0 0; overflow: visible; }
 }

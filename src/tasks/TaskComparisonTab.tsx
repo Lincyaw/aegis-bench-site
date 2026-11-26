@@ -1,16 +1,12 @@
-import { clsx } from 'clsx';
-import { Suspense, useDeferredValue, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { Suspense, useDeferredValue } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useConsoleTaskComparison, useConsoleTrajectories, useTaskResults } from '../api/consoleClient';
 import type { ConsoleTaskDetail } from '../api/types';
 import { LIST_SEPARATOR, type ComparisonView } from '../runs/comparison';
 import { consoleRunPath } from '../runs/consoleRunQuery';
 import { HuggingFaceBoundary } from '../runs/HuggingFace';
-import { ComparedRuns, RunChoice, type ComparisonSource } from '../runs/TaskComparison';
+import { ComparedRuns, RunChoice, TaskInput, type ComparisonSource } from '../runs/TaskComparison';
 import { Loading } from '../ui/content';
-import controls from '../ui/controls.module.css';
-import { InfoHint } from '../ui/hint';
 import { taskPageSearch } from './consoleTaskQuery';
 import styles from './TaskComparisonTab.module.css';
 
@@ -29,7 +25,7 @@ export function TaskComparisonTab({ task, view }: { task: ConsoleTaskDetail; vie
   const source: ComparisonSource = { useComparison: useTaskComparison, useTrajectories: useConsoleTrajectories, runPath: runId => consoleRunPath(task.benchmark.id, runId) };
   return (
     <div className={styles.tab}>
-      <TaskInput task={task} />
+      <TaskInput instruction={task.instruction} reportSchema={task.reportSchema} />
       {shown ? (
         <HuggingFaceBoundary resetKey={shown}>
           <Suspense fallback={<Loading />}>
@@ -38,24 +34,5 @@ export function TaskComparisonTab({ task, view }: { task: ConsoleTaskDetail; vie
         </HuggingFaceBoundary>
       ) : <RunChoice entrants={entrants} view={view} onView={onView} />}
     </div>
-  );
-}
-
-/** What every run received, its first lines until asked for the whole. */
-export function TaskInput({ task }: { task: ConsoleTaskDetail }) {
-  const { t } = useTranslation();
-  const [whole, setWhole] = useState(false);
-  return (
-    <section className={styles.input}>
-      <header className={styles.head}>
-        <h2 className="t-label">{t('compare.input')}</h2>
-        <InfoHint label={t('ui.about', { subject: t('compare.input') })}>{t('compare.inputHint')}</InfoHint>
-        <button type="button" className={clsx(controls.textLink, 't-micro')} aria-expanded={whole} onClick={() => setWhole(!whole)}>
-          {whole ? t('compare.collapseInput') : t('compare.expandInput')}
-        </button>
-      </header>
-      <p className={clsx(styles.instruction, !whole && styles.clamped)}>{task.instruction}</p>
-      {whole && task.reportSchema && <pre className={styles.schema}>{task.reportSchema}</pre>}
-    </section>
   );
 }

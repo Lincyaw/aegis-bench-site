@@ -134,6 +134,18 @@ export function useTaskPages(benchmarkId: string, q: string, pageSize: number) {
   });
 }
 
+/** A combination's runs, a page of tasks matching a search at a time; each task's pass rate is the combination's. */
+export function useCombinationTaskPages(benchmarkId: string, combination: string, q: string, pageSize: number) {
+  return useSuspenseInfiniteQuery({
+    queryKey: ['combinationTasks', benchmarkId, combination, q, pageSize],
+    queryFn: ({ pageParam }) => responseBody(api.GET('/benchmarks/{benchmarkId}/combinations/{combination}/tasks', {
+      params: { path: { benchmarkId, combination }, query: { q, offset: pageParam, limit: pageSize } },
+    })),
+    initialPageParam: 0,
+    getNextPageParam: nextPageOffset,
+  });
+}
+
 export function useTask(benchmarkId: string, taskId: string) {
   return useSuspenseQuery({
     queryKey: ['task', benchmarkId, taskId],

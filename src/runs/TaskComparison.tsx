@@ -38,6 +38,25 @@ export interface ComparisonSource {
   runPath: (runId: string) => string;
 }
 
+/** What every run received, its first lines until asked for the whole. */
+export function TaskInput({ instruction, reportSchema }: { instruction: string; reportSchema?: string }) {
+  const { t } = useTranslation();
+  const [whole, setWhole] = useState(false);
+  return (
+    <section className={styles.input}>
+      <header className={styles.head}>
+        <h2 className="t-label">{t('compare.input')}</h2>
+        <InfoHint label={t('ui.about', { subject: t('compare.input') })}>{t('compare.inputHint')}</InfoHint>
+        <button type="button" className={clsx(controls.textLink, styles.whole, 't-micro')} aria-expanded={whole} onClick={() => setWhole(!whole)}>
+          {whole ? t('compare.collapseInput') : t('compare.expandInput')}
+        </button>
+      </header>
+      <p className={clsx(styles.instruction, !whole && styles.clamped)}>{instruction}</p>
+      {whole && reportSchema && <pre className={styles.schema}>{reportSchema}</pre>}
+    </section>
+  );
+}
+
 /** Before any run is chosen, the comparison is the choice itself. */
 export function RunChoice({ entrants, view, onView }: { entrants: Entrant[]; view: ComparisonView; onView: (view: ComparisonView) => void }) {
   const { t } = useTranslation();
