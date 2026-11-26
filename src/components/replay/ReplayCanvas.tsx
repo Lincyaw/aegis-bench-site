@@ -1,14 +1,26 @@
 import { clsx } from 'clsx';
-import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { Touch, WorldLayer, WorldNode } from '../../api/types';
+import type { Touch, TouchKind, WorldLayer, WorldNode } from '../../api/types';
 import { ChevronIcon } from '../../ui/controls';
 import { Hint } from '../../ui/hint';
-import { CHANGE_GLYPHS, type ReplayFrame } from './frame';
-import { BOX_HEAD, BOX_PADDING, NODE_HEIGHT, across, canvasRects, layoutBands, nodeWidth, type Placed } from './layout';
+import { REDUCED_MOTION_QUERY, useMediaQuery } from '../../ui/media';
+import { CHANGE_GLYPHS, focusOf, type ReplayFrame } from './frame';
+import { NODE_HEIGHT, across, drawnNodes, layoutBands, nodeWidth, type Placed } from './layout';
 import { NodeCard } from './NodeCard';
 import marks from './marks.module.css';
 import styles from './ReplayCanvas.module.css';
+
+/** How far the cursor stands off the node it rides on, and how much room the canvas keeps round it when it follows. */
+export const CURSOR_MARGIN = 5;
+export const FOLLOW_MARGIN = 48;
+
+/** A line from a node the current step acts on to a node it reaches in another layer. */
+interface DrawnLink {
+  key: string;
+  d: string;
+  kind: TouchKind | undefined;
+}
 
 export interface ReplayCanvasProps {
   layers: WorldLayer[];
@@ -35,8 +47,9 @@ export interface ReplayCanvasProps {
 
 /**
  * The world at a step: every layer a band, laid out by its shape, the run's marks on its nodes, the step's events as
- * badges and the step's reach across layers as lines. Nodes slide to their new places as the frame changes. A node's
- * card opens while the pointer rests on it, a click opens it in the side panel, and a parent folds what it holds.
+ * badges and the step's reach across layers as lines. From frame to frame nodes and lines slide to their new places,
+ * what left fades where it was, and a cursor glides to where the run's attention went, the canvas scrolling after it.
+ * A node's card opens while the pointer rests on it, a click opens it in the side panel, and a parent folds what it holds.
  */
 export function ReplayCanvas({ layers, frame, nodes, parents, folded, hidden, touchesByNode, selected, onSelect, onFold }: ReplayCanvasProps) {
   const { t } = useTranslation();
@@ -58,8 +71,42 @@ export function ReplayCanvas({ layers, frame, nodes, parents, folded, hidden, to
     () => layoutBands(layers, nodes, frame.edges, width, node => nodeWidth(node.label, statusOf(node), parents.has(node.id))),
     [layers, nodes, frame.edges, width, parents, statusOf],
   );
-  const rects = canvasRects(drawing.bands);
+  const placed = useMemo(() => drawnNodes(drawing.bands), [drawing]);
+  const rects = new Map(placed.map(entry => [entry.node.id, entry]));
   const touched = (id: string) => frame.history.has(id);
+  const links: DrawnLink[] = frame.links.flatMap(edge => {
+    const source = frame.current.has(edge.from) ? edge.from : edge.to;
+    const target = source === edge.from ? edge.to : edge.from;
+    const [from, to] = [rects.get(source), rects.get(target)];
+    return from && to ? [{ key: `${edge.from} ${edge.to}`, d: across(from, to), kind: frame.current.get(source) }] : [];
+  });
+
+  // What the last frame drew and this one does not fades where it was, so a frame changes rather than jumps.
+  const [previous, setPrevious] = useState({ drawing, placed, links, leaving: { nodes: [] as Placed[], links: [] as DrawnLink[] } });
+  if (previous.drawing !== drawing) {
+    const [ids, keys] = [new Set(placed.map(entry => entry.node.id)), new Set(links.map(link => link.key))];
+    setPrevious({ drawing, placed, links, leaving: { nodes: previous.placed.filter(entry => !ids.has(entry.node.id)), links: previous.links.filter(link => !keys.has(link.key)) } });
+  }
+  const leaving = previous.drawing === drawing ? previous.leaving : { nodes: [], links: [] };
+
+  // The cursor rides on the node the run's attention is on, and the canvas scrolls to keep it in view.
+  const reduceMotion = useMediaQuery(REDUCED_MOTION_QUERY);
+  const focus = focusOf(frame, touchesByNode, new Set(rects.keys()));
+  const focusRect = focus && rects.get(focus.node);
+  useEffect(() => {
+    const element = scroller.current;
+    if (!element) {
+      throw new Error('the canvas renders its scroller before its effects run');
+    }
+    if (!focusRect) {
+      return;
+    }
+    const left = Math.min(Math.max(element.scrollLeft, focusRect.x + focusRect.width + FOLLOW_MARGIN - element.clientWidth), focusRect.x - FOLLOW_MARGIN);
+    const top = Math.min(Math.max(element.scrollTop, focusRect.y + focusRect.height + FOLLOW_MARGIN - element.clientHeight), focusRect.y - FOLLOW_MARGIN);
+    if (left !== element.scrollLeft || top !== element.scrollTop) {
+      element.scrollTo({ left, top, behavior: reduceMotion ? 'auto' : 'smooth' });
+    }
+  }, [focusRect, reduceMotion]);
   const box = (entry: Placed) => (
     <WorldNodeBox
       key={entry.node.id} entry={entry} frame={frame} status={statusOf(entry.node)} parent={parents.has(entry.node.id)} folded={folded.has(entry.node.id)}
@@ -90,26 +137,30 @@ export function ReplayCanvas({ layers, frame, nodes, parents, folded, hidden, to
         <svg className={styles.lines} width={drawing.width} height={drawing.height} aria-hidden="true">
           {drawing.bands.map(({ layer, origin, placement }) => (
             <g key={layer.id} style={{ transform: `translate(${origin.x}px, ${origin.y}px)` }}>
-              {placement.guides.map(d => <path key={d} d={d} className={styles.guide} />)}
+              {placement.guides.map(({ key, d }) => <path key={key} d={d} className={styles.guide} />)}
               {placement.edges.map(({ edge, d }) => (
                 <path key={`${edge.from} ${edge.to} ${edge.type}`} d={d} className={styles.edge} data-touched={touched(edge.from) && touched(edge.to) ? '' : undefined} />
               ))}
             </g>
           ))}
-          {frame.links.flatMap(edge => {
-            const source = frame.current.has(edge.from) ? edge.from : edge.to;
-            const target = source === edge.from ? edge.to : edge.from;
-            const [from, to] = [rects.get(source), rects.get(target)];
-            return from && to ? [<path key={`${edge.from} ${edge.to}`} d={across(from, to)} className={styles.link} data-kind={frame.current.get(source)} />] : [];
-          })}
+          {links.map(link => <path key={link.key} d={link.d} pathLength={1} className={styles.link} data-kind={link.kind} />)}
+          {leaving.links.map(link => <path key={`leaving ${link.key}`} d={link.d} className={styles.link} data-kind={link.kind} data-leaving="" />)}
         </svg>
-        {drawing.bands.flatMap(({ layer, origin, placement }) => [
-          ...placement.boxes.map(entry => (
-            <div key={`box ${entry.node.id}`} className={styles.box} style={{ transform: `translate(${origin.x + entry.x}px, ${origin.y + entry.y}px)`, width: entry.width, height: entry.height }} data-layer={layer.id} />
-          )),
-          ...placement.boxes.map(entry => box({ ...entry, x: origin.x + entry.x + BOX_PADDING, y: origin.y + entry.y + (BOX_HEAD - NODE_HEIGHT) / 2, width: entry.width - 2 * BOX_PADDING })),
-          ...placement.nodes.map(entry => box({ ...entry, x: origin.x + entry.x, y: origin.y + entry.y })),
-        ])}
+        {drawing.bands.flatMap(({ layer, origin, placement }) => placement.boxes.map(entry => (
+          <div key={`box ${entry.node.id}`} className={styles.box} style={{ transform: `translate(${origin.x + entry.x}px, ${origin.y + entry.y}px)`, width: entry.width, height: entry.height }} data-layer={layer.id} />
+        )))}
+        {leaving.nodes.map(({ node, x, y, width: nodeWidthAt }) => (
+          <div key={`leaving ${node.id}`} className={clsx(marks.node, styles.node, styles.leaving)} data-mark="removed" style={{ transform: `translate(${x}px, ${y}px)`, width: nodeWidthAt, height: NODE_HEIGHT }} aria-hidden="true">
+            <span className={clsx(styles.select, 't-mono')}>{node.label}</span>
+          </div>
+        ))}
+        {placed.map(box)}
+        {focusRect && (
+          <div
+            className={styles.cursor} data-current={focus.current ? '' : undefined} aria-hidden="true"
+            style={{ transform: `translate(${focusRect.x - CURSOR_MARGIN}px, ${focusRect.y - CURSOR_MARGIN}px)`, width: focusRect.width + 2 * CURSOR_MARGIN, height: focusRect.height + 2 * CURSOR_MARGIN }}
+          />
+        )}
       </div>
     </div>
   );

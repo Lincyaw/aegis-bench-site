@@ -74,8 +74,8 @@ export interface Placement {
 
   edges: PlacedEdge[];
 
-  /** Lines that show a tree's nesting */
-  guides: string[];
+  /** Lines that show a tree's nesting, each keyed by what it leads to, so it can move rather than be drawn anew */
+  guides: { key: string; d: string }[];
 
   height: number;
 }
@@ -126,7 +126,7 @@ export function layoutTree(nodes: WorldNode[], _edges: WorldEdge[], width: numbe
   const ids = new Set(nodes.map(node => node.id));
   const roots = nodes.filter(node => node.parent === undefined || !ids.has(node.parent));
   const placed: Placed[] = [];
-  const guides: string[] = [];
+  const guides: Placement['guides'] = [];
   let [x, top, rowHeight] = [0, 0, 0];
   for (const root of roots) {
     const entries: { node: WorldNode; depth: number }[] = [];
@@ -146,12 +146,13 @@ export function layoutTree(nodes: WorldNode[], _edges: WorldEdge[], width: numbe
     columns.forEach((column, index) => {
       const guideX = columnX + TREE_GUIDE;
       const last = top + ROW_PITCH * column.length + NODE_HEIGHT / 2;
-      guides.push(index === 0 ? `M ${guideX} ${top + NODE_HEIGHT} V ${last}` : `M ${x + TREE_GUIDE} ${top + NODE_HEIGHT + 2} H ${guideX} V ${last}`);
+      // Every column's guide is drawn as a corner from the root, so it keeps one shape while it moves.
+      guides.push({ key: `${root.id} ${index}`, d: `M ${x + TREE_GUIDE} ${top + NODE_HEIGHT} V ${top + NODE_HEIGHT + 2} H ${guideX} V ${last}` });
       column.forEach((entry, row) => {
         const y = top + ROW_PITCH * (row + 1);
         const entryX = columnX + entry.depth * TREE_INDENT;
         placed.push({ node: entry.node, x: entryX, y, width: widthOf(entry.node), height: NODE_HEIGHT });
-        guides.push(`M ${guideX} ${y + NODE_HEIGHT / 2} H ${entryX}`);
+        guides.push({ key: entry.node.id, d: `M ${guideX} ${y + NODE_HEIGHT / 2} H ${entryX}` });
       });
       columnX += columnWidths[index] + BLOCK_GAP / 2;
     });
@@ -253,10 +254,12 @@ export function layoutBands(layers: WorldLayer[], nodes: WorldNode[], edges: Wor
   return { bands, width: widest, height: top };
 }
 
-/** Where every node of the bands stands on the canvas, for the lines that cross from band to band; a box is reached at its head. */
-export function canvasRects(bands: Band[]): Map<string, Rect> {
-  return new Map(bands.flatMap(({ origin, placement }) => [
-    ...placement.nodes.map(entry => [entry.node.id, { x: origin.x + entry.x, y: origin.y + entry.y, width: entry.width, height: entry.height }] as const),
-    ...placement.boxes.map(entry => [entry.node.id, { x: origin.x + entry.x, y: origin.y + entry.y, width: entry.width, height: BOX_HEAD }] as const),
-  ]));
+/** Every node's box as the canvas draws it, in the canvas's coordinates; a group's parent is drawn as the head of its box. */
+export function drawnNodes(bands: Band[]): Placed[] {
+  return bands.flatMap(({ origin, placement }) => [
+    ...placement.boxes.map(entry => ({
+      node: entry.node, x: origin.x + entry.x + BOX_PADDING, y: origin.y + entry.y + (BOX_HEAD - NODE_HEIGHT) / 2, width: entry.width - 2 * BOX_PADDING, height: NODE_HEIGHT,
+    })),
+    ...placement.nodes.map(entry => ({ ...entry, x: origin.x + entry.x, y: origin.y + entry.y })),
+  ]);
 }

@@ -149,6 +149,19 @@ export function footprintNodes(frame: ReplayFrame): WorldNode[] {
   return frame.nodes.filter(node => kept.has(node.id));
 }
 
+/**
+ * Where the run's attention is at a step, among the nodes drawn: the node the step touched most strongly, or, when the
+ * step touched none of them, the node touched last before it.
+ */
+export function focusOf(frame: ReplayFrame, touchesByNode: Map<string, Touch[]>, drawn: ReadonlySet<string>): { node: string; current: boolean } | undefined {
+  const [strongest] = [...frame.current].filter(([id]) => drawn.has(id)).toSorted(([, a], [, b]) => touchKindValues.indexOf(b) - touchKindValues.indexOf(a));
+  if (strongest) {
+    return { node: strongest[0], current: true };
+  }
+  const [latest] = [...touchesByNode].filter(([id]) => drawn.has(id)).map(([id, touches]) => ({ id, step: touches[touches.length - 1].step })).toSorted((a, b) => b.step - a.step);
+  return latest && { node: latest.id, current: false };
+}
+
 /** The nodes a reader's folds leave in view, and how many nodes each folded node in view holds out of it. */
 export function unfoldedNodes(nodes: WorldNode[], folded: ReadonlySet<string>): { nodes: WorldNode[]; hidden: Map<string, number> } {
   const byId = new Map(nodes.map(node => [node.id, node]));

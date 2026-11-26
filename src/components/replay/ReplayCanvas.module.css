@@ -22,12 +22,21 @@
 
 .lines { position: absolute; top: 0; left: 0; overflow: visible; pointer-events: none; }
 .lines g { transition: transform var(--duration-slow) var(--ease-out); }
-.guide, .edge, .link { fill: none; stroke-linecap: round; }
+/* A line reshapes with the nodes it joins as they slide. */
+.guide, .edge, .link { fill: none; stroke-linecap: round; transition: d var(--duration-slow) var(--ease-out), stroke var(--duration-base) var(--ease-out); }
 .guide, .edge { stroke: var(--border-hairline); stroke-width: var(--size-hairline); }
 .edge[data-touched] { stroke: var(--border-emphasis); }
-.link { stroke-width: var(--size-stroke); opacity: .85; animation: node-in var(--duration-slow) var(--ease-out); }
+/* A link draws itself out from the node the step acts on, and fades when the step no longer reaches it. */
+.link { stroke-width: var(--size-stroke); stroke-dasharray: 1; opacity: .85; animation: link-in var(--duration-slow) var(--ease-out); }
 .link[data-kind="read"] { stroke: var(--replay-tool); }
 .link[data-kind="write"] { stroke: var(--replay-edit); }
+.link[data-leaving] { stroke-dasharray: none; animation: fade-out var(--duration-base) var(--ease-out) forwards; }
+@keyframes link-in {
+  from { stroke-dashoffset: 1; }
+}
+@keyframes fade-out {
+  to { opacity: 0; }
+}
 
 .box {
   position: absolute;
@@ -43,6 +52,22 @@
 @keyframes node-in {
   from { opacity: 0; }
 }
+.leaving { pointer-events: none; animation: fade-out var(--duration-slow) var(--ease-out) forwards; }
+
+/* The cursor glides from node to node as the run's attention moves, across layers too; it dims while the step touches nothing drawn. */
+.cursor {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border: var(--size-stroke) solid var(--text-faint);
+  border-radius: var(--radius-md);
+  opacity: .6;
+  pointer-events: none;
+  transition:
+    transform var(--duration-slow) var(--ease-out), width var(--duration-slow) var(--ease-out), height var(--duration-slow) var(--ease-out),
+    border-color var(--duration-base) var(--ease-out), opacity var(--duration-base) var(--ease-out);
+}
+.cursor[data-current] { border-color: var(--text-main); opacity: 1; }
 
 .select {
   display: flex;

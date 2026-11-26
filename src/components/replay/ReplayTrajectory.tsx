@@ -2,6 +2,7 @@ import { useEffect, useRef, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Touch, TouchKind, TrajectoryStep, WorldEvent, WorldLayer } from '../../api/types';
 import { InfoHint } from '../../ui/hint';
+import { REDUCED_MOTION_QUERY, useMediaQuery } from '../../ui/media';
 import { AtifFields, AtifStepSummary } from '../trajectory/AtifStep';
 import { changeDetail, nodeOfChange } from './frame';
 import marks from './marks.module.css';
@@ -27,10 +28,11 @@ export function ReplayTrajectory({ steps, layers, layerTouches, touches, events,
 }) {
   const { t } = useTranslation();
   const currentRow = useRef<HTMLLIElement>(null);
+  const reduceMotion = useMediaQuery(REDUCED_MOTION_QUERY);
   // A block, not an expression: browsers that return a promise from scrollIntoView would hand React a cleanup that is not a function.
   useEffect(() => {
-    currentRow.current?.scrollIntoView({ block: 'nearest' });
-  }, [current]);
+    currentRow.current?.scrollIntoView({ block: 'nearest', behavior: reduceMotion ? 'auto' : 'smooth' });
+  }, [current, reduceMotion]);
   const node = (id: string) => <button type="button" className={styles.node} onClick={() => onSelect(id)}>{id}</button>;
   const field = (name: string, lines: ReactNode[]) => lines.length > 0 && (
     <div className={styles.field}>
