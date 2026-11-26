@@ -12,7 +12,7 @@
       "type": "file",
       "label": "gateway.yaml",
       "parent": "dir:config",
-      "content": "service: gateway\nport: 8080\nreplicas: 2\n\npool:\n  pool_size: 16\n  acquire_timeout_ms: 3000\n\nupstreams:\n  - order-api\n  - user-center\n  - search-api\n  - payment-callback\n\nlog_level: info\n"
+      "content": "service: gateway\nlisten: 0.0.0.0:8080\nserver:\n  timeout_ms: 3000\n  retries: 2\n  pool_size: 16\n"
     },
     {
       "id": "file:config/order-api.yaml",
@@ -20,7 +20,7 @@
       "type": "file",
       "label": "order-api.yaml",
       "parent": "dir:config",
-      "content": "service: order-api\nport: 8080\nreplicas: 2\n\npool:\n  pool_size: 16\n  acquire_timeout_ms: 3000\n\nupstreams:\n  - inventory\n  - payment-api\n  - order-db\n\nlog_level: info\n"
+      "content": "service: order-api\nlisten: 0.0.0.0:8080\nserver:\n  timeout_ms: 3000\n  retries: 2\n  pool_size: 16\n"
     },
     {
       "id": "file:config/user-center.yaml",
@@ -28,7 +28,7 @@
       "type": "file",
       "label": "user-center.yaml",
       "parent": "dir:config",
-      "content": "service: user-center\nport: 8080\nreplicas: 2\n\npool:\n  pool_size: 16\n  acquire_timeout_ms: 3000\n\nupstreams:\n  - redis\n\nlog_level: info\n"
+      "content": "service: user-center\nlisten: 0.0.0.0:8080\nserver:\n  timeout_ms: 3000\n  retries: 2\n  pool_size: 16\n"
     },
     {
       "id": "file:config/search-api.yaml",
@@ -36,7 +36,7 @@
       "type": "file",
       "label": "search-api.yaml",
       "parent": "dir:config",
-      "content": "service: search-api\nport: 8080\nreplicas: 2\n\npool:\n  pool_size: 16\n  acquire_timeout_ms: 3000\n\nupstreams:\n  - redis\n\nlog_level: info\n"
+      "content": "service: search-api\nlisten: 0.0.0.0:8080\nserver:\n  timeout_ms: 3000\n  retries: 2\n  pool_size: 16\n"
     },
     {
       "id": "file:config/inventory.yaml",
@@ -44,7 +44,7 @@
       "type": "file",
       "label": "inventory.yaml",
       "parent": "dir:config",
-      "content": "service: inventory\nport: 8080\nreplicas: 2\n\npool:\n  pool_size: 16\n  acquire_timeout_ms: 3000\n\nupstreams:\n  - order-db\n\nlog_level: info\n"
+      "content": "service: inventory\nlisten: 0.0.0.0:8080\nserver:\n  timeout_ms: 3000\n  retries: 2\n  pool_size: 16\n"
     },
     {
       "id": "file:config/payment-api.yaml",
@@ -52,7 +52,7 @@
       "type": "file",
       "label": "payment-api.yaml",
       "parent": "dir:config",
-      "content": "service: payment-api\nport: 8080\nreplicas: 2\n\npool:\n  pool_size: 16\n  acquire_timeout_ms: 3000\n\nupstreams:\n  - redis\n\nlog_level: info\n"
+      "content": "service: payment-api\nlisten: 0.0.0.0:8080\nserver:\n  timeout_ms: 3000\n  retries: 2\n  pool_size: 16\n"
     },
     {
       "id": "file:config/payment-callback.yaml",
@@ -60,7 +60,7 @@
       "type": "file",
       "label": "payment-callback.yaml",
       "parent": "dir:config",
-      "content": "service: payment-callback\nport: 8080\nreplicas: 2\n\npool:\n  pool_size: 8\n  acquire_timeout_ms: 3000\n\nupstreams:\n  - order-db\n  - redis\n  - mq\n\nlog_level: info\n"
+      "content": "service: payment-callback\nlisten: 0.0.0.0:8080\ncallback:\n  timeout_ms: 3000\n  retries: 2\n  pool_size: 8\n"
     },
     {
       "id": "file:config/billing-worker.yaml",
@@ -68,7 +68,7 @@
       "type": "file",
       "label": "billing-worker.yaml",
       "parent": "dir:config",
-      "content": "service: billing-worker\nport: 8080\nreplicas: 2\n\npool:\n  pool_size: 16\n  acquire_timeout_ms: 3000\n\nupstreams:\n  - mq\n  - order-db\n\nlog_level: info\n"
+      "content": "service: billing-worker\nlisten: 0.0.0.0:8080\nserver:\n  timeout_ms: 3000\n  retries: 2\n  pool_size: 16\n"
     },
     {
       "id": "file:config/notify.yaml",
@@ -76,7 +76,7 @@
       "type": "file",
       "label": "notify.yaml",
       "parent": "dir:config",
-      "content": "service: notify\nport: 8080\nreplicas: 2\n\npool:\n  pool_size: 16\n  acquire_timeout_ms: 3000\n\nupstreams:\n  - mq\n\nlog_level: info\n"
+      "content": "service: notify\nlisten: 0.0.0.0:8080\nserver:\n  timeout_ms: 3000\n  retries: 2\n  pool_size: 16\n"
     },
     {
       "id": "file:config/order-db.yaml",
@@ -84,7 +84,7 @@
       "type": "file",
       "label": "order-db.yaml",
       "parent": "dir:config",
-      "content": "service: order-db\nport: 8080\nreplicas: 1\n\npool:\n  pool_size: 16\n  acquire_timeout_ms: 3000\n\nupstreams:\n  []\n\nlog_level: info\n"
+      "content": "service: order-db\nlisten: 0.0.0.0:8080\nserver:\n  timeout_ms: 3000\n  retries: 2\n  pool_size: 16\n"
     },
     {
       "id": "file:config/redis.yaml",
@@ -92,7 +92,7 @@
       "type": "file",
       "label": "redis.yaml",
       "parent": "dir:config",
-      "content": "service: redis\nport: 8080\nreplicas: 1\n\npool:\n  pool_size: 16\n  acquire_timeout_ms: 3000\n\nupstreams:\n  []\n\nlog_level: info\n"
+      "content": "service: redis\nlisten: 0.0.0.0:8080\nserver:\n  timeout_ms: 3000\n  retries: 2\n  pool_size: 16\n"
     },
     {
       "id": "file:config/mq.yaml",
@@ -100,7 +100,7 @@
       "type": "file",
       "label": "mq.yaml",
       "parent": "dir:config",
-      "content": "service: mq\nport: 8080\nreplicas: 1\n\npool:\n  pool_size: 16\n  acquire_timeout_ms: 3000\n\nupstreams:\n  []\n\nlog_level: info\n"
+      "content": "service: mq\nlisten: 0.0.0.0:8080\nserver:\n  timeout_ms: 3000\n  retries: 2\n  pool_size: 16\n"
     },
     {
       "id": "dir:deploy",
@@ -223,7 +223,7 @@
       "type": "file",
       "label": "handler.py",
       "parent": "dir:src/callback",
-      "content": "from callback.orders import mark_paid\nfrom callback.signature import verify\n\n\n    # step 5: see the design notes for this module\n    # step 6: see the design notes for this module\n\n    # step 8: see the design notes for this module\n    # step 9: see the design notes for this module\n    # step 10: see the design notes for this module\n    # step 11: see the design notes for this module\n    # step 12: see the design notes for this module\n    # step 13: see the design notes for this module\n\n    # step 15: see the design notes for this module\n    # step 16: see the design notes for this module\n    # step 17: see the design notes for this module\n    # step 18: see the design notes for this module\n    # step 19: see the design notes for this module\n    # step 20: see the design notes for this module\n\n    # step 22: see the design notes for this module\n    # step 23: see the design notes for this module\n    # step 24: see the design notes for this module\n    # step 25: see the design notes for this module\n    # step 26: see the design notes for this module\n    # step 27: see the design notes for this module\n\n    # step 29: see the design notes for this module\n    # step 30: see the design notes for this module\n    # step 31: see the design notes for this module\n    # step 32: see the design notes for this module\n    # step 33: see the design notes for this module\n    # step 34: see the design notes for this module\n\n    # step 36: see the design notes for this module\n    # step 37: see the design notes for this module\ndef handle_callback(request):\n    payload = verify(request)\n    if payload.status != \"paid\":\n        return ignore(payload)\n    mark_paid(payload.order_id, payload.amount)\n    return ack(payload)\n    # step 44: see the design notes for this module\n    # step 45: see the design notes for this module\n    # step 46: see the design notes for this module\n    # step 47: see the design notes for this module\n    # step 48: see the design notes for this module\n\n    # step 50: see the design notes for this module\n    # step 51: see the design notes for this module\n    # step 52: see the design notes for this module\n    # step 53: see the design notes for this module\n    # step 54: see the design notes for this module\n    # step 55: see the design notes for this module\n\n    # step 57: see the design notes for this module\n    # step 58: see the design notes for this module\n    # step 59: see the design notes for this module\n    # step 60: see the design notes for this module\n"
+      "content": "\"\"\"The endpoint the payment provider calls when a payment settles.\"\"\"\nfrom callback import log, mq\nfrom callback.orders import mark_paid\nfrom callback.pool import PoolTimeout\nfrom callback.signature import verify\n\n\ndef handle_callback(request):\n    \"\"\"Marks the order paid and announces it; a callback the pool cannot serve in time is answered 503, for a retry.\"\"\"\n    payload = verify(request)\n    if payload.status != \"paid\":\n        return {\"ignored\": payload.status}\n    try:\n        mark_paid(payload.order_id, payload.amount)\n    except PoolTimeout as error:\n        log.error(str(error), exc_info=True)\n        return {\"retry\": True}, 503\n    mq.publish(\"payment.completed\", {\"order_id\": payload.order_id})\n    return {\"ok\": True}\n"
     },
     {
       "id": "file:src/callback/orders.py",
@@ -231,7 +231,7 @@
       "type": "file",
       "label": "orders.py",
       "parent": "dir:src/callback",
-      "content": "from callback import pool\n\n    # step 3: see the design notes for this module\n    # step 4: see the design notes for this module\n    # step 5: see the design notes for this module\n    # step 6: see the design notes for this module\n\n    # step 8: see the design notes for this module\n    # step 9: see the design notes for this module\n    # step 10: see the design notes for this module\n    # step 11: see the design notes for this module\n    # step 12: see the design notes for this module\n    # step 13: see the design notes for this module\ndef mark_paid(order_id, amount):\n    \"\"\"Moves an order from processing to paid.\"\"\"\n    sql = \"UPDATE orders SET state = 'paid' WHERE id = %s\"\n    with pool.acquire() as connection:\n        connection.execute(sql, order_id)\n    # step 19: see the design notes for this module\n    # step 20: see the design notes for this module\n\n    # step 22: see the design notes for this module\n    # step 23: see the design notes for this module\n    # step 24: see the design notes for this module\n    # step 25: see the design notes for this module\n    # step 26: see the design notes for this module\n    # step 27: see the design notes for this module\n\n    # step 29: see the design notes for this module\n    # step 30: see the design notes for this module\n"
+      "content": "\"\"\"The order state changes the payment callback makes.\"\"\"\nfrom callback import pool\n\nMARK_PAID = \"UPDATE orders SET state = 'paid', paid_amount = %s WHERE id = %s AND state = 'processing'\"\n\n\ndef mark_paid(order_id, amount):\n    \"\"\"Moves an order from processing to paid; an order already paid is left as it is.\"\"\"\n    with pool.acquire() as connection:\n        connection.execute(MARK_PAID, (amount, order_id))\n        connection.commit()\n"
     },
     {
       "id": "file:src/callback/pool.py",
@@ -239,7 +239,15 @@
       "type": "file",
       "label": "pool.py",
       "parent": "dir:src/callback",
-      "content": "import queue\nfrom callback.settings import POOL_SIZE, ACQUIRE_TIMEOUT_MS\n\n    # step 4: see the design notes for this module\n    # step 5: see the design notes for this module\n    # step 6: see the design notes for this module\n\n    # step 8: see the design notes for this module\n    # step 9: see the design notes for this module\n    # step 10: see the design notes for this module\n    # step 11: see the design notes for this module\n    # step 12: see the design notes for this module\n    # step 13: see the design notes for this module\n\n    # step 15: see the design notes for this module\n    # step 16: see the design notes for this module\n    # step 17: see the design notes for this module\n    # step 18: see the design notes for this module\n    # step 19: see the design notes for this module\n    # step 20: see the design notes for this module\n\n    # step 22: see the design notes for this module\n    # step 23: see the design notes for this module\n    # step 24: see the design notes for this module\n    # step 25: see the design notes for this module\n    # step 26: see the design notes for this module\n    # step 27: see the design notes for this module\n\n    # step 29: see the design notes for this module\n    # step 30: see the design notes for this module\n    # step 31: see the design notes for this module\n    # step 32: see the design notes for this module\n    # step 33: see the design notes for this module\n    # step 34: see the design notes for this module\n\n    # step 36: see the design notes for this module\n    # step 37: see the design notes for this module\n    # step 38: see the design notes for this module\n    # step 39: see the design notes for this module\n    # step 40: see the design notes for this module\n    # step 41: see the design notes for this module\n\n    # step 43: see the design notes for this module\n    # step 44: see the design notes for this module\n    # step 45: see the design notes for this module\n    # step 46: see the design notes for this module\n    # step 47: see the design notes for this module\n    # step 48: see the design notes for this module\n\n    # step 50: see the design notes for this module\n    # step 51: see the design notes for this module\n    # step 52: see the design notes for this module\n    # step 53: see the design notes for this module\n    # step 54: see the design notes for this module\n    # step 55: see the design notes for this module\n\n    # step 57: see the design notes for this module\n    # step 58: see the design notes for this module\n    # step 59: see the design notes for this module\n    # step 60: see the design notes for this module\n    # step 61: see the design notes for this module\n    # step 62: see the design notes for this module\n\n    # step 64: see the design notes for this module\n    # step 65: see the design notes for this module\n    # step 66: see the design notes for this module\n    # step 67: see the design notes for this module\n    # step 68: see the design notes for this module\n    # step 69: see the design notes for this module\n\n    # step 71: see the design notes for this module\n    # step 72: see the design notes for this module\n    # step 73: see the design notes for this module\n    # step 74: see the design notes for this module\n    # step 75: see the design notes for this module\n    # step 76: see the design notes for this module\n\n    # step 78: see the design notes for this module\n    # step 79: see the design notes for this module\ndef acquire():\n    \"\"\"Takes a connection from the pool, waiting at most the configured timeout.\"\"\"\n    try:\n        return _connections.get(timeout=ACQUIRE_TIMEOUT_MS / 1000)\n    except queue.Empty:\n        in_use = POOL_SIZE - _connections.qsize()\n        log.error(\"pool exhausted\", in_use=in_use, size=POOL_SIZE)\n        metrics.increment(\"pool.timeouts\")\n        raise PoolTimeout(f\"acquire connection timeout after {ACQUIRE_TIMEOUT_MS}ms\")\n    # step 89: see the design notes for this module\n    # step 90: see the design notes for this module\n\n    # step 92: see the design notes for this module\n    # step 93: see the design notes for this module\n    # step 94: see the design notes for this module\n    # step 95: see the design notes for this module\n    # step 96: see the design notes for this module\n    # step 97: see the design notes for this module\n\n    # step 99: see the design notes for this module\n    # step 100: see the design notes for this module\n"
+      "content": "\"\"\"A fixed pool of database connections that the callback workers share.\"\"\"\nimport queue\n\nfrom callback import db, metrics\nfrom callback.settings import POOL_SIZE, TIMEOUT_MS\n\n\nclass PoolTimeout(Exception):\n    \"\"\"No connection came free within the configured timeout.\"\"\"\n\n\n_idle = queue.Queue(maxsize=POOL_SIZE)\nfor _ in range(POOL_SIZE):\n    _idle.put(db.connect())\n\n\ndef in_use():\n    \"\"\"How many of the pool's connections are lent out.\"\"\"\n    return POOL_SIZE - _idle.qsize()\n\n\nclass _Lease:\n    \"\"\"A connection lent from the pool, returned when the block that holds it ends.\"\"\"\n\n    def __init__(self, connection):\n        self.connection = connection\n\n    def __enter__(self):\n        return self.connection\n\n    def __exit__(self, *exc_info):\n        _idle.put(self.connection)\n\n\ndef acquire():\n    \"\"\"Lends a connection, waiting at most the configured timeout for one to come free.\"\"\"\n    metrics.gauge(\"pool_in_use\", in_use())\n    try:\n        connection = _idle.get(timeout=TIMEOUT_MS / 1000)\n    except queue.Empty:\n        metrics.increment(\"pool_timeouts\")\n        raise PoolTimeout(f\"acquire connection timeout after {TIMEOUT_MS}ms (pool_size={POOL_SIZE}, in_use={in_use()})\") from None\n    return _Lease(connection)\n"
+    },
+    {
+      "id": "file:src/callback/settings.py",
+      "layer": "code",
+      "type": "file",
+      "label": "settings.py",
+      "parent": "dir:src/callback",
+      "content": "\"\"\"The service's settings, read from the file its deployment mounts.\"\"\"\nimport yaml\n\nCONFIG_PATH = \"/etc/payment-callback.yaml\"\n\nwith open(CONFIG_PATH) as handle:\n    _config = yaml.safe_load(handle)[\"callback\"]\n\nTIMEOUT_MS = _config[\"timeout_ms\"]\nRETRIES = _config[\"retries\"]\nPOOL_SIZE = _config[\"pool_size\"]\n"
     },
     {
       "id": "dir:src/gateway",
@@ -254,7 +262,7 @@
       "type": "file",
       "label": "proxy.py",
       "parent": "dir:src/gateway",
-      "content": "import httpx\n\n    # step 3: see the design notes for this module\n    # step 4: see the design notes for this module\n    # step 5: see the design notes for this module\n    # step 6: see the design notes for this module\n\n    # step 8: see the design notes for this module\n    # step 9: see the design notes for this module\n    # step 10: see the design notes for this module\n    # step 11: see the design notes for this module\n    # step 12: see the design notes for this module\n    # step 13: see the design notes for this module\n\n    # step 15: see the design notes for this module\n    # step 16: see the design notes for this module\n    # step 17: see the design notes for this module\n    # step 18: see the design notes for this module\n    # step 19: see the design notes for this module\nasync def forward(request, upstream):\n    return await client.send(request, timeout=5.0)\n    # step 22: see the design notes for this module\n    # step 23: see the design notes for this module\n    # step 24: see the design notes for this module\n    # step 25: see the design notes for this module\n    # step 26: see the design notes for this module\n    # step 27: see the design notes for this module\n\n    # step 29: see the design notes for this module\n    # step 30: see the design notes for this module\n    # step 31: see the design notes for this module\n    # step 32: see the design notes for this module\n    # step 33: see the design notes for this module\n    # step 34: see the design notes for this module\n\n    # step 36: see the design notes for this module\n    # step 37: see the design notes for this module\n    # step 38: see the design notes for this module\n    # step 39: see the design notes for this module\n    # step 40: see the design notes for this module\n"
+      "content": "\"\"\"Forwards the gateway's requests to the services behind it.\"\"\"\nimport httpx\n\nfrom gateway import log, routes\n\nUPSTREAM_TIMEOUT_S = 5.0\n\nclient = httpx.AsyncClient()\n\n\nasync def forward(request):\n    \"\"\"Sends a request on to its upstream; an upstream that does not answer in time is answered 504.\"\"\"\n    upstream = routes.upstream_of(request.url.path)\n    try:\n        return await client.send(request.with_host(upstream), timeout=UPSTREAM_TIMEOUT_S)\n    except httpx.TimeoutException:\n        log.error(f\"upstream {upstream} timed out after {UPSTREAM_TIMEOUT_S * 1000:.0f}ms: {request.method} {request.url.path} 504\")\n        return routes.gateway_timeout(upstream)\n"
     },
     {
       "id": "svc:gateway",
@@ -759,6 +767,11 @@
     },
     {
       "from": "file:src/callback/pool.py",
+      "to": "svc:payment-callback",
+      "type": "builds"
+    },
+    {
+      "from": "file:src/callback/settings.py",
       "to": "svc:payment-callback",
       "type": "builds"
     },
