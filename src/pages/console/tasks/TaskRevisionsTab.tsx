@@ -18,7 +18,10 @@ export function TaskRevisionsTab({ task, version }: { task: ConsoleTaskDetail; v
   const locale = useLocale();
   const revisions = useTaskRevisions(task.benchmark.id, task.id);
   const marked = useRef<HTMLDivElement>(null);
-  useEffect(() => marked.current?.scrollIntoView({ block: 'center' }), [version]);
+  // A block, not an expression: browsers that return a promise from scrollIntoView would hand React a cleanup that is not a function.
+  useEffect(() => {
+    marked.current?.scrollIntoView({ block: 'center' });
+  }, [version]);
   if (version && !revisions.some(revision => revision.version === version)) {
     throw new Error(`${task.id} has no version ${version}`);
   }

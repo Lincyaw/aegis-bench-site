@@ -27,7 +27,10 @@ export function ReplayTrajectory({ steps, layers, layerTouches, touches, events,
 }) {
   const { t } = useTranslation();
   const currentRow = useRef<HTMLLIElement>(null);
-  useEffect(() => currentRow.current?.scrollIntoView({ block: 'nearest' }), [current]);
+  // A block, not an expression: browsers that return a promise from scrollIntoView would hand React a cleanup that is not a function.
+  useEffect(() => {
+    currentRow.current?.scrollIntoView({ block: 'nearest' });
+  }, [current]);
   const node = (id: string) => <button type="button" className={styles.node} onClick={() => onSelect(id)}>{id}</button>;
   const field = (name: string, lines: ReactNode[]) => lines.length > 0 && (
     <div className={styles.field}>
