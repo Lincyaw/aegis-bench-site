@@ -21,7 +21,7 @@ export function parseModelTaskQuery(params: URLSearchParams): ModelTaskQuery {
   if (!Number.isInteger(offset) || offset < 0 || offset % MODEL_TASK_PAGE_SIZE !== 0) {
     throw new Error(`no page of tasks starts at ${params.get('offset')}`);
   }
-  return { harness: params.get('harness') ?? '', q: params.get('q') ?? '', spread: spread as TaskSpread | undefined, order: order as TaskOrder, offset };
+  return { harness: params.get('harness') ?? '', tag: params.get('tag') ?? '', q: params.get('q') ?? '', spread: spread as TaskSpread | undefined, order: order as TaskOrder, offset };
 }
 
 /** The list's address parameters, leaving out what equals the default. */
@@ -39,7 +39,7 @@ export function consoleModelsPath(benchmarkId: string): string {
   return `${consoleBenchmarkPath(benchmarkId)}/models`;
 }
 
-/** A model's page, narrowed to one harness or filtered as the query says. */
+/** A model's page, narrowed to one harness or one collection, or filtered as the query says. */
 export function consoleModelPath(benchmarkId: string, modelId: string, query: Partial<ModelTaskQuery> = {}): string {
   const search = modelTaskSearch(query).toString();
   return `${consoleModelsPath(benchmarkId)}/${modelId}${search ? `?${search}` : ''}`;

@@ -427,6 +427,11 @@ export const consoleZh = {
   model: {
     allHarnesses: '全部框架',
     harnessLabel: '框架',
+    collection: {
+      name: '展示集 · {{tag}}',
+      hint: '统计、各框架的结果和逐题表现只计这个展示集的任务；点击后显示全部任务。',
+      clear: '不再只看展示集「{{tag}}」',
+    },
     lead_one: '{{vendor}} · 共 {{count}} 种框架',
     lead_other: '{{vendor}} · 共 {{count}} 种框架',
     stats: { passRate: '通过率', everyTime: '每次都通过', steps: '平均步数', cost: '平均成本' },

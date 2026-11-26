@@ -18,23 +18,29 @@ import { OutcomeDot } from '../runs/Outcome';
 import { consoleTaskPath } from '../tasks/consoleTaskQuery';
 import { StatTile, StatTiles } from '../ui/content';
 import { SearchField, SegmentedControl, Select } from '../ui/controls';
+import controls from '../ui/controls.module.css';
+import { Hint } from '../ui/hint';
 import { Pager } from '../ui/navigation';
 import table from '../ui/table.module.css';
-import { MODEL_TASK_PAGE_SIZE, consoleModelsPath, modelTaskSearch, parseModelTaskQuery } from './consoleModelQuery';
+import { MODEL_TASK_PAGE_SIZE, consoleModelPath, consoleModelsPath, modelTaskSearch, parseModelTaskQuery } from './consoleModelQuery';
 import { VendorBadge } from './ModelBadge';
 import styles from './ModelPages.module.css';
 
-/** A model on a benchmark: over all its harnesses or narrowed to one, each harness's result, and its runs task by task. */
+/**
+ * A model on a benchmark, on every task or on one collection's: over all its harnesses or narrowed to one, each
+ * harness's result, and its runs task by task.
+ */
 export function ModelDetailPage() {
   const { t } = useTranslation();
   const locale = useLocale();
   const { benchmarkId = '', modelId = '' } = useParams();
   const [params, setParams] = useSearchParams();
   const benchmark = useConsoleBenchmark(benchmarkId);
-  const detail = useConsoleModel(benchmark.id, modelId);
   const query = parseModelTaskQuery(params);
-  // The page in view stays until the next one arrives.
-  const page = useModelTaskPage(benchmark.id, modelId, parseModelTaskQuery(new URLSearchParams(useDeferredValue(params.toString()))), MODEL_TASK_PAGE_SIZE);
+  // The results in view stay until the next ones arrive.
+  const shown = parseModelTaskQuery(new URLSearchParams(useDeferredValue(params.toString())));
+  const detail = useConsoleModel(benchmark.id, modelId, shown);
+  const page = useModelTaskPage(benchmark.id, modelId, shown, MODEL_TASK_PAGE_SIZE);
   const update = (next: Partial<ModelTaskQuery>) => setParams(modelTaskSearch({ ...query, offset: 0, ...next }), { replace: true, preventScrollReset: true });
   const scope = query.harness ? detail.byHarness.find(entry => entry.harness.id === query.harness)?.result : detail.result;
   if (!scope) {
@@ -53,6 +59,7 @@ export function ModelDetailPage() {
           label={t('console.model.harnessLabel')} value={query.harness || EVERY_CHOICE} onChange={harness => update({ harness: harness === EVERY_CHOICE ? '' : harness })}
           choices={[{ value: EVERY_CHOICE, label: t('console.model.allHarnesses') }, ...detail.byHarness.map(({ harness }) => ({ value: harness.id, label: harness.name }))]}
         />
+        {query.tag && <CollectionChip benchmarkId={benchmark.id} modelId={detail.model.id} query={query} />}
       </div>
       <StatTiles>
         <StatTile label={t('console.model.stats.passRate')} value={scope.passRate === undefined ? '—' : formatRate(scope.passRate)} />
@@ -92,6 +99,21 @@ export function ModelDetailPage() {
         </footer>
       </section>
     </div>
+  );
+}
+
+/** The collection the page keeps to, which the reader can let go of to see every task. */
+export function CollectionChip({ benchmarkId, modelId, query }: { benchmarkId: string; modelId: string; query: ModelTaskQuery }) {
+  const { t } = useTranslation();
+  return (
+    <Hint content={t('console.model.collection.hint')}>
+      <LocaleLink
+        className={clsx(controls.pill, controls.small, styles.focus, 'loop-edge')} aria-label={t('console.model.collection.clear', { tag: query.tag })}
+        to={consoleModelPath(benchmarkId, modelId, { ...query, tag: '', offset: 0 })} replace preventScrollReset
+      >
+        {t('console.model.collection.name', { tag: query.tag })}<span aria-hidden="true">×</span>
+      </LocaleLink>
+    </Hint>
   );
 }
 

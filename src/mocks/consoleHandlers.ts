@@ -157,16 +157,20 @@ export const consoleHandlers = [
     return response(200).json(modelResultsOver(params.benchmarkId, benchmarkOf(params.benchmarkId).runs, locale), writtenIn(locale));
   }),
 
-  http.get('/console/benchmarks/{benchmarkId}/models/{modelId}', async ({ cookies, params, request, response }) => {
+  http.get('/console/benchmarks/{benchmarkId}/models/{modelId}', async ({ cookies, params, query, request, response }) => {
     if (!sessionUserOf(cookies)) {
       return response(401).json(SIGN_IN_REQUIRED);
     }
     if (!hasBenchmark(params.benchmarkId) || !ranOn(params.benchmarkId, params.modelId)) {
       return response(404).json({ message: `no model ${params.modelId} on ${params.benchmarkId}` });
     }
+    const tag = query.get('tag') ?? '';
+    if (tag && !hasCollection(params.benchmarkId, tag)) {
+      return response(404).json({ message: `no collection ${tag} in ${params.benchmarkId}` });
+    }
     const locale = localeOf(request);
     await delay(80);
-    return response(200).json(modelDetailOf(params.benchmarkId, params.modelId, locale), writtenIn(locale));
+    return response(200).json(modelDetailOf(params.benchmarkId, params.modelId, { tag, q: (query.get('q') ?? '').trim() }, locale), writtenIn(locale));
   }),
 
   http.get('/console/benchmarks/{benchmarkId}/models/{modelId}/tasks', async ({ cookies, params, query, request, response }) => {
@@ -177,8 +181,12 @@ export const consoleHandlers = [
     if (!hasBenchmark(params.benchmarkId) || !ranOn(params.benchmarkId, params.modelId) || (harness && !harnessIdsOf(params.benchmarkId, params.modelId).includes(harness))) {
       return response(404).json({ message: `no model ${params.modelId}${harness ? ` in harness ${harness}` : ''} on ${params.benchmarkId}` });
     }
+    const tag = query.get('tag') ?? '';
+    if (tag && !hasCollection(params.benchmarkId, tag)) {
+      return response(404).json({ message: `no collection ${tag} in ${params.benchmarkId}` });
+    }
     const locale = localeOf(request);
-    const filter = { harness, q: (query.get('q') ?? '').trim(), spread: query.get('spread') ?? undefined, order: query.get('order') ?? 'hardest' };
+    const filter = { harness, tag, q: (query.get('q') ?? '').trim(), spread: query.get('spread') ?? undefined, order: query.get('order') ?? 'hardest' };
     const { rows, totals } = modelTasksOf(params.benchmarkId, params.modelId, filter, locale);
     await delay(100);
     return response(200).json({ ...pageOf(rows, query, DEFAULT_MODEL_TASK_PAGE_SIZE), totals }, writtenIn(locale));

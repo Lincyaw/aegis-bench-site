@@ -10,6 +10,8 @@
 .tags { display: flex; flex-wrap: wrap; gap: var(--space-1); }
 
 .scope { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
+/* The collection the page keeps to closes from its own chip. */
+.focus { gap: var(--space-2); margin-left: auto; }
 .harnesses { --columns: minmax(8rem, 1fr) minmax(9rem, 1.2fr) 7rem 7rem 6rem minmax(8rem, 1fr); }
 .current { background: linear-gradient(var(--brand-dev), var(--brand-ops)) left / var(--size-border-thick) 100% no-repeat, var(--bg-muted); }
 

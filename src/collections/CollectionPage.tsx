@@ -90,7 +90,7 @@ export function CollectionMatrix({ benchmark, tag, view, onView }: { benchmark: 
                 const label = t('console.collection.cell', { model: model.name, task: row.task.title, passed, counted });
                 return (
                   <LocaleLink
-                    key={model.id} role="cell" className={clsx(styles.cell, 't-micro')} to={consoleModelPath(benchmark.id, model.id, { q: row.task.id })} title={label} aria-label={label}
+                    key={model.id} role="cell" className={clsx(styles.cell, 't-micro')} to={consoleModelPath(benchmark.id, model.id, { tag, q: row.task.id })} title={label} aria-label={label}
                     style={{ '--share': counted === 0 ? 0 : passed / counted } as CSSProperties}
                   >
                     {passed} / {counted}
@@ -114,7 +114,7 @@ export function CollectionMatrix({ benchmark, tag, view, onView }: { benchmark: 
   );
 }
 
-/** Every model's result on the collection's tasks; a row opens the model. */
+/** Every model's result on the collection's tasks; a row opens the model on them. */
 export function CollectionModels({ benchmark, tag }: { benchmark: ConsoleBenchmark; tag: string }) {
   const { t } = useTranslation();
   const locale = useLocale();
@@ -133,7 +133,7 @@ export function CollectionModels({ benchmark, tag }: { benchmark: ConsoleBenchma
           <span role="columnheader">{t('console.models.column.failures')}</span>
         </div>
         {models.map(({ model, result, onCostFrontier }) => (
-          <div key={model.id} className={clsx(table.row, table.link)} role="row" onClick={() => navigate(consoleModelPath(benchmark.id, model.id))}>
+          <div key={model.id} className={clsx(table.row, table.link)} role="row" onClick={() => navigate(consoleModelPath(benchmark.id, model.id, { tag }))}>
             <span role="cell" className={styles.model}><VendorBadge model={model} /><span className="t-label">{model.name}</span>{onCostFrontier && <Tag dashed>{t('console.collection.frontier')}</Tag>}</span>
             <span role="cell"><PassRate rate={result.passRate} /></span>
             <span role="cell" className="t-numeric c-muted">{t('console.overview.tasksOf', { solved: result.solvedEveryTime, total: result.tasks })}</span>

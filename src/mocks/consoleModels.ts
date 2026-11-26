@@ -30,8 +30,24 @@ export function modelResultsOver(benchmarkId: string, facts: readonly RunFact[],
   })).sort((a, b) => (b.result.passRate ?? -1) - (a.result.passRate ?? -1));
 }
 
-export function modelDetailOf(benchmarkId: string, modelId: string, locale: Locale): ConsoleModelDetail {
-  const facts = benchmarkOf(benchmarkId).runs.filter(fact => fact.modelId === modelId);
+/** The tasks a model's page covers: those of one collection that match a search, every task when both are empty. */
+export interface ModelTaskScope {
+  /** Only the tasks carrying this tag; every task when empty */
+  tag: string;
+
+  q: string;
+}
+
+/** A model's runs on the tasks a scope covers. */
+export function modelFactsIn(benchmarkId: string, modelId: string, scope: ModelTaskScope): RunFact[] {
+  const { tasks, runs } = benchmarkOf(benchmarkId);
+  const covered = new Set(tasks.filter(task => (!scope.tag || task.tags.includes(scope.tag)) && matchesTaskSearch(task, scope.q)).map(task => task.id));
+  return runs.filter(fact => fact.modelId === modelId && covered.has(fact.taskId));
+}
+
+/** A model over every harness and with each, on the tasks a scope covers. */
+export function modelDetailOf(benchmarkId: string, modelId: string, scope: ModelTaskScope, locale: Locale): ConsoleModelDetail {
+  const facts = modelFactsIn(benchmarkId, modelId, scope);
   return {
     model: modelRef(modelId, locale), benchmark: benchmarkRef(benchmarkId), result: resultCountsOf(facts),
     byHarness: harnessIdsOf(benchmarkId, modelId)
@@ -40,18 +56,17 @@ export function modelDetailOf(benchmarkId: string, modelId: string, locale: Loca
   };
 }
 
-export interface ModelTaskFilter {
+export interface ModelTaskFilter extends ModelTaskScope {
   /** Only the runs in this harness; every harness when empty */
   harness: string;
 
-  q: string;
   spread?: TaskSpread;
   order: TaskOrder;
 }
 
 /** A model's tasks as the filter selects them, each with its runs and what they come to, and the totals over them all. */
 export function modelTasksOf(benchmarkId: string, modelId: string, filter: ModelTaskFilter, locale: Locale): { rows: ModelTaskRow[]; totals: ResultCounts } {
-  const facts = benchmarkOf(benchmarkId).runs.filter(fact => fact.modelId === modelId && (!filter.harness || fact.harnessId === filter.harness));
+  const facts = modelFactsIn(benchmarkId, modelId, filter).filter(fact => !filter.harness || fact.harnessId === filter.harness);
   const rows = [...Map.groupBy(facts, fact => fact.taskId).values()].map((runs: RunFact[]): ModelTaskRow => {
     const result = resultCountsOf(runs);
     const spread = spreadOf(result);
@@ -60,7 +75,7 @@ export function modelTasksOf(benchmarkId: string, modelId: string, filter: Model
       runs: runs.map(fact => ({ id: fact.id, harness: harnessRef(fact.harnessId, locale), attempt: fact.attempt, outcome: fact.outcome, ...(fact.failureClass && { failureClass: fact.failureClass }) })),
     };
   });
-  const matching = rows.filter(row => matchesTaskSearch(row.task, filter.q) && (!filter.spread || row.spread === filter.spread));
+  const matching = rows.filter(row => !filter.spread || row.spread === filter.spread);
   const listed = new Set(matching.map(row => row.task.id));
   return {
     rows: sortedTasks(matching, filter.order, row => row.task.id, row => row.result.passRate),

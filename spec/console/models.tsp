@@ -66,9 +66,21 @@ interface ConsoleModels {
   /** Every model that ran on the benchmark, best pass rate first */
   @get list(@path benchmarkId: string, ...LanguageHeader): Localized<ConsoleModelResult[]> | SignInRequiredError | NotFoundError;
 
+  /** The model's results over the tasks the tag and the search select */
   @get
   @route("/{modelId}")
-  read(@path benchmarkId: string, @path modelId: string, ...LanguageHeader): Localized<ConsoleModelDetail> | SignInRequiredError | NotFoundError;
+  read(
+    @path benchmarkId: string,
+    @path modelId: string,
+
+    /** Only the tasks of the collection with this tag; every task when empty */
+    @query(#{ explode: true }) tag?: string = "",
+
+    /** Matches the task id or title */
+    @query(#{ explode: true }) q?: string = "",
+
+    ...LanguageHeader,
+  ): Localized<ConsoleModelDetail> | SignInRequiredError | NotFoundError;
 
   /** The model's results task by task, a page at a time */
   @get
@@ -79,6 +91,9 @@ interface ConsoleModels {
 
     /** Only the runs in this harness; every harness when empty */
     @query(#{ explode: true }) harness?: string = "",
+
+    /** Only the tasks of the collection with this tag; every task when empty */
+    @query(#{ explode: true }) tag?: string = "",
 
     /** Matches the task id or title */
     @query(#{ explode: true }) q?: string = "",
