@@ -254,6 +254,23 @@ export function layoutBands(layers: WorldLayer[], nodes: WorldNode[], edges: Wor
   return { bands, width: widest, height: top };
 }
 
+/** A line inside a band, a tree's guide or an edge, where the canvas draws it: its band's origin and its own path. */
+export interface BandLine {
+  key: string;
+  d: string;
+  x: number;
+  y: number;
+  kind: 'guide' | 'edge';
+}
+
+/** Every line the bands draw, keyed by its band and what it joins, so a frame can tell the lines that stay from those that go. */
+export function bandLines(drawing: { bands: Band[] }): BandLine[] {
+  return drawing.bands.flatMap(({ layer, origin, placement }) => [
+    ...placement.guides.map(guide => ({ key: `${layer.id} guide ${guide.key}`, d: guide.d, ...origin, kind: 'guide' as const })),
+    ...placement.edges.map(({ edge, d }) => ({ key: `${layer.id} edge ${edge.from} ${edge.to} ${edge.type}`, d, ...origin, kind: 'edge' as const })),
+  ]);
+}
+
 /** Every node's box as the canvas draws it, in the canvas's coordinates; a group's parent is drawn as the head of its box. */
 export function drawnNodes(bands: Band[]): Placed[] {
   return bands.flatMap(({ origin, placement }) => [

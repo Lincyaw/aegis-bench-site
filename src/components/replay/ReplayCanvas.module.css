@@ -22,17 +22,27 @@
 
 .lines { position: absolute; top: 0; left: 0; overflow: visible; pointer-events: none; }
 .lines g { transition: transform var(--duration-slow) var(--ease-out); }
-/* A line reshapes with the nodes it joins as they slide. */
-.guide, .edge, .link { fill: none; stroke-linecap: round; transition: d var(--duration-slow) var(--ease-out), stroke var(--duration-base) var(--ease-out); }
-.guide, .edge { stroke: var(--border-hairline); stroke-width: var(--size-hairline); }
+/*
+ * A frame changes in two beats, so a reader can follow it: first the nodes move to their places, then the lines catch
+ * up. A line that stays reshapes to its nodes' new places, a line that goes fades, and a line that comes appears; a
+ * link the step reaches across layers draws itself out from the node it acts on.
+ */
+.guide, .edge, .link {
+  fill: none;
+  stroke-linecap: round;
+  transition: d var(--duration-base) var(--ease-out) var(--duration-slow), stroke var(--duration-base) var(--ease-out) var(--duration-slow);
+}
+.guide, .edge { stroke: var(--border-hairline); stroke-width: var(--size-hairline); animation: fade-in var(--duration-base) var(--ease-out) var(--duration-slow) backwards; }
 .edge[data-touched] { stroke: var(--border-emphasis); }
-/* A link draws itself out from the node the step acts on, and fades when the step no longer reaches it. */
-.link { stroke-width: var(--size-stroke); stroke-dasharray: 1; opacity: .85; animation: link-in var(--duration-slow) var(--ease-out); }
+.link { stroke-width: var(--size-stroke); stroke-dasharray: 1; opacity: .85; animation: link-in var(--duration-slow) var(--ease-out) var(--duration-slow) backwards; }
 .link[data-kind="read"] { stroke: var(--replay-tool); }
 .link[data-kind="write"] { stroke: var(--replay-edit); }
-.link[data-leaving] { stroke-dasharray: none; animation: fade-out var(--duration-base) var(--ease-out) forwards; }
+.lines [data-leaving] { stroke-dasharray: none; animation: fade-out var(--duration-base) var(--ease-out) var(--duration-slow) forwards; }
 @keyframes link-in {
   from { stroke-dashoffset: 1; }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
 }
 @keyframes fade-out {
   to { opacity: 0; }

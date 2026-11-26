@@ -6,7 +6,7 @@ import { ChevronIcon } from '../../ui/controls';
 import { Hint } from '../../ui/hint';
 import { REDUCED_MOTION_QUERY, useMediaQuery } from '../../ui/media';
 import { CHANGE_GLYPHS, focusOf, type ReplayFrame } from './frame';
-import { NODE_HEIGHT, across, drawnNodes, layoutBands, nodeWidth, type Placed } from './layout';
+import { NODE_HEIGHT, across, bandLines, drawnNodes, layoutBands, nodeWidth, type BandLine, type Placed } from './layout';
 import { NodeCard } from './NodeCard';
 import marks from './marks.module.css';
 import styles from './ReplayCanvas.module.css';
@@ -47,8 +47,9 @@ export interface ReplayCanvasProps {
 
 /**
  * The world at a step: every layer a band, laid out by its shape, the run's marks on its nodes, the step's events as
- * badges and the step's reach across layers as lines. From frame to frame nodes and lines slide to their new places,
- * what left fades where it was, and a cursor glides to where the run's attention went, the canvas scrolling after it.
+ * badges and the step's reach across layers as lines. A frame changes in two beats: the nodes move to their places,
+ * what left fades and a cursor glides to where the run's attention went, the canvas scrolling after it; then the lines
+ * catch up, those that stay reshaping, those that go fading and those that come appearing.
  * A node's card opens while the pointer rests on it, a click opens it in the side panel, and a parent folds what it holds.
  */
 export function ReplayCanvas({ layers, frame, nodes, parents, folded, hidden, touchesByNode, selected, onSelect, onFold }: ReplayCanvasProps) {
@@ -82,12 +83,19 @@ export function ReplayCanvas({ layers, frame, nodes, parents, folded, hidden, to
   });
 
   // What the last frame drew and this one does not fades where it was, so a frame changes rather than jumps.
-  const [previous, setPrevious] = useState({ drawing, placed, links, leaving: { nodes: [] as Placed[], links: [] as DrawnLink[] } });
+  const [previous, setPrevious] = useState({ drawing, placed, links, leaving: { nodes: [] as Placed[], links: [] as DrawnLink[], lines: [] as BandLine[] } });
   if (previous.drawing !== drawing) {
-    const [ids, keys] = [new Set(placed.map(entry => entry.node.id)), new Set(links.map(link => link.key))];
-    setPrevious({ drawing, placed, links, leaving: { nodes: previous.placed.filter(entry => !ids.has(entry.node.id)), links: previous.links.filter(link => !keys.has(link.key)) } });
+    const [ids, keys, lineKeys] = [new Set(placed.map(entry => entry.node.id)), new Set(links.map(link => link.key)), new Set(bandLines(drawing).map(line => line.key))];
+    setPrevious({
+      drawing, placed, links,
+      leaving: {
+        nodes: previous.placed.filter(entry => !ids.has(entry.node.id)),
+        links: previous.links.filter(link => !keys.has(link.key)),
+        lines: bandLines(previous.drawing).filter(line => !lineKeys.has(line.key)),
+      },
+    });
   }
-  const leaving = previous.drawing === drawing ? previous.leaving : { nodes: [], links: [] };
+  const leaving = previous.drawing === drawing ? previous.leaving : { nodes: [], links: [], lines: [] };
 
   // The cursor rides on the node the run's attention is on, and the canvas scrolls to keep it in view.
   const reduceMotion = useMediaQuery(REDUCED_MOTION_QUERY);
@@ -143,6 +151,7 @@ export function ReplayCanvas({ layers, frame, nodes, parents, folded, hidden, to
               ))}
             </g>
           ))}
+          {leaving.lines.map(line => <path key={`leaving ${line.key}`} d={line.d} transform={`translate(${line.x} ${line.y})`} className={styles[line.kind]} data-leaving="" />)}
           {links.map(link => <path key={link.key} d={link.d} pathLength={1} className={styles.link} data-kind={link.kind} />)}
           {leaving.links.map(link => <path key={`leaving ${link.key}`} d={link.d} className={styles.link} data-kind={link.kind} data-leaving="" />)}
         </svg>
