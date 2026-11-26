@@ -24,8 +24,8 @@ import styles from './TaskDetailPage.module.css';
 export function TaskRunsTab({ task, view }: { task: ConsoleTaskDetail; view: TaskPageView }) {
   const { t } = useTranslation();
   const [, setParams] = useSearchParams();
-  // The run list narrows to the combination when the page keeps to one; it has no filter for a model alone.
-  const combination = view.model && view.harness ? combinationKey(view.model, view.harness) : undefined;
+  // The run list keeps to the combination when the page keeps to one, and to the model when the page keeps to a model alone.
+  const focus = view.model && view.harness ? { combination: combinationKey(view.model, view.harness) } : { model: view.model };
   return (
     <div className={styles.section}>
       <div className={styles.switch}>
@@ -36,7 +36,7 @@ export function TaskRunsTab({ task, view }: { task: ConsoleTaskDetail; view: Tas
         />
       </div>
       {view.view === 'entrants' ? <EntrantRuns task={task} focus={view} /> : <CheckMatrix task={task} focus={view} />}
-      <LocaleLink className={clsx(controls.textLink, 't-small')} to={consoleRunsPath(task.benchmark.id, { q: task.id, combination })}>{t('console.task.allRuns')}</LocaleLink>
+      <LocaleLink className={clsx(controls.textLink, 't-small')} to={consoleRunsPath(task.benchmark.id, { q: task.id, ...focus })}>{t('console.task.allRuns')}</LocaleLink>
     </div>
   );
 }
