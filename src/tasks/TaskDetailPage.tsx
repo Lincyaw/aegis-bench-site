@@ -13,7 +13,7 @@ import controls from '../ui/controls.module.css';
 import { Hint } from '../ui/hint';
 import { TabRow } from '../ui/navigation';
 import navigation from '../ui/navigation.module.css';
-import { TASK_TABS, consoleTaskPath, consoleTasksPath, inFocus, parseTaskPageView, type TaskPageView, type TaskTab } from './consoleTaskQuery';
+import { TASK_TABS, consoleTaskPath, consoleTasksPath, inFocus, parseTaskPageView, taskPageSearch, type TaskPageView, type TaskTab } from './consoleTaskQuery';
 import { TaskComparisonTab } from './TaskComparisonTab';
 import { TaskContentTab, TaskGradingTab, TaskReferenceTab } from './TaskDefinitionTabs';
 import { HuggingFaceBoundary } from '../runs/HuggingFace';
@@ -94,13 +94,13 @@ export function TaskTabContent({ task, view }: { task: ConsoleTaskDetail; view: 
     case 'reference': return <TaskReferenceTab task={task} />;
     case 'runs': return <TaskRunsTab task={task} view={view} />;
     case 'compare': return <TaskComparisonTab task={task} view={view} />;
-    case 'files': return <TaskFilesTab task={task} file={view.file ?? INSTRUCTION_PATH} />;
+    case 'files': return <TaskFilesTab task={task} view={view} />;
     case 'revisions': return <TaskRevisionsTab task={task} version={view.version} />;
   }
 }
 
-/** The task's whole Harbor directory, the files the public site withholds marked but open. */
-export function TaskFilesTab({ task, file }: { task: ConsoleTaskDetail; file: string }) {
+/** The task's whole Harbor directory, the files the public site withholds marked but open; opening a file keeps the page's context. */
+export function TaskFilesTab({ task, view }: { task: ConsoleTaskDetail; view: TaskPageView }) {
   const { t } = useTranslation();
   const [, setParams] = useSearchParams();
   const source: TaskFileSource = {
@@ -121,8 +121,8 @@ export function TaskFilesTab({ task, file }: { task: ConsoleTaskDetail; file: st
   };
   return (
     <TaskFileBrowser
-      className={styles.browser} source={source} note={t('console.task.files.note')} huggingFaceUrl={task.huggingFaceUrl} open={file}
-      onOpen={next => setParams({ tab: 'files', file: next }, { replace: true, preventScrollReset: true })}
+      className={styles.browser} source={source} note={t('console.task.files.note')} huggingFaceUrl={task.huggingFaceUrl} open={view.file ?? INSTRUCTION_PATH}
+      onOpen={next => setParams(taskPageSearch({ ...view, tab: 'files', file: next }), { replace: true, preventScrollReset: true })}
     />
   );
 }
