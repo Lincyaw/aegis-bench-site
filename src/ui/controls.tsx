@@ -1,6 +1,6 @@
 import * as RadixSelect from '@radix-ui/react-select';
 import { clsx } from 'clsx';
-import { useState, type ReactNode } from 'react';
+import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LocaleLink } from '../i18n/LocaleRouting';
 import styles from './controls.module.css';
@@ -100,12 +100,32 @@ export interface Choice<T extends string> {
   label: string;
 }
 
-/** A row of mutually exclusive choices inside one track. */
+/**
+ * A row of mutually exclusive choices inside one track, which is the control and carries the ∞ edge. A thumb under the
+ * chosen choice slides to the next one chosen.
+ */
 export function SegmentedControl<T extends string>({ label, choices, value, onChange }: { label: string; choices: readonly Choice<T>[]; value: T; onChange: (value: T) => void }) {
+  const track = useRef<HTMLDivElement>(null);
+  const [thumb, setThumb] = useState<{ left: number; width: number } | null>(null);
+  useLayoutEffect(() => {
+    const trackElement = track.current;
+    if (!trackElement) {
+      throw new Error('The segmented control renders its track before its layout effect runs');
+    }
+    const chosen = trackElement.querySelector<HTMLElement>(`button[value="${CSS.escape(value)}"]`);
+    const place = () => setThumb(chosen && { left: chosen.offsetLeft, width: chosen.offsetWidth });
+    place();
+    // Choices change width when fonts or labels arrive.
+    const observer = new ResizeObserver(place);
+    trackElement.querySelectorAll('button').forEach(choice => observer.observe(choice));
+    return () => observer.disconnect();
+  }, [value]);
   return (
-    <div className={styles.segmented} role="group" aria-label={label}>
+    <div ref={track} className={clsx(styles.segmented, 'loop-edge')} role="group" aria-label={label}>
+      {/* The thumb mounts once it has a place, so it appears there instead of sliding in. */}
+      {thumb && <span className={styles.thumb} style={{ width: thumb.width, transform: `translateX(${thumb.left}px)` }} aria-hidden="true" />}
       {choices.map(choice => (
-        <button key={choice.value} type="button" className={clsx(styles.segment, 'loop-edge')} aria-pressed={choice.value === value} onClick={() => onChange(choice.value)}>{choice.label}</button>
+        <button key={choice.value} type="button" value={choice.value} className={styles.segment} aria-pressed={choice.value === value} onClick={() => onChange(choice.value)}>{choice.label}</button>
       ))}
     </div>
   );

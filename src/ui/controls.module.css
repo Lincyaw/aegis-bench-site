@@ -37,10 +37,16 @@
 .icon:disabled { color: var(--text-faint); background: none; cursor: default; }
 .icon:disabled svg { transform: none; }
 
-.segmented { display: inline-flex; padding: var(--space-px); border: var(--rule-hairline); border-radius: var(--radius-full); background: var(--bg-muted); }
-.segment { height: var(--control-small); padding: 0 var(--space-4); border-radius: var(--radius-full); color: var(--text-muted); font: var(--type-micro); line-height: 1; transition: var(--control-transition); }
-.segment:hover { color: var(--text-main); }
-.segment[aria-pressed="true"] { background: var(--bg-page); color: var(--text-main); }
+/*
+ * The track is the control and its edge is the only line, so a choice never draws an edge of its own against it: the
+ * chosen one sits on a thumb that slides between choices, and the one under the pointer brightens. In a row of taller
+ * controls the track keeps its own height, so its edge still hugs the choices.
+ */
+.segmented { position: relative; display: inline-flex; align-self: center; padding: var(--space-px); border: var(--rule-hairline); border-radius: var(--radius-full); background: var(--bg-muted); transition: var(--control-transition); }
+.thumb { position: absolute; top: var(--space-px); left: 0; height: var(--control-small); border-radius: var(--radius-full); background: var(--bg-page); transition: transform var(--duration-slow) var(--ease-out), width var(--duration-slow) var(--ease-out); }
+/* Positioned after the thumb in source order, the choices paint above it. */
+.segment { position: relative; height: var(--control-small); padding: 0 var(--space-4); border-radius: var(--radius-full); color: var(--text-muted); font: var(--type-micro); line-height: 1; transition: color var(--duration-base); }
+.segment:hover, .segment[aria-pressed="true"] { color: var(--text-main); }
 
 .textField { display: grid; gap: var(--space-2); }
 .input { justify-content: flex-start; width: 100%; padding: 0 var(--space-5); background: none; font: var(--type-body); outline: 0; }
