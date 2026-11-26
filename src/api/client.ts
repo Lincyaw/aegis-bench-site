@@ -1,4 +1,4 @@
-import { useSuspenseInfiniteQuery, useSuspenseQuery } from '@tanstack/react-query';
+import { useSuspenseInfiniteQuery, useSuspenseQueries, useSuspenseQuery } from '@tanstack/react-query';
 import createClient from 'openapi-fetch';
 import { useLocale } from '../i18n/localeContext';
 import type { paths } from './schema';
@@ -172,6 +172,27 @@ export function useRun(runId: string) {
     queryKey: ['run', runId, locale],
     queryFn: () => responseBody(api.GET('/runs/{runId}', { params: { path: { runId }, header: languageHeader(locale) } })),
   }).data;
+}
+
+/** Published runs of a task side by side. */
+export function useTaskComparison(benchmarkId: string, taskId: string, runs: string[]) {
+  const locale = useLocale();
+  return useSuspenseQuery({
+    queryKey: ['taskComparison', benchmarkId, taskId, runs, locale],
+    queryFn: () => responseBody(api.GET('/benchmarks/{benchmarkId}/tasks/{taskId}/comparison', {
+      params: { path: { benchmarkId, taskId }, query: { runs }, header: languageHeader(locale) },
+    })),
+  }).data;
+}
+
+/** Whole trajectories of several runs, read together. A trajectory is a record, so it is the same in every language. */
+export function useTrajectories(runIds: string[]) {
+  return useSuspenseQueries({
+    queries: runIds.map(runId => ({
+      queryKey: ['trajectory', runId],
+      queryFn: () => responseBody(api.GET('/runs/{runId}/trajectory', { params: { path: { runId } } })),
+    })),
+  }).map(query => query.data);
 }
 
 /** One page of a run's trajectory. A trajectory is a record, so it is the same in every language. */

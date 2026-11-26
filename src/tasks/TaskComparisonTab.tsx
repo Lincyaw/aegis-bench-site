@@ -3,7 +3,7 @@ import { clsx } from 'clsx';
 import { Suspense, useDeferredValue, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
-import { useTaskComparison, useTaskResults } from '../api/consoleClient';
+import { useConsoleTaskComparison, useTaskResults } from '../api/consoleClient';
 import type { ComparedRun, ComparisonBlock, ConsoleTaskDetail, TaskComparison } from '../api/types';
 import { LocaleLink } from '../i18n/LocaleRouting';
 import { VendorBadge } from '../models/ModelBadge';
@@ -132,7 +132,7 @@ export function EntrantRuns({ task, view, onView }: { task: ConsoleTaskDetail; v
 /** The comparison: a column per run, a row per part of each block; then the opened runs whole. */
 export function ComparedRuns({ task, runIds, view, onView }: { task: ConsoleTaskDetail; runIds: string[]; view: TaskComparisonView; onView: (view: TaskComparisonView) => void }) {
   const { t } = useTranslation();
-  const comparison = useTaskComparison(task.benchmark.id, task.id, runIds);
+  const comparison = useConsoleTaskComparison(task.benchmark.id, task.id, runIds);
   const opened = comparison.runs.filter(run => view.open.includes(run.id));
   const [focus, setFocus] = useState<ComparisonBlock>();
   const openAt = (block: ComparisonBlock) => (runId: string) => {

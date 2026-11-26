@@ -1,5 +1,6 @@
 import "@typespec/http";
 import "./atif.tsp";
+import "./comparison.tsp";
 import "./console/session.tsp";
 import "./console/results.tsp";
 import "./console/tasks.tsp";
@@ -420,6 +421,18 @@ model FailedCheck {
   detail: string;
 }
 
+/**
+ * Why a failed run failed, by its human review: it broke a requirement the task states or that common sense implies
+ * (modelError), the grading's verdict disagrees with the answer and the reference (gradingError), or the requirement it
+ * broke is neither stated nor derivable from the task (constructionProblem). The console shows it; the public site
+ * shows the review's conclusion only.
+ */
+enum FailureClass {
+  modelError,
+  gradingError,
+  constructionProblem,
+}
+
 /** Conclusion of a human review; present only for reviewed runs. */
 model ReviewConclusion {
   text: string;
@@ -632,6 +645,22 @@ interface Benchmarks {
   @get
   @route("/{benchmarkId}/tasks/{taskId}/runs")
   taskRuns(@path benchmarkId: string, @path taskId: string, ...LanguageHeader): Localized<TaskRuns> | NotFoundError;
+
+  /** Runs of the task side by side, in the blocks the benchmark's configuration lists */
+  @get
+  @route("/{benchmarkId}/tasks/{taskId}/comparison")
+  comparison(
+    @path benchmarkId: string,
+    @path taskId: string,
+
+    /** The runs to compare, each a run of the task */
+    @query(#{ explode: true })
+    @minItems(1)
+    @maxItems(MAX_COMPARED_RUNS)
+    runs: string[],
+
+    ...LanguageHeader,
+  ): Localized<PublicTaskComparison> | NotFoundError | HuggingFaceUnreachableError;
 }
 
 @route("/runs")

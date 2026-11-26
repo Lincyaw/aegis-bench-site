@@ -196,7 +196,7 @@ export function useTaskResults(benchmarkId: string, taskId: string) {
 }
 
 /** Runs of a task side by side, in the order given. */
-export function useTaskComparison(benchmarkId: string, taskId: string, runs: string[]) {
+export function useConsoleTaskComparison(benchmarkId: string, taskId: string, runs: string[]) {
   const locale = useLocale();
   return useSuspenseQuery({
     queryKey: [CONSOLE_QUERY, 'taskComparison', benchmarkId, taskId, runs, locale],

@@ -5,17 +5,6 @@ using Http;
 
 namespace AegisBench.Console;
 
-/**
- * Why a failed run failed, by its human review: it broke a requirement the task states or that common sense implies
- * (modelError), the grading's verdict disagrees with the answer and the reference (gradingError), or the requirement it
- * broke is neither stated nor derivable from the task (constructionProblem).
- */
-enum FailureClass {
-  modelError,
-  gradingError,
-  constructionProblem,
-}
-
 /** One run as a list shows it. */
 model RunRow {
   id: string;
@@ -112,49 +101,6 @@ model RunEvent {
 }
 
 model RunEventPage is Page<RunEvent>;
-
-/** How much a label on a step calls for a reader's attention, which decides how a page highlights the step. */
-enum AnnotationSeverity {
-  /** The step went wrong */
-  error,
-
-  /** The step is questionable */
-  warning,
-
-  /** The step is worth noticing */
-  note,
-}
-
-/** A label annotators give trajectory steps, as a benchmark declares it. */
-model AnnotationCategory {
-  id: string;
-  name: string;
-
-  /** What a step with the label is */
-  description: string;
-
-  severity: AnnotationSeverity;
-}
-
-/**
- * A label an annotator gave one step of a run's trajectory, with its reason. Annotators are models that read
- * trajectories; the site only shows what they recorded.
- */
-model StepAnnotation {
-  /** The step's id in the trajectory */
-  step: int32;
-
-  /** One of the benchmark's annotation categories */
-  category: string;
-
-  /** Who gave the label, such as an annotating model and its version */
-  annotator: string;
-
-  annotatedAt: utcDateTime;
-
-  /** Why, in the annotator's words */
-  reason: string;
-}
 
 @route("/console/benchmarks/{benchmarkId}/runs")
 @useAuth(SessionCookie)

@@ -1,5 +1,5 @@
 import type { ComponentType } from 'react';
-import { consoleAnnotationSeverityValues } from '../api/schema';
+import { annotationSeverityValues } from '../api/schema';
 import type { AnnotationCategory, AnnotationSeverity, ComparedRun, ComparisonBlock, StepAnnotation, TaskComparison, TrajectoryStep } from '../api/types';
 
 /*
@@ -65,7 +65,7 @@ export function categoryOf(categories: AnnotationCategory[], annotation: StepAnn
 /** The severity that calls most for attention among a step's labels; the spec declares severities from the most. */
 export function mostSevere(categories: AnnotationCategory[], annotations: StepAnnotation[]): AnnotationSeverity | undefined {
   const severities = new Set(annotations.map(annotation => categoryOf(categories, annotation).severity));
-  return consoleAnnotationSeverityValues.find(severity => severities.has(severity));
+  return annotationSeverityValues.find(severity => severities.has(severity));
 }
 
 /** A run's steps cut after each submission the server marked, so the runs line up submission by submission. */

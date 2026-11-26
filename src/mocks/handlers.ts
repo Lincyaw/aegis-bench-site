@@ -3,7 +3,7 @@ import { DEFAULT_LEADERBOARD_PAGE_SIZE, benchmarkDetail, benchmarkOf, benchmarkS
 import { consoleHandlers } from './consoleHandlers';
 import { hasModel, modelProfile } from './models';
 import { answeringUnreachableRecords, http, localeOf, pageOf, writtenIn } from './protocol';
-import { publishedEntriesOf, publishedRecentRunsOf, publishedShowingOf, publishedTaskRuns } from './published';
+import { publishedEntriesOf, publishedRecentRunsOf, publishedShowingOf, publishedTaskComparisonOf, publishedTaskRuns } from './published';
 import { openedIndexes } from './records';
 import { reportHandlers } from './reportHandlers';
 import { runDetailOf } from './runs';
@@ -124,6 +124,16 @@ export const publicHandlers = [
     return response(200).json({
       task: { id: task.id, title: task.title, passRate: passRateOf(combinations) }, runsPerTask: benchmarkOf(params.benchmarkId).record.runsPerTask, combinations,
     }, writtenIn(locale));
+  }),
+
+  http.get('/benchmarks/{benchmarkId}/tasks/{taskId}/comparison', async ({ params, query, request, response }) => {
+    const task = hasBenchmark(params.benchmarkId) ? taskOf(params.benchmarkId, params.taskId) : undefined;
+    if (!task) {
+      return response(404).json({ message: `no task ${params.taskId} in ${params.benchmarkId}` });
+    }
+    const locale = localeOf(request);
+    const comparison = await publishedTaskComparisonOf(params.benchmarkId, task, query.getAll('runs'), locale);
+    return comparison ? response(200).json(comparison, writtenIn(locale)) : response(404).json({ message: `not every run compared is a published run of ${task.id}` });
   }),
 
   http.get('/runs/{runId}', async ({ params, request, response }) => {
