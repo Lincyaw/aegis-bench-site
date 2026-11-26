@@ -9,9 +9,11 @@ import { consoleBenchmarkPath } from '../console/consoleMap';
 import { LocaleLink } from '../i18n/LocaleRouting';
 import { EntrantDots } from '../results/PassRate';
 import { Loading, Tag } from '../ui/content';
+import controls from '../ui/controls.module.css';
+import { Hint } from '../ui/hint';
 import { TabRow } from '../ui/navigation';
 import navigation from '../ui/navigation.module.css';
-import { TASK_TABS, consoleTaskPath, consoleTasksPath, parseTaskPageView, type TaskPageView, type TaskTab } from './consoleTaskQuery';
+import { TASK_TABS, consoleTaskPath, consoleTasksPath, inFocus, parseTaskPageView, type TaskPageView, type TaskTab } from './consoleTaskQuery';
 import { TaskComparisonTab } from './TaskComparisonTab';
 import { TaskContentTab, TaskGradingTab, TaskReferenceTab } from './TaskDefinitionTabs';
 import { HuggingFaceBoundary } from '../runs/HuggingFace';
@@ -44,12 +46,13 @@ export function TaskDetailPage() {
         {task.spread && <Tag dashed>{t(`console.tasks.spread.${task.spread}`)}</Tag>}
         <EntrantDots entrants={task.entrants} />
         <span className="t-micro c-muted">{t('console.task.solvedBy', { solved: task.entrants.filter(entrant => entrant.solved).length, entrants: task.entrants.length })}</span>
+        {view.model && <FocusChip task={task} view={view} />}
       </div>
       <TabRow current={view.tab} className={styles.tabs} aria-label={t('console.task.tabList')}>
         {TASK_TABS.map(tab => (
           <LocaleLink
             key={tab} data-tab={tab} className={clsx(navigation.tab, 't-small')} aria-current={tab === view.tab ? 'true' : undefined}
-            to={consoleTaskPath(benchmark.id, task.id, { tab })} replace preventScrollReset
+            to={consoleTaskPath(benchmark.id, task.id, { ...view, tab })} replace preventScrollReset
           >
             {t(`console.task.tabs.${tab}`)}{counts[tab] !== undefined && <span className={styles.count}>{counts[tab]}</span>}
           </LocaleLink>
@@ -64,12 +67,32 @@ export function TaskDetailPage() {
   );
 }
 
+/** The model and harness the page keeps to, which the reader can let go of to see every combination. */
+export function FocusChip({ task, view }: { task: ConsoleTaskDetail; view: TaskPageView }) {
+  const { t } = useTranslation();
+  const entrant = task.entrants.find(candidate => inFocus(view, candidate));
+  if (!entrant) {
+    throw new Error(`no combination of ${task.id} runs ${view.model} ${view.harness ?? ''}`);
+  }
+  const name = view.harness ? `${entrant.model.name} · ${entrant.harness.name}` : entrant.model.name;
+  return (
+    <Hint content={t('console.task.focus.hint')}>
+      <LocaleLink
+        className={clsx(controls.pill, controls.small, styles.focus, 'loop-edge')} aria-label={t('console.task.focus.clear', { name })}
+        to={consoleTaskPath(task.benchmark.id, task.id, { ...view, model: undefined, harness: undefined })} replace preventScrollReset
+      >
+        {name}<span aria-hidden="true">×</span>
+      </LocaleLink>
+    </Hint>
+  );
+}
+
 export function TaskTabContent({ task, view }: { task: ConsoleTaskDetail; view: TaskPageView }) {
   switch (view.tab) {
     case 'content': return <TaskContentTab task={task} />;
     case 'grading': return <TaskGradingTab task={task} />;
     case 'reference': return <TaskReferenceTab task={task} />;
-    case 'runs': return <TaskRunsTab task={task} view={view.view} />;
+    case 'runs': return <TaskRunsTab task={task} view={view} />;
     case 'compare': return <TaskComparisonTab task={task} view={view} />;
     case 'files': return <TaskFilesTab task={task} file={view.file ?? INSTRUCTION_PATH} />;
     case 'revisions': return <TaskRevisionsTab task={task} />;

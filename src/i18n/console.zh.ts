@@ -349,6 +349,10 @@ export const consoleZh = {
     tabList: '任务的各部分',
     version: '版本 {{version}}',
     solvedBy: '{{solved}} / {{entrants}} 个组合至少通过一次',
+    focus: {
+      hint: '运行和对照只列出这个模型（及框架）的运行；点击后显示全部组合。',
+      clear: '不再只看 {{name}}',
+    },
     content: {
       instruction: '任务说明',
       instructionNote: '智能体收到的原文，未经改写。',

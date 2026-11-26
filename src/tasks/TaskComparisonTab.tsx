@@ -7,18 +7,19 @@ import { consoleRunPath } from '../runs/consoleRunQuery';
 import { HuggingFaceBoundary } from '../runs/HuggingFace';
 import { ComparedRuns, RunChoice, TaskInput, type ComparisonSource } from '../runs/TaskComparison';
 import { Loading } from '../ui/content';
-import { taskPageSearch } from './consoleTaskQuery';
+import { inFocus, taskPageSearch, type TaskPageView } from './consoleTaskQuery';
 import styles from './TaskComparisonTab.module.css';
 
 /**
  * A task's runs side by side, for checking the task: the input every run received, then what each run produced, how
  * it was graded and what it did, as the benchmark's blocks lay them out; the runs opened below show all of it.
  */
-export function TaskComparisonTab({ task, view }: { task: ConsoleTaskDetail; view: ComparisonView }) {
+export function TaskComparisonTab({ task, view }: { task: ConsoleTaskDetail; view: TaskPageView }) {
   const [, setParams] = useSearchParams();
-  const { entrants } = useTaskResults(task.benchmark.id, task.id);
+  // The runs to choose from are those of the combinations the page keeps to.
+  const entrants = useTaskResults(task.benchmark.id, task.id).entrants.filter(entrant => inFocus(view, entrant));
   // Choices show at once, outside the router's transition, so quick successive choices build on each other.
-  const onView = (next: ComparisonView) => setParams(taskPageSearch({ tab: 'compare', ...next }), { replace: true, preventScrollReset: true, flushSync: true });
+  const onView = (next: ComparisonView) => setParams(taskPageSearch({ ...view, ...next, tab: 'compare' }), { replace: true, preventScrollReset: true, flushSync: true });
   // The runs shown stay until the newly chosen ones load.
   const shown = useDeferredValue(view.runs.join(LIST_SEPARATOR));
   const useTaskComparison = (runIds: string[]) => useConsoleTaskComparison(task.benchmark.id, task.id, runIds);

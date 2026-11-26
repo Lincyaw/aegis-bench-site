@@ -59,7 +59,18 @@ export type TaskTab = (typeof TASK_TABS)[number];
 export const TASK_RUN_VIEWS = ['entrants', 'checks'] as const;
 export type TaskRunView = (typeof TASK_RUN_VIEWS)[number];
 
-export interface TaskPageView extends ComparisonView {
+/** The model, and within it the harness, that a task's page keeps to, as the page the reader came from did. */
+export interface TaskFocus {
+  model?: string;
+  harness?: string;
+}
+
+/** Whether a combination is one the page keeps to; every combination is when it keeps to none. */
+export function inFocus(focus: TaskFocus, { model, harness }: { model: { id: string }; harness: { id: string } }): boolean {
+  return (!focus.model || model.id === focus.model) && (!focus.harness || harness.id === focus.harness);
+}
+
+export interface TaskPageView extends ComparisonView, TaskFocus {
   tab: TaskTab;
   view: TaskRunView;
 
@@ -70,13 +81,18 @@ export interface TaskPageView extends ComparisonView {
 export function parseTaskPageView(params: URLSearchParams): TaskPageView {
   const tab = params.get('tab') ?? 'content';
   const view = params.get('view') ?? 'entrants';
+  const model = params.get('model') ?? undefined;
+  const harness = params.get('harness') ?? undefined;
   if (!TASK_TABS.includes(tab as TaskTab)) {
     throw new Error(`a task has no tab ${tab}`);
   }
   if (!TASK_RUN_VIEWS.includes(view as TaskRunView)) {
     throw new Error(`a task's runs have no view ${view}`);
   }
-  return { tab: tab as TaskTab, view: view as TaskRunView, file: params.get('file') ?? undefined, ...parseComparisonView(params) };
+  if (harness && !model) {
+    throw new Error(`a task's page keeps to a harness only within a model, not to ${harness} alone`);
+  }
+  return { tab: tab as TaskTab, view: view as TaskRunView, file: params.get('file') ?? undefined, model, harness, ...parseComparisonView(params) };
 }
 
 /** A task's console page at one of its parts; the content tab, the combination view and empty lists are the defaults. */
@@ -96,6 +112,12 @@ export function taskPageSearch(view: Partial<TaskPageView>): URLSearchParams {
   }
   if (view.file) {
     params.set('file', view.file);
+  }
+  if (view.model) {
+    params.set('model', view.model);
+  }
+  if (view.harness) {
+    params.set('harness', view.harness);
   }
   setComparisonParams(params, view);
   return params;

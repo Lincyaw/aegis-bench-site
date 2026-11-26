@@ -350,6 +350,10 @@ export const consoleEn: ConsoleMessages = {
     tabList: 'Parts of the task',
     version: 'Version {{version}}',
     solvedBy: '{{solved}} of {{entrants}} combinations passed at least once',
+    focus: {
+      hint: 'The runs and the comparison list only this model\'s runs (in this harness); click to show every combination.',
+      clear: 'Stop keeping to {{name}}',
+    },
     content: {
       instruction: 'Task text',
       instructionNote: 'Exactly as the agent receives it.',
