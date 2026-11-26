@@ -60,6 +60,7 @@ export function ModelDetailPage() {
           choices={[{ value: EVERY_CHOICE, label: t('console.model.allHarnesses') }, ...detail.byHarness.map(({ harness }) => ({ value: harness.id, label: harness.name }))]}
         />
         {query.tag && <CollectionChip benchmarkId={benchmark.id} modelId={detail.model.id} query={query} />}
+        {query.task && <TaskChip benchmarkId={benchmark.id} modelId={detail.model.id} query={query} />}
       </div>
       <StatTiles>
         <StatTile label={t('console.model.stats.passRate')} value={scope.passRate === undefined ? '—' : formatRate(scope.passRate)} />
@@ -112,6 +113,21 @@ export function CollectionChip({ benchmarkId, modelId, query }: { benchmarkId: s
         to={consoleModelPath(benchmarkId, modelId, { ...query, tag: '', offset: 0 })} replace preventScrollReset
       >
         {t('console.model.collection.name', { tag: query.tag })}<span aria-hidden="true">×</span>
+      </LocaleLink>
+    </Hint>
+  );
+}
+
+/** The one task the page keeps to, as the collection's matrix cell it was opened from did; the reader can let it go. */
+export function TaskChip({ benchmarkId, modelId, query }: { benchmarkId: string; modelId: string; query: ModelTaskQuery }) {
+  const { t } = useTranslation();
+  return (
+    <Hint content={t('console.model.task.hint')}>
+      <LocaleLink
+        className={clsx(controls.pill, controls.small, styles.focus, 'loop-edge')} aria-label={t('console.model.task.clear', { task: query.task })}
+        to={consoleModelPath(benchmarkId, modelId, { ...query, task: '', offset: 0 })} replace preventScrollReset
+      >
+        {t('console.model.task.name', { task: query.task })}<span aria-hidden="true">×</span>
       </LocaleLink>
     </Hint>
   );

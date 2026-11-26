@@ -66,7 +66,7 @@ interface ConsoleModels {
   /** Every model that ran on the benchmark, best pass rate first */
   @get list(@path benchmarkId: string, ...LanguageHeader): Localized<ConsoleModelResult[]> | SignInRequiredError | NotFoundError;
 
-  /** The model's results over the tasks the tag and the search select */
+  /** The model's results over the tasks the page keeps to: a collection's, one task, or every task */
   @get
   @route("/{modelId}")
   read(
@@ -76,8 +76,8 @@ interface ConsoleModels {
     /** Only the tasks of the collection with this tag; every task when empty */
     @query(#{ explode: true }) tag?: string = "",
 
-    /** Matches the task id or title */
-    @query(#{ explode: true }) q?: string = "",
+    /** Only this task, by its id; every task when empty */
+    @query(#{ explode: true }) task?: string = "",
 
     ...LanguageHeader,
   ): Localized<ConsoleModelDetail> | SignInRequiredError | NotFoundError;
@@ -95,7 +95,10 @@ interface ConsoleModels {
     /** Only the tasks of the collection with this tag; every task when empty */
     @query(#{ explode: true }) tag?: string = "",
 
-    /** Matches the task id or title */
+    /** Only this task, by its id; every task when empty */
+    @query(#{ explode: true }) task?: string = "",
+
+    /** Matches the task id or title, within the tasks the page keeps to */
     @query(#{ explode: true }) q?: string = "",
 
     /** Only tasks on which the model's runs fall this way */

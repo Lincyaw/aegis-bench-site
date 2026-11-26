@@ -315,11 +315,12 @@ export function useConsoleModels(benchmarkId: string) {
 }
 
 /** A model's results over the tasks of one collection that match a search; every task when both are empty. */
-export function useConsoleModel(benchmarkId: string, modelId: string, { tag, q }: Pick<ModelTaskQuery, 'tag' | 'q'>) {
+/** A model over the tasks its page keeps to; the page's search narrows only its task list. */
+export function useConsoleModel(benchmarkId: string, modelId: string, { tag, task }: Pick<ModelTaskQuery, 'tag' | 'task'>) {
   const locale = useLocale();
   return useSuspenseQuery({
-    queryKey: [CONSOLE_QUERY, 'model', benchmarkId, modelId, tag, q, locale],
-    queryFn: () => responseBody(api.GET('/console/benchmarks/{benchmarkId}/models/{modelId}', { params: { path: { benchmarkId, modelId }, query: { tag, q }, header: languageHeader(locale) } })),
+    queryKey: [CONSOLE_QUERY, 'model', benchmarkId, modelId, tag, task, locale],
+    queryFn: () => responseBody(api.GET('/console/benchmarks/{benchmarkId}/models/{modelId}', { params: { path: { benchmarkId, modelId }, query: { tag, task }, header: languageHeader(locale) } })),
   }).data;
 }
 
@@ -329,6 +330,9 @@ export interface ModelTaskQuery {
 
   /** The tag of the collection the page keeps to; every task when empty */
   tag: string;
+
+  /** The one task the page keeps to; every task when empty */
+  task: string;
 
   q: string;
   spread?: TaskSpread;
@@ -343,7 +347,7 @@ export function useModelTaskPage(benchmarkId: string, modelId: string, query: Mo
     queryFn: () => responseBody(api.GET('/console/benchmarks/{benchmarkId}/models/{modelId}/tasks', {
       params: {
         path: { benchmarkId, modelId }, header: languageHeader(locale),
-        query: { harness: query.harness, tag: query.tag, q: query.q, spread: query.spread, order: query.order, offset: query.offset, limit: pageSize },
+        query: { harness: query.harness, tag: query.tag, task: query.task, q: query.q, spread: query.spread, order: query.order, offset: query.offset, limit: pageSize },
       },
     })),
   }).data;

@@ -90,7 +90,7 @@ export function CollectionMatrix({ benchmark, tag, view, onView }: { benchmark: 
                 const label = t('console.collection.cell', { model: model.name, task: row.task.title, passed, counted });
                 return (
                   <LocaleLink
-                    key={model.id} role="cell" className={clsx(styles.cell, 't-micro')} to={consoleModelPath(benchmark.id, model.id, { tag, q: row.task.id })} title={label} aria-label={label}
+                    key={model.id} role="cell" className={clsx(styles.cell, 't-micro')} to={consoleModelPath(benchmark.id, model.id, { tag, task: row.task.id })} title={label} aria-label={label}
                     style={{ '--share': counted === 0 ? 0 : passed / counted } as CSSProperties}
                   >
                     {passed} / {counted}

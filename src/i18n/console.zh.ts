@@ -438,6 +438,11 @@ export const consoleZh = {
       hint: '统计、各框架的结果和逐题表现只计这个展示集的任务；点击后显示全部任务。',
       clear: '不再只看展示集「{{tag}}」',
     },
+    task: {
+      name: '任务 · {{task}}',
+      hint: '统计、各框架的结果和逐题表现只计这道任务；点击后显示全部任务。',
+      clear: '不再只看任务 {{task}}',
+    },
     lead_one: '{{vendor}} · 共 {{count}} 种框架',
     lead_other: '{{vendor}} · 共 {{count}} 种框架',
     stats: { passRate: '通过率', everyTime: '每次都通过', steps: '平均步数', cost: '平均成本' },

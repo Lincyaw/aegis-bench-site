@@ -439,6 +439,11 @@ export const consoleEn: ConsoleMessages = {
       hint: 'The figures, the results by harness and the task list cover only this collection’s tasks; click to show every task.',
       clear: 'Stop keeping to collection {{tag}}',
     },
+    task: {
+      name: 'Task · {{task}}',
+      hint: 'The figures, the results by harness and the task list cover only this task; click to show every task.',
+      clear: 'Stop keeping to task {{task}}',
+    },
     lead_one: '{{vendor}} · {{count}} harness',
     lead_other: '{{vendor}} · {{count}} harnesses',
     stats: { passRate: 'Pass rate', everyTime: 'Passed every time', steps: 'Mean steps', cost: 'Mean cost' },
