@@ -32,7 +32,9 @@ export function TaskDetailPage() {
   const benchmark = useConsoleBenchmark(benchmarkId);
   const task = useConsoleTask(benchmark.id, taskId);
   const counts: Record<TaskTab, number | undefined> = {
-    content: undefined, grading: task.sizes.checks, reference: undefined, runs: task.result.runs, compare: undefined, files: task.sizes.files, revisions: task.sizes.revisions,
+    content: undefined, grading: task.sizes.checks, reference: undefined,
+    runs: task.entrants.filter(entrant => inFocus(view, entrant)).reduce((sum, entrant) => sum + entrant.runs, 0),
+    compare: undefined, files: task.sizes.files, revisions: task.sizes.revisions,
   };
   return (
     <div className={styles.page} data-half={benchmark.stage.half}>

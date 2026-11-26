@@ -48,13 +48,13 @@ export function spreadOf(result: ResultCounts): TaskSpread | undefined {
   return result.passed === counted ? 'saturated' : result.passed === 0 ? 'unsolved' : 'discriminating';
 }
 
-/** Whether each combination, in ranking order, passed the task at least once. */
+/** Whether each combination, in ranking order, passed the task at least once, and how many times it ran it. */
 export function entrantMarksOf(benchmarkId: string, taskId: string, locale: Locale): EntrantMark[] {
   const facts = runFactsByTask(benchmarkId).get(taskId) ?? [];
-  return rankingOf(benchmarkId).map(({ modelId, harnessId }) => ({
-    model: modelRef(modelId, locale), harness: harnessRef(harnessId, locale),
-    solved: facts.some(fact => fact.modelId === modelId && fact.harnessId === harnessId && fact.outcome === 'passed'),
-  }));
+  return rankingOf(benchmarkId).map(({ modelId, harnessId }) => {
+    const runs = facts.filter(fact => fact.modelId === modelId && fact.harnessId === harnessId);
+    return { model: modelRef(modelId, locale), harness: harnessRef(harnessId, locale), solved: runs.some(fact => fact.outcome === 'passed'), runs: runs.length };
+  });
 }
 
 export function taskRowOf(benchmarkId: string, task: TaskRecord, locale: Locale): ConsoleTaskRow {

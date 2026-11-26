@@ -14,10 +14,13 @@ enum TaskSpread {
   discriminating,
 }
 
-/** Whether a combination passed a task at least once. */
+/** Whether a combination passed a task at least once, and how many times it ran the task. */
 model EntrantMark {
   ...Combination;
   solved: boolean;
+
+  /** The combination's runs on the task, execution failures included */
+  runs: int32;
 }
 
 model ConsoleTaskRow {
