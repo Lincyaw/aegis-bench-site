@@ -8,10 +8,9 @@ import { dateTimeOf } from '../i18n/locales';
 import { ToggleChip } from '../ui/controls';
 import { Hint } from '../ui/hint';
 import { detailAnchorOf, mostSevere, segmentsOf, type DetailProps, type OverviewProps } from './comparison';
+import { AtifFields, AtifStepSummary } from './AtifStep';
 import { BlockHead, Cell, ItemRow } from './ComparisonTable';
-import { isKnownTool } from './presentation';
 import timeline from './RunTimeline.module.css';
-import { submissionOf, targetOf, textOf } from './trajectory';
 import styles from './AnnotatedTrajectory.module.css';
 
 /*
@@ -122,24 +121,15 @@ export function StepList({ steps, run, categories, labels }: { steps: Trajectory
   );
 }
 
-/** One step on a line: its number, tool, target and first words; it opens to the step's whole record. */
+/** One step on a line by its own fields; it opens to the step's whole record. */
 export function StepRow({ step, annotations, categories, evidence }: { step: TrajectoryStep; annotations: StepAnnotation[]; categories: AnnotationCategory[]; evidence: boolean }) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
-  const tool = step.tool_calls?.[0]?.function_name;
-  const kind = step.source === 'agent' ? (tool === undefined ? t('runs.reply') : isKnownTool(tool) ? t(`runs.tools.${tool}`) : tool) : t(`runs.source.${step.source}`);
-  const submission = submissionOf(step);
-  const target = targetOf(step);
   return (
     <li className={styles.step} data-severity={mostSevere(categories, annotations)}>
       <div className={styles.stepHead}>
         <button type="button" className={styles.toggle} aria-expanded={open} onClick={() => setOpen(!open)}>
-          <span className="t-mono c-faint">{step.step_id}</span>
-          <span className={clsx('t-micro', submission ? (submission.passed ? 'c-ok' : 'c-bad') : 'c-muted')}>
-            {kind}{submission && ` ${submission.passedChecks}/${submission.totalChecks}`}
-          </span>
-          {target && <span className={clsx(styles.target, 't-mono')}>{target}</span>}
-          <span className={styles.summary}>{textOf(step.message).split('\n')[0]}</span>
+          <AtifStepSummary step={step} />
         </button>
         {evidence && <span className={styles.evidence}>{t('console.task.compare.evidence')}</span>}
         {categories.filter(category => annotations.some(annotation => annotation.category === category.id)).map(category => {
@@ -174,10 +164,8 @@ export function AnnotationCard({ annotations, category }: { annotations: StepAnn
   );
 }
 
-/** A step's record as the trajectory holds it: the labels with their reasons, what the agent said, each call's arguments and what came back. */
+/** A step opened: the labels with their reasons, then every field of the step as the trajectory records it. */
 export function StepRecord({ step, annotations, categories }: { step: TrajectoryStep; annotations: StepAnnotation[]; categories: AnnotationCategory[] }) {
-  const { t } = useTranslation();
-  const said = textOf(step.message);
   return (
     <div className={styles.record}>
       {categories.filter(category => annotations.some(annotation => annotation.category === category.id)).map(category => (
@@ -185,31 +173,7 @@ export function StepRecord({ step, annotations, categories }: { step: Trajectory
           <AnnotationCard annotations={annotations.filter(annotation => annotation.category === category.id)} category={category} />
         </div>
       ))}
-      {said && (
-        <section className={styles.part}>
-          <h4 className="t-micro c-faint">{t('console.task.compare.message')}</h4>
-          <pre className={styles.raw}>{said}</pre>
-        </section>
-      )}
-      {step.tool_calls?.map(call => (
-        <section key={call.tool_call_id} className={styles.part}>
-          <h4 className="t-micro c-faint">{t('console.task.compare.arguments')} · <span className="t-mono">{call.function_name}</span></h4>
-          <dl className={styles.arguments}>
-            {Object.entries(call.arguments).map(([name, value]) => (
-              <div key={name}>
-                <dt className="t-mono c-faint">{name}</dt>
-                <dd><pre className={styles.raw}>{typeof value === 'string' ? value : JSON.stringify(value, null, 2)}</pre></dd>
-              </div>
-            ))}
-          </dl>
-        </section>
-      ))}
-      {step.observation?.results.map((result, index) => (
-        <section key={result.source_call_id ?? index} className={styles.part}>
-          <h4 className="t-micro c-faint">{t('console.task.compare.result')}</h4>
-          <pre className={styles.raw}>{textOf(result.content)}</pre>
-        </section>
-      ))}
+      <AtifFields record={step} />
     </div>
   );
 }

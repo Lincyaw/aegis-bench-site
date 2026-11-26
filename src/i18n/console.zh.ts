@@ -439,9 +439,6 @@ export const consoleZh = {
       hiddenSteps_one: '{{count}} 步未列出',
       hiddenSteps_other: '{{count}} 步未列出',
       evidence: '复核依据',
-      message: '说明',
-      arguments: '调用参数',
-      result: '返回结果',
     },
   },
   runs: {

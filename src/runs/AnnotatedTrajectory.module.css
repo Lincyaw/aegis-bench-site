@@ -56,8 +56,6 @@
 }
 
 .toggle:hover { background: var(--bg-muted); }
-.target { max-width: 12rem; overflow: hidden; color: var(--text-muted); text-overflow: ellipsis; white-space: nowrap; }
-.summary { flex: 1; min-width: 0; overflow: hidden; font: var(--type-small); text-overflow: ellipsis; white-space: nowrap; }
 
 .evidence {
   flex: none;
@@ -73,18 +71,3 @@
 
 .record { display: grid; gap: var(--space-3); padding: var(--space-2) var(--space-3) var(--space-4) var(--space-6); }
 .note { display: grid; gap: var(--space-1); padding: var(--space-2) var(--space-3); border-left: var(--size-border-thick) solid var(--severity-ink, transparent); border-radius: var(--radius-sm); background: var(--bg-page); font: var(--type-small); }
-.part { display: grid; gap: var(--space-1); }
-.arguments { display: grid; gap: var(--space-2); }
-.arguments div { display: grid; gap: var(--space-1); }
-
-.raw {
-  max-height: 20rem;
-  margin: 0;
-  padding: var(--space-2) var(--space-3);
-  overflow: auto;
-  border-radius: var(--radius-md);
-  background: var(--bg-panel);
-  font: var(--type-mono);
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-}

@@ -6,13 +6,6 @@ export function submissionOf(step: TrajectoryStep): SubmissionVerdict | undefine
   return extra?.submission;
 }
 
-/** The argument a step row shows next to its tool: a path, a command or a query. */
-export function targetOf(step: TrajectoryStep): string {
-  const args = step.tool_calls?.[0]?.arguments as Record<string, unknown> | undefined;
-  const target = args?.path ?? args?.command ?? args?.query ?? args?.service;
-  return typeof target === 'string' ? target : '';
-}
-
 export function textOf(content: TrajectoryStep['message'] | undefined): string {
   if (content === undefined) {
     return '';

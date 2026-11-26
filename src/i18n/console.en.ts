@@ -440,9 +440,6 @@ export const consoleEn: ConsoleMessages = {
       hiddenSteps_one: '{{count}} step not listed',
       hiddenSteps_other: '{{count}} steps not listed',
       evidence: 'Review evidence',
-      message: 'Message',
-      arguments: 'Arguments',
-      result: 'Result',
     },
   },
   runs: {
