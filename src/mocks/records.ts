@@ -1,5 +1,5 @@
 import type {
-  BenchmarkFile, Catalog, FootprintFile, HuntRecord, PublishedRelease, RunFact, RunFile, StepAnnotation, TaskFileRecord, TaskRecord, Trajectory, WorldFile,
+  BenchmarkFile, Catalog, FootprintFile, HuntRecord, PublishedRelease, RunFact, RunFile, SignalsFile, StepAnnotation, TaskFileRecord, TaskRecord, Trajectory, WorldFile,
 } from '../api/types';
 
 /*
@@ -169,6 +169,11 @@ export function readAnnotations(record: BenchmarkFile, runId: string): Promise<S
 /** What a run did to its task's world; only a benchmark that declares world layers has footprints. */
 export function readFootprint(record: BenchmarkFile, runId: string): Promise<FootprintFile> {
   return readFromDirectory(record, runDirectoryOf(runId), 'footprint.json', location => readJson<FootprintFile>(location));
+}
+
+/** What a run's world reported while the run went on; only a benchmark that declares world layers has signals. */
+export function readSignals(record: BenchmarkFile, runId: string): Promise<SignalsFile> {
+  return readFromDirectory(record, runDirectoryOf(runId), 'signals.json', location => readJson<SignalsFile>(location));
 }
 
 /** The directory of a benchmark's worlds, which stays in the data directory wherever the benchmark keeps its runs. */

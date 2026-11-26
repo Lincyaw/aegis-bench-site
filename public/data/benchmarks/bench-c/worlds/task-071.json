@@ -11,84 +11,96 @@
       "layer": "code",
       "type": "file",
       "label": "gateway.yaml",
-      "parent": "dir:config"
+      "parent": "dir:config",
+      "content": "service: gateway\nport: 8080\nreplicas: 2\n\npool:\n  pool_size: 16\n  acquire_timeout_ms: 3000\n\nupstreams:\n  - order-api\n  - user-center\n  - search-api\n  - payment-callback\n\nlog_level: info\n"
     },
     {
       "id": "file:config/order-api.yaml",
       "layer": "code",
       "type": "file",
       "label": "order-api.yaml",
-      "parent": "dir:config"
+      "parent": "dir:config",
+      "content": "service: order-api\nport: 8080\nreplicas: 2\n\npool:\n  pool_size: 16\n  acquire_timeout_ms: 3000\n\nupstreams:\n  - inventory\n  - payment-api\n  - order-db\n\nlog_level: info\n"
     },
     {
       "id": "file:config/user-center.yaml",
       "layer": "code",
       "type": "file",
       "label": "user-center.yaml",
-      "parent": "dir:config"
+      "parent": "dir:config",
+      "content": "service: user-center\nport: 8080\nreplicas: 2\n\npool:\n  pool_size: 16\n  acquire_timeout_ms: 3000\n\nupstreams:\n  - redis\n\nlog_level: info\n"
     },
     {
       "id": "file:config/search-api.yaml",
       "layer": "code",
       "type": "file",
       "label": "search-api.yaml",
-      "parent": "dir:config"
+      "parent": "dir:config",
+      "content": "service: search-api\nport: 8080\nreplicas: 2\n\npool:\n  pool_size: 16\n  acquire_timeout_ms: 3000\n\nupstreams:\n  - redis\n\nlog_level: info\n"
     },
     {
       "id": "file:config/inventory.yaml",
       "layer": "code",
       "type": "file",
       "label": "inventory.yaml",
-      "parent": "dir:config"
+      "parent": "dir:config",
+      "content": "service: inventory\nport: 8080\nreplicas: 2\n\npool:\n  pool_size: 16\n  acquire_timeout_ms: 3000\n\nupstreams:\n  - order-db\n\nlog_level: info\n"
     },
     {
       "id": "file:config/payment-api.yaml",
       "layer": "code",
       "type": "file",
       "label": "payment-api.yaml",
-      "parent": "dir:config"
+      "parent": "dir:config",
+      "content": "service: payment-api\nport: 8080\nreplicas: 2\n\npool:\n  pool_size: 16\n  acquire_timeout_ms: 3000\n\nupstreams:\n  - redis\n\nlog_level: info\n"
     },
     {
       "id": "file:config/payment-callback.yaml",
       "layer": "code",
       "type": "file",
       "label": "payment-callback.yaml",
-      "parent": "dir:config"
+      "parent": "dir:config",
+      "content": "service: payment-callback\nport: 8080\nreplicas: 2\n\npool:\n  pool_size: 8\n  acquire_timeout_ms: 3000\n\nupstreams:\n  - order-db\n  - redis\n  - mq\n\nlog_level: info\n"
     },
     {
       "id": "file:config/billing-worker.yaml",
       "layer": "code",
       "type": "file",
       "label": "billing-worker.yaml",
-      "parent": "dir:config"
+      "parent": "dir:config",
+      "content": "service: billing-worker\nport: 8080\nreplicas: 2\n\npool:\n  pool_size: 16\n  acquire_timeout_ms: 3000\n\nupstreams:\n  - mq\n  - order-db\n\nlog_level: info\n"
     },
     {
       "id": "file:config/notify.yaml",
       "layer": "code",
       "type": "file",
       "label": "notify.yaml",
-      "parent": "dir:config"
+      "parent": "dir:config",
+      "content": "service: notify\nport: 8080\nreplicas: 2\n\npool:\n  pool_size: 16\n  acquire_timeout_ms: 3000\n\nupstreams:\n  - mq\n\nlog_level: info\n"
     },
     {
       "id": "file:config/order-db.yaml",
       "layer": "code",
       "type": "file",
       "label": "order-db.yaml",
-      "parent": "dir:config"
+      "parent": "dir:config",
+      "content": "service: order-db\nport: 8080\nreplicas: 1\n\npool:\n  pool_size: 16\n  acquire_timeout_ms: 3000\n\nupstreams:\n  []\n\nlog_level: info\n"
     },
     {
       "id": "file:config/redis.yaml",
       "layer": "code",
       "type": "file",
       "label": "redis.yaml",
-      "parent": "dir:config"
+      "parent": "dir:config",
+      "content": "service: redis\nport: 8080\nreplicas: 1\n\npool:\n  pool_size: 16\n  acquire_timeout_ms: 3000\n\nupstreams:\n  []\n\nlog_level: info\n"
     },
     {
       "id": "file:config/mq.yaml",
       "layer": "code",
       "type": "file",
       "label": "mq.yaml",
-      "parent": "dir:config"
+      "parent": "dir:config",
+      "content": "service: mq\nport: 8080\nreplicas: 1\n\npool:\n  pool_size: 16\n  acquire_timeout_ms: 3000\n\nupstreams:\n  []\n\nlog_level: info\n"
     },
     {
       "id": "dir:deploy",
@@ -101,84 +113,148 @@
       "layer": "code",
       "type": "file",
       "label": "gateway.yaml",
-      "parent": "dir:deploy"
+      "parent": "dir:deploy",
+      "content": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: gateway\nspec:\n  replicas: 2\n  template:\n    spec:\n      containers:\n        - name: gateway\n          image: registry.local/gateway:1.14.2\n          ports:\n            - containerPort: 8080\n          envFrom:\n            - configMapRef:\n                name: gateway-config\n"
     },
     {
       "id": "file:deploy/order-api.yaml",
       "layer": "code",
       "type": "file",
       "label": "order-api.yaml",
-      "parent": "dir:deploy"
+      "parent": "dir:deploy",
+      "content": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: order-api\nspec:\n  replicas: 2\n  template:\n    spec:\n      containers:\n        - name: order-api\n          image: registry.local/order-api:1.14.2\n          ports:\n            - containerPort: 8080\n          envFrom:\n            - configMapRef:\n                name: order-api-config\n"
     },
     {
       "id": "file:deploy/user-center.yaml",
       "layer": "code",
       "type": "file",
       "label": "user-center.yaml",
-      "parent": "dir:deploy"
+      "parent": "dir:deploy",
+      "content": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: user-center\nspec:\n  replicas: 2\n  template:\n    spec:\n      containers:\n        - name: user-center\n          image: registry.local/user-center:1.14.2\n          ports:\n            - containerPort: 8080\n          envFrom:\n            - configMapRef:\n                name: user-center-config\n"
     },
     {
       "id": "file:deploy/search-api.yaml",
       "layer": "code",
       "type": "file",
       "label": "search-api.yaml",
-      "parent": "dir:deploy"
+      "parent": "dir:deploy",
+      "content": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: search-api\nspec:\n  replicas: 2\n  template:\n    spec:\n      containers:\n        - name: search-api\n          image: registry.local/search-api:1.14.2\n          ports:\n            - containerPort: 8080\n          envFrom:\n            - configMapRef:\n                name: search-api-config\n"
     },
     {
       "id": "file:deploy/inventory.yaml",
       "layer": "code",
       "type": "file",
       "label": "inventory.yaml",
-      "parent": "dir:deploy"
+      "parent": "dir:deploy",
+      "content": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: inventory\nspec:\n  replicas: 2\n  template:\n    spec:\n      containers:\n        - name: inventory\n          image: registry.local/inventory:1.14.2\n          ports:\n            - containerPort: 8080\n          envFrom:\n            - configMapRef:\n                name: inventory-config\n"
     },
     {
       "id": "file:deploy/payment-api.yaml",
       "layer": "code",
       "type": "file",
       "label": "payment-api.yaml",
-      "parent": "dir:deploy"
+      "parent": "dir:deploy",
+      "content": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: payment-api\nspec:\n  replicas: 2\n  template:\n    spec:\n      containers:\n        - name: payment-api\n          image: registry.local/payment-api:1.14.2\n          ports:\n            - containerPort: 8080\n          envFrom:\n            - configMapRef:\n                name: payment-api-config\n"
     },
     {
       "id": "file:deploy/payment-callback.yaml",
       "layer": "code",
       "type": "file",
       "label": "payment-callback.yaml",
-      "parent": "dir:deploy"
+      "parent": "dir:deploy",
+      "content": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: payment-callback\nspec:\n  replicas: 2\n  template:\n    spec:\n      containers:\n        - name: payment-callback\n          image: registry.local/payment-callback:1.14.2\n          ports:\n            - containerPort: 8080\n          envFrom:\n            - configMapRef:\n                name: payment-callback-config\n"
     },
     {
       "id": "file:deploy/billing-worker.yaml",
       "layer": "code",
       "type": "file",
       "label": "billing-worker.yaml",
-      "parent": "dir:deploy"
+      "parent": "dir:deploy",
+      "content": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: billing-worker\nspec:\n  replicas: 2\n  template:\n    spec:\n      containers:\n        - name: billing-worker\n          image: registry.local/billing-worker:1.14.2\n          ports:\n            - containerPort: 8080\n          envFrom:\n            - configMapRef:\n                name: billing-worker-config\n"
     },
     {
       "id": "file:deploy/notify.yaml",
       "layer": "code",
       "type": "file",
       "label": "notify.yaml",
-      "parent": "dir:deploy"
+      "parent": "dir:deploy",
+      "content": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: notify\nspec:\n  replicas: 2\n  template:\n    spec:\n      containers:\n        - name: notify\n          image: registry.local/notify:1.14.2\n          ports:\n            - containerPort: 8080\n          envFrom:\n            - configMapRef:\n                name: notify-config\n"
     },
     {
       "id": "file:deploy/order-db.yaml",
       "layer": "code",
       "type": "file",
       "label": "order-db.yaml",
-      "parent": "dir:deploy"
+      "parent": "dir:deploy",
+      "content": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: order-db\nspec:\n  replicas: 1\n  template:\n    spec:\n      containers:\n        - name: order-db\n          image: registry.local/order-db:1.14.2\n          ports:\n            - containerPort: 8080\n          envFrom:\n            - configMapRef:\n                name: order-db-config\n"
     },
     {
       "id": "file:deploy/redis.yaml",
       "layer": "code",
       "type": "file",
       "label": "redis.yaml",
-      "parent": "dir:deploy"
+      "parent": "dir:deploy",
+      "content": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: redis\nspec:\n  replicas: 1\n  template:\n    spec:\n      containers:\n        - name: redis\n          image: registry.local/redis:1.14.2\n          ports:\n            - containerPort: 8080\n          envFrom:\n            - configMapRef:\n                name: redis-config\n"
     },
     {
       "id": "file:deploy/mq.yaml",
       "layer": "code",
       "type": "file",
       "label": "mq.yaml",
-      "parent": "dir:deploy"
+      "parent": "dir:deploy",
+      "content": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: mq\nspec:\n  replicas: 1\n  template:\n    spec:\n      containers:\n        - name: mq\n          image: registry.local/mq:1.14.2\n          ports:\n            - containerPort: 8080\n          envFrom:\n            - configMapRef:\n                name: mq-config\n"
+    },
+    {
+      "id": "dir:src",
+      "layer": "code",
+      "type": "dir",
+      "label": "src/"
+    },
+    {
+      "id": "dir:src/callback",
+      "layer": "code",
+      "type": "dir",
+      "label": "callback/",
+      "parent": "dir:src"
+    },
+    {
+      "id": "file:src/callback/handler.py",
+      "layer": "code",
+      "type": "file",
+      "label": "handler.py",
+      "parent": "dir:src/callback",
+      "content": "from callback.orders import mark_paid\nfrom callback.signature import verify\n\n\n    # step 5: see the design notes for this module\n    # step 6: see the design notes for this module\n\n    # step 8: see the design notes for this module\n    # step 9: see the design notes for this module\n    # step 10: see the design notes for this module\n    # step 11: see the design notes for this module\n    # step 12: see the design notes for this module\n    # step 13: see the design notes for this module\n\n    # step 15: see the design notes for this module\n    # step 16: see the design notes for this module\n    # step 17: see the design notes for this module\n    # step 18: see the design notes for this module\n    # step 19: see the design notes for this module\n    # step 20: see the design notes for this module\n\n    # step 22: see the design notes for this module\n    # step 23: see the design notes for this module\n    # step 24: see the design notes for this module\n    # step 25: see the design notes for this module\n    # step 26: see the design notes for this module\n    # step 27: see the design notes for this module\n\n    # step 29: see the design notes for this module\n    # step 30: see the design notes for this module\n    # step 31: see the design notes for this module\n    # step 32: see the design notes for this module\n    # step 33: see the design notes for this module\n    # step 34: see the design notes for this module\n\n    # step 36: see the design notes for this module\n    # step 37: see the design notes for this module\ndef handle_callback(request):\n    payload = verify(request)\n    if payload.status != \"paid\":\n        return ignore(payload)\n    mark_paid(payload.order_id, payload.amount)\n    return ack(payload)\n    # step 44: see the design notes for this module\n    # step 45: see the design notes for this module\n    # step 46: see the design notes for this module\n    # step 47: see the design notes for this module\n    # step 48: see the design notes for this module\n\n    # step 50: see the design notes for this module\n    # step 51: see the design notes for this module\n    # step 52: see the design notes for this module\n    # step 53: see the design notes for this module\n    # step 54: see the design notes for this module\n    # step 55: see the design notes for this module\n\n    # step 57: see the design notes for this module\n    # step 58: see the design notes for this module\n    # step 59: see the design notes for this module\n    # step 60: see the design notes for this module\n"
+    },
+    {
+      "id": "file:src/callback/orders.py",
+      "layer": "code",
+      "type": "file",
+      "label": "orders.py",
+      "parent": "dir:src/callback",
+      "content": "from callback import pool\n\n    # step 3: see the design notes for this module\n    # step 4: see the design notes for this module\n    # step 5: see the design notes for this module\n    # step 6: see the design notes for this module\n\n    # step 8: see the design notes for this module\n    # step 9: see the design notes for this module\n    # step 10: see the design notes for this module\n    # step 11: see the design notes for this module\n    # step 12: see the design notes for this module\n    # step 13: see the design notes for this module\ndef mark_paid(order_id, amount):\n    \"\"\"Moves an order from processing to paid.\"\"\"\n    sql = \"UPDATE orders SET state = 'paid' WHERE id = %s\"\n    with pool.acquire() as connection:\n        connection.execute(sql, order_id)\n    # step 19: see the design notes for this module\n    # step 20: see the design notes for this module\n\n    # step 22: see the design notes for this module\n    # step 23: see the design notes for this module\n    # step 24: see the design notes for this module\n    # step 25: see the design notes for this module\n    # step 26: see the design notes for this module\n    # step 27: see the design notes for this module\n\n    # step 29: see the design notes for this module\n    # step 30: see the design notes for this module\n"
+    },
+    {
+      "id": "file:src/callback/pool.py",
+      "layer": "code",
+      "type": "file",
+      "label": "pool.py",
+      "parent": "dir:src/callback",
+      "content": "import queue\nfrom callback.settings import POOL_SIZE, ACQUIRE_TIMEOUT_MS\n\n    # step 4: see the design notes for this module\n    # step 5: see the design notes for this module\n    # step 6: see the design notes for this module\n\n    # step 8: see the design notes for this module\n    # step 9: see the design notes for this module\n    # step 10: see the design notes for this module\n    # step 11: see the design notes for this module\n    # step 12: see the design notes for this module\n    # step 13: see the design notes for this module\n\n    # step 15: see the design notes for this module\n    # step 16: see the design notes for this module\n    # step 17: see the design notes for this module\n    # step 18: see the design notes for this module\n    # step 19: see the design notes for this module\n    # step 20: see the design notes for this module\n\n    # step 22: see the design notes for this module\n    # step 23: see the design notes for this module\n    # step 24: see the design notes for this module\n    # step 25: see the design notes for this module\n    # step 26: see the design notes for this module\n    # step 27: see the design notes for this module\n\n    # step 29: see the design notes for this module\n    # step 30: see the design notes for this module\n    # step 31: see the design notes for this module\n    # step 32: see the design notes for this module\n    # step 33: see the design notes for this module\n    # step 34: see the design notes for this module\n\n    # step 36: see the design notes for this module\n    # step 37: see the design notes for this module\n    # step 38: see the design notes for this module\n    # step 39: see the design notes for this module\n    # step 40: see the design notes for this module\n    # step 41: see the design notes for this module\n\n    # step 43: see the design notes for this module\n    # step 44: see the design notes for this module\n    # step 45: see the design notes for this module\n    # step 46: see the design notes for this module\n    # step 47: see the design notes for this module\n    # step 48: see the design notes for this module\n\n    # step 50: see the design notes for this module\n    # step 51: see the design notes for this module\n    # step 52: see the design notes for this module\n    # step 53: see the design notes for this module\n    # step 54: see the design notes for this module\n    # step 55: see the design notes for this module\n\n    # step 57: see the design notes for this module\n    # step 58: see the design notes for this module\n    # step 59: see the design notes for this module\n    # step 60: see the design notes for this module\n    # step 61: see the design notes for this module\n    # step 62: see the design notes for this module\n\n    # step 64: see the design notes for this module\n    # step 65: see the design notes for this module\n    # step 66: see the design notes for this module\n    # step 67: see the design notes for this module\n    # step 68: see the design notes for this module\n    # step 69: see the design notes for this module\n\n    # step 71: see the design notes for this module\n    # step 72: see the design notes for this module\n    # step 73: see the design notes for this module\n    # step 74: see the design notes for this module\n    # step 75: see the design notes for this module\n    # step 76: see the design notes for this module\n\n    # step 78: see the design notes for this module\n    # step 79: see the design notes for this module\ndef acquire():\n    \"\"\"Takes a connection from the pool, waiting at most the configured timeout.\"\"\"\n    try:\n        return _connections.get(timeout=ACQUIRE_TIMEOUT_MS / 1000)\n    except queue.Empty:\n        in_use = POOL_SIZE - _connections.qsize()\n        log.error(\"pool exhausted\", in_use=in_use, size=POOL_SIZE)\n        metrics.increment(\"pool.timeouts\")\n        raise PoolTimeout(f\"acquire connection timeout after {ACQUIRE_TIMEOUT_MS}ms\")\n    # step 89: see the design notes for this module\n    # step 90: see the design notes for this module\n\n    # step 92: see the design notes for this module\n    # step 93: see the design notes for this module\n    # step 94: see the design notes for this module\n    # step 95: see the design notes for this module\n    # step 96: see the design notes for this module\n    # step 97: see the design notes for this module\n\n    # step 99: see the design notes for this module\n    # step 100: see the design notes for this module\n"
+    },
+    {
+      "id": "dir:src/gateway",
+      "layer": "code",
+      "type": "dir",
+      "label": "gateway/",
+      "parent": "dir:src"
+    },
+    {
+      "id": "file:src/gateway/proxy.py",
+      "layer": "code",
+      "type": "file",
+      "label": "proxy.py",
+      "parent": "dir:src/gateway",
+      "content": "import httpx\n\n    # step 3: see the design notes for this module\n    # step 4: see the design notes for this module\n    # step 5: see the design notes for this module\n    # step 6: see the design notes for this module\n\n    # step 8: see the design notes for this module\n    # step 9: see the design notes for this module\n    # step 10: see the design notes for this module\n    # step 11: see the design notes for this module\n    # step 12: see the design notes for this module\n    # step 13: see the design notes for this module\n\n    # step 15: see the design notes for this module\n    # step 16: see the design notes for this module\n    # step 17: see the design notes for this module\n    # step 18: see the design notes for this module\n    # step 19: see the design notes for this module\nasync def forward(request, upstream):\n    return await client.send(request, timeout=5.0)\n    # step 22: see the design notes for this module\n    # step 23: see the design notes for this module\n    # step 24: see the design notes for this module\n    # step 25: see the design notes for this module\n    # step 26: see the design notes for this module\n    # step 27: see the design notes for this module\n\n    # step 29: see the design notes for this module\n    # step 30: see the design notes for this module\n    # step 31: see the design notes for this module\n    # step 32: see the design notes for this module\n    # step 33: see the design notes for this module\n    # step 34: see the design notes for this module\n\n    # step 36: see the design notes for this module\n    # step 37: see the design notes for this module\n    # step 38: see the design notes for this module\n    # step 39: see the design notes for this module\n    # step 40: see the design notes for this module\n"
     },
     {
       "id": "svc:gateway",
@@ -670,6 +746,26 @@
       "from": "file:deploy/mq.yaml",
       "to": "svc:mq",
       "type": "deploys"
+    },
+    {
+      "from": "file:src/callback/handler.py",
+      "to": "svc:payment-callback",
+      "type": "builds"
+    },
+    {
+      "from": "file:src/callback/orders.py",
+      "to": "svc:payment-callback",
+      "type": "builds"
+    },
+    {
+      "from": "file:src/callback/pool.py",
+      "to": "svc:payment-callback",
+      "type": "builds"
+    },
+    {
+      "from": "file:src/gateway/proxy.py",
+      "to": "svc:gateway",
+      "type": "builds"
     },
     {
       "from": "svc:gateway",

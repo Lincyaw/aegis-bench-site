@@ -3,10 +3,10 @@ import addFormats from 'ajv-formats';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import type { Catalog, FootprintFile, Trajectory, WorldFile } from '../src/api/types';
+import type { Catalog, FootprintFile, SignalsFile, Trajectory, WorldFile } from '../src/api/types';
 import {
-  DATA_DIRECTORY, WORLD_DIRECTORY, dataDirectoryPathOf, openRecords, openedIndexes, readAnnotations, readFootprint, readRunFile, readTaskFile, readTrajectory,
-  readWorld, runDirectoryOf, taskDirectoryOf, type BenchmarkIndexes,
+  DATA_DIRECTORY, WORLD_DIRECTORY, dataDirectoryPathOf, openRecords, openedIndexes, readAnnotations, readFootprint, readRunFile, readSignals, readTaskFile,
+  readTrajectory, readWorld, runDirectoryOf, taskDirectoryOf, type BenchmarkIndexes,
 } from '../src/mocks/records';
 import { dataReaderAt } from './dataReader';
 
@@ -72,6 +72,7 @@ export function checkIndexes(catalog: Catalog, benchmark: BenchmarkIndexes, dire
   expect(new Set(categoryIds).size === categoryIds.length, at('benchmark.json'), 'an annotation category id appears twice');
   const layerIds = record.worldLayers?.map(layer => layer.id) ?? [];
   expect(new Set(layerIds).size === layerIds.length, at('benchmark.json'), 'a world layer id appears twice');
+  expect(!record.worldLayers || record.blocks.replayPanel !== undefined, at('benchmark.json'), 'declares world layers but no blocks for the replay\'s panel');
   const taskIds = new Set(tasks.map(task => task.id));
   expect(taskIds.size === tasks.length, at('tasks.json'), 'a task id appears twice');
   for (const task of tasks) {
@@ -162,6 +163,29 @@ export function checkFootprint(footprint: FootprintFile, trajectory: Trajectory,
 }
 
 /**
+ * What a run's signals say of its world and its footprint: every entry from a node the world has at some point of the
+ * run, every stack frame in a file the world holds when it names one, and every view of a touch naming series, entries
+ * and traces the signals have for the node it touched.
+ */
+export function checkSignals(signals: SignalsFile, footprint: FootprintFile, world: WorldFile, file: string) {
+  checkAgainst('SignalsFile', file, signals);
+  const nodes = new Set([...world.nodes.map(node => node.id), ...footprint.events.flatMap(({ change }) => (change.type === 'addNode' ? [change.node.id] : []))]);
+  const named = [...signals.series.map(series => series.node), ...signals.logs.map(entry => entry.node), ...signals.spans.map(span => span.node)];
+  expect(named.every(node => nodes.has(node)), file, 'names a node the world never has');
+  expect(signals.logs.flatMap(entry => entry.stack ?? []).every(frame => frame.node === undefined || nodes.has(frame.node)), file, 'a stack frame names a file the world never has');
+  const logIds = new Set(signals.logs.map(entry => entry.id));
+  expect(logIds.size === signals.logs.length, file, 'a log entry id appears twice');
+  const seriesKeys = signals.series.map(series => `${series.node} ${series.name}`);
+  expect(new Set(seriesKeys).size === seriesKeys.length, file, 'a node has two series of one name');
+  const traceIds = new Set(signals.spans.map(span => span.traceId));
+  for (const { step, node, view } of footprint.touches) {
+    expect(!view?.series || view.series.every(name => seriesKeys.includes(`${node} ${name}`)), file, `step ${step} shows a series ${node} does not report`);
+    expect(!view?.logs || view.logs.every(id => logIds.has(id)), file, `step ${step} shows a log entry the signals do not have`);
+    expect(!view?.traces || view.traces.every(id => traceIds.has(id)), file, `step ${step} shows a trace the signals do not have`);
+  }
+}
+
+/**
  * Reads of every run's and task's files, each noting what it finds, and how many files are left unread: the runs and
  * published task files a benchmark keeps on Hugging Face, unless the flag asks for them.
  */
@@ -178,8 +202,9 @@ export function fileReadsOf(benchmark: BenchmarkIndexes): { reads: (() => Promis
       readRunFile(record, fact.id), readTrajectory(record, fact.id), record.annotationCategories ? readAnnotations(record, fact.id) : [],
     ]);
     if (record.worldLayers) {
-      const [footprint, world] = await Promise.all([readFootprint(record, fact.id), readWorld(record.id, fact.taskId)]);
+      const [footprint, signals, world] = await Promise.all([readFootprint(record, fact.id), readSignals(record, fact.id), readWorld(record.id, fact.taskId)]);
       checkFootprint(footprint, trajectory, world, named(`${runDirectoryOf(fact.id)}/footprint.json`));
+      checkSignals(signals, footprint, world, named(`${runDirectoryOf(fact.id)}/signals.json`));
     }
     checkAgainst('RunFile', named(`${runDirectoryOf(fact.id)}/run.json`), run);
     checkAgainst('TrajectoryFile', named(`${runDirectoryOf(fact.id)}/trajectory.json`), trajectory);
@@ -199,7 +224,7 @@ export function fileReadsOf(benchmark: BenchmarkIndexes): { reads: (() => Promis
     const text = await readTaskFile(record, task.id, file);
     expect(new TextEncoder().encode(text).length === file.size, named(`${taskDirectoryOf(task.id)}/${file.path}`), `is not the ${file.size} bytes tasks.json says`);
   });
-  const filesPerRun = 2 + (record.annotationCategories ? 1 : 0) + (record.worldLayers ? 1 : 0);
+  const filesPerRun = 2 + (record.annotationCategories ? 1 : 0) + (record.worldLayers ? 2 : 0);
   return { reads: [...worldReads, ...(leaveKept ? [] : runReads), ...taskReads], unread: (leaveKept ? runs.length * filesPerRun : 0) + taskFiles.length - readable.length };
 }
 

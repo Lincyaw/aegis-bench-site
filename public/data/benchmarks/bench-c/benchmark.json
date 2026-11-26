@@ -43,7 +43,8 @@
   ],
   "passRule": "服务健康检查通过、错误率恢复到基线且根因判定正确，才判为通过。",
   "blocks": {
-    "comparison": ["reply", "fileChanges", "checks", "trajectory"]
+    "comparison": ["reply", "fileChanges", "checks", "trajectory"],
+    "replayPanel": ["record", "content", "metrics", "logs", "traces", "touches", "events", "edges"]
   },
   "worldLayers": [
     {
@@ -73,7 +74,7 @@
   ],
   "huggingFace": {
     "repo": "PolarBear2026/agent-eval-demo",
-    "revision": "ab7372db41fda0077aac6cb790832f1562aa9b8d",
+    "revision": "5be16679c943fc35db8c7a88a6f6f49cac66afa2",
     "directory": "benchmarks/bench-c"
   }
 }

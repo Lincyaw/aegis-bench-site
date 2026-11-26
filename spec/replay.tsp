@@ -59,6 +59,9 @@ model WorldNode {
 
   /** Everything else the world records about the node, shown as it is */
   attrs?: Record<unknown>;
+
+  /** A file's text, for a node the world holds as a file */
+  content?: string;
 }
 
 /** A directed edge. One whose ends lie in different layers links the layers, such as a config file to its service. */
@@ -104,6 +107,37 @@ model Touch {
 
   /** The action in the mapper's words, such as edit, query or restart, shown as it is */
   verb: string;
+
+  /** What the touch let the agent see of the node, when the call returned part of the node's data */
+  view?: TouchView;
+}
+
+/** Lines of a file, both counted from 1 and both included. */
+model LineRange {
+  @minValue(1) from: int32;
+  @minValue(1) to: int32;
+}
+
+/**
+ * What a touch let the agent see of a node: the window of time the call asked about, and the part of the node's data
+ * it returned. A replay shows this beside the node's whole data, so a reader sees what the agent saw and what it missed.
+ */
+model TouchView {
+  /** The window of time the call asked about */
+  from?: utcDateTime;
+  to?: utcDateTime;
+
+  /** The node's metric series the call returned, by name */
+  series?: string[];
+
+  /** The log entries the call returned, by id */
+  logs?: string[];
+
+  /** The traces the call returned, by id */
+  traces?: string[];
+
+  /** The lines of the node's content the call returned, or the line a stack frame named */
+  lines?: LineRange;
 }
 
 model AddNode {
@@ -123,6 +157,9 @@ model SetNode {
   node: string;
   status?: NodeStatus;
   attrs?: Record<unknown>;
+
+  /** A file's new text, which replaces the old */
+  content?: string;
 }
 
 model AddEdge {
@@ -176,6 +213,119 @@ model RunReplay {
   /** In the order a replay stacks them */
   layers: WorldLayer[];
 
+  /** The blocks a node's panel is made of on this benchmark, in order */
+  panel: ReplayPanelBlock[];
+
   world: World;
   footprint: Footprint;
+  signals: RunSignals;
+}
+
+/**
+ * The blocks a node's side panel is made of. Each shows the node's part of one kind of data, both as the agent saw it
+ * at a step and whole, and shows nothing for a node that has none of it. A benchmark's configuration lists the blocks
+ * it uses, in order.
+ */
+enum ReplayPanelBlock {
+  /** The node's record as the world keeps it at the step */
+  record,
+
+  /** A file's text at the step, with the lines the agent saw */
+  content,
+
+  /** The node's metric series over the run, with the step's moment marked */
+  metrics,
+
+  /** The node's log entries, and for a file the entries whose stack runs through it */
+  logs,
+
+  /** The traces that pass through the node, span by span */
+  traces,
+
+  /** Every step that touched the node */
+  touches,
+
+  /** Every event that changed the node */
+  events,
+
+  /** The node's edges within and across layers, and the nodes it holds */
+  edges,
+}
+
+/** How loud a log entry is. */
+enum LogLevel {
+  debug,
+  info,
+  warn,
+  error,
+}
+
+/** A frame of a stack trace, innermost last. */
+model StackFrame {
+  function: string;
+  file: string;
+  line: int32;
+
+  /** The node of the code layer the frame lies in, when the world holds the file */
+  node?: string;
+}
+
+/** A log entry a node wrote. */
+model LogEntry {
+  /** Unique in the run's signals */
+  id: string;
+
+  at: utcDateTime;
+  node: string;
+  level: LogLevel;
+  message: string;
+  stack?: StackFrame[];
+}
+
+/** A metric a node reported at a fixed interval. */
+model MetricSeries {
+  node: string;
+
+  /** Unique among the node's series, such as p99_latency */
+  name: string;
+
+  unit: string;
+
+  /** When the first value was taken; each next one follows the interval after */
+  start: utcDateTime;
+
+  @minValue(1) intervalSeconds: int32;
+  values: float64[];
+}
+
+enum SpanStatus {
+  ok,
+  error,
+}
+
+/** One operation of a trace on one node. */
+model Span {
+  traceId: string;
+
+  /** Unique in its trace */
+  spanId: string;
+
+  /** The span that called this one; absent for the trace's root */
+  parentId?: string;
+
+  node: string;
+  name: string;
+  start: utcDateTime;
+  end: utcDateTime;
+  status: SpanStatus;
+}
+
+/**
+ * What the run's world reported while the run went on: metrics, logs and traces, each from a node. Their times are the
+ * same clock as the trajectory's steps, so a replay marks a step's moment on them.
+ */
+model RunSignals {
+  series: MetricSeries[];
+  logs: LogEntry[];
+  spans: Span[];
 }

@@ -1,10 +1,10 @@
 import type { Locale, RunReplay } from '../api/types';
 import { benchmarkOf } from './benchmarks';
-import { openedIndexes, readFootprint, readWorld } from './records';
+import { openedIndexes, readFootprint, readSignals, readWorld } from './records';
 
 /*
- * A run replayed over its task's world: the benchmark's layers, the world as the data directory keeps it for the task,
- * and the footprint the run's directory keeps, as an offline mapper drew it from the trajectory.
+ * A run replayed over its task's world: the benchmark's layers and panel, the world as the data directory keeps it for
+ * the task, and the footprint and signals the run's directory keeps, as an offline mapper drew them.
  */
 
 /** The run's replay, or nothing when there is no such run or its benchmark declares no world layers. */
@@ -14,6 +14,10 @@ export async function replayOf(runId: string, locale: Locale): Promise<RunReplay
   if (!located || !record?.worldLayers) {
     return undefined;
   }
-  const [world, footprint] = await Promise.all([readWorld(record.id, located.fact.taskId), readFootprint(record, runId)]);
-  return { layers: record.worldLayers.map(layer => ({ ...layer, name: layer.name[locale] })), world, footprint };
+  const panel = record.blocks.replayPanel;
+  if (!panel) {
+    throw new Error(`${record.id} declares world layers but no blocks for the replay's panel`);
+  }
+  const [world, footprint, signals] = await Promise.all([readWorld(record.id, located.fact.taskId), readFootprint(record, runId), readSignals(record, runId)]);
+  return { layers: record.worldLayers.map(layer => ({ ...layer, name: layer.name[locale] })), panel, world, footprint, signals };
 }

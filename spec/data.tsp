@@ -20,6 +20,7 @@ using AegisBench.Console;
  *   benchmarks/<benchmark>/runs/<run>/trajectory.json  TrajectoryFile
  *   benchmarks/<benchmark>/runs/<run>/annotations.json AnnotationListFile, for a benchmark that declares annotation categories
  *   benchmarks/<benchmark>/runs/<run>/footprint.json   FootprintFile, for a benchmark that declares world layers
+ *   benchmarks/<benchmark>/runs/<run>/signals.json     SignalsFile, for a benchmark that declares world layers
  *   benchmarks/<benchmark>/worlds/<task>.json WorldFile, for a benchmark that declares world layers
  *   benchmarks/<benchmark>/hunts.json         HuntListFile
  *   benchmarks/<benchmark>/releases.json      ReleaseListFile
@@ -108,7 +109,10 @@ model BenchmarkFile {
   /** The labels annotators give the benchmark's trajectory steps; when present, every run has annotations.json */
   annotationCategories?: AnnotationCategoryRecord[];
 
-  /** The layers of the benchmark's worlds, in the order a replay stacks them; when present, every task has a world and every run a footprint */
+  /**
+   * The layers of the benchmark's worlds, in the order a replay stacks them; when present, every task has a world, every
+   * run a footprint and signals, and the blocks name the replay's panel
+   */
   @minItems(1)
   worldLayers?: WorldLayerRecord[];
 
@@ -122,6 +126,11 @@ model BenchmarkBlocks {
   @minItems(1)
   @uniqueItems
   comparison: ComparisonBlock[];
+
+  /** A node's side panel in a run's replay; a benchmark that declares world layers lists it */
+  @minItems(1)
+  @uniqueItems
+  replayPanel?: ReplayPanelBlock[];
 }
 
 model WorldLayerRecord {
@@ -312,6 +321,13 @@ model WorldFile is World;
  * step.
  */
 model FootprintFile is Footprint;
+
+/**
+ * benchmarks/<benchmark>/runs/<run>/signals.json: what the run's world reported while the run went on. Every entry
+ * names a node the world has at some point of the run, and every view of a touch names series, entries and traces the
+ * signals have.
+ */
+model SignalsFile is RunSignals;
 
 /** benchmarks/<benchmark>/hunts.json: the hunts recorded over the benchmark's trajectories. */
 model HuntListFile is HuntRecord[];
