@@ -13,7 +13,6 @@
 
 .chips { display: flex; gap: var(--space-1); }
 .chip:hover { transform: translateY(calc(-1 * var(--size-hairline))); }
-.dimmed { opacity: .35; }
 
 @media (max-width: 760px) {
   .column { border-right: 0; }

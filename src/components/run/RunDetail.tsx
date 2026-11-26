@@ -4,12 +4,13 @@ import { useTranslation } from 'react-i18next';
 import type { RunDetail } from '../../api/types';
 import { LocaleLink } from '../../i18n/LocaleRouting';
 import { INSTRUCTION_PATH } from '../../routes/site';
-import { FactList } from '../../ui/content';
+import { FactList, HintedHeading } from '../../ui/content';
 import content from '../../ui/content.module.css';
 import controls from '../../ui/controls.module.css';
+import { InfoHint } from '../../ui/hint';
 import table from '../../ui/table.module.css';
 import { VendorBadge } from '../model/ModelBadge';
-import { HuggingFaceNote } from './HuggingFace';
+import { HuggingFaceLink } from './HuggingFace';
 import { OutcomeBadge, OutcomeText } from './Outcome';
 import styles from './RunDetail.module.css';
 
@@ -32,15 +33,16 @@ export function RunHeader({ run }: { run: RunDetail }) {
         { label: t('runs.metrics.cost'), value: `$${run.metrics.costUsd.toFixed(2)}` },
         { label: t('runs.metrics.endReason'), value: t(`runs.endReason.${run.metrics.endReason}`) },
       ]} />
-      {run.huggingFaceUrl && <HuggingFaceNote text={t('runs.huggingFace')} url={run.huggingFaceUrl} />}
+      {run.huggingFaceUrl && <HuggingFaceLink about={t('runs.huggingFace')} url={run.huggingFaceUrl} />}
     </header>
   );
 }
 
-export function DetailSection({ title, aside, children }: { title: string; aside?: string; children: ReactNode }) {
+/** A part of a run's tab: its title with the ⓘ that explains it, a fact about it at the end, and what it shows. */
+export function DetailSection({ title, about, aside, children }: { title: string; about?: ReactNode; aside?: string; children: ReactNode }) {
   return (
     <section className={styles.section}>
-      <header className={styles.sectionHead}><h3 className="t-label">{title}</h3>{aside && <span className="t-micro c-faint">{aside}</span>}</header>
+      <header className={styles.sectionHead}><HintedHeading rank="h3" className="t-label" title={title} about={about} />{aside && <span className="t-micro c-faint">{aside}</span>}</header>
       {children}
     </section>
   );
@@ -54,7 +56,7 @@ export function InputTab({ run, filePath }: { run: RunDetail; filePath: TaskFile
   const { input } = run;
   return (
     <>
-      <DetailSection title={t('runs.input.instruction')} aside={t('runs.input.instructionSource')}>
+      <DetailSection title={t('runs.input.instruction')} about={t('runs.input.note')} aside={t('runs.input.instructionSource')}>
         <div className={content.panel}>
           <p className={clsx(styles.prose, 't-body')}>{input.instruction}</p>
           {input.reportSchema && <pre className={clsx(styles.code, 't-mono c-muted')}>{input.reportSchema}</pre>}
@@ -64,11 +66,9 @@ export function InputTab({ run, filePath }: { run: RunDetail; filePath: TaskFile
       <DetailSection title={t('runs.input.environment')}>
         <FactList layout="rows" facts={input.environment} />
       </DetailSection>
-      <DetailSection title={t('runs.input.harness')} aside={`${input.harness.name} · v${input.harness.version}`}>
-        <p className="t-small c-muted">{t('runs.input.harnessNote')}</p>
+      <DetailSection title={t('runs.input.harness')} about={t('runs.input.harnessNote')} aside={`${input.harness.name} · v${input.harness.version}`}>
         <a className={clsx(controls.textLink, 't-micro')} href={input.harness.toolDefinitionsUrl}>{t('runs.input.toolDefinitions')}</a>
       </DetailSection>
-      <p className="t-micro c-faint">{t('runs.input.note')}</p>
     </>
   );
 }
@@ -87,7 +87,7 @@ export function OutputTab({ run, onStep }: { run: RunDetail; onStep: (step: numb
   const { submission, finalReply, artifacts, patchUrl } = run.output;
   return (
     <>
-      <DetailSection title={t('runs.output.submission')} aside={t('runs.output.submissionAside', { attempt: submission.attempt, step: submission.step, count: submission.files.length })}>
+      <DetailSection title={t('runs.output.submission')} about={t('runs.output.note')} aside={t('runs.output.submissionAside', { attempt: submission.attempt, step: submission.step, count: submission.files.length })}>
         <ul className={styles.files}>
           {submission.files.map(file => (
             <li key={file.path}>
@@ -112,7 +112,6 @@ export function OutputTab({ run, onStep }: { run: RunDetail; onStep: (step: numb
         <a className={clsx(controls.textLink, 't-micro')} href={patchUrl}>{t('runs.output.downloadPatch')}</a>
         <button type="button" className={clsx(controls.textLink, 't-micro')} onClick={() => onStep(finalReply.step)}>{t('runs.output.inTrajectory')}</button>
       </div>
-      <p className="t-micro c-faint">{t('runs.output.note')}</p>
     </>
   );
 }
@@ -122,9 +121,11 @@ export function GradingTab({ run, filePath, check, onCheck }: { run: RunDetail; 
   const { grading } = run;
   return (
     <>
-      <p className="t-small c-muted">{t('runs.grading.intro')}</p>
       <div className={styles.summary}>
-        <span className="t-label">{t('runs.grading.total', { count: grading.total })}</span>
+        <span className={styles.total}>
+          <span className="t-label">{t('runs.grading.total', { count: grading.total })}</span>
+          <InfoHint label={t('ui.about', { subject: t('runs.grading.checks') })}><p>{t('runs.grading.intro')}</p><p>{t('runs.grading.note')}</p></InfoHint>
+        </span>
         <span className="t-micro c-ok">{t('runs.grading.passed', { count: grading.passCount })}</span>
         {grading.total > grading.passCount && <span className="t-micro c-bad">{t('runs.grading.failed', { count: grading.total - grading.passCount })}</span>}
         <a className={clsx(controls.textLink, 't-micro')} href={grading.codeUrl}>{t('runs.grading.downloadCode')}</a>
@@ -161,7 +162,6 @@ export function GradingTab({ run, filePath, check, onCheck }: { run: RunDetail; 
           );
         })}
       </div>
-      <p className="t-micro c-faint">{t('runs.grading.note')}</p>
     </>
   );
 }
@@ -188,7 +188,7 @@ export function FailureTab({ run, onCheck, onStep }: { run: RunDetail; onCheck: 
           ))}
         </ul>
       </DetailSection>
-      <DetailSection title={t('runs.failure.review')} aside={review && t('runs.failure.reviewedOn', { date: review.reviewedOn })}>
+      <DetailSection title={t('runs.failure.review')} about={t('runs.failure.note')} aside={review && t('runs.failure.reviewedOn', { date: review.reviewedOn })}>
         {review ? (
           <div className={content.panel}>
             <p className="t-body">{review.text}</p>
@@ -199,7 +199,6 @@ export function FailureTab({ run, onCheck, onStep }: { run: RunDetail; onCheck: 
           </div>
         ) : <p className="t-small c-muted">{t('runs.failure.notReviewed')}</p>}
       </DetailSection>
-      <p className="t-micro c-faint">{t('runs.failure.note')}</p>
     </>
   );
 }

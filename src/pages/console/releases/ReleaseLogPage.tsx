@@ -18,7 +18,7 @@ export function ReleaseLogPage() {
   const { benchmarks, recent } = useReleaseOverview();
   return (
     <div className={styles.page}>
-      <ConsoleHeader title={t('console.releases.title')} lead={t('console.releases.lead')} />
+      <ConsoleHeader title={t('console.releases.title')} about={t('console.releases.about')} />
       <div className={clsx(table.table, styles.log)} role="table" aria-label={t('console.releases.title')}>
         <div className={clsx(table.row, table.head, 't-micro c-faint')} role="row">
           <span role="columnheader">{t('console.releases.column.benchmark')}</span>

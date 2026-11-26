@@ -5,7 +5,7 @@ import { combinationKey } from '../../api/constraints';
 import type { Combination, ConsoleBenchmark, EntrantKey, ReleaseContent } from '../../api/types';
 import { LocaleLink } from '../../i18n/LocaleRouting';
 import { consoleRunPath } from '../../routes/consoleRuns';
-import { FactList } from '../../ui/content';
+import { FactList, HintedHeading } from '../../ui/content';
 import content from '../../ui/content.module.css';
 import { Button, SubmitButton, TextArea, TextField, ToggleChip } from '../../ui/controls';
 import { ModelLabel } from '../model/ModelBadge';
@@ -31,8 +31,7 @@ export function ReleaseContentView({ benchmark, shown }: { benchmark: ConsoleBen
         </ul>
       </section>
       <section className={styles.section}>
-        <h2 className="t-heading">{t('console.release.replays')}</h2>
-        <p className="t-micro c-faint">{t('console.release.replaysNote')}</p>
+        <HintedHeading rank="h2" className="t-heading" title={t('console.release.replays')} about={t('console.release.replaysNote')} />
         <ol className={styles.replays}>
           {shown.replays.map(runId => <li key={runId}><LocaleLink className="t-mono" to={consoleRunPath(benchmark.id, runId)}>{runId}</LocaleLink></li>)}
         </ol>
@@ -46,8 +45,7 @@ export function EntrantChoice({ entrants, chosen, onChange }: { entrants: Combin
   const { t } = useTranslation();
   return (
     <section className={styles.section}>
-      <h2 className="t-heading">{t('console.release.entrants')}</h2>
-      <p className="t-micro c-faint">{t('console.release.entrantsNote')}</p>
+      <HintedHeading rank="h2" className="t-heading" title={t('console.release.entrants')} about={t('console.release.entrantsNote')} />
       <div className={styles.chips} role="group" aria-label={t('console.release.entrants')}>
         {entrants.map(entrant => {
           const pressed = chosen.some(key => isEntrant(key, entrant));
@@ -77,8 +75,7 @@ export function ReplayEditor({ benchmarkId, replays, onChange }: { benchmarkId: 
   };
   return (
     <section className={styles.section}>
-      <h2 className="t-heading">{t('console.release.replays')}</h2>
-      <p className="t-micro c-faint">{t('console.release.replaysNote')}</p>
+      <HintedHeading rank="h2" className="t-heading" title={t('console.release.replays')} about={t('console.release.replaysNote')} />
       <ol className={styles.replays}>
         {replays.map(replay => (
           <li key={replay}>

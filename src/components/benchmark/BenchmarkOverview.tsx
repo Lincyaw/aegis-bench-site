@@ -7,6 +7,7 @@ import { useLocale } from '../../i18n/localeContext';
 import { dateTimeOf, groupedNumber } from '../../i18n/locales';
 import { consoleModelPath } from '../../routes/consoleModels';
 import { PENDING_RUNS, consoleRunPath, consoleRunsPath } from '../../routes/consoleRuns';
+import { InfoHint } from '../../ui/hint';
 import table from '../../ui/table.module.css';
 import { ModelLabel } from '../model/ModelBadge';
 import { FailureClassTag } from '../result/FailureClassTag';
@@ -58,14 +59,14 @@ export function RecentFailure({ benchmarkId, run }: { benchmarkId: string; run: 
   );
 }
 
+/** A kind of work waiting, which opens the runs it waits on, with the ⓘ that says what doing it involves. */
 export function PendingItem({ benchmarkId, work }: { benchmarkId: string; work: PendingWork }) {
   const { t } = useTranslation();
+  const title = t(`console.overview.pendingKind.${work.kind}.title`, { count: work.count });
   return (
-    <li>
-      <LocaleLink className={styles.pending} to={consoleRunsPath(benchmarkId, PENDING_RUNS[work.kind])}>
-        <span className="t-label">{t(`console.overview.pendingKind.${work.kind}.title`, { count: work.count })}</span>
-        <span className="t-small c-muted">{t(`console.overview.pendingKind.${work.kind}.body`)}</span>
-      </LocaleLink>
+    <li className={styles.pending}>
+      <LocaleLink className="t-label" to={consoleRunsPath(benchmarkId, PENDING_RUNS[work.kind])}>{title}</LocaleLink>
+      <InfoHint label={t('ui.about', { subject: title })}>{t(`console.overview.pendingKind.${work.kind}.body`)}</InfoHint>
     </li>
   );
 }

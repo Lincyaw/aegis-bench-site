@@ -26,7 +26,7 @@ export function RunListPage() {
   const last = Math.min(query.offset + RUN_LIST_PAGE_SIZE, page.total);
   return (
     <div className={styles.page} data-half={benchmark.stage.half}>
-      <ConsoleHeader crumbs={[{ label: benchmark.name, to: consoleBenchmarkPath(benchmark.id) }, { label: t('console.runs.title') }]} title={t('console.runs.title')}
+      <ConsoleHeader crumbs={[{ label: benchmark.name, to: consoleBenchmarkPath(benchmark.id) }, { label: t('console.runs.title') }]} title={t('console.runs.title')} about={t('console.runs.about')}
         lead={isFilteredRunQuery(query) ? t('console.runs.leadFiltered', { count: page.total, total: benchmark.runCount }) : t('console.runs.lead', { count: benchmark.runCount })}
       />
       <RunFilters benchmark={benchmark} query={query} onChange={update}>

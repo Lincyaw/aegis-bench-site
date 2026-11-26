@@ -84,35 +84,66 @@ model ConsoleRunDetail {
   reviewer?: string;
 }
 
-/** What one event of a trajectory records. */
+/** What one event of a trajectory records, as the server sorts it by the part of the step it was read from. */
 enum RunEventKind {
-  /** What the agent said at a step */
+  /** A step's `message`, whatever the step's `source` */
   message,
 
+  /** One of a step's `tool_calls` whose `function_name` is not `submit` */
   toolCall,
+
+  /** One of a step's `observation.results` whose `extra.failed` is not `true` */
   observation,
 
-  /** An observation that reports a failed call; the trajectory marks it with `extra.failed` on the observation result */
+  /** One of a step's `observation.results` whose `extra.failed` is `true`, which reports a failed call */
   error,
 
+  /** One of a step's `tool_calls` whose `function_name` is `submit` */
   submit,
 }
 
-/** One event of a run's trajectory, in the order it happened. */
-model RunEvent {
-  /** Position among all the run's events, from 1 */
+/** One event of a run's trajectory as a list shows it: where it sits, its kind, and the start of its text. */
+model RunEventRow {
+  /**
+   * Position among all the run's events, from 1: each step's `message`, then its `tool_calls`, then its
+   * `observation.results`, each in the order the step records them
+   */
+  @minValue(1)
   index: int32;
 
+  /** The `step_id` of the step that records the event */
   stepId: int32;
+
   kind: RunEventKind;
-  at: utcDateTime;
+
+  /** The step's `timestamp`, when the trajectory records one */
+  at?: utcDateTime;
+
+  /** The `function_name` of the tool call, or of the call an observation result's `source_call_id` names */
   tool?: string;
 
-  /** The event's text, cut at 400 characters */
+  /**
+   * The first line of the event's text, cut at 200 characters. The text is the message's, or the observation result's
+   * `content`, with a list of parts giving its text parts a line apart; for a tool call it is the `arguments` as JSON.
+   * The event read by its index holds the record whole.
+   */
+  @maxLength(200)
   excerpt: string;
 }
 
-model RunEventPage is Page<RunEvent>;
+model RunEventRowPage is Page<RunEventRow>;
+
+/** One event of a run's trajectory with its whole record. */
+model RunEvent {
+  ...OmitProperties<RunEventRow, "excerpt">;
+
+  /**
+   * The part of the step the event was read from, whole and unchanged: the step's `message` for a message event, one
+   * of its `tool_calls` for a toolCall or submit event, one of its `observation.results` for an observation or error
+   * event
+   */
+  record: ATIF.Step.message | ATIF.ToolCall | ATIF.ObservationResult;
+}
 
 @route("/console/benchmarks/{benchmarkId}/runs")
 @useAuth(SessionCookie)
@@ -159,16 +190,21 @@ interface ConsoleRunRecords {
   @route("/replay")
   replay(@path runId: string, ...LanguageHeader): Localized<RunReplay> | SignInRequiredError | NotFoundError | HuggingFaceUnreachableError;
 
-  /** The events of the run's trajectory, a page at a time */
+  /** The events of the run's trajectory in index order, a page at a time, each as a row */
   @get
   @route("/events")
   events(
     @path runId: string,
     @query(#{ explode: true }) kind?: RunEventKind,
 
-    /** Matches the event's text or tool */
+    /** Matches the event's tool, or any string at any depth of its record rather than only its excerpt */
     @query(#{ explode: true }) q?: string = "",
 
     ...PageQuery<50>,
-  ): RunEventPage | SignInRequiredError | NotFoundError | HuggingFaceUnreachableError;
+  ): RunEventRowPage | SignInRequiredError | NotFoundError | HuggingFaceUnreachableError;
+
+  /** One event of the run's trajectory with its whole record; an index past the run's last event is not found */
+  @get
+  @route("/events/{index}")
+  event(@path runId: string, @path @minValue(1) index: int32): RunEvent | SignInRequiredError | NotFoundError | HuggingFaceUnreachableError;
 }

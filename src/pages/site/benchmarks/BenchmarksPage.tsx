@@ -6,6 +6,7 @@ import { BuildingDot, HalfDot, LifecycleMap } from '../../../components/lifecycl
 import { HALF_LABELS, benchmarkStageLabels, benchmarksAt } from '../../../components/lifecycle/stages';
 import { stageAnchor } from '../../../routes/site';
 import { Tag } from '../../../ui/content';
+import { InfoHint } from '../../../ui/hint';
 import styles from './BenchmarksPage.module.css';
 
 /** The benchmarks grouped by the lifecycle stage they evaluate, with the stages still under construction. */
@@ -24,7 +25,7 @@ export function BenchmarksPage() {
           <ul className={clsx(styles.legend, 't-micro c-muted')}>
             <li><HalfDot half="dev" />{t('benchmarks.published')}</li>
             <li><BuildingDot />{t('benchmarks.building')}</li>
-            <li className="c-faint">{t('benchmarks.mapHint')}</li>
+            <li><InfoHint label={t('ui.about', { subject: t('landing.lifecycle') })}>{t('benchmarks.mapHint')}</InfoHint></li>
           </ul>
         </div>
         <div className={styles.map}><LifecycleMap stages={stages} labels={benchmarkStageLabels(stages)} /></div>
@@ -46,7 +47,7 @@ export function BenchmarksPage() {
         <p className={styles.building}>
           <Tag dashed>{t('benchmarks.building')}</Tag>
           <span className="t-small c-muted">{building.map(stage => `${stage.id} ${stage.name}`).join(' · ')}</span>
-          <span className="t-micro c-faint">{t('benchmarks.comingSoon')}</span>
+          <InfoHint label={t('ui.about', { subject: t('benchmarks.building') })}>{t('benchmarks.comingSoon')}</InfoHint>
         </p>
       </div>
     </div>

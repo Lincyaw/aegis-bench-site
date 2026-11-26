@@ -14,7 +14,7 @@
 
 /* A quiet control keeps the pill's shape and size but not its outline, its text muted until the pointer reaches it; a bar of them leaves its one outlined pill to stand out. */
 .quiet { border-color: transparent; color: var(--text-muted); }
-.quiet:hover { color: var(--text-main); }
+.quiet:is(:hover, [aria-expanded="true"]) { color: var(--text-main); }
 
 .large { height: var(--control-large); padding: 0 var(--space-5); font: var(--type-label); line-height: 1; }
 .medium { height: var(--control-medium); padding: 0 var(--space-4); font: var(--type-small); line-height: 1; }
@@ -52,8 +52,17 @@
 .segmented { position: relative; display: inline-flex; align-self: center; padding: var(--space-px); border: var(--rule-hairline); border-radius: var(--radius-full); background: var(--bg-muted); transition: var(--control-transition); }
 .thumb { position: absolute; top: var(--space-px); left: 0; height: var(--control-small); border-radius: var(--radius-full); background: var(--bg-page); transition: transform var(--duration-slow) var(--ease-out), width var(--duration-slow) var(--ease-out); }
 /* Positioned after the thumb in source order, the choices paint above it. */
-.segment { position: relative; height: var(--control-small); padding: 0 var(--space-4); border-radius: var(--radius-full); color: var(--text-muted); font: var(--type-micro); line-height: 1; transition: color var(--duration-base); }
+.segment { position: relative; height: var(--control-small); padding: 0 var(--space-4); border-radius: var(--radius-full); color: var(--text-muted); font: var(--type-micro); line-height: 1; white-space: nowrap; transition: color var(--duration-base); }
 .segment:hover, .segment[aria-pressed="true"] { color: var(--text-main); }
+
+/*
+ * Captions sit over runs of choices: the track takes its columns from the captions' grid, so a run of choices widens
+ * to its caption when the caption is the wider, and every caption stays over its own choices. A caption wraps before
+ * the choices under it do, and only between words, so a Chinese name stays whole.
+ */
+.captioned { display: inline-grid; row-gap: var(--space-2); max-width: 100%; }
+.captioned > .segmented { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; }
+.caption { display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); padding: 0 var(--space-1); text-align: center; word-break: keep-all; }
 
 .textField { display: grid; gap: var(--space-2); }
 .input { justify-content: flex-start; width: 100%; padding: 0 var(--space-5); background: none; font: var(--type-body); outline: 0; }
@@ -98,6 +107,8 @@
 .chevron { display: grid; color: var(--text-faint); transition: transform var(--duration-slow) var(--ease-out), color var(--duration-base); }
 .trigger:hover .chevron, .trigger[data-state="open"] .chevron { color: var(--text-main); }
 .trigger[data-state="open"] .chevron { transform: rotate(180deg); }
+/* Without an outline to fill, a quiet select is as wide as its value and its chevron. */
+.trigger.quiet { min-width: 0; gap: var(--space-2); }
 
 /* The panel's corners stay concentric with the pill options inside its padding. */
 .menu {

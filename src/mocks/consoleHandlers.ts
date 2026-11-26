@@ -3,7 +3,7 @@ import { benchmarkOf, hasBenchmark } from './benchmarks';
 import { taskComparisonOf } from './comparison';
 import { DEFAULT_MATRIX_PAGE_SIZE, collectionModelsOf, collectionsOf, hasCollection, matrixOf } from './consoleCollections';
 import { DEFAULT_MODEL_TASK_PAGE_SIZE, harnessIdsOf, modelDetailOf, modelResultsOver, modelTasksOf, ranOn } from './consoleModels';
-import { DEFAULT_EVENT_PAGE_SIZE, DEFAULT_RUN_PAGE_SIZE, consoleRunOf, filteredRunsOf, runEventsOf, runRowOf } from './consoleRuns';
+import { DEFAULT_EVENT_PAGE_SIZE, DEFAULT_RUN_PAGE_SIZE, consoleRunOf, filteredRunsOf, matchesEventSearch, runEventRowOf, runEventsOf, runRowOf } from './consoleRuns';
 import {
   DEFAULT_CONSOLE_TASK_PAGE_SIZE, checkResultsOf, consoleEntriesOf, consoleTaskOf, filteredTasksOf, namedTaskOf, referenceFilesOf, revisionsOf,
   tagCountsOf, taskEntrantRunsOf, taskGradingOf, taskRowOf,
@@ -486,9 +486,22 @@ export const consoleHandlers = [
     }
     const kind = query.get('kind');
     const q = (query.get('q') ?? '').trim();
-    const events = runEventsOf(trajectory).filter(event => (!kind || event.kind === kind) && (!q || event.excerpt.includes(q) || event.tool?.includes(q)));
+    const page = pageOf(runEventsOf(trajectory).filter(event => (!kind || event.kind === kind) && matchesEventSearch(event, q)), query, DEFAULT_EVENT_PAGE_SIZE);
     await delay(60);
-    return response(200).json(pageOf(events, query, DEFAULT_EVENT_PAGE_SIZE));
+    return response(200).json({ ...page, items: page.items.map(runEventRowOf) });
+  }),
+
+  http.get('/console/runs/{runId}/events/{index}', async ({ cookies, params, response }) => {
+    if (!sessionUserOf(cookies)) {
+      return response(401).json(SIGN_IN_REQUIRED);
+    }
+    const trajectory = await trajectoryOf(params.runId);
+    if (!trajectory) {
+      return response(404).json({ message: `no run ${params.runId}` });
+    }
+    const event = runEventsOf(trajectory).find(candidate => candidate.index === Number(params.index));
+    await delay(40);
+    return event ? response(200).json(event) : response(404).json({ message: `run ${params.runId} has no event ${params.index}` });
   }),
 
   http.get('/console/benchmarks/{benchmarkId}/tasks/{taskId}/file', async ({ cookies, params, query, response }) => {

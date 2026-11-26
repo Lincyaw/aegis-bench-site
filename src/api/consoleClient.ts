@@ -272,6 +272,14 @@ export function useRunEvents(runId: string, query: RunEventQuery, pageSize: numb
   }).data;
 }
 
+/** One event of a run with its whole record, read when its row is opened; a record is the same in every language. */
+export function useRunEvent(runId: string, index: number) {
+  return useSuspenseQuery({
+    queryKey: [CONSOLE_QUERY, 'event', runId, index],
+    queryFn: () => responseBody(api.GET('/console/runs/{runId}/events/{index}', { params: { path: { runId, index } } })),
+  }).data;
+}
+
 export function useConsoleModels(benchmarkId: string) {
   const locale = useLocale();
   return useSuspenseQuery({

@@ -9,6 +9,7 @@ import { ChangeFailure } from '../../../components/shell/ChangeFailure';
 import { ConsoleHeader } from '../../../components/shell/ConsoleHeader';
 import { useLocale } from '../../../i18n/localeContext';
 import { dateTimeOf } from '../../../i18n/locales';
+import { HintedHeading } from '../../../ui/content';
 import content from '../../../ui/content.module.css';
 import { Button, Select, SubmitButton, TextField } from '../../../ui/controls';
 import table from '../../../ui/table.module.css';
@@ -24,7 +25,7 @@ export function MembersPage() {
   const administering = mayAdminister(user.role);
   return (
     <div className={styles.page}>
-      <ConsoleHeader title={t('console.members.title')} lead={t('console.members.lead')} />
+      <ConsoleHeader title={t('console.members.title')} about={t('console.members.about')} />
       <div className={clsx(table.table, styles.members)} role="table" aria-label={t('console.members.title')}>
         <div className={clsx(table.row, table.head, 't-micro c-faint')} role="row">
           <span role="columnheader">{t('console.members.column.member')}</span>
@@ -55,7 +56,7 @@ export function MemberRow({ member, self, administering }: { member: Member; sel
       </span>
       <span role="cell" className={styles.role}>
         {administering
-          ? <Select label={t('console.members.roleOf', { name: member.name })} value={member.role} onChange={role => changeRole.mutate(role)} choices={consoleRoleValues.map(role => ({ value: role, label: t(`console.roles.${role}`) }))} />
+          ? <Select variant={asking ? 'quiet' : 'line'} label={t('console.members.roleOf', { name: member.name })} value={member.role} onChange={role => changeRole.mutate(role)} choices={consoleRoleValues.map(role => ({ value: role, label: t(`console.roles.${role}`) }))} />
           : <span className="t-small">{t(`console.roles.${member.role}`)}</span>}
         <ChangeFailure error={changeRole.error} reasons={{ 409: t('console.members.lastAdministrator') }} />
       </span>
@@ -65,9 +66,9 @@ export function MemberRow({ member, self, administering }: { member: Member; sel
         {administering && (asking ? (
           <>
             <Button variant="line" onClick={() => remove.mutate()}>{t('console.members.confirmRemove')}</Button>
-            <Button variant="line" onClick={() => setAsking(false)}>{t('console.members.cancel')}</Button>
+            <Button variant="quiet" onClick={() => setAsking(false)}>{t('console.members.cancel')}</Button>
           </>
-        ) : <Button variant="line" onClick={() => setAsking(true)}>{t('console.members.remove')}</Button>)}
+        ) : <Button variant="quiet" onClick={() => setAsking(true)}>{t('console.members.remove')}</Button>)}
         <ChangeFailure error={remove.error} reasons={{ 409: t('console.members.lastAdministrator') }} />
       </span>
     </div>
@@ -87,7 +88,7 @@ export function InviteForm() {
   };
   return (
     <form className={clsx(content.panel, styles.invite)} onSubmit={submit}>
-      <h2 className="t-heading">{t('console.members.invite.title')}</h2>
+      <HintedHeading rank="h2" className="t-heading" title={t('console.members.invite.title')} about={t('console.members.invite.note', { password: DEMO_PASSWORD })} />
       <div className={styles.fields}>
         <TextField label={t('console.members.invite.account')} type="text" autoComplete="off" value={account} onChange={setAccount} pattern={{ regex: ACCOUNT_PATTERN, hint: t('console.signIn.accountHint') }} />
         <TextField label={t('console.members.invite.name')} type="text" autoComplete="off" value={name} onChange={setName} />
@@ -96,7 +97,6 @@ export function InviteForm() {
           <Select label={t('console.members.invite.role')} value={role} onChange={setRole} choices={consoleRoleValues.map(value => ({ value, label: t(`console.roles.${value}`) }))} />
         </div>
       </div>
-      <p className="t-micro c-faint">{t('console.members.invite.note', { password: DEMO_PASSWORD })}</p>
       <ChangeFailure error={invite.error} reasons={{ 409: t('console.members.invite.exists') }} />
       <div><SubmitButton variant="solid" pending={invite.isPending}>{t('console.members.invite.submit')}</SubmitButton></div>
     </form>

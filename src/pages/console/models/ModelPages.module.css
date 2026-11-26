@@ -1,7 +1,6 @@
 .page { display: grid; gap: var(--space-6); }
 .page > header { margin-bottom: 0; }
 .section { display: grid; gap: var(--space-3); }
-.sectionHead { display: grid; gap: var(--space-1); }
 
 .models { --columns: minmax(12rem, 1.4fr) minmax(8rem, 1fr) minmax(9rem, 1.1fr) 6rem 6rem 5.5rem 5rem minmax(8rem, 1fr); }
 .model { display: flex; align-items: center; gap: var(--space-3); }

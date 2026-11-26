@@ -1,4 +1,4 @@
-.note { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-1) var(--space-3); }
+.link { display: flex; align-items: center; gap: var(--space-1); }
 
 /* Stands where the records would have been, framed like a panel so it reads as their place. */
 .unreachable {

@@ -28,7 +28,7 @@ export const consoleZh = {
   forbidden: '你的角色不能做这项操作。',
   members: {
     title: '成员与权限',
-    lead: '中台成员及其权限。所有成员都能查看全部记录；编辑还可以起草、发布和恢复版本，起草和复核报告；管理员还可以管理成员和设置。',
+    about: '中台成员及其权限。所有成员都能查看全部记录；编辑还可以起草、发布和恢复版本，起草和复核报告；管理员还可以管理成员和设置。',
     column: { member: '成员', role: '角色', joined: '加入时间', lastSignedIn: '最近登录', actions: '操作' },
     you: '你',
     never: '从未登录',
@@ -50,7 +50,7 @@ export const consoleZh = {
   },
   reports: {
     title: '报告',
-    lead: '关于这个评测基准的研究报告。在中台起草、预览并经同事复核；通过后把文件提交到仓库，对外站点下次构建时显示。',
+    about: '关于这个评测基准的研究报告。在中台起草、预览并经同事复核；通过后把文件提交到仓库，对外站点下次构建时显示。',
     drafts: '草稿',
     noDrafts: '还没有草稿。',
     published: '已发布',
@@ -70,7 +70,7 @@ export const consoleZh = {
     },
   },
   report: {
-    lead: {
+    about: {
       draft: '草稿：左侧是源码，右侧是对外页面的样子。完成全部发布前检查并保存后，提交复核。',
       inReview: '复核中：等待其他成员复核；退回修改后回到草稿。',
       approved: '已通过复核：下载文件并提交到仓库，对外站点下次构建时显示。',
@@ -109,7 +109,7 @@ export const consoleZh = {
     history: '复核记录',
     export: {
       title: '提交到仓库',
-      lead: '把下面的文件提交到仓库的对应位置，对外站点下次构建时显示这篇报告；提交之后可以丢弃这份草稿。',
+      note: '把下面的文件提交到仓库的对应位置，对外站点下次构建时显示这篇报告；提交之后可以丢弃这份草稿。',
       download: '下载',
     },
     discard: '丢弃草稿',
@@ -119,7 +119,7 @@ export const consoleZh = {
   },
   settings: {
     title: '设置',
-    lead: '工作区的名称、对外联系方式，以及报告提交到对外站点之前需满足的规则。',
+    about: '工作区的名称、对外联系方式，以及报告提交到对外站点之前需满足的规则。',
     workspace: {
       title: '工作区信息',
       name: '工作区名称',
@@ -146,7 +146,7 @@ export const consoleZh = {
   },
   workbench: {
     title: '工作台',
-    lead: '各评测基准的当前状态：对外的版本、待发布的草稿和待处理的工作。',
+    about: '各评测基准的当前状态：对外的版本、待发布的草稿和待处理的工作。',
     stats: { benchmarks: '评测基准', drafts: '待发布的草稿', unreviewed: '待复核', executionFailures: '执行失败未计入' },
     column: { benchmark: '评测基准', current: '对外版本', draft: '草稿', tasks: '任务', runs: '运行', unreviewed: '待复核' },
     recent: '最近发布',
@@ -155,7 +155,7 @@ export const consoleZh = {
   },
   releases: {
     title: '发布记录',
-    lead: '对外站点只显示已发布的内容。每个评测基准单独发布；被替换的版本保留下来，可以再次发布以恢复。',
+    about: '对外站点只显示已发布的内容。每个评测基准单独发布；被替换的版本保留下来，可以再次发布以恢复。',
     column: { benchmark: '评测基准', current: '对外版本', draft: '草稿', updated: '更新时间' },
     recent: '最近发布',
     noDraft: '无草稿',
@@ -177,7 +177,7 @@ export const consoleZh = {
   },
   benchmarkReleases: {
     title: '发布',
-    lead: '{{benchmark}} 在对外站点上显示的内容：排行榜上的组合、简介和运行示例。',
+    about: '{{benchmark}} 在对外站点上显示的内容：排行榜上的组合、简介和运行示例。',
     newDraft: '新建草稿',
     openDraft: '编辑草稿',
     viewDraft: '查看草稿',
@@ -185,7 +185,7 @@ export const consoleZh = {
     column: { version: '版本', status: '状态', note: '发布说明', changes: '变化', author: '作者', updated: '时间' },
   },
   release: {
-    lead: {
+    about: {
       draft: '草稿：编辑后发布，对外站点即改为显示这一版。',
       current: '对外站点当前显示的版本。',
       superseded: '已被替换的版本，可以再次发布以恢复。',
@@ -221,7 +221,7 @@ export const consoleZh = {
   },
   changelog: {
     title: '更新记录',
-    lead: '所有任务的每个版本，最新的在前。只修订评分的版本保留旧运行，重新评分后计入；修改任务的版本需要重新运行。',
+    about: '所有任务的每个版本，最新的在前。只修订评分的版本保留旧运行，重新评分后计入；修改任务的版本需要重新运行。',
     benchmarkFilter: '评测基准',
     everyBenchmark: '全部评测基准',
     changeFilter: '变更',
@@ -231,7 +231,7 @@ export const consoleZh = {
   },
   collections: {
     title: '展示集',
-    lead: '每个标签对应一个展示集：带这个标签的任务，用来在一组任务上比较模型。展示集不单独保存，任务的标签变了，展示集随之变化。',
+    about: '每个标签对应一个展示集：带这个标签的任务，用来在一组任务上比较模型。展示集不单独保存，任务的标签变了，展示集随之变化。',
     column: { tag: '标签', tasks: '任务', passRate: '通过率', counted: '计入运行', failures: '失败' },
   },
   collection: {
@@ -327,8 +327,9 @@ export const consoleZh = {
   },
   tasks: {
     title: '任务',
-    lead_one: '共 {{count, number}} 道任务。默认按通过率从低到高排列，最难的在前。',
-    lead_other: '共 {{count, number}} 道任务。默认按通过率从低到高排列，最难的在前。',
+    lead_one: '共 {{count, number}} 道任务',
+    lead_other: '共 {{count, number}} 道任务',
+    about: '默认按通过率从低到高排列，最难的在前。',
     filters: '筛选任务',
     search: '搜索任务编号或标题',
     tagFilter: '标签',
@@ -341,7 +342,7 @@ export const consoleZh = {
     column: { task: '任务', tags: '标签', entrants: '各组合', passRate: '通过率', counted: '计入运行', version: '版本' },
     entrantSolved: '{{entrant}}：至少通过一次',
     entrantUnsolved: '{{entrant}}：从未通过',
-    legend: '「各组合」的每个点代表一个组合：实心表示至少通过一次，空心表示从未通过。',
+    legend: '每个点代表一个组合：实心表示至少通过一次，空心表示从未通过。',
     range: '第 {{from, number}}–{{to, number}} 道，共 {{total, number}} 道',
     empty: '没有符合条件的任务。',
   },
@@ -366,7 +367,7 @@ export const consoleZh = {
       verifier: '评分执行',
     },
     reference: {
-      note: '对外站点不公开这些文件：参考解法供 Oracle 验证任务可解，参考答案是评分比对的依据。',
+      note: { solution: '对外站点不公开。参考解法供 Oracle 验证任务可解。', referenceAnswer: '对外站点不公开。参考答案是评分比对的依据。' },
       reason: { solution: '参考解法', referenceAnswer: '参考答案' },
     },
     runs: {
@@ -392,17 +393,18 @@ export const consoleZh = {
       note: '修改任务后，旧版本上的运行不再计入；只修订评分时，旧运行重新评分后计入。',
     },
     files: {
-      note: 'Harbor 任务目录。标为「对外不公开」的是参考解法与参考答案，只在中台可见。',
+      note: '标为「对外不公开」的是参考解法与参考答案，只在中台可见。',
       withheld: '对外不公开',
     },
     allRuns: '查看这道任务的全部运行',
   },
   runs: {
     title: '运行',
-    lead_one: '共 {{count, number}} 次运行，最新的在前。执行失败的运行列出，但不计入结果。',
-    lead_other: '共 {{count, number}} 次运行，最新的在前。执行失败的运行列出，但不计入结果。',
-    leadFiltered_one: '符合筛选的 {{count, number}} 次运行，共 {{total, number}} 次，最新的在前。执行失败的运行列出，但不计入结果。',
-    leadFiltered_other: '符合筛选的 {{count, number}} 次运行，共 {{total, number}} 次，最新的在前。执行失败的运行列出，但不计入结果。',
+    lead_one: '共 {{count, number}} 次运行',
+    lead_other: '共 {{count, number}} 次运行',
+    leadFiltered_one: '符合筛选的 {{count, number}} 次运行，共 {{total, number}} 次',
+    leadFiltered_other: '符合筛选的 {{count, number}} 次运行，共 {{total, number}} 次',
+    about: '最新的在前。执行失败的运行列出，但不计入结果。',
     filters: '筛选运行',
     search: '搜索任务编号或标题',
     combinationFilter: '组合',
@@ -419,8 +421,9 @@ export const consoleZh = {
   },
   models: {
     title: '模型',
-    lead_one: '{{count}} 个模型在这个评测基准上运行过。每个模型的结果合计它用过的全部框架，最好的在前。',
-    lead_other: '{{count}} 个模型在这个评测基准上运行过。每个模型的结果合计它用过的全部框架，最好的在前。',
+    lead_one: '{{count}} 个模型在这个评测基准上运行过',
+    lead_other: '{{count}} 个模型在这个评测基准上运行过',
+    about: '每个模型的结果合计它用过的全部框架，最好的在前。',
     column: { model: '模型', harnesses: '框架', passRate: '通过率', everyTime: '每次都通过', once: '至少一次通过', counted: '计入运行', cost: '平均成本', failures: '失败' },
   },
   scope: {
@@ -435,14 +438,14 @@ export const consoleZh = {
     stats: { passRate: '通过率', everyTime: '每次都通过', steps: '平均步数', cost: '平均成本' },
     byHarness: '各框架的结果',
     tasks: '逐题表现',
-    tasksLead: '模型在每道任务上的运行，按它自己的通过率从低到高排列。',
+    tasksNote: '模型在每道任务上的运行，按它自己的通过率从低到高排列。',
     column: { task: '任务', runs: '各次运行', passRate: '通过率', failures: '失败' },
     runOf: '{{harness}} 第 {{attempt}} 次：{{outcome}}',
     range: '第 {{from, number}}–{{to, number}} 道，共 {{total, number}} 道',
   },
   analysis: {
     title: '轨迹分析',
-    lead: '每次分析用一个问题检索全部轨迹：探针机械地标出位置，读者通读整条轨迹后给出判定。只被标记、未经审阅的轨迹，结论只能依赖探针的精度。',
+    about: '每次分析用一个问题检索全部轨迹：探针机械地标出位置，读者通读整条轨迹后给出判定。只被标记、未经审阅的轨迹，结论只能依赖探针的精度。',
     converged: '已收敛',
     open: '未收敛',
     rounds_one: '{{count}} 轮',
@@ -458,7 +461,9 @@ export const consoleZh = {
       missUpper: '漏检上限',
       missNote: '随机读了 {{reads, number}} 条未标记的轨迹，发现 {{finds, number}} 条',
     },
-    calibration: '双读校准：{{pairs, number}} 条轨迹分别在显示与不显示标记时各读一次，判定一致 {{agreement}}。',
+    calibration: '双读校准：{{pairs, number}} 条轨迹，判定一致 {{agreement}}',
+    calibrationName: '双读校准',
+    calibrationNote: '每条轨迹在显示与不显示标记时各读一次，比较两次的判定是否一致。',
     facets: '行为类别',
     excludes: '不计：{{excludes}}',
     edge: { grader: '越过评分边界', localEnvironment: '越过环境边界' },
@@ -499,7 +504,7 @@ export const consoleZh = {
       inTrajectory: '在轨迹中查看',
       range: '第 {{from, number}}–{{to, number}} 条，共 {{total, number}} 条',
       empty: '没有符合条件的事件。',
-      note: '事件按发生顺序排列，取自运行的 ATIF 轨迹；每条最多显示 400 字。',
+      note: '事件按发生顺序排列，取自运行的 ATIF 轨迹；每行显示事件文字的第一行，点开显示完整的原始记录。',
     },
     usage: {
       inputTokens: '输入 tokens',

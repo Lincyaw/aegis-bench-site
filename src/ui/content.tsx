@@ -1,6 +1,7 @@
 import { clsx } from 'clsx';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { InfoHint } from './hint';
 import styles from './content.module.css';
 
 /** A label that is not clickable, such as a version or a state. */
@@ -8,11 +9,24 @@ export function Tag({ children, dashed = false }: { children: ReactNode; dashed?
   return <span className={clsx(styles.tag, dashed && styles.dashed, 't-micro')}>{children}</span>;
 }
 
-export function SectionHeading({ id, title, intro }: { id?: string; title: string; intro?: string }) {
+/**
+ * A heading of the given rank and text style with, beside it, the ⓘ that holds what explains the part it heads, such
+ * as how its figures are counted; a heading with nothing to explain stands alone.
+ */
+export function HintedHeading({ rank: Heading, className, title, about }: { rank: 'h1' | 'h2' | 'h3'; className: string; title: string; about?: ReactNode }) {
+  const { t } = useTranslation();
+  return (
+    <div className={styles.hinted}>
+      <Heading className={className}>{title}</Heading>
+      {about && <InfoHint label={t('ui.about', { subject: title })}>{about}</InfoHint>}
+    </div>
+  );
+}
+
+export function SectionHeading({ id, title, about }: { id?: string; title: string; about?: ReactNode }) {
   return (
     <header className={styles.sectionHeading} id={id}>
-      <h2 className="t-title">{title}</h2>
-      {intro && <p className="t-body c-muted">{intro}</p>}
+      <HintedHeading rank="h2" className="t-title" title={title} about={about} />
     </header>
   );
 }
@@ -42,11 +56,15 @@ export function FactList({ facts, layout }: { facts: Fact[]; layout: 'stacked' |
   );
 }
 
-/** One figure of a page's headline figures: its name, the figure and what it leaves out. */
-export function StatTile({ label, value, note }: { label: string; value: ReactNode; note?: string }) {
+/**
+ * One figure of a page's headline figures: its name with the ⓘ that says how it is counted, the figure, and a figure
+ * beside it such as what it leaves out.
+ */
+export function StatTile({ label, value, about, note }: { label: string; value: ReactNode; about?: ReactNode; note?: string }) {
+  const { t } = useTranslation();
   return (
     <div className={styles.stat}>
-      <dt className="t-micro c-muted">{label}</dt>
+      <dt className={clsx(styles.statLabel, 't-micro c-muted')}>{label}{about && <InfoHint label={t('ui.about', { subject: label })}>{about}</InfoHint>}</dt>
       <dd className={styles.statValue}>{value}</dd>
       {note && <dd className="t-micro c-faint">{note}</dd>}
     </div>

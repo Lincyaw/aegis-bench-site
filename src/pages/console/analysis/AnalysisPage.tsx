@@ -14,7 +14,7 @@ export function AnalysisPage() {
   const hunts = useHunts(benchmark.id);
   return (
     <div className={styles.page} data-half={benchmark.stage.half}>
-      <ConsoleHeader crumbs={[{ label: benchmark.name, to: consoleBenchmarkPath(benchmark.id) }, { label: t('console.analysis.title') }]} title={t('console.analysis.title')} lead={t('console.analysis.lead')} />
+      <ConsoleHeader crumbs={[{ label: benchmark.name, to: consoleBenchmarkPath(benchmark.id) }, { label: t('console.analysis.title') }]} title={t('console.analysis.title')} about={t('console.analysis.about')} />
       <ul className={styles.hunts}>
         {hunts.map(hunt => <HuntCard key={hunt.id} benchmarkId={benchmark.id} hunt={hunt} />)}
       </ul>

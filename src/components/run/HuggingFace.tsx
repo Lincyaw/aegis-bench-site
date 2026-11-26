@@ -4,15 +4,16 @@ import { ErrorBoundary } from 'react-error-boundary';
 import { useTranslation } from 'react-i18next';
 import { HuggingFaceUnreachableError } from '../../api/errors';
 import controls from '../../ui/controls.module.css';
+import { InfoHint } from '../../ui/hint';
 import styles from './HuggingFace.module.css';
 
-/** Records kept on Hugging Face: a line that says so, with the link that opens them there. */
-export function HuggingFaceNote({ text, url }: { text: string; url: string }) {
+/** The link that opens records kept on Hugging Face, with the ⓘ that says what is kept there. */
+export function HuggingFaceLink({ about, url }: { about: string; url: string }) {
   const { t } = useTranslation();
   return (
-    <p className={clsx(styles.note, 't-micro c-faint')}>
-      {text}
+    <p className={styles.link}>
       <a className={clsx(controls.textLink, 't-micro')} href={url} target="_blank" rel="noreferrer">{t('ui.openOnHuggingFace')}</a>
+      <InfoHint label={t('ui.about', { subject: t('ui.openOnHuggingFace') })}>{about}</InfoHint>
     </p>
   );
 }
@@ -23,7 +24,7 @@ export function UnreachableRecords({ error }: { error: HuggingFaceUnreachableErr
   return (
     <div className={styles.unreachable} role="status">
       <p className="t-small">{t('ui.huggingFaceUnreachable')}</p>
-      <HuggingFaceNote text={t('ui.huggingFaceUnreachableNote')} url={error.huggingFaceUrl} />
+      <HuggingFaceLink about={t('ui.huggingFaceUnreachableNote')} url={error.huggingFaceUrl} />
     </div>
   );
 }

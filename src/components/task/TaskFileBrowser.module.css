@@ -10,7 +10,8 @@
 
 .tree { display: flex; flex-direction: column; min-height: 0; border-right: var(--rule-hairline); }
 .scroll { flex: 1; padding: var(--space-2) 0; overflow-y: auto; overscroll-behavior: contain; }
-.note { display: grid; gap: var(--space-2); padding: var(--space-3) var(--space-4); border-top: var(--rule-hairline); }
+.about { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--space-1) var(--space-4); padding: var(--space-2) var(--space-4); border-top: var(--rule-hairline); }
+.format { display: flex; align-items: center; gap: var(--space-1); }
 /* Each level of the tree sits one step further in than the directory that holds it. */
 .entries .entries { padding-left: var(--space-4); }
 .entry { display: grid; grid-template-columns: var(--space-4) minmax(0, 1fr) auto; align-items: center; gap: var(--space-2); width: 100%; padding: var(--space-1) var(--space-4); text-align: left; transition: background-color var(--duration-base); }
@@ -34,7 +35,7 @@
   .browser { display: block; border: 0; border-radius: 0; overflow: visible; }
   .tree { border-right: 0; border-bottom: var(--rule-hairline); }
   .scroll { overflow: visible; }
-  .entry, .note, .more { padding-left: 0; padding-right: 0; }
+  .entry, .about, .more { padding-left: 0; padding-right: 0; }
   .viewer { padding: var(--space-4) 0 0; overflow: visible; }
   .fileHead { flex-direction: column; gap: var(--space-1); }
 }

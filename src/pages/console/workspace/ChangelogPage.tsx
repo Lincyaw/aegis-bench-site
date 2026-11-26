@@ -25,14 +25,14 @@ export function ChangelogPage() {
   const last = Math.min(query.offset + CHANGELOG_PAGE_SIZE, page.total);
   return (
     <div className={styles.page}>
-      <ConsoleHeader title={t('console.changelog.title')} lead={t('console.changelog.lead')} />
+      <ConsoleHeader title={t('console.changelog.title')} about={t('console.changelog.about')} />
       <div className={styles.filters} role="search" aria-label={t('console.changelog.title')}>
         <Select
           label={t('console.changelog.benchmarkFilter')} value={query.benchmark ?? EVERY_CHOICE} onChange={benchmark => update({ benchmark: benchmark === EVERY_CHOICE ? undefined : benchmark })}
           choices={[{ value: EVERY_CHOICE, label: t('console.changelog.everyBenchmark') }, ...benchmarks.map(benchmark => ({ value: benchmark.id, label: benchmark.name }))]}
         />
         <Select
-          label={t('console.changelog.changeFilter')} value={query.change ?? EVERY_CHOICE} onChange={change => update({ change: change === EVERY_CHOICE ? undefined : change as RevisionChange })}
+          variant="quiet" label={t('console.changelog.changeFilter')} value={query.change ?? EVERY_CHOICE} onChange={change => update({ change: change === EVERY_CHOICE ? undefined : change as RevisionChange })}
           choices={[{ value: EVERY_CHOICE, label: t('console.changelog.everyChange') }, ...consoleRevisionChangeValues.map(change => ({ value: change, label: t(`console.task.revisions.change.${change}`) }))]}
         />
       </div>

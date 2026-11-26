@@ -24,19 +24,16 @@ export function TaskListPage() {
   const last = Math.min(query.offset + TASK_LIST_PAGE_SIZE, page.total);
   return (
     <div className={styles.page} data-half={benchmark.stage.half}>
-      <ConsoleHeader crumbs={[{ label: benchmark.name, to: consoleBenchmarkPath(benchmark.id) }, { label: t('console.tasks.title') }]} title={t('console.tasks.title')} lead={t('console.tasks.lead', { count: benchmark.taskCount })} />
+      <ConsoleHeader crumbs={[{ label: benchmark.name, to: consoleBenchmarkPath(benchmark.id) }, { label: t('console.tasks.title') }]} title={t('console.tasks.title')} about={t('console.tasks.about')} lead={t('console.tasks.lead', { count: benchmark.taskCount })} />
       <TaskFilters query={query} tags={page.tags} onChange={update} />
       {page.items.length === 0 ? <p className="t-small c-muted">{t('console.tasks.empty')}</p> : <TaskTable benchmarkId={benchmark.id} rows={page.items} />}
-      <footer className={styles.footer}>
-        <p className="t-micro c-faint">{t('console.tasks.legend')}</p>
-        {page.total > TASK_LIST_PAGE_SIZE && (
-          <Pager
-            label={t('console.tasks.range', { from: query.offset + 1, to: last, total: page.total })}
-            atStart={query.offset === 0} atEnd={last >= page.total}
-            onPrevious={() => update({ offset: query.offset - TASK_LIST_PAGE_SIZE })} onNext={() => update({ offset: query.offset + TASK_LIST_PAGE_SIZE })}
-          />
-        )}
-      </footer>
+      {page.total > TASK_LIST_PAGE_SIZE && (
+        <Pager
+          className={styles.pager} label={t('console.tasks.range', { from: query.offset + 1, to: last, total: page.total })}
+          atStart={query.offset === 0} atEnd={last >= page.total}
+          onPrevious={() => update({ offset: query.offset - TASK_LIST_PAGE_SIZE })} onNext={() => update({ offset: query.offset + TASK_LIST_PAGE_SIZE })}
+        />
+      )}
     </div>
   );
 }

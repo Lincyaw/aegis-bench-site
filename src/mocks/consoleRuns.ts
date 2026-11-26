@@ -1,4 +1,4 @@
-import type { ConsoleRunDetail, Locale, ReviewFilter, RunEvent, RunEventKind, RunFact, RunOutcome, RunRow, RunUsage, Trajectory } from '../api/types';
+import type { ConsoleRunDetail, Locale, ReviewFilter, RunEvent, RunEventRow, RunFact, RunOutcome, RunRow, RunUsage, Trajectory, TrajectoryStep } from '../api/types';
 import { benchmarkOf, matchesTaskSearch, taskRefOf } from './benchmarks';
 import { harnessRef, keepsTo, modelRef, type CombinationScope } from './catalog';
 import { openedIndexes, readRunFile, readTrajectory } from './records';
@@ -15,8 +15,11 @@ export const DEFAULT_RUN_PAGE_SIZE = 25;
 /** Events per page when a request names no limit, as the spec declares. */
 export const DEFAULT_EVENT_PAGE_SIZE = 50;
 
-/** No event's excerpt is longer than this, as the spec declares. */
-export const MAX_EXCERPT_LENGTH = 400;
+/** No event's excerpt is longer than this many characters, as the spec declares. */
+export const MAX_EXCERPT_LENGTH = 200;
+
+/** The function_name of the tool call that submits, which the spec sorts as a submit event. */
+export const SUBMIT_FUNCTION = 'submit';
 
 export function runRowOf(benchmarkId: string, fact: RunFact, locale: Locale): RunRow {
   return {
@@ -94,23 +97,55 @@ export async function consoleRunOf(runId: string, locale: Locale): Promise<Conso
   };
 }
 
-/** Every event of a run's trajectory in the order it happened: the agent's words, its calls and what came back. */
+/**
+ * Every event of a run's trajectory in index order, each with the part of its step it was read from as the record:
+ * the step's message, then its tool calls, then its observation results.
+ */
 export function runEventsOf(trajectory: Trajectory): RunEvent[] {
-  const excerpt = (text: string) => (text.length > MAX_EXCERPT_LENGTH ? `${text.slice(0, MAX_EXCERPT_LENGTH - 1)}…` : text);
-  const events = trajectory.steps.flatMap(step => {
-    const at = step.timestamp ?? trajectory.steps[0].timestamp ?? '';
-    const said = typeof step.message === 'string' ? step.message : step.message.map(part => (part.type === 'text' ? part.text : '')).join('');
-    const message = { stepId: step.step_id, kind: 'message' as RunEventKind, at, excerpt: excerpt(said) };
-    const calls = (step.tool_calls ?? []).flatMap(call => {
-      const result = step.observation?.results.find(candidate => candidate.source_call_id === call.tool_call_id);
-      const content = typeof result?.content === 'string' ? result.content : '';
-      const kind: RunEventKind = call.function_name === 'submit' ? 'submit' : 'toolCall';
-      return [
-        { stepId: step.step_id, kind, at, tool: call.function_name, excerpt: excerpt(`${call.function_name}(${JSON.stringify(call.arguments)})`) },
-        ...(result ? [{ stepId: step.step_id, kind: (isFailedResult(result.extra) ? 'error' : 'observation') as RunEventKind, at, tool: call.function_name, excerpt: excerpt(content) }] : []),
-      ];
-    });
-    return [message, ...calls];
+  const events = trajectory.steps.flatMap((step): Omit<RunEvent, 'index'>[] => {
+    const place = { stepId: step.step_id, at: step.timestamp };
+    const calls = step.tool_calls ?? [];
+    return [
+      { ...place, kind: 'message', record: step.message },
+      ...calls.map(call => ({ ...place, kind: call.function_name === SUBMIT_FUNCTION ? 'submit' : 'toolCall', tool: call.function_name, record: call }) as const),
+      ...(step.observation?.results ?? []).map(result => {
+        const tool = calls.find(call => call.tool_call_id === result.source_call_id)?.function_name;
+        return { ...place, kind: isFailedResult(result.extra) ? 'error' : 'observation', ...(tool && { tool }), record: result } as const;
+      }),
+    ];
   });
   return events.map((event, index) => ({ index: index + 1, ...event }));
+}
+
+/** The text of a message or of an observation result's content: a list of parts gives its text parts, a line apart. */
+export function contentTextOf(content: TrajectoryStep['message'] | undefined): string {
+  if (Array.isArray(content)) {
+    return content.flatMap(part => (part.type === 'text' ? [part.text] : [])).join('\n');
+  }
+  return content ?? '';
+}
+
+/**
+ * An event as a list shows it: its record traded for the first line of its text, cut as the spec declares. The text is
+ * a message's, a tool call's arguments as JSON, or an observation result's content.
+ */
+export function runEventRowOf({ record, ...event }: RunEvent): RunEventRow {
+  const text = typeof record === 'string' || Array.isArray(record) ? contentTextOf(record) : 'function_name' in record ? JSON.stringify(record.arguments) : contentTextOf(record.content);
+  return { ...event, excerpt: Array.from(text.split('\n', 1)[0]).slice(0, MAX_EXCERPT_LENGTH).join('') };
+}
+
+/** Every string a record holds, at any depth. */
+export function stringsOf(value: unknown): string[] {
+  if (typeof value === 'string') {
+    return [value];
+  }
+  if (value !== null && typeof value === 'object') {
+    return Object.values(value).flatMap(stringsOf);
+  }
+  return [];
+}
+
+/** Whether an event's tool, or any string its record holds, contains the search text; an empty search keeps every event. */
+export function matchesEventSearch(event: RunEvent, q: string): boolean {
+  return !q || Boolean(event.tool?.includes(q)) || stringsOf(event.record).some(text => text.includes(q));
 }

@@ -1,8 +1,9 @@
 import { clsx } from 'clsx';
 import { useTranslation } from 'react-i18next';
 import type { ConsoleTaskDetail, ReferenceFile, TaskGrading } from '../../api/types';
-import { FactList, Tag } from '../../ui/content';
+import { FactList, HintedHeading, Tag } from '../../ui/content';
 import content from '../../ui/content.module.css';
+import { InfoHint } from '../../ui/hint';
 import { formatSize } from './files';
 import styles from './TaskContent.module.css';
 
@@ -17,8 +18,7 @@ export function TaskContentTab({ task }: { task: ConsoleTaskDetail }) {
     <div className={styles.columns}>
       <div className={styles.main}>
         <section className={clsx(content.panel, styles.panel)}>
-          <h2 className="t-heading">{t('console.task.content.instruction')}</h2>
-          <p className="t-micro c-faint">{t('console.task.content.instructionNote')}</p>
+          <HintedHeading rank="h2" className="t-heading" title={t('console.task.content.instruction')} about={t('console.task.content.instructionNote')} />
           <p className={clsx(styles.prose, 't-body')}>{task.instruction}</p>
           {task.reportSchema && (
             <>
@@ -38,8 +38,7 @@ export function TaskContentTab({ task }: { task: ConsoleTaskDetail }) {
           <FactList layout="stacked" facts={task.environment.map(fact => ({ label: fact.label, value: fact.value, format: fact.format }))} />
         </section>
         <section className={clsx(content.panel, styles.panel)}>
-          <h2 className="t-heading">{t('console.task.content.acceptance')}</h2>
-          <p className="t-micro c-faint">{t('console.task.content.acceptanceNote')}</p>
+          <HintedHeading rank="h2" className="t-heading" title={t('console.task.content.acceptance')} about={t('console.task.content.acceptanceNote')} />
           <ul className={styles.points}>
             {task.acceptance.map(point => <li key={point.checkId}><span className="t-small">{point.requirement}</span><span className="t-mono c-faint">{point.checkId}</span></li>)}
           </ul>
@@ -94,11 +93,13 @@ export function TaskReferenceFiles({ files }: { files: ReferenceFile[] }) {
   const { t } = useTranslation();
   return (
     <div className={styles.section}>
-      <p className="t-small c-muted">{t('console.task.reference.note')}</p>
       {files.map(({ reason, file }) => (
         <section key={file.path} className={clsx(content.panel, styles.panel)}>
           <header className={styles.fileHead}>
-            <Tag>{t(`console.task.reference.reason.${reason}`)}</Tag>
+            <span className={styles.reason}>
+              <Tag>{t(`console.task.reference.reason.${reason}`)}</Tag>
+              <InfoHint label={t('ui.about', { subject: t(`console.task.reference.reason.${reason}`) })}>{t(`console.task.reference.note.${reason}`)}</InfoHint>
+            </span>
             <span className="t-mono">{file.path}</span>
             <span className="t-micro c-faint">{formatSize(file.size)}</span>
           </header>

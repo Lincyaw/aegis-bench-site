@@ -62,6 +62,7 @@ export type ToolUsage = Schemas['Console.ToolUsage'];
 export type RunUsage = Schemas['Console.RunUsage'];
 export type ConsoleRunDetail = Schemas['Console.ConsoleRunDetail'];
 export type RunEventKind = Schemas['Console.RunEventKind'];
+export type RunEventRow = Schemas['Console.RunEventRow'];
 export type RunEvent = Schemas['Console.RunEvent'];
 export type AnnotationSeverity = Schemas['AnnotationSeverity'];
 export type AnnotationCategory = Schemas['AnnotationCategory'];

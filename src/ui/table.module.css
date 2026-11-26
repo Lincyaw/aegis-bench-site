@@ -14,6 +14,8 @@
   transition: background-color var(--duration-base);
 }
 .head { min-height: var(--space-10); border-top: var(--rule-hairline); }
+/* A column's name with the ⓘ that explains what the column's cells hold. */
+.hinted { display: flex; align-items: center; gap: var(--space-1); }
 /*
  * A row that opens something does so from anywhere on it: its primary link stretches over the row, which takes the
  * keyboard at the link, and the row's other links and buttons stay above the stretch. Nothing between the primary

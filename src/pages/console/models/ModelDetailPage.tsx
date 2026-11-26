@@ -14,7 +14,7 @@ import { groupedNumber } from '../../../i18n/locales';
 import { EVERY_CHOICE, consoleBenchmarkPath } from '../../../routes/console';
 import { searchOf } from '../../../routes/address';
 import { MODEL_TASK_PAGE_SIZE, MODEL_TASK_PARAMS, consoleModelPath, consoleModelsPath, parseModelTaskQuery } from '../../../routes/consoleModels';
-import { StatTile, StatTiles } from '../../../ui/content';
+import { HintedHeading, StatTile, StatTiles } from '../../../ui/content';
 import { ScopeChip, SearchField, SegmentedControl, Select } from '../../../ui/controls';
 import { Pager } from '../../../ui/navigation';
 import styles from './ModelPages.module.css';
@@ -66,18 +66,15 @@ export function ModelDetailPage() {
         <HarnessTable benchmarkId={benchmark.id} modelId={detail.model.id} query={query} results={detail.byHarness} />
       </section>
       <section className={styles.section}>
-        <header className={styles.sectionHead}>
-          <h2 className="t-heading">{t('console.model.tasks')}</h2>
-          <p className="t-small c-muted">{t('console.model.tasksLead')}</p>
-        </header>
+        <HintedHeading rank="h2" className="t-heading" title={t('console.model.tasks')} about={t('console.model.tasksNote')} />
         <div className={styles.filters}>
           <SearchField label={t('console.tasks.search')} value={query.q} onChange={q => update({ q })} className={styles.search} />
           <Select
-            label={t('console.tasks.spreadFilter')} value={query.spread ?? EVERY_CHOICE} onChange={spread => update({ spread: spread === EVERY_CHOICE ? undefined : spread as TaskSpread })}
+            variant="quiet" label={t('console.tasks.spreadFilter')} value={query.spread ?? EVERY_CHOICE} onChange={spread => update({ spread: spread === EVERY_CHOICE ? undefined : spread as TaskSpread })}
             choices={[{ value: EVERY_CHOICE, label: t('console.tasks.everySpread') }, ...consoleTaskSpreadValues.map(spread => ({ value: spread, label: t(`console.tasks.spread.${spread}`) }))]}
           />
           <Select
-            label={t('console.tasks.orderFilter')} value={query.order} onChange={order => update({ order: order as TaskOrder })}
+            variant="quiet" label={t('console.tasks.orderFilter')} value={query.order} onChange={order => update({ order: order as TaskOrder })}
             choices={consoleTaskOrderValues.map(order => ({ value: order, label: t(`console.tasks.order.${order}`) }))}
           />
         </div>

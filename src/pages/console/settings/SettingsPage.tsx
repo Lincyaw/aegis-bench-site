@@ -11,6 +11,7 @@ import { useLocale } from '../../../i18n/localeContext';
 import { dateTimeOf } from '../../../i18n/locales';
 import content from '../../../ui/content.module.css';
 import { Button, Select, SubmitButton, TextField } from '../../../ui/controls';
+import { InfoHint } from '../../../ui/hint';
 import { mayAdminister } from '../roles';
 import styles from './SettingsPage.module.css';
 
@@ -22,7 +23,7 @@ export function SettingsPage() {
   const administering = mayAdminister(useConsoleUser().role);
   return (
     <div className={styles.page}>
-      <ConsoleHeader title={t('console.settings.title')} lead={t('console.settings.lead')} />
+      <ConsoleHeader title={t('console.settings.title')} about={t('console.settings.about')} />
       {administering ? <SettingsForm settings={settings} /> : <SettingsView settings={settings} />}
       <p className="t-micro c-faint">{t('console.settings.updated', { account: settings.updatedBy, at: dateTimeOf(locale, settings.updatedAt) })}</p>
     </div>
@@ -58,16 +59,20 @@ export function SettingsForm({ settings }: { settings: Settings }) {
       <section className={clsx(content.panel, styles.section)}>
         <h2 className="t-heading">{t('console.settings.publication.title')}</h2>
         <div className={styles.field}>
-          <span className="t-micro c-muted" aria-hidden="true">{t('console.settings.publication.reviewers')}</span>
+          <span className={styles.label}>
+            <span className="t-micro c-muted" aria-hidden="true">{t('console.settings.publication.reviewers')}</span>
+            <InfoHint label={t('ui.about', { subject: t('console.settings.publication.reviewers') })}>{t('console.settings.publication.reviewersNote')}</InfoHint>
+          </span>
           <Select
             label={t('console.settings.publication.reviewers')} value={String(publication.reportReviewers)} onChange={count => setPublication({ reportReviewers: Number(count) })}
             choices={REPORT_REVIEWER_CHOICES.map(count => ({ value: String(count), label: t('console.settings.publication.reviewerCount', { count }) }))}
           />
-          <span className="t-micro c-faint">{t('console.settings.publication.reviewersNote')}</span>
         </div>
         <div className={styles.checks}>
-          <span className="t-micro c-muted">{t('console.settings.publication.checks')}</span>
-          <span className="t-micro c-faint">{t('console.settings.publication.checksNote')}</span>
+          <span className={styles.label}>
+            <span className="t-micro c-muted">{t('console.settings.publication.checks')}</span>
+            <InfoHint label={t('ui.about', { subject: t('console.settings.publication.checks') })}>{t('console.settings.publication.checksNote')}</InfoHint>
+          </span>
           {publication.reportChecks.map((check, index) => (
             // The checks have no identity but their place; a removal re-renders those after it.
             <div key={index} className={styles.check}>

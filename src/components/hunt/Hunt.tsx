@@ -8,6 +8,7 @@ import { huntPath } from '../../routes/consoleAnalysis';
 import { StatTile, StatTiles, Tag } from '../../ui/content';
 import content from '../../ui/content.module.css';
 import controls from '../../ui/controls.module.css';
+import { InfoHint } from '../../ui/hint';
 import table from '../../ui/table.module.css';
 import { formatRate } from '../result/presentation';
 import styles from './Hunt.module.css';
@@ -40,7 +41,7 @@ export function HuntCoverageTiles({ hunt }: { hunt: Hunt }) {
   return (
     <>
       <StatTiles>
-        <StatTile label={t('console.analysis.stats.found')} value={groupedNumber(locale, hunt.found)} note={t('console.analysis.stats.foundNote')} />
+        <StatTile label={t('console.analysis.stats.found')} value={groupedNumber(locale, hunt.found)} about={t('console.analysis.stats.foundNote')} />
         <StatTile label={t('console.analysis.stats.read')} value={groupedNumber(locale, coverage.read)} note={t('console.analysis.stats.readNote', { trajectories: coverage.trajectories })} />
         <StatTile label={t('console.analysis.stats.marked')} value={groupedNumber(locale, coverage.marked)} />
         <StatTile
@@ -48,7 +49,12 @@ export function HuntCoverageTiles({ hunt }: { hunt: Hunt }) {
           note={t('console.analysis.stats.missNote', { reads: coverage.randomReads, finds: coverage.randomFinds })}
         />
       </StatTiles>
-      {calibration.agreement !== undefined && <p className="t-small c-muted">{t('console.analysis.calibration', { pairs: calibration.pairs, agreement: formatRate(calibration.agreement) })}</p>}
+      {calibration.agreement !== undefined && (
+        <p className={clsx(styles.calibration, 't-small c-muted')}>
+          {t('console.analysis.calibration', { pairs: calibration.pairs, agreement: formatRate(calibration.agreement) })}
+          <InfoHint label={t('ui.about', { subject: t('console.analysis.calibrationName') })}>{t('console.analysis.calibrationNote')}</InfoHint>
+        </p>
+      )}
     </>
   );
 }

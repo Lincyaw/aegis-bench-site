@@ -4,7 +4,7 @@ import { useLocale } from '../i18n/localeContext';
 import { ApiError, HUGGING_FACE_UNREACHABLE_STATUS, HuggingFaceUnreachableError } from './errors';
 import type { paths } from './schema';
 import { API_ROOT } from './server';
-import type { HuggingFaceUnreachableAnswer, LeaderboardView, Locale, TaskPage } from './types';
+import type { HuggingFaceUnreachableAnswer, LeaderboardView, Locale, RunOutcome, TaskPage } from './types';
 
 export type * from './types';
 
@@ -98,17 +98,18 @@ export function useCombinations(benchmarkId: string) {
 /**
  * The tasks matching a search, a page at a time: each further page asks only for the tasks after those already
  * loaded. Given a combination, the combination's own task list, whose rows carry each task's summary in the
- * combination's terms. Tasks are records, so their list is the same in every language.
+ * combination's terms; given an outcome, only the tasks with a run of it. Tasks are records, so their list is the same
+ * in every language.
  */
-export function useTaskPages(benchmarkId: string, q: string, combination: string | undefined, pageSize: number) {
+export function useTaskPages(benchmarkId: string, q: string, combination: string | undefined, outcome: RunOutcome | undefined, pageSize: number) {
   return useSuspenseInfiniteQuery({
-    queryKey: ['tasks', benchmarkId, q, combination, pageSize],
+    queryKey: ['tasks', benchmarkId, q, combination, outcome, pageSize],
     queryFn: async ({ pageParam }): Promise<TaskPage> => {
       if (combination === undefined) {
-        return responseBody(api.GET('/benchmarks/{benchmarkId}/tasks', { params: { path: { benchmarkId }, query: { q, offset: pageParam, limit: pageSize } } }));
+        return responseBody(api.GET('/benchmarks/{benchmarkId}/tasks', { params: { path: { benchmarkId }, query: { q, outcome, offset: pageParam, limit: pageSize } } }));
       }
       const page = await responseBody(api.GET('/benchmarks/{benchmarkId}/combinations/{combination}/tasks', {
-        params: { path: { benchmarkId, combination }, query: { q, offset: pageParam, limit: pageSize } },
+        params: { path: { benchmarkId, combination }, query: { q, outcome, offset: pageParam, limit: pageSize } },
       }));
       return { items: page.items.map(row => row.task), total: page.total };
     },
@@ -117,12 +118,15 @@ export function useTaskPages(benchmarkId: string, q: string, combination: string
   });
 }
 
-/** A combination's runs, a page of tasks matching a search at a time; each task's pass rate is the combination's. */
-export function useCombinationTaskPages(benchmarkId: string, combination: string, q: string, pageSize: number) {
+/**
+ * A combination's runs, a page of tasks matching a search at a time; each task's pass rate is the combination's. Given
+ * an outcome, only the tasks with a run of it, each with those runs alone.
+ */
+export function useCombinationTaskPages(benchmarkId: string, combination: string, q: string, outcome: RunOutcome | undefined, pageSize: number) {
   return useSuspenseInfiniteQuery({
-    queryKey: ['combinationTasks', benchmarkId, combination, q, pageSize],
+    queryKey: ['combinationTasks', benchmarkId, combination, q, outcome, pageSize],
     queryFn: ({ pageParam }) => responseBody(api.GET('/benchmarks/{benchmarkId}/combinations/{combination}/tasks', {
-      params: { path: { benchmarkId, combination }, query: { q, offset: pageParam, limit: pageSize } },
+      params: { path: { benchmarkId, combination }, query: { q, outcome, offset: pageParam, limit: pageSize } },
     })),
     initialPageParam: 0,
     getNextPageParam: nextPageOffset,
@@ -153,12 +157,15 @@ export function useTaskFile(benchmarkId: string, taskId: string, path: string) {
   }).data;
 }
 
-/** A task's runs by published combination; given a combination, its runs alone, and the task's pass rate over them. */
-export function useTaskRuns(benchmarkId: string, taskId: string, combination: string | undefined) {
+/**
+ * A task's runs by published combination; given a combination, its runs alone, and the task's pass rate over them.
+ * Given an outcome, only the runs of it, and only the combinations with one.
+ */
+export function useTaskRuns(benchmarkId: string, taskId: string, combination: string | undefined, outcome: RunOutcome | undefined) {
   const locale = useLocale();
   return useSuspenseQuery({
-    queryKey: ['taskRuns', benchmarkId, taskId, combination, locale],
-    queryFn: () => responseBody(api.GET('/benchmarks/{benchmarkId}/tasks/{taskId}/runs', { params: { path: { benchmarkId, taskId }, query: { combination }, header: languageHeader(locale) } })),
+    queryKey: ['taskRuns', benchmarkId, taskId, combination, outcome, locale],
+    queryFn: () => responseBody(api.GET('/benchmarks/{benchmarkId}/tasks/{taskId}/runs', { params: { path: { benchmarkId, taskId }, query: { combination, outcome }, header: languageHeader(locale) } })),
   }).data;
 }
 

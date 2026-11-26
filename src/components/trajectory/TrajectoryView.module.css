@@ -13,6 +13,7 @@
 .stepHead:hover { background: var(--bg-muted); }
 .stepHead[aria-expanded="true"]:hover { background: none; }
 .detail { padding: 0 var(--space-3) var(--space-4); }
+.facts { display: flex; align-items: center; gap: var(--space-1); }
 
 @media (max-width: 760px) {
   .step { scroll-margin-top: calc(var(--nav-height) + var(--anchor-gap)); }

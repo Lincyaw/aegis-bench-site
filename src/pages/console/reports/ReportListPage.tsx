@@ -14,6 +14,7 @@ import { useLocale, useLocalizedNavigate } from '../../../i18n/localeContext';
 import { consoleBenchmarkPath } from '../../../routes/console';
 import { consoleReportPath } from '../../../routes/consoleReports';
 import { reportPath } from '../../../routes/site';
+import { HintedHeading } from '../../../ui/content';
 import content from '../../../ui/content.module.css';
 import { Button, SubmitButton, TextField } from '../../../ui/controls';
 import { mayEdit } from '../roles';
@@ -33,14 +34,13 @@ export function ReportListPage() {
   const published = REPORTS.filter(report => report.locale === locale && report.benchmarks.includes(benchmark.id));
   return (
     <div className={styles.page} data-half={benchmark.stage.half}>
-      <ConsoleHeader crumbs={[{ label: benchmark.name, to: consoleBenchmarkPath(benchmark.id) }, { label: t('console.reports.title') }]} title={t('console.reports.title')} lead={t('console.reports.lead')} />
+      <ConsoleHeader crumbs={[{ label: benchmark.name, to: consoleBenchmarkPath(benchmark.id) }, { label: t('console.reports.title') }]} title={t('console.reports.title')} about={t('console.reports.about')} />
       <section className={styles.section}>
         <h2 className="t-heading">{t('console.reports.drafts')}</h2>
         {drafts.length === 0 ? <p className="t-small c-muted">{t('console.reports.noDrafts')}</p> : <DraftTable benchmarkId={benchmark.id} drafts={drafts} />}
       </section>
       <section className={styles.section}>
-        <h2 className="t-heading">{t('console.reports.published')}</h2>
-        <p className="t-micro c-faint">{t('console.reports.publishedNote')}</p>
+        <HintedHeading rank="h2" className="t-heading" title={t('console.reports.published')} about={t('console.reports.publishedNote')} />
         {published.length === 0 ? <p className="t-small c-muted">{t('console.reports.noPublished')}</p> : (
           <ul className={styles.published}>
             {published.map(report => {

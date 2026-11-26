@@ -22,6 +22,7 @@ import { consoleBenchmarkPath } from '../../../routes/console';
 import { consoleReportsPath } from '../../../routes/consoleReports';
 import content from '../../../ui/content.module.css';
 import { Button, SubmitButton, TextArea, ToggleChip } from '../../../ui/controls';
+import { InfoHint } from '../../../ui/hint';
 import { mayEdit } from '../roles';
 import styles from './ReportPages.module.css';
 
@@ -37,7 +38,7 @@ export function ReportEditorPage() {
     <div className={styles.page} data-half={benchmark.stage.half}>
       <ConsoleHeader
         crumbs={[{ label: benchmark.name, to: consoleBenchmarkPath(benchmark.id) }, { label: t('console.reports.title'), to: consoleReportsPath(benchmark.id) }, { label: report.slug }]}
-        title={report.title[locale]} lead={t(`console.report.lead.${report.status}`)}
+        title={report.title[locale]} about={t(`console.report.about.${report.status}`)}
       />
       <div className={styles.facts}>
         <ReportStatusTag status={report.status} />
@@ -83,7 +84,12 @@ export function ReportEditor({ report }: { report: ReportDraft }) {
           <Button variant={ready ? 'line' : 'solid'} onClick={() => update.mutate({ sources, checked })}>{t('console.report.save')}</Button>
           {ready
             ? <Button variant="solid" onClick={() => submit.mutate()}>{t('console.report.submit')}</Button>
-            : <p className="t-small c-muted">{t(unsaved ? 'console.report.unsaved' : 'console.report.checksFirst')}</p>}
+            : (
+              <>
+                {unsaved && <p className="t-small c-muted">{t('console.report.unsaved')}</p>}
+                <InfoHint label={t('ui.about', { subject: t('console.report.submit') })}>{t('console.report.checksFirst')}</InfoHint>
+              </>
+            )}
         </div>
       )}
       <ChangeFailure error={update.error} reasons={{ 409: t('console.report.changedElsewhere'), 422: t('console.report.badFrontmatter') }} />

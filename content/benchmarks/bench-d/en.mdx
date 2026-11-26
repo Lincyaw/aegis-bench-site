@@ -1,6 +1,4 @@
-## Setting
-
-The agent can only read the observations from the time of the fault, and must reconstruct how the fault spread from its source to its symptoms.
+## Setting<About text="The agent can only read the observations from the time of the fault, and must reconstruct how the fault spread from its source to its symptoms." />
 
 <Flow>
   <Step title="The agent receives">Metrics, logs and traces from the fault window, and the service topology.</Step>
@@ -14,9 +12,7 @@ The agent can only read the observations from the time of the fault, and must re
 
 The sample is quoted as the task gives it; tasks are published in the language they were written in.
 
-## Evaluation
-
-The submitted chain is compared node by node with the reference chain, and every model runs under the same conditions.
+## Evaluation<About text="The submitted chain is compared node by node with the reference chain, and every model runs under the same conditions." />
 
 <Flow>
   <Step title="What is graded">The propagation chain, in order.</Step>
@@ -31,21 +27,15 @@ The submitted chain is compared node by node with the reference chain, and every
   <Fact label="Same conditions">The same harnesses, turn budget and execution environment</Fact>
 </Facts>
 
-## Leaderboard
-
-The top 5 combinations by mean node recall. The full leaderboard can also rank by model or by harness.
+## Leaderboard<About text="The top 5 combinations by mean node recall. The full leaderboard can also rank by model or by harness." />
 
 <Leaderboard top={5} />
 
-## Run records
-
-Every run's full trajectory is public, to replay step by step and to check its grading against.
+## Run records<About text="Every run's full trajectory is public, to replay step by step and to check its grading against." />
 
 <RecentRuns />
 
-## Versions and citation
-
-Each version fixes its tasks and evaluation setup, and results are reported per version.
+## Versions and citation<About text="Each version fixes its tasks and evaluation setup, and results are reported per version." />
 
 <Versions>
   <Version tag="v1.1" date="2026-09-30">Adds 12 cascading multi-service faults.</Version>

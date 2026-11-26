@@ -21,7 +21,7 @@ export function WorkbenchPage() {
   const total = (count: (row: WorkbenchRow) => number) => groupedNumber(locale, benchmarks.reduce((sum, row) => sum + count(row), 0));
   return (
     <div className={styles.page}>
-      <ConsoleHeader title={t('console.workbench.title')} lead={t('console.workbench.lead')} />
+      <ConsoleHeader title={t('console.workbench.title')} about={t('console.workbench.about')} />
       <StatTiles>
         <StatTile label={t('console.workbench.stats.benchmarks')} value={groupedNumber(locale, benchmarks.length)} />
         <StatTile label={t('console.workbench.stats.drafts')} value={total(row => (row.draft ? 1 : 0))} />

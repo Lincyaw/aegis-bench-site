@@ -13,6 +13,7 @@ import { LEADERBOARD_PAGE_SIZE, LEADERBOARD_PARAMS, benchmarkPath, leaderboardPa
 import { Loading } from '../../../ui/content';
 import { MoreButton, ScopeChip, SegmentedControl } from '../../../ui/controls';
 import controls from '../../../ui/controls.module.css';
+import { InfoHint } from '../../../ui/hint';
 import styles from './LeaderboardPage.module.css';
 
 /** Message keys of the leaderboard's views, in the order the switch shows them. */
@@ -26,7 +27,7 @@ const LEADERBOARD_VIEW_LABELS: Record<LeaderboardView, 'leaderboard.view.combina
 export function LeaderboardPage() {
   const { t } = useTranslation();
   const [search, setSearch] = useSearchParams();
-  const stages = useStages();
+  const covered = useStages().filter(stage => stage.benchmarks.length > 0);
   const benchmarks = useBenchmarks();
   const benchmarkId = search.get('bench') ?? benchmarks[0].id;
   const benchmark = benchmarks.find(candidate => candidate.id === benchmarkId);
@@ -41,29 +42,23 @@ export function LeaderboardPage() {
     <div className={clsx('page', styles.page)}>
       <header className={styles.head}>
         <h1 className="t-display">{t('leaderboard.title')}</h1>
-        <p className="t-lead c-muted">{t('leaderboard.lead')}</p>
+        <p className="t-lead c-muted">{t('leaderboard.lead')} <InfoHint label={t('ui.about', { subject: t('leaderboard.title') })}>{t('leaderboard.conditions')}</InfoHint></p>
       </header>
       <div className={styles.picker}>
-        <div className={styles.groups}>
-          {stages.filter(stage => stage.benchmarks.length > 0).map(stage => (
-            <div key={stage.id} className={styles.group}>
-              <p className="t-micro c-faint"><HalfDot half={stage.half} />{stage.id} {stage.name}</p>
-              <div className={styles.pills}>
-                {benchmarksAt(stage, benchmarks).map(candidate => (
-                  <button key={candidate.id} type="button" aria-pressed={candidate.id === benchmark.id} className={clsx(controls.pill, controls.medium, 'loop-edge')} onClick={() => choose({ bench: candidate.id })}>
-                    {candidate.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-        <span className="t-micro c-faint">{t('leaderboard.otherStages')}</span>
+        <SegmentedControl
+          label={t('leaderboard.benchmarkLabel')} value={benchmark.id} onChange={bench => choose({ bench })}
+          choices={covered.flatMap(stage => benchmarksAt(stage, benchmarks)).map(candidate => ({ value: candidate.id, label: candidate.name }))}
+          captions={covered.map(stage => ({ label: <><HalfDot half={stage.half} />{stage.id} {stage.name}</>, span: stage.benchmarks.length }))}
+        />
+        <span className={styles.otherStages}><InfoHint label={t('ui.about', { subject: t('site.nav.benchmarks') })}>{t('leaderboard.otherStages')}</InfoHint></span>
       </div>
       <div className={styles.boardHead}>
         <div className={styles.title}>
           <h2 className="t-bench">{benchmark.name}</h2>
-          <span className="t-micro c-faint">{t('leaderboard.meta', { stage: `${benchmark.stage.id} ${benchmark.stage.name}`, metric: benchmark.metric.name, version: benchmark.version, date: benchmark.updatedOn })}</span>
+          <span className={clsx(styles.meta, 't-micro c-faint')}>
+            {t('leaderboard.meta', { stage: `${benchmark.stage.id} ${benchmark.stage.name}`, metric: benchmark.metric.name, version: benchmark.version, date: benchmark.updatedOn })}
+            <InfoHint label={t('ui.about', { subject: benchmark.metric.name })}>{t('leaderboard.note', { metric: benchmark.metric.name, count: benchmark.runsPerTask })}</InfoHint>
+          </span>
         </div>
         <div className={styles.tools}>
           {model && <ModelScopeChip modelId={model} to={leaderboardPath({ bench: benchmark.id, view })} />}
@@ -74,7 +69,6 @@ export function LeaderboardPage() {
       <Suspense fallback={<Loading />}>
         <Board benchmark={benchmark} view={view} markedModel={model} />
       </Suspense>
-      <p className={clsx(styles.note, 't-micro c-faint')}>{t('leaderboard.note', { metric: benchmark.metric.name, count: benchmark.runsPerTask })}</p>
     </div>
   );
 }

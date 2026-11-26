@@ -6,7 +6,7 @@ import type { Locale, ReportDraft, ReportSources } from '../../api/types';
 import { reportFileOf } from '../../articles/library';
 import { useLocale } from '../../i18n/localeContext';
 import { dateTimeOf } from '../../i18n/locales';
-import { Tag } from '../../ui/content';
+import { HintedHeading, Tag } from '../../ui/content';
 import content from '../../ui/content.module.css';
 import { Button, SegmentedControl } from '../../ui/controls';
 import controls from '../../ui/controls.module.css';
@@ -51,7 +51,7 @@ export function DocumentEditor({ slug, sources, editing, onChange, preview }: {
         <SegmentedControl label={t('console.report.view')} value={view} onChange={setView} choices={EDITOR_VIEWS.map(value => ({ value, label: t(`console.report.views.${value}`) }))} />
         {editing && view !== 'preview' && (
           <div className={styles.inserts} role="group" aria-label={t('console.report.insert.label')}>
-            {INSERTS.map(entry => <Button key={entry.label} variant="line" onClick={() => insert(entry.snippet)}>{t(entry.label)}</Button>)}
+            {INSERTS.map(entry => <Button key={entry.label} variant="quiet" onClick={() => insert(entry.snippet)}>{t(entry.label)}</Button>)}
           </div>
         )}
       </div>
@@ -73,8 +73,7 @@ export function ExportPanel({ report }: { report: ReportDraft }) {
   const { t } = useTranslation();
   return (
     <section className={clsx(content.panel, styles.action)}>
-      <h2 className="t-heading">{t('console.report.export.title')}</h2>
-      <p className="t-small c-muted">{t('console.report.export.lead')}</p>
+      <HintedHeading rank="h2" className="t-heading" title={t('console.report.export.title')} about={t('console.report.export.note')} />
       <ul className={styles.files}>
         {localeValues.map(locale => {
           const file = reportFileOf(report.slug, locale).slice(1);

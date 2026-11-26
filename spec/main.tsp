@@ -227,6 +227,12 @@ model PageQuery<DefaultSize extends valueof int32> {
   @query(#{ explode: true }) @minValue(1) @maxValue(MAX_PAGE_SIZE) limit?: int32 = DefaultSize;
 }
 
+/** Keeps a list to the runs of one outcome. */
+model OutcomeQuery {
+  /** Lists only the runs with this outcome and leaves out what has none of them; pass rates stay over every run the other parameters keep */
+  @query(#{ explode: true }) outcome?: RunOutcome;
+}
+
 /** One page of a list, and the length of the whole list. */
 model Page<Item> {
   items: Item[];
@@ -632,6 +638,7 @@ interface Benchmarks {
     /** Matches the task id or title */
     @query(#{ explode: true }) q?: string,
 
+    ...OutcomeQuery,
     ...PageQuery<14>,
   ): CombinationTaskPage | NotFoundError;
 
@@ -647,6 +654,7 @@ interface Benchmarks {
     /** Matches the task id or title */
     @query(#{ explode: true }) q?: string,
 
+    ...OutcomeQuery,
     ...PageQuery<14>,
   ): TaskPage | NotFoundError;
 
@@ -694,6 +702,7 @@ interface Benchmarks {
      */
     @query(#{ explode: true }) combination?: string,
 
+    ...OutcomeQuery,
     ...LanguageHeader,
   ): Localized<TaskRuns> | NotFoundError;
 

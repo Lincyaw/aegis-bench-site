@@ -6,4 +6,4 @@
 .panel { display: grid; gap: var(--space-5); max-width: 60rem; padding-top: var(--space-2); }
 
 .tab { display: grid; gap: var(--space-4); }
-.filters { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+.filters { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }

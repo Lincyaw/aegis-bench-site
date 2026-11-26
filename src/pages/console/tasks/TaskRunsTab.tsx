@@ -10,9 +10,11 @@ import { LocaleLink } from '../../../i18n/LocaleRouting';
 import { searchOf } from '../../../routes/address';
 import { consoleRunsPath } from '../../../routes/consoleRuns';
 import { TASK_PAGE_PARAMS, TASK_RUN_VIEWS, type TaskPageView } from '../../../routes/consoleTasks';
+import { HintedHeading } from '../../../ui/content';
 import content from '../../../ui/content.module.css';
 import { SegmentedControl } from '../../../ui/controls';
 import controls from '../../../ui/controls.module.css';
+import { InfoHint } from '../../../ui/hint';
 import table from '../../../ui/table.module.css';
 import styles from './TaskDetailPage.module.css';
 
@@ -54,8 +56,7 @@ export function EntrantRuns({ task, scope }: { task: ConsoleTaskDetail; scope: C
         {results.entrants.map(entrant => <EntrantRunsRow key={combinationKey(entrant.model.id, entrant.harness.id)} benchmarkId={task.benchmark.id} entrant={entrant} />)}
       </div>
       <section className={clsx(content.panel, styles.panel)}>
-        <h2 className="t-heading">{t('console.task.runs.validations')}</h2>
-        <p className="t-micro c-faint">{t('console.task.runs.validationsNote')}</p>
+        <HintedHeading rank="h2" className="t-heading" title={t('console.task.runs.validations')} about={t('console.task.runs.validationsNote')} />
         <ul className={styles.validations}>{results.validations.map(run => <ValidationRow key={run.agent} run={run} />)}</ul>
       </section>
     </>
@@ -68,34 +69,34 @@ export function CheckMatrix({ task, scope }: { task: ConsoleTaskDetail; scope: C
   const results = useTaskCheckResults(task.benchmark.id, task.id, scope);
   const columns = { '--columns': `minmax(14rem, 1.6fr) repeat(${results.entrants.length}, minmax(3.5rem, 1fr))` } as CSSProperties;
   return (
-    <>
-      <div className={styles.matrixScroll}>
-        <div className={clsx(table.table, styles.matrix)} style={columns} role="table" aria-label={t('console.task.runs.view.checks')}>
-          <div className={clsx(table.row, table.head)} role="row">
-            <span role="columnheader"><span className="visually-hidden">{t('console.task.runs.column.check')}</span></span>
-            {results.entrants.map(({ model, harness }) => (
-              <span key={combinationKey(model.id, harness.id)} role="columnheader" className={styles.matrixHead}>
-                <span className="t-micro">{model.name}</span><span className="t-micro c-faint">{harness.name}</span>
-              </span>
-            ))}
-          </div>
-          {results.checks.map(check => (
-            <div key={check.id} className={table.row} role="row">
-              <span role="rowheader" className={styles.matrixCheck}><span className="t-mono c-faint">{check.id}</span><span className="t-small">{check.title}</span></span>
-              {results.entrants.map(({ model, harness }, index) => {
-                // A check's counts follow the entrants' order, as the API lists them.
-                const { passed, counted } = check.byEntrant[index];
-                return (
-                  <span key={combinationKey(model.id, harness.id)} role="cell" className={clsx(styles.cell, 't-micro')} style={{ '--share': counted === 0 ? 0 : (counted - passed) / counted } as CSSProperties}>
-                    {passed} / {counted}
-                  </span>
-                );
-              })}
-            </div>
+    <div className={styles.matrixScroll}>
+      <div className={clsx(table.table, styles.matrix)} style={columns} role="table" aria-label={t('console.task.runs.view.checks')}>
+        <div className={clsx(table.row, table.head)} role="row">
+          <span role="columnheader">
+            <span className="visually-hidden">{t('console.task.runs.column.check')}</span>
+            <InfoHint label={t('ui.about', { subject: t('console.task.runs.view.checks') })}>{t('console.task.runs.checksNote')}</InfoHint>
+          </span>
+          {results.entrants.map(({ model, harness }) => (
+            <span key={combinationKey(model.id, harness.id)} role="columnheader" className={styles.matrixHead}>
+              <span className="t-micro">{model.name}</span><span className="t-micro c-faint">{harness.name}</span>
+            </span>
           ))}
         </div>
+        {results.checks.map(check => (
+          <div key={check.id} className={table.row} role="row">
+            <span role="rowheader" className={styles.matrixCheck}><span className="t-mono c-faint">{check.id}</span><span className="t-small">{check.title}</span></span>
+            {results.entrants.map(({ model, harness }, index) => {
+              // A check's counts follow the entrants' order, as the API lists them.
+              const { passed, counted } = check.byEntrant[index];
+              return (
+                <span key={combinationKey(model.id, harness.id)} role="cell" className={clsx(styles.cell, 't-micro')} style={{ '--share': counted === 0 ? 0 : (counted - passed) / counted } as CSSProperties}>
+                  {passed} / {counted}
+                </span>
+              );
+            })}
+          </div>
+        ))}
       </div>
-      <p className="t-micro c-faint">{t('console.task.runs.checksNote')}</p>
-    </>
+    </div>
   );
 }

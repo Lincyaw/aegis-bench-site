@@ -6,6 +6,7 @@ import type { ConsoleTaskDetail } from '../../../api/types';
 import { useLocale } from '../../../i18n/localeContext';
 import { dateTimeOf } from '../../../i18n/locales';
 import { Tag } from '../../../ui/content';
+import { InfoHint } from '../../../ui/hint';
 import table from '../../../ui/table.module.css';
 import styles from './TaskDetailPage.module.css';
 
@@ -34,7 +35,9 @@ export function TaskRevisionsTab({ task, version }: { task: ConsoleTaskDetail; v
           <span role="columnheader">{t('console.task.revisions.column.note')}</span>
           <span role="columnheader">{t('console.task.revisions.column.author')}</span>
           <span role="columnheader">{t('console.task.revisions.column.registeredAt')}</span>
-          <span role="columnheader">{t('console.task.revisions.column.runs')}</span>
+          <span role="columnheader" className={table.hinted}>
+            {t('console.task.revisions.column.runs')}<InfoHint label={t('ui.about', { subject: t('console.task.revisions.column.runs') })}>{t('console.task.revisions.note')}</InfoHint>
+          </span>
         </div>
         {revisions.map(revision => (
           <div
@@ -50,7 +53,6 @@ export function TaskRevisionsTab({ task, version }: { task: ConsoleTaskDetail; v
           </div>
         ))}
       </div>
-      <p className="t-micro c-faint">{t('console.task.revisions.note')}</p>
     </div>
   );
 }

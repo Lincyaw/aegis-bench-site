@@ -1,16 +1,19 @@
 import { clsx } from 'clsx';
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { RunEvent } from '../../api/types';
+import type { RunEvent, RunEventRow } from '../../api/types';
+import { Loading } from '../../ui/content';
 import controls from '../../ui/controls.module.css';
 import { AtifFields } from '../trajectory/AtifStep';
+import { HuggingFaceBoundary } from './HuggingFace';
 import styles from './RunEvents.module.css';
 
 /**
- * A run's events as the API returns them: each row shows its index, kind, tool and the first line of its excerpt,
- * and opens in place to the whole record, every field under its own name; nothing is translated, renamed or regrouped.
+ * A run's events as the API lists them: each row shows its index, kind, tool and excerpt, and opens in place to the
+ * whole event, which `useEvent` reads by its index; every field shows under its own name, and nothing is translated,
+ * renamed or regrouped.
  */
-export function RunEventList({ events, onStep }: { events: RunEvent[]; onStep: (step: number) => void }) {
+export function RunEventList({ events, useEvent, onStep }: { events: RunEventRow[]; useEvent: (index: number) => RunEvent; onStep: (step: number) => void }) {
   const { t } = useTranslation();
   const [opened, setOpened] = useState<number>();
   return (
@@ -23,11 +26,15 @@ export function RunEventList({ events, onStep }: { events: RunEvent[]; onStep: (
               <span className={clsx(styles.index, 't-mono c-faint')}>{event.index}</span>
               <span className="t-mono c-muted">{event.kind}</span>
               {event.tool && <span className="t-mono">{event.tool}</span>}
-              <span className={clsx(styles.excerpt, 't-small')}>{event.excerpt.split('\n')[0]}</span>
+              <span className={clsx(styles.excerpt, 't-small')}>{event.excerpt}</span>
             </button>
             {open && (
               <div className={styles.record}>
-                <AtifFields record={event} />
+                <HuggingFaceBoundary resetKey={String(event.index)}>
+                  <Suspense fallback={<Loading />}>
+                    <RunEventFields useEvent={useEvent} index={event.index} />
+                  </Suspense>
+                </HuggingFaceBoundary>
                 <button type="button" className={clsx(controls.textLink, 't-micro')} onClick={() => onStep(event.stepId)}>{t('console.run.events.inTrajectory')}</button>
               </div>
             )}
@@ -36,4 +43,9 @@ export function RunEventList({ events, onStep }: { events: RunEvent[]; onStep: (
       })}
     </ol>
   );
+}
+
+/** One event as the API returns it, its record nested as the trajectory records it. */
+export function RunEventFields({ useEvent, index }: { useEvent: (index: number) => RunEvent; index: number }) {
+  return <AtifFields record={useEvent(index)} />;
 }

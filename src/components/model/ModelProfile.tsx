@@ -17,7 +17,7 @@ export function Standings({ profile }: { profile: ModelProfile }) {
   const { t } = useTranslation();
   return (
     <section className={styles.section}>
-      <SectionHeading title={t('models.standings.title')} intro={t('models.standings.intro')} />
+      <SectionHeading title={t('models.standings.title')} about={t('models.standings.about')} />
       <div className={clsx(table.table, styles.standings)} role="table" aria-label={t('models.standings.title')}>
         <div className={clsx(table.row, table.head, 't-micro c-faint')} role="row">
           <span role="columnheader">{t('models.standings.stage')}</span><span role="columnheader">{t('models.standings.benchmark')}</span>
@@ -44,7 +44,7 @@ export function HarnessComparison({ profile }: { profile: ModelProfile }) {
   const { t } = useTranslation();
   return (
     <section className={styles.section}>
-      <SectionHeading title={t('models.harnesses.title')} intro={t('models.harnesses.intro')} />
+      <SectionHeading title={t('models.harnesses.title')} about={t('models.harnesses.about')} />
       <div className={styles.harnesses}>
         {profile.harnessComparison.map(comparison => (
           <div key={comparison.benchmark.id} className={styles.harness} data-half={comparison.half}>

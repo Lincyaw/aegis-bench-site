@@ -69,6 +69,7 @@ mock 服务端的作用除了提供演示数据，还在于检验接口设计是
 - 报告的 frontmatter 由 `src/articles/library.ts` 的 `ReportFrontmatter` 在加载时校验。
 - `##` 标题会成为页面的分区导航。站内链接写成以 `/` 开头的路径，会自动保持当前语言。
 - 可以直接使用的块：`Flow`/`Step`、`Sample`、`Facts`/`Fact`、`Versions`/`Version`、`Faq`/`Question`、`Citation`、`Callout`。评测基准页另有 `Leaderboard` 和 `RecentRuns`，数据取自接口。
+- 分区的说明（这一部分怎样评测、怎样计数）不写成标题下的段落，而写进标题：`## 评估方式<About text="……" />`，页面上收在标题旁的 ⓘ 里。说明写在属性里，分区的锚点和分区导航里的名称都只取标题。
 
 ## 代码规则
 

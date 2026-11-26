@@ -29,9 +29,11 @@ export function trajectoryPageStartOf(stepId: number): number {
 /** How many tasks a task list shows at first and adds each time the reader asks for more. */
 export const TASK_PAGE_SIZE = 14;
 
-/** The outcome filter that shows every run. */
+/** The outcome filter's choice that shows every run; a select's choices cannot be empty. */
 export const EVERY_OUTCOME = 'all';
-export const OUTCOME_FILTERS = [EVERY_OUTCOME, 'failed', 'passed'] as const satisfies readonly (typeof EVERY_OUTCOME | RunOutcome)[];
+
+/** The outcomes the page keeps its runs to; an execution failure is no model result to look for. */
+export const OUTCOME_FILTERS = ['failed', 'passed'] as const satisfies readonly RunOutcome[];
 export type OutcomeFilter = (typeof OUTCOME_FILTERS)[number];
 
 /** The page's two ways in: by task, each task's runs by combination; or by model, a combination's runs by task. */
@@ -50,7 +52,8 @@ export interface RunRecordsQuery extends ComparisonView {
   /** A model and harness pair, as combinationKey names it: the task view's filter, the model view's choice */
   combination?: string;
 
-  outcome: OutcomeFilter;
+  /** Only the runs with this outcome, and what has any of them; every run when absent */
+  outcome?: OutcomeFilter;
 
   /** The task view's chosen task; in the model view, the task of the chosen run */
   task?: string;
@@ -64,7 +67,7 @@ export interface RunRecordsQuery extends ComparisonView {
 
 /** Every parameter the page keeps in its address, with the value the address leaves unsaid. */
 export const RUN_RECORDS_PARAMS: AddressTable<RunRecordsQuery> = {
-  by: 'task', q: '', combination: undefined, outcome: EVERY_OUTCOME, task: undefined, mode: 'runs', run: undefined, tab: undefined, step: undefined,
+  by: 'task', q: '', combination: undefined, outcome: undefined, task: undefined, mode: 'runs', run: undefined, tab: undefined, step: undefined,
   check: undefined, ...EMPTY_COMPARISON,
 };
 
@@ -74,14 +77,14 @@ export const EVERY_COMBINATION = 'all';
 /** The page's state from its address; a value outside its set fails the page rather than showing nothing. */
 export function parseRunRecordsQuery(params: URLSearchParams): RunRecordsQuery {
   const by = params.get('by') ?? RUN_RECORDS_PARAMS.by;
-  const outcome = params.get('outcome') ?? RUN_RECORDS_PARAMS.outcome;
+  const outcome = params.get('outcome') ?? undefined;
   const mode = params.get('mode') ?? RUN_RECORDS_PARAMS.mode;
   const tab = params.get('tab') ?? undefined;
   const step = params.get('step') ?? undefined;
   if (!RUN_RECORD_VIEWS.some(view => view === by)) {
     throw new Error(`no run records view ${by}`);
   }
-  if (!OUTCOME_FILTERS.some(filter => filter === outcome)) {
+  if (outcome !== undefined && !OUTCOME_FILTERS.some(filter => filter === outcome)) {
     throw new Error(`no outcome filter ${outcome}`);
   }
   if (!TASK_MODES.some(candidate => candidate === mode)) {
@@ -94,7 +97,7 @@ export function parseRunRecordsQuery(params: URLSearchParams): RunRecordsQuery {
     throw new Error(`no step ${step}`);
   }
   return {
-    by: by as RunRecordsView, q: params.get('q') ?? '', combination: params.get('combination') ?? undefined, outcome: outcome as OutcomeFilter,
+    by: by as RunRecordsView, q: params.get('q') ?? '', combination: params.get('combination') ?? undefined, outcome: outcome as OutcomeFilter | undefined,
     task: params.get('task') ?? undefined, mode: mode as TaskMode, run: params.get('run') ?? undefined, tab: tab as RunTab | undefined,
     step: step === undefined ? undefined : Number(step), check: params.get('check') ?? undefined, ...parseComparisonView(params),
   };
@@ -131,10 +134,13 @@ export function withFilter(query: RunRecordsQuery, filter: Pick<RunRecordsQuery,
   return { ...withRun(query, undefined), ...filter };
 }
 
-/** Comparing the chosen task's runs starts with the run in view, if any. */
-export function withMode(query: RunRecordsQuery, mode: TaskMode): RunRecordsQuery {
-  const startWith = mode === 'compare' && query.compared.length === 0 && query.run ? [query.run] : [];
-  return { ...query, mode, compared: [...query.compared, ...startWith] };
+/**
+ * Comparing the chosen task's runs starts with the run in view, if any, whether the reader chose it or the list opened
+ * on it; the address keeps it, so going back to the runs shows it again.
+ */
+export function withMode(query: RunRecordsQuery, mode: TaskMode, runInView: string | undefined): RunRecordsQuery {
+  const startWith = mode === 'compare' && query.compared.length === 0 && runInView ? [runInView] : [];
+  return { ...query, mode, run: runInView, compared: [...query.compared, ...startWith] };
 }
 
 /** The detail's tab and, within it, the step or check it opens. */
@@ -150,8 +156,10 @@ export function runRecordsLevel(query: RunRecordsQuery, narrow: boolean): RunRec
   return !narrow ? 'threePanes' : query.run && query.mode === 'runs' ? 'detail' : chosen ? 'runs' : 'list';
 }
 
-/** The run a list opens on: the first of its runs with the filtered outcome (failed by default), else the first. */
-export function defaultRunId(runs: RunRef[], outcome: OutcomeFilter): string | undefined {
-  const wanted: RunOutcome = outcome === 'passed' ? 'passed' : 'failed';
-  return (runs.find(run => run.outcome === wanted) ?? runs[0])?.id;
+/**
+ * The run a list opens on: its first failure, which is what a reader looks into first, else its first run. A list kept
+ * to one outcome holds no other, so it opens on its first.
+ */
+export function defaultRunId(runs: RunRef[]): string | undefined {
+  return (runs.find(run => run.outcome === 'failed') ?? runs[0])?.id;
 }

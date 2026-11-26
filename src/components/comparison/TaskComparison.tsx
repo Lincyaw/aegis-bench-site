@@ -50,7 +50,7 @@ export function TaskInput({ instruction, reportSchema }: { instruction: string; 
 }
 
 /**
- * The comparison of a task's runs as a page shows it: the runs to choose from until one is chosen, then the chosen
+ * The comparison of a task's runs as a page shows it: a way in to the choice until a run is chosen, then the chosen
  * runs side by side, or, when their records on Hugging Face cannot be read, a note saying so in their place.
  */
 export function RunComparison({ entrants, source, view, onView }: {
@@ -65,7 +65,7 @@ export function RunComparison({ entrants, source, view, onView }: {
   ) : <RunChoice entrants={entrants} view={view} onView={onView} />;
 }
 
-/** Before any run is chosen, the comparison is the choice itself. */
+/** Before any run is chosen, the comparison is a way in to the choice, which opens over the page instead of filling it. */
 export function RunChoice({ entrants, view, onView }: { entrants: CombinationRuns[]; view: ComparisonView; onView: (view: ComparisonView) => void }) {
   const { t } = useTranslation();
   return (
@@ -74,8 +74,25 @@ export function RunChoice({ entrants, view, onView }: { entrants: CombinationRun
         <h2 className="t-label">{t('compare.pickTitle')}</h2>
         <InfoHint label={t('ui.about', { subject: t('compare.pickTitle') })}>{t('compare.pickHint', { max: MAX_COMPARED_RUNS, open: MAX_PANEL_TRAJECTORIES })}</InfoHint>
       </header>
-      <RunPicker entrants={entrants} view={view} onView={onView} />
+      <RunChooser entrants={entrants} view={view} onView={onView} />
     </section>
+  );
+}
+
+/** A pill that counts the runs chosen and opens every run of the task to choose from. */
+export function RunChooser({ entrants, view, onView }: { entrants: CombinationRuns[]; view: ComparisonView; onView: (view: ComparisonView) => void }) {
+  const { t } = useTranslation();
+  return (
+    <Popover.Root>
+      <Popover.Trigger className={clsx(controls.pill, controls.small, styles.choose, 'loop-edge')}>
+        {t('compare.pick')}<span className="t-numeric c-muted">{view.compared.length} / {MAX_COMPARED_RUNS}</span>
+      </Popover.Trigger>
+      <Popover.Portal>
+        <Popover.Content className={clsx(hint.popover, styles.chooser)} align="start" sideOffset={8} collisionPadding={12}>
+          <RunPicker entrants={entrants} view={view} onView={onView} />
+        </Popover.Content>
+      </Popover.Portal>
+    </Popover.Root>
   );
 }
 
@@ -136,22 +153,10 @@ export function ComparedRuns({ entrants, source, view, onView }: {
   // The runs shown stay until the newly chosen ones load, while the choices show at once.
   const comparison = source.useComparison(useDeferredValue(view.compared.join(LIST_SEPARATOR)).split(LIST_SEPARATOR));
   const shown = comparison.runs.filter(run => view.panel.includes(run.id));
-  const chooser = (
-    <Popover.Root>
-      <Popover.Trigger className={clsx(controls.pill, controls.small, styles.choose, 'loop-edge')}>
-        {t('compare.pick')}<span className="t-numeric c-muted">{view.compared.length} / {MAX_COMPARED_RUNS}</span>
-      </Popover.Trigger>
-      <Popover.Portal>
-        <Popover.Content className={clsx(hint.popover, styles.chooser)} align="start" sideOffset={8} collisionPadding={12}>
-          <RunPicker entrants={entrants} view={view} onView={onView} />
-        </Popover.Content>
-      </Popover.Portal>
-    </Popover.Root>
-  );
   return (
     <>
       <ComparisonTable columns={comparison.runs.length} label={t('compare.label')}>
-        <BlockHead title={t('compare.runs')} hint={t('compare.pickHint', { max: MAX_COMPARED_RUNS, open: MAX_PANEL_TRAJECTORIES })} aside={chooser}>
+        <BlockHead title={t('compare.runs')} hint={t('compare.pickHint', { max: MAX_COMPARED_RUNS, open: MAX_PANEL_TRAJECTORIES })} aside={<RunChooser entrants={entrants} view={view} onView={onView} />}>
           {comparison.runs.map((run, index) => (
             <Cell key={run.id}>
               <RunHead run={run} numeral={numeralAt(index)}>

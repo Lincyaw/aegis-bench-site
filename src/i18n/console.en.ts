@@ -29,7 +29,7 @@ export const consoleEn: ConsoleMessages = {
   forbidden: 'Your role does not allow this.',
   members: {
     title: 'Members and roles',
-    lead: 'Who may sign in to the console and what each may do. Every member reads all the records; editors also draft, publish and restore releases and draft and review reports; administrators also manage the members and the settings.',
+    about: 'Who may sign in to the console and what each may do. Every member reads all the records; editors also draft, publish and restore releases and draft and review reports; administrators also manage the members and the settings.',
     column: { member: 'Member', role: 'Role', joined: 'Joined', lastSignedIn: 'Last signed in', actions: 'Actions' },
     you: 'you',
     never: 'Never',
@@ -51,7 +51,7 @@ export const consoleEn: ConsoleMessages = {
   },
   reports: {
     title: 'Reports',
-    lead: 'Research reports on this benchmark. Draft, preview and have them reviewed here; once approved, commit their files to the repository, and the public site shows them from its next build.',
+    about: 'Research reports on this benchmark. Draft, preview and have them reviewed here; once approved, commit their files to the repository, and the public site shows them from its next build.',
     drafts: 'Drafts',
     noDrafts: 'No drafts yet.',
     published: 'Published',
@@ -71,7 +71,7 @@ export const consoleEn: ConsoleMessages = {
     },
   },
   report: {
-    lead: {
+    about: {
       draft: 'Draft: the source on the left, the public page on the right. Tick every check and save, then submit it to colleagues for review.',
       inReview: 'In review: waiting for other members to review it; a request for changes returns it to draft.',
       approved: 'Approved: download the files and commit them, and the public site shows the report from its next build.',
@@ -110,7 +110,7 @@ export const consoleEn: ConsoleMessages = {
     history: 'Reviews',
     export: {
       title: 'Commit to the repository',
-      lead: 'Commit these files at the paths they name, and the public site shows the report from its next build; once they are committed, the draft can be discarded.',
+      note: 'Commit these files at the paths they name, and the public site shows the report from its next build; once they are committed, the draft can be discarded.',
       download: 'Download',
     },
     discard: 'Discard the draft',
@@ -120,7 +120,7 @@ export const consoleEn: ConsoleMessages = {
   },
   settings: {
     title: 'Settings',
-    lead: 'The workspace’s name and public contact, and the rules a report passes before it goes to the public site.',
+    about: 'The workspace’s name and public contact, and the rules a report passes before it goes to the public site.',
     workspace: {
       title: 'Workspace',
       name: 'Workspace name',
@@ -147,7 +147,7 @@ export const consoleEn: ConsoleMessages = {
   },
   workbench: {
     title: 'Workbench',
-    lead: 'The current state of each benchmark: the public version, drafts awaiting publication and pending work.',
+    about: 'The current state of each benchmark: the public version, drafts awaiting publication and pending work.',
     stats: { benchmarks: 'Benchmarks', drafts: 'Drafts to publish', unreviewed: 'To review', executionFailures: 'Execution failures not counted' },
     column: { benchmark: 'Benchmark', current: 'Public version', draft: 'Draft', tasks: 'Tasks', runs: 'Runs', unreviewed: 'To review' },
     recent: 'Latest releases',
@@ -156,7 +156,7 @@ export const consoleEn: ConsoleMessages = {
   },
   releases: {
     title: 'Release log',
-    lead: 'The public site shows only what has been published. Each benchmark publishes on its own; a replaced version is kept and can be published again to restore it.',
+    about: 'The public site shows only what has been published. Each benchmark publishes on its own; a replaced version is kept and can be published again to restore it.',
     column: { benchmark: 'Benchmark', current: 'Public version', draft: 'Draft', updated: 'Updated' },
     recent: 'Latest releases',
     noDraft: 'No draft',
@@ -178,7 +178,7 @@ export const consoleEn: ConsoleMessages = {
   },
   benchmarkReleases: {
     title: 'Releases',
-    lead: 'What the public site shows of {{benchmark}}: the combinations its leaderboard ranks, its summary and its example runs.',
+    about: 'What the public site shows of {{benchmark}}: the combinations its leaderboard ranks, its summary and its example runs.',
     newDraft: 'New draft',
     openDraft: 'Edit the draft',
     viewDraft: 'View the draft',
@@ -186,7 +186,7 @@ export const consoleEn: ConsoleMessages = {
     column: { version: 'Version', status: 'Status', note: 'Note', changes: 'Changes', author: 'Author', updated: 'When' },
   },
   release: {
-    lead: {
+    about: {
       draft: 'Draft: once published, the public site shows this version.',
       current: 'The version the public site shows.',
       superseded: 'A replaced version; publish it again to restore it.',
@@ -222,7 +222,7 @@ export const consoleEn: ConsoleMessages = {
   },
   changelog: {
     title: 'Changelog',
-    lead: 'Every version of every task, newest first. A version that only revises grading keeps the earlier runs, which count once regraded; a version that edits the task needs new runs.',
+    about: 'Every version of every task, newest first. A version that only revises grading keeps the earlier runs, which count once regraded; a version that edits the task needs new runs.',
     benchmarkFilter: 'Benchmark',
     everyBenchmark: 'All benchmarks',
     changeFilter: 'Change',
@@ -232,7 +232,7 @@ export const consoleEn: ConsoleMessages = {
   },
   collections: {
     title: 'Collections',
-    lead: 'Each tag makes a collection: the tasks that carry it, for comparing models on a set of tasks. A collection is not stored; it changes as the tasks’ tags change.',
+    about: 'Each tag makes a collection: the tasks that carry it, for comparing models on a set of tasks. A collection is not stored; it changes as the tasks’ tags change.',
     column: { tag: 'Tag', tasks: 'Tasks', passRate: 'Pass rate', counted: 'Counted runs', failures: 'Failures' },
   },
   collection: {
@@ -328,8 +328,9 @@ export const consoleEn: ConsoleMessages = {
   },
   tasks: {
     title: 'Tasks',
-    lead_one: '{{count, number}} task, hardest first by default: the lowest pass rate leads.',
-    lead_other: '{{count, number}} tasks, hardest first by default: the lowest pass rate leads.',
+    lead_one: '{{count, number}} task',
+    lead_other: '{{count, number}} tasks',
+    about: 'Hardest first by default: the lowest pass rate leads.',
     filters: 'Filter tasks',
     search: 'Search task id or title',
     tagFilter: 'Tag',
@@ -342,7 +343,7 @@ export const consoleEn: ConsoleMessages = {
     column: { task: 'Task', tags: 'Tags', entrants: 'Combinations', passRate: 'Pass rate', counted: 'Counted runs', version: 'Version' },
     entrantSolved: '{{entrant}}: passed at least once',
     entrantUnsolved: '{{entrant}}: never passed',
-    legend: 'Each dot under Combinations is one combination: filled when it passed at least once, hollow when it never did.',
+    legend: 'Each dot is one combination: filled when it passed at least once, hollow when it never did.',
     range: 'Tasks {{from, number}}–{{to, number}} of {{total, number}}',
     empty: 'No task matches.',
   },
@@ -367,7 +368,10 @@ export const consoleEn: ConsoleMessages = {
       verifier: 'Verifier',
     },
     reference: {
-      note: 'The public site withholds these files: the reference solution lets the oracle show the task can be solved, and the reference answers are what grading compares against.',
+      note: {
+        solution: 'The public site withholds it. The reference solution lets the oracle show the task can be solved.',
+        referenceAnswer: 'The public site withholds it. The reference answers are what grading compares against.',
+      },
       reason: { solution: 'Reference solution', referenceAnswer: 'Reference answer' },
     },
     runs: {
@@ -393,17 +397,18 @@ export const consoleEn: ConsoleMessages = {
       note: 'After the task is edited, runs on earlier versions no longer count; after only the grading is revised, they count once regraded.',
     },
     files: {
-      note: 'The task’s Harbor directory. The entries marked as not public are the reference solution and answers, visible only in the console.',
+      note: 'The entries marked as not public are the reference solution and answers, visible only in the console.',
       withheld: 'Not public',
     },
     allRuns: 'All runs of this task',
   },
   runs: {
     title: 'Runs',
-    lead_one: '{{count, number}} run, newest first. Execution failures are listed but not counted.',
-    lead_other: '{{count, number}} runs, newest first. Execution failures are listed but not counted.',
-    leadFiltered_one: '{{count, number}} of {{total, number}} runs match, newest first. Execution failures are listed but not counted.',
-    leadFiltered_other: '{{count, number}} of {{total, number}} runs match, newest first. Execution failures are listed but not counted.',
+    lead_one: '{{count, number}} run',
+    lead_other: '{{count, number}} runs',
+    leadFiltered_one: '{{count, number}} of {{total, number}} runs match',
+    leadFiltered_other: '{{count, number}} of {{total, number}} runs match',
+    about: 'Newest first. Execution failures are listed but not counted.',
     filters: 'Filter runs',
     search: 'Search task id or title',
     combinationFilter: 'Combination',
@@ -420,8 +425,9 @@ export const consoleEn: ConsoleMessages = {
   },
   models: {
     title: 'Models',
-    lead_one: '{{count}} model ran on this benchmark. Each model’s result counts every harness it ran in; the best comes first.',
-    lead_other: '{{count}} models ran on this benchmark. Each model’s result counts every harness it ran in; the best comes first.',
+    lead_one: '{{count}} model ran on this benchmark',
+    lead_other: '{{count}} models ran on this benchmark',
+    about: 'Each model’s result counts every harness it ran in; the best comes first.',
     column: { model: 'Model', harnesses: 'Harnesses', passRate: 'Pass rate', everyTime: 'Passed every time', once: 'Passed at least once', counted: 'Counted runs', cost: 'Mean cost', failures: 'Failures' },
   },
   scope: {
@@ -436,14 +442,14 @@ export const consoleEn: ConsoleMessages = {
     stats: { passRate: 'Pass rate', everyTime: 'Passed every time', steps: 'Mean steps', cost: 'Mean cost' },
     byHarness: 'Results by harness',
     tasks: 'Task by task',
-    tasksLead: 'The model’s runs on each task, its own lowest pass rate first.',
+    tasksNote: 'The model’s runs on each task, its own lowest pass rate first.',
     column: { task: 'Task', runs: 'Runs', passRate: 'Pass rate', failures: 'Failures' },
     runOf: '{{harness}} attempt {{attempt}}: {{outcome}}',
     range: 'Tasks {{from, number}}–{{to, number}} of {{total, number}}',
   },
   analysis: {
     title: 'Trajectory analysis',
-    lead: 'Each analysis searches every trajectory for the behaviour one question describes: probes mark positions mechanically, and readers read whole trajectories to give a verdict. A trajectory that is only marked was read by nobody, and rests on its probes’ precision alone.',
+    about: 'Each analysis searches every trajectory for the behaviour one question describes: probes mark positions mechanically, and readers read whole trajectories to give a verdict. A trajectory that is only marked was read by nobody, and rests on its probes’ precision alone.',
     converged: 'Converged',
     open: 'Not converged',
     rounds_one: '{{count}} round',
@@ -459,7 +465,9 @@ export const consoleEn: ConsoleMessages = {
       missUpper: 'Miss bound',
       missNote: '{{finds, number}} found in {{reads, number}} unmarked trajectories read at random',
     },
-    calibration: 'Calibration: {{pairs, number}} trajectories were read twice, with and without the marks shown; the verdicts agreed {{agreement}} of the time.',
+    calibration: 'Calibration: {{pairs, number}} trajectories, verdicts agreed {{agreement}} of the time',
+    calibrationName: 'Calibration',
+    calibrationNote: 'Each trajectory is read twice, with and without the marks shown, and the two verdicts are compared.',
     facets: 'Kinds of behaviour',
     excludes: 'Not counted: {{excludes}}',
     edge: { grader: 'Crosses the grading boundary', localEnvironment: 'Crosses the environment boundary' },
@@ -500,7 +508,7 @@ export const consoleEn: ConsoleMessages = {
       inTrajectory: 'See it in the trajectory',
       range: 'Events {{from, number}}–{{to, number}} of {{total, number}}',
       empty: 'No event matches.',
-      note: 'Events in the order they happened, from the run’s ATIF trajectory; each shows at most 400 characters.',
+      note: 'Events in the order they happened, from the run’s ATIF trajectory; each row shows the first line of the event’s text and opens to its whole record.',
     },
     usage: {
       inputTokens: 'Input tokens',

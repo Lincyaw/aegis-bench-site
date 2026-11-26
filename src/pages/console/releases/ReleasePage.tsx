@@ -33,7 +33,7 @@ export function ReleasePage() {
     <div className={styles.page} data-half={benchmark.stage.half}>
       <ConsoleHeader
         crumbs={[{ label: benchmark.name, to: consoleBenchmarkPath(benchmark.id) }, { label: t('console.benchmarkReleases.title'), to: benchmarkReleasesPath(benchmark.id) }, { label: version }]}
-        title={version} lead={t(`console.release.lead.${release.status}`)}
+        title={version} about={t(`console.release.about.${release.status}`)}
         actions={release.status === 'current' && <ButtonLink to={benchmarkPath(benchmark.id)} variant="line">{t('console.release.viewPublic')}</ButtonLink>}
       />
       <div className={styles.facts}>

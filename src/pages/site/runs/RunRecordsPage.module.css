@@ -18,9 +18,14 @@
 /* Rules that change a pane's own layout are qualified by the browser, so they win whatever order the stylesheets load in. */
 .browser .stacked { flex-direction: column; align-items: flex-start; gap: var(--space-px); }
 .back { padding-bottom: var(--space-2); }
-.taskFiles { margin-top: var(--space-2); }
 
-.modeSwitch { margin-top: var(--space-3); }
+/*
+ * The chosen task spans the runs and the detail on the browser's own columns, its head across both, so the switch
+ * between its runs and their comparison stays in place while what is under it changes.
+ */
+.taskArea { display: grid; grid-column: span 2; grid-template-columns: subgrid; grid-template-rows: auto minmax(0, 1fr); min-height: 0; }
+.taskHead { display: flex; flex-wrap: wrap; grid-column: 1 / -1; align-items: center; gap: var(--space-2) var(--space-3); padding: var(--space-3) var(--space-4); border-bottom: var(--rule-hairline); }
+.taskHead > :last-child { margin-left: auto; }
 
 .combination { display: grid; gap: var(--space-2); padding: var(--space-3) var(--space-4); border-bottom: var(--rule-hairline); }
 .comboName { display: flex; align-items: center; gap: var(--space-2); }
@@ -33,11 +38,9 @@
  * Comparing a task's runs takes the width of its runs and the run detail together and scrolls as one; its parts keep
  * their height, since a table that scrolls sideways would otherwise give its height up to the pane.
  */
-.browser .compareArea { display: grid; grid-column: span 2; grid-auto-rows: max-content; gap: var(--space-5); padding: var(--space-4) var(--space-6) var(--space-6); overflow-y: auto; overscroll-behavior: contain; }
+.browser .compareArea { display: grid; grid-column: 1 / -1; grid-auto-rows: max-content; gap: var(--space-5); padding: var(--space-4) var(--space-6) var(--space-6); overflow-y: auto; overscroll-behavior: contain; }
 /* An anchor scrolls to the top of the pane, which no nav covers. */
 .compareArea [id] { scroll-margin-top: var(--space-4); }
-.compareHead { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
-.compareHead > :last-child { margin-left: auto; }
 
 @media (max-width: 1280px) {
   .legend { display: none; }
@@ -54,8 +57,11 @@
   .toolbar { flex-wrap: wrap; gap: var(--space-3); padding: var(--space-4) 0; }
   .crumbs { margin: 0; white-space: normal; }
   .search { width: 100%; }
-  .filter { flex: 1; min-width: 0; }
+  .filter { min-width: 0; }
   .browser { display: block; border: 0; border-radius: 0; overflow: visible; }
+  .taskArea { display: block; }
+  .taskHead { flex-direction: column; align-items: flex-start; gap: var(--space-px); padding: var(--space-3) 0; }
+  .taskHead > :last-child { align-self: flex-start; margin: var(--space-3) 0 0; }
   .combination { padding-left: 0; padding-right: 0; }
   .detail { padding: var(--space-2) 0 0; overflow: visible; }
   .browser .compareArea { padding: var(--space-2) 0 0; overflow: visible; }

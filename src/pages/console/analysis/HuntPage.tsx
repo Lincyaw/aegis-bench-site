@@ -11,6 +11,7 @@ import { ConsoleHeader } from '../../../components/shell/ConsoleHeader';
 import { searchOf } from '../../../routes/address';
 import { EVERY_CHOICE, consoleBenchmarkPath } from '../../../routes/console';
 import { HUNT_TRIAL_PAGE_SIZE, HUNT_TRIAL_PARAMS, analysisPath, parseHuntTrialQuery } from '../../../routes/consoleAnalysis';
+import { HintedHeading } from '../../../ui/content';
 import { Select } from '../../../ui/controls';
 import { Pager } from '../../../ui/navigation';
 import table from '../../../ui/table.module.css';
@@ -36,9 +37,8 @@ export function HuntPage() {
       />
       <HuntCoverageTiles hunt={hunt} />
       <section className={styles.section}>
-        <h2 className="t-heading">{t('console.analysis.facets')}</h2>
+        <HintedHeading rank="h2" className="t-heading" title={t('console.analysis.facets')} about={t('console.analysis.precisionNote')} />
         {hunt.facets.map(facet => <FacetPanel key={facet.id} facet={facet} onTrials={() => update({ facet: facet.id })} />)}
-        <p className="t-micro c-faint">{t('console.analysis.precisionNote')}</p>
       </section>
       <HuntTrials benchmarkId={benchmark.id} hunt={hunt} query={query} onChange={update} />
     </div>
@@ -60,7 +60,7 @@ export function HuntTrials({ benchmarkId, hunt, query, onChange }: { benchmarkId
           choices={[{ value: EVERY_CHOICE, label: t('console.analysis.everyFacet') }, ...hunt.facets.map(facet => ({ value: facet.id, label: facet.name }))]}
         />
         <Select
-          label={t('console.analysis.verdictFilter')} value={query.verdict ?? EVERY_CHOICE} onChange={verdict => onChange({ verdict: verdict === EVERY_CHOICE ? undefined : verdict as HuntVerdict })}
+          variant="quiet" label={t('console.analysis.verdictFilter')} value={query.verdict ?? EVERY_CHOICE} onChange={verdict => onChange({ verdict: verdict === EVERY_CHOICE ? undefined : verdict as HuntVerdict })}
           choices={[{ value: EVERY_CHOICE, label: t('console.analysis.everyVerdict') }, ...consoleHuntVerdictValues.map(verdict => ({ value: verdict, label: t(`console.analysis.verdict.${verdict}`) }))]}
         />
       </div>

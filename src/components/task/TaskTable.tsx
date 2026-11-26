@@ -9,6 +9,7 @@ import { EVERY_CHOICE } from '../../routes/console';
 import { consoleTaskPath } from '../../routes/consoleTasks';
 import { Tag } from '../../ui/content';
 import { SearchField, Select } from '../../ui/controls';
+import { InfoHint } from '../../ui/hint';
 import table from '../../ui/table.module.css';
 import { EntrantDots, PassRate } from '../result/PassRate';
 import styles from './TaskTable.module.css';
@@ -20,15 +21,15 @@ export function TaskFilters({ query, tags, onChange }: { query: ConsoleTaskQuery
     <div className={styles.filters} role="search" aria-label={t('console.tasks.filters')}>
       <SearchField label={t('console.tasks.search')} value={query.q} onChange={q => onChange({ q })} className={styles.search} />
       <Select
-        label={t('console.tasks.tagFilter')} value={query.tag ?? EVERY_CHOICE} onChange={tag => onChange({ tag: tag === EVERY_CHOICE ? undefined : tag })}
+        variant="quiet" label={t('console.tasks.tagFilter')} value={query.tag ?? EVERY_CHOICE} onChange={tag => onChange({ tag: tag === EVERY_CHOICE ? undefined : tag })}
         choices={[{ value: EVERY_CHOICE, label: t('console.tasks.everyTag') }, ...tags.map(({ tag, tasks }) => ({ value: tag, label: `${tag} · ${groupedNumber(locale, tasks)}` }))]}
       />
       <Select
-        label={t('console.tasks.spreadFilter')} value={query.spread ?? EVERY_CHOICE} onChange={spread => onChange({ spread: spread === EVERY_CHOICE ? undefined : spread as TaskSpread })}
+        variant="quiet" label={t('console.tasks.spreadFilter')} value={query.spread ?? EVERY_CHOICE} onChange={spread => onChange({ spread: spread === EVERY_CHOICE ? undefined : spread as TaskSpread })}
         choices={[{ value: EVERY_CHOICE, label: t('console.tasks.everySpread') }, ...consoleTaskSpreadValues.map(spread => ({ value: spread, label: t(`console.tasks.spread.${spread}`) }))]}
       />
       <Select
-        label={t('console.tasks.orderFilter')} value={query.order} onChange={order => onChange({ order: order as TaskOrder })}
+        variant="quiet" label={t('console.tasks.orderFilter')} value={query.order} onChange={order => onChange({ order: order as TaskOrder })}
         choices={consoleTaskOrderValues.map(order => ({ value: order, label: t(`console.tasks.order.${order}`) }))}
       />
     </div>
@@ -44,7 +45,9 @@ export function TaskTable({ benchmarkId, rows }: { benchmarkId: string; rows: Co
       <div className={clsx(table.row, table.head, 't-micro c-faint')} role="row">
         <span role="columnheader">{t('console.tasks.column.task')}</span>
         <span role="columnheader">{t('console.tasks.column.tags')}</span>
-        <span role="columnheader">{t('console.tasks.column.entrants')}</span>
+        <span role="columnheader" className={table.hinted}>
+          {t('console.tasks.column.entrants')}<InfoHint label={t('ui.about', { subject: t('console.tasks.column.entrants') })}>{t('console.tasks.legend')}</InfoHint>
+        </span>
         <span role="columnheader">{t('console.tasks.column.passRate')}</span>
         <span role="columnheader">{t('console.tasks.column.counted')}</span>
         <span role="columnheader">{t('console.tasks.column.version')}</span>

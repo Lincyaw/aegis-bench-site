@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { LocaleLink } from '../i18n/LocaleRouting';
 import { CopyButton } from '../ui/controls';
 import { Tag } from '../ui/content';
+import { InfoHint } from '../ui/hint';
 import { CITATION_ANCHOR } from './library';
 import content from '../ui/content.module.css';
 import styles from './blocks.module.css';
@@ -78,6 +79,16 @@ export function Citation({ children }: { children: ReactNode }) {
       <CopyButton label={t('ui.copyBibtex')} text={entryText} />
     </div>
   );
+}
+
+/**
+ * What explains a section, such as how its part of the evaluation works, written into the section's heading as
+ * `## Title<About text="…" />` and kept behind an ⓘ beside the title. The text is an attribute so the section's anchor
+ * and its name in the section links are the title alone.
+ */
+export function About({ text }: { text: string }) {
+  const { t } = useTranslation();
+  return <span className={styles.about}><InfoHint label={t('articles.aboutSection')}>{text}</InfoHint></span>;
 }
 
 /** A remark set apart from the running text. */

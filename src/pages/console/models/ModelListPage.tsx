@@ -25,7 +25,7 @@ export function ModelListPage() {
   const models = useConsoleModels(benchmark.id);
   return (
     <div className={styles.page} data-half={benchmark.stage.half}>
-      <ConsoleHeader crumbs={[{ label: benchmark.name, to: consoleBenchmarkPath(benchmark.id) }, { label: t('console.models.title') }]} title={t('console.models.title')} lead={t('console.models.lead', { count: models.length })} />
+      <ConsoleHeader crumbs={[{ label: benchmark.name, to: consoleBenchmarkPath(benchmark.id) }, { label: t('console.models.title') }]} title={t('console.models.title')} about={t('console.models.about')} lead={t('console.models.lead', { count: models.length })} />
       <div className={clsx(table.table, styles.models)} role="table" aria-label={t('console.models.title')}>
         <div className={clsx(table.row, table.head, 't-micro c-faint')} role="row">
           <span role="columnheader">{t('console.models.column.model')}</span>

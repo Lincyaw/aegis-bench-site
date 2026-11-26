@@ -1,6 +1,4 @@
-## Setting
-
-The agent works in an isolated development environment and gets the same information and tools an engineer would have for the same request.
+## Setting<About text="The agent works in an isolated development environment and gets the same information and tools an engineer would have for the same request." />
 
 <Flow>
   <Step title="The agent receives">The requirement, the complete repository and a working development environment.</Step>
@@ -14,9 +12,7 @@ The agent works in an isolated development environment and gets the same informa
 
 The sample is quoted as the task gives it; tasks are published in the language they were written in.
 
-## Evaluation
-
-Each task is decided by tests in the repository that the agent never sees, and every model runs under the same conditions.
+## Evaluation<About text="Each task is decided by tests in the repository that the agent never sees, and every model runs under the same conditions." />
 
 <Flow>
   <Step title="What is graded">The agent's submitted changes, rebuilt in a fresh environment.</Step>
@@ -31,21 +27,15 @@ Each task is decided by tests in the repository that the agent never sees, and e
   <Fact label="Same conditions">The same harnesses, turn budget and execution environment</Fact>
 </Facts>
 
-## Leaderboard
-
-The top 5 combinations by pass rate. The full leaderboard can also rank by model or by harness.
+## Leaderboard<About text="The top 5 combinations by pass rate. The full leaderboard can also rank by model or by harness." />
 
 <Leaderboard top={5} />
 
-## Run records
-
-Every run's full trajectory is public, to replay step by step and to check its grading against.
+## Run records<About text="Every run's full trajectory is public, to replay step by step and to check its grading against." />
 
 <RecentRuns />
 
-## Versions and citation
-
-Each version fixes its tasks and evaluation setup, and results are reported per version.
+## Versions and citation<About text="Each version fixes its tasks and evaluation setup, and results are reported per version." />
 
 <Versions>
   <Version tag="v1.2" date="2026-11-20">Adds 40 tasks on concurrency control and caching.</Version>

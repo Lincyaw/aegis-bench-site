@@ -22,7 +22,7 @@ export function CollectionListPage() {
   const collections = useCollections(benchmark.id);
   return (
     <div className={styles.page} data-half={benchmark.stage.half}>
-      <ConsoleHeader crumbs={[{ label: benchmark.name, to: consoleBenchmarkPath(benchmark.id) }, { label: t('console.collections.title') }]} title={t('console.collections.title')} lead={t('console.collections.lead')} />
+      <ConsoleHeader crumbs={[{ label: benchmark.name, to: consoleBenchmarkPath(benchmark.id) }, { label: t('console.collections.title') }]} title={t('console.collections.title')} about={t('console.collections.about')} />
       <div className={clsx(table.table, styles.collections)} role="table" aria-label={t('console.collections.title')}>
         <div className={clsx(table.row, table.head, 't-micro c-faint')} role="row">
           <span role="columnheader">{t('console.collections.column.tag')}</span>

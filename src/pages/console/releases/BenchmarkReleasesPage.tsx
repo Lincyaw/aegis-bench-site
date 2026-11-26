@@ -30,7 +30,7 @@ export function BenchmarkReleasesPage() {
     <div className={styles.page} data-half={benchmark.stage.half}>
       <ConsoleHeader
         crumbs={[{ label: benchmark.name, to: consoleBenchmarkPath(benchmark.id) }, { label: t('console.benchmarkReleases.title') }]}
-        title={t('console.benchmarkReleases.title')} lead={t('console.benchmarkReleases.lead', { benchmark: benchmark.name })}
+        title={t('console.benchmarkReleases.title')} about={t('console.benchmarkReleases.about', { benchmark: benchmark.name })}
         actions={draft
           ? <ButtonLink to={releasePath(benchmark.id, draft.id)} variant={editing ? 'solid' : 'line'}>{t(editing ? 'console.benchmarkReleases.openDraft' : 'console.benchmarkReleases.viewDraft')}</ButtonLink>
           : editing && <Button variant="solid" onClick={() => createDraft.mutate(undefined, { onSuccess: created => navigate(releasePath(benchmark.id, created.id)) })}>{t('console.benchmarkReleases.newDraft')}</Button>}

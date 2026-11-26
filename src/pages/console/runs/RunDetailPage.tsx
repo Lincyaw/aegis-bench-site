@@ -6,7 +6,7 @@ import { useConsoleBenchmark, useConsoleRun, useConsoleTrajectoryPage } from '..
 import type { ConsoleBenchmark, ConsoleRunDetail } from '../../../api/types';
 import { FailureClassTag } from '../../../components/result/FailureClassTag';
 import { formatCost } from '../../../components/result/presentation';
-import { HuggingFaceBoundary, HuggingFaceNote } from '../../../components/run/HuggingFace';
+import { HuggingFaceBoundary, HuggingFaceLink } from '../../../components/run/HuggingFace';
 import { OutcomeBadge } from '../../../components/run/Outcome';
 import { FailureTab, GradingTab, InputTab, OutputTab } from '../../../components/run/RunDetail';
 import { RunUsageTab } from '../../../components/run/RunUsage';
@@ -50,9 +50,9 @@ export function RunDetailPage() {
         lead={t('console.run.label', { model: run.model.name, harness: run.harness.name, attempt: run.attempt })}
         actions={(
           <>
-            {benchmark.replayable && <ButtonLink to={consoleRunReplayPath(benchmark.id, run.id, { step: view.step })} variant="line">{t('console.replay.open')}</ButtonLink>}
+            <ButtonLink to={consoleTaskPath(benchmark.id, run.task.id)} variant="quiet">{t('console.run.toTask')}</ButtonLink>
+            {benchmark.replayable && <ButtonLink to={consoleRunReplayPath(benchmark.id, run.id, { step: view.step })} variant="quiet">{t('console.replay.open')}</ButtonLink>}
             <ButtonLink to={consoleTaskPath(benchmark.id, run.task.id, { tab: 'compare', compared: [run.id] })} variant="line">{t('console.run.compare')}</ButtonLink>
-            <ButtonLink to={consoleTaskPath(benchmark.id, run.task.id)} variant="line">{t('console.run.toTask')}</ButtonLink>
           </>
         )}
       />
@@ -75,7 +75,7 @@ export function RunDetailPage() {
         { label: t('runs.metrics.cost'), value: formatCost(run.metrics.costUsd) },
         { label: t('runs.metrics.endReason'), value: t(`runs.endReason.${run.metrics.endReason}`) },
       ]} />
-      {run.huggingFaceUrl && <HuggingFaceNote text={t('runs.huggingFace')} url={run.huggingFaceUrl} />}
+      {run.huggingFaceUrl && <HuggingFaceLink about={t('runs.huggingFace')} url={run.huggingFaceUrl} />}
       <TabRow current={view.tab} className={styles.tabs} role="tablist" aria-label={t('console.run.tabList')}>
         {CONSOLE_RUN_TABS.map(tab => (
           <button key={tab} type="button" role="tab" data-tab={tab} aria-selected={tab === view.tab} className={clsx(navigation.tab, 't-small')} onClick={() => onView({ tab })}>

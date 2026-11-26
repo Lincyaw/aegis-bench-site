@@ -1,5 +1,5 @@
 import type { MDXComponents, MDXContent } from 'mdx/types';
-import { Callout, Citation, DocumentLink, Fact, Facts, Faq, Flow, Question, Sample, Step, Version, Versions } from './blocks';
+import { About, Callout, Citation, DocumentLink, Fact, Facts, Faq, Flow, Question, Sample, Step, Version, Versions } from './blocks';
 import { DOCUMENTS } from './library';
 import styles from './blocks.module.css';
 
@@ -15,7 +15,7 @@ export function Document({ path, blocks }: { path: string; blocks?: MDXComponent
 export function DocumentBody({ Content, blocks }: { Content: MDXContent; blocks?: MDXComponents }) {
   return (
     <article className={styles.document}>
-      <Content components={{ a: DocumentLink, Callout, Citation, Fact, Facts, Faq, Flow, Question, Sample, Step, Version, Versions, ...blocks }} />
+      <Content components={{ a: DocumentLink, About, Callout, Citation, Fact, Facts, Faq, Flow, Question, Sample, Step, Version, Versions, ...blocks }} />
     </article>
   );
 }

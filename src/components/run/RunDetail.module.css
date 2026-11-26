@@ -16,6 +16,7 @@
 
 .links { display: flex; flex-wrap: wrap; gap: var(--space-5); }
 .summary { display: flex; align-items: center; gap: var(--space-4); }
+.total { display: flex; align-items: center; gap: var(--space-1); }
 .summary > a { margin-left: auto; }
 
 /* A check's detail lines up under its title, past the number column and the gap. */

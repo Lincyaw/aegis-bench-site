@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import type { TimelineLegend, TimelineStep, TrajectoryPage } from '../../api/types';
 import { TRAJECTORY_PAGE_SIZE, trajectoryPageStartOf } from '../../routes/runRecords';
 import { ArrowIcon, IconButton } from '../../ui/controls';
+import { InfoHint } from '../../ui/hint';
 import { Pager } from '../../ui/navigation';
 import { RunScrubber, TimelineLegendRow } from '../run/RunTimeline';
 import { AtifFields, AtifStepSummary } from './AtifStep';
@@ -84,7 +85,10 @@ export function TrajectoryView({ usePage, timeline, legend, evidence, selected, 
           onPrevious={() => turnTo(pageStart - TRAJECTORY_PAGE_SIZE)} onNext={() => turnTo(pageStart + TRAJECTORY_PAGE_SIZE)}
         />
       )}
-      <p className="t-micro c-faint">{t('runs.trajectoryNote', { version: page.schema_version, agent: `${page.agent.name} ${page.agent.version}`, model: page.agent.model_name, count: page.final_metrics?.total_steps, cost: page.final_metrics?.total_cost_usd?.toFixed(2) })}</p>
+      <p className={clsx(styles.facts, 't-micro c-faint')}>
+        {t('runs.trajectoryFacts', { version: page.schema_version, agent: `${page.agent.name} ${page.agent.version}`, model: page.agent.model_name, count: page.final_metrics?.total_steps, cost: page.final_metrics?.total_cost_usd?.toFixed(2) })}
+        <InfoHint label={t('ui.about', { subject: t('runs.tab.trajectory') })}>{t('runs.trajectoryNote')}</InfoHint>
+      </p>
     </div>
   );
 }

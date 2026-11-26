@@ -6,15 +6,21 @@ import { LocaleLink } from '../i18n/LocaleRouting';
 import styles from './controls.module.css';
 import { Hint } from './hint';
 
-/** A solid button leads the page forward and carries an arrow; a line button is any other action. */
-type ButtonVariant = 'solid' | 'line';
+/**
+ * How a control stands in its bar: outlined with the ∞ edge, or quiet, its outline left out, so that the one outlined
+ * control of the bar stands out.
+ */
+export type ControlVariant = 'line' | 'quiet';
+
+/** A solid button leads the page forward and carries an arrow; a line or quiet button is any other action. */
+type ButtonVariant = 'solid' | ControlVariant;
 
 export function ButtonLink({ to, variant, children }: { to: string; variant: ButtonVariant; children: ReactNode }) {
-  return <LocaleLink className={clsx(styles.pill, styles.large, variant === 'solid' && styles.solid, 'loop-edge')} to={to}>{children}</LocaleLink>;
+  return <LocaleLink className={clsx(styles.pill, styles.large, variant === 'solid' && styles.solid, variant === 'quiet' ? styles.quiet : 'loop-edge')} to={to}>{children}</LocaleLink>;
 }
 
 export function Button({ variant, onClick, children }: { variant: ButtonVariant; onClick: () => void; children: ReactNode }) {
-  return <button type="button" className={clsx(styles.pill, styles.large, variant === 'solid' && styles.solid, 'loop-edge')} onClick={onClick}>{children}</button>;
+  return <button type="button" className={clsx(styles.pill, styles.large, variant === 'solid' && styles.solid, variant === 'quiet' ? styles.quiet : 'loop-edge')} onClick={onClick}>{children}</button>;
 }
 
 /**
@@ -22,7 +28,11 @@ export function Button({ variant, onClick, children }: { variant: ButtonVariant;
  * submission is under way.
  */
 export function SubmitButton({ variant, pending, form, children }: { variant: ButtonVariant; pending: boolean; form?: string; children: ReactNode }) {
-  return <button type="submit" form={form} className={clsx(styles.pill, styles.large, variant === 'solid' && styles.solid, 'loop-edge')} disabled={pending} aria-busy={pending}>{children}</button>;
+  return (
+    <button type="submit" form={form} className={clsx(styles.pill, styles.large, variant === 'solid' && styles.solid, variant === 'quiet' ? styles.quiet : 'loop-edge')} disabled={pending} aria-busy={pending}>
+      {children}
+    </button>
+  );
 }
 
 /**
@@ -86,9 +96,6 @@ export function CopyButton({ label, text }: { label: string; text: () => string 
   );
 }
 
-/** How a control without words stands: outlined with the ∞ edge, or quiet, its outline left out, as a bar's lesser controls are. */
-export type IconButtonVariant = 'line' | 'quiet';
-
 /** How large a control without words is: the round control of a bar, or a small one beside small pills in a dense row. */
 export type IconButtonSize = 'regular' | 'small';
 
@@ -97,7 +104,7 @@ export type IconButtonSize = 'regular' | 'small';
  * of the site, or opens an address elsewhere in a new tab.
  */
 export function IconButton({ label, expanded, disabled, variant = 'line', size = 'regular', children, ...action }: {
-  label: string; expanded?: boolean; disabled?: boolean; variant?: IconButtonVariant; size?: IconButtonSize; children: ReactNode;
+  label: string; expanded?: boolean; disabled?: boolean; variant?: ControlVariant; size?: IconButtonSize; children: ReactNode;
 } & ({ onClick: () => void } | { to: string } | { href: string })) {
   const quiet = variant === 'quiet';
   const className = clsx(styles.pill, styles.icon, size === 'small' && styles.small, quiet && styles.quiet, !disabled && !quiet && 'loop-edge');
@@ -121,11 +128,19 @@ export interface Choice<T extends string> {
   label: string;
 }
 
+/** A caption over a run of consecutive choices, such as the stage a few benchmarks belong to; `span` counts the choices. */
+export interface ChoiceCaption {
+  label: ReactNode;
+  span: number;
+}
+
 /**
  * A row of mutually exclusive choices inside one track, which is the control and carries the ∞ edge. A thumb under the
- * chosen choice slides to the next one chosen.
+ * chosen choice slides to the next one chosen. Captions, when given, sit over the runs of choices they name.
  */
-export function SegmentedControl<T extends string>({ label, choices, value, onChange }: { label: string; choices: readonly Choice<T>[]; value: T; onChange: (value: T) => void }) {
+export function SegmentedControl<T extends string>({ label, choices, value, onChange, captions }: {
+  label: string; choices: readonly Choice<T>[]; value: T; onChange: (value: T) => void; captions?: readonly ChoiceCaption[];
+}) {
   const track = useRef<HTMLDivElement>(null);
   const [thumb, setThumb] = useState<{ left: number; width: number } | null>(null);
   useLayoutEffect(() => {
@@ -141,7 +156,7 @@ export function SegmentedControl<T extends string>({ label, choices, value, onCh
     trackElement.querySelectorAll('button').forEach(choice => observer.observe(choice));
     return () => observer.disconnect();
   }, [value]);
-  return (
+  const segmented = (
     <div ref={track} className={clsx(styles.segmented, 'loop-edge')} role="group" aria-label={label}>
       {/* The thumb mounts once it has a place, so it appears there instead of sliding in. */}
       {thumb && <span className={styles.thumb} style={{ width: thumb.width, transform: `translateX(${thumb.left}px)` }} aria-hidden="true" />}
@@ -150,6 +165,12 @@ export function SegmentedControl<T extends string>({ label, choices, value, onCh
       ))}
     </div>
   );
+  return captions ? (
+    <div className={styles.captioned} style={{ gridTemplateColumns: `repeat(${choices.length}, auto)` }}>
+      {captions.map((caption, index) => <span key={index} className={clsx(styles.caption, 't-micro c-faint')} style={{ gridColumn: `span ${caption.span}` }}>{caption.label}</span>)}
+      {segmented}
+    </div>
+  ) : segmented;
 }
 
 /** A search box; `className` lets the parent place and size it. */
@@ -199,11 +220,16 @@ export function FileIcon() {
   return <svg viewBox="0 0 12 12" width="12" height="12" data-upright aria-hidden="true"><path d="M3 1.5h4l2.5 2.5v6.5H3zM7 1.5V4h2.5" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" /></svg>;
 }
 
-/** A pill that opens a glass list of choices; the chosen one carries a check. `className` lets the parent place it. */
-export function Select<T extends string>({ label, choices, value, onChange, className }: { label: string; choices: readonly Choice<T>[]; value: T; onChange: (value: T) => void; className?: string }) {
+/**
+ * A pill that opens a glass list of choices; the chosen one carries a check. A quiet one keeps its chevron, so it still
+ * reads as a choice to open. `className` lets the parent place it.
+ */
+export function Select<T extends string>({ label, choices, value, onChange, variant = 'line', className }: {
+  label: string; choices: readonly Choice<T>[]; value: T; onChange: (value: T) => void; variant?: ControlVariant; className?: string;
+}) {
   return (
     <RadixSelect.Root value={value} onValueChange={next => onChange(next as T)}>
-      <RadixSelect.Trigger className={clsx(styles.pill, styles.medium, styles.trigger, 'loop-edge', className)} aria-label={label}>
+      <RadixSelect.Trigger className={clsx(styles.pill, styles.medium, styles.trigger, variant === 'quiet' ? styles.quiet : 'loop-edge', className)} aria-label={label}>
         <RadixSelect.Value />
         <RadixSelect.Icon className={styles.chevron}><ChevronIcon /></RadixSelect.Icon>
       </RadixSelect.Trigger>

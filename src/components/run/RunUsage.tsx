@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { ConsoleRunDetail } from '../../api/types';
 import { useLocale } from '../../i18n/localeContext';
 import { groupedNumber } from '../../i18n/locales';
-import { StatTile, StatTiles } from '../../ui/content';
+import { HintedHeading, StatTile, StatTiles } from '../../ui/content';
 import table from '../../ui/table.module.css';
 import { formatCost } from '../result/presentation';
 import styles from './RunUsage.module.css';
@@ -22,7 +22,7 @@ export function RunUsageTab({ run }: { run: ConsoleRunDetail }) {
         <StatTile label={t('console.run.usage.modelCalls')} value={groupedNumber(locale, usage.modelCalls)} />
       </StatTiles>
       <section className={styles.tab}>
-        <h2 className="t-heading">{t('console.run.usage.tools')}</h2>
+        <HintedHeading rank="h2" className="t-heading" title={t('console.run.usage.tools')} about={t('console.run.usage.note')} />
         <div className={clsx(table.table, styles.tools)} role="table" aria-label={t('console.run.usage.tools')}>
           <div className={clsx(table.row, table.head, 't-micro c-faint')} role="row">
             <span role="columnheader">{t('console.run.usage.column.tool')}</span>
@@ -38,7 +38,6 @@ export function RunUsageTab({ run }: { run: ConsoleRunDetail }) {
           ))}
         </div>
       </section>
-      <p className="t-micro c-faint">{t('console.run.usage.note')}</p>
     </div>
   );
 }

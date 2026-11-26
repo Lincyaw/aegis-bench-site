@@ -5,7 +5,8 @@ import type { TaskEntryKind, TaskFile } from '../../api/types';
 import { Loading, Tag } from '../../ui/content';
 import content from '../../ui/content.module.css';
 import { ChevronIcon, MoreButton } from '../../ui/controls';
-import { HuggingFaceBoundary, HuggingFaceNote } from '../run/HuggingFace';
+import { InfoHint } from '../../ui/hint';
+import { HuggingFaceBoundary, HuggingFaceLink } from '../run/HuggingFace';
 import { directoriesHolding, formatSize, nameOf } from './files';
 import styles from './TaskFileBrowser.module.css';
 
@@ -42,11 +43,11 @@ interface Tree {
 
 /**
  * A task's Harbor directory: its tree on one side, the open file on the other. The directories that hold the open file
- * start expanded; `className` sizes the browser for the page it sits in. A task whose files are kept on Hugging Face
- * links its directory there.
+ * start expanded; `className` sizes the browser for the page it sits in, and `about` explains the directory beneath
+ * its tree. A task whose files are kept on Hugging Face links its directory there.
  */
-export function TaskFileBrowser({ source, open, onOpen, note, huggingFaceUrl, className }: {
-  source: TaskFileSource; open: string; onOpen: (file: string) => void; note: string; huggingFaceUrl?: string; className?: string;
+export function TaskFileBrowser({ source, open, onOpen, about, huggingFaceUrl, className }: {
+  source: TaskFileSource; open: string; onOpen: (file: string) => void; about: string; huggingFaceUrl?: string; className?: string;
 }) {
   const { t } = useTranslation();
   // The open file stays in view until the next one arrives.
@@ -70,9 +71,12 @@ export function TaskFileBrowser({ source, open, onOpen, note, huggingFaceUrl, cl
             <DirectoryEntries tree={tree} directory="" />
           </Suspense>
         </div>
-        <div className={clsx(styles.note, 't-micro c-faint')}>
-          <p>{note}</p>
-          {huggingFaceUrl && <HuggingFaceNote text={t('tasks.huggingFace')} url={huggingFaceUrl} />}
+        <div className={styles.about}>
+          <p className={styles.format}>
+            <span className="t-micro c-faint">{t('tasks.format')}</span>
+            <InfoHint label={t('ui.about', { subject: t('tasks.format') })}>{about}</InfoHint>
+          </p>
+          {huggingFaceUrl && <HuggingFaceLink about={t('tasks.huggingFace')} url={huggingFaceUrl} />}
         </div>
       </nav>
       <section className={styles.viewer} aria-label={t('tasks.file')}>

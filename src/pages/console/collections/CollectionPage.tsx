@@ -23,6 +23,7 @@ import { consoleModelPath } from '../../../routes/consoleModels';
 import { consoleTaskPath } from '../../../routes/consoleTasks';
 import { Loading, Tag } from '../../../ui/content';
 import { SegmentedControl, Select } from '../../../ui/controls';
+import { InfoHint } from '../../../ui/hint';
 import { Pager, TabRow } from '../../../ui/navigation';
 import navigation from '../../../ui/navigation.module.css';
 import table from '../../../ui/table.module.css';
@@ -82,7 +83,10 @@ export function CollectionMatrix({ benchmark, tag, view, onView }: { benchmark: 
       <div className={styles.matrixScroll}>
         <div className={clsx(table.table, styles.matrix)} style={columns} role="table" aria-label={t('console.collection.tabs.matrix')}>
           <div className={clsx(table.row, table.head)} role="row">
-            <span role="columnheader"><span className="visually-hidden">{t('console.collection.column.task')}</span></span>
+            <span role="columnheader">
+              <span className="visually-hidden">{t('console.collection.column.task')}</span>
+              <InfoHint label={t('ui.about', { subject: t('console.collection.tabs.matrix') })}>{t('console.collection.matrixNote')}</InfoHint>
+            </span>
             {page.models.map(model => <span key={model.id} role="columnheader" className={styles.matrixHead}><VendorBadge model={model} /><span className="t-micro">{model.name}</span></span>)}
           </div>
           {page.items.map(row => (
@@ -104,15 +108,12 @@ export function CollectionMatrix({ benchmark, tag, view, onView }: { benchmark: 
           ))}
         </div>
       </div>
-      <footer className={styles.footer}>
-        <p className="t-micro c-faint">{t('console.collection.matrixNote')}</p>
-        {page.total > MATRIX_PAGE_SIZE && (
-          <Pager
-            label={t('console.collection.range', { from: view.offset + 1, to: last, total: page.total })} atStart={view.offset === 0} atEnd={last >= page.total}
-            onPrevious={() => onView({ offset: view.offset - MATRIX_PAGE_SIZE })} onNext={() => onView({ offset: view.offset + MATRIX_PAGE_SIZE })}
-          />
-        )}
-      </footer>
+      {page.total > MATRIX_PAGE_SIZE && (
+        <Pager
+          className={styles.pager} label={t('console.collection.range', { from: view.offset + 1, to: last, total: page.total })} atStart={view.offset === 0} atEnd={last >= page.total}
+          onPrevious={() => onView({ offset: view.offset - MATRIX_PAGE_SIZE })} onNext={() => onView({ offset: view.offset + MATRIX_PAGE_SIZE })}
+        />
+      )}
     </div>
   );
 }
@@ -163,14 +164,15 @@ export function CollectionAnalysis({ benchmark, tag, view, onView }: { benchmark
           label={t('console.collection.chartLabel')} value={view.chart} onChange={chart => onView({ chart })}
           choices={COLLECTION_CHARTS.map(chart => ({ value: chart, label: t(`console.collection.charts.${chart}`) }))}
         />
+        <InfoHint label={t('ui.about', { subject: t(`console.collection.charts.${view.chart}`) })}>
+          <p>{notes[view.chart]}</p><p>{t('console.collection.tableNote')}</p>
+        </InfoHint>
       </div>
-      <p className="t-small c-muted">{notes[view.chart]}</p>
       <figure className={styles.figure}>
         {view.chart === 'ranking' && <RankingChart models={models} />}
         {view.chart === 'cost' && <CostFrontierChart models={models} />}
         {view.chart === 'failures' && <FailureChart models={models} />}
       </figure>
-      <p className="t-micro c-faint">{t('console.collection.tableNote')}</p>
     </div>
   );
 }

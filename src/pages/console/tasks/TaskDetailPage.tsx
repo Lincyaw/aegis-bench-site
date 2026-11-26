@@ -105,7 +105,7 @@ export function TaskFilesTab({ task, view }: { task: ConsoleTaskDetail; view: Ta
   };
   return (
     <TaskFileBrowser
-      className={styles.browser} source={source} note={t('console.task.files.note')} huggingFaceUrl={task.huggingFaceUrl} open={view.file ?? INSTRUCTION_PATH}
+      className={styles.browser} source={source} about={t('console.task.files.note')} huggingFaceUrl={task.huggingFaceUrl} open={view.file ?? INSTRUCTION_PATH}
       onOpen={next => setParams(searchOf(TASK_PAGE_PARAMS, { ...view, tab: 'files', file: next }), { replace: true, preventScrollReset: true })}
     />
   );

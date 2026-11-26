@@ -3,8 +3,7 @@ import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { combinationKey } from '../../api/constraints';
 import type { Combination, RunRef, TaskPage } from '../../api/types';
-import { EVERY_OUTCOME, TASK_MODES, withMode, type OutcomeFilter, type RunRecordsQuery } from '../../routes/runRecords';
-import { MoreButton, SegmentedControl } from '../../ui/controls';
+import { MoreButton } from '../../ui/controls';
 import controls from '../../ui/controls.module.css';
 import { CombinationLabel } from '../model/ModelBadge';
 import { OutcomeDot } from './Outcome';
@@ -60,27 +59,15 @@ export function TaskColumn({ tasks, currentTask, onTask, loadingMore, onMore }: 
   );
 }
 
-/** Whether the chosen task shows its runs or compares them; it slides like every switch. */
-export function TaskModeSwitch({ query, onQuery }: { query: RunRecordsQuery; onQuery: (query: RunRecordsQuery) => void }) {
-  const { t } = useTranslation();
-  return (
-    <SegmentedControl
-      label={t('runs.mode.label')} value={query.mode}
-      choices={TASK_MODES.map(mode => ({ value: mode, label: t(`runs.mode.${mode}`) }))}
-      onChange={mode => onQuery(withMode(query, mode))}
-    />
-  );
-}
-
-/** A group's runs as chips by attempt; runs outside the outcome filter are dimmed. */
-export function RunChips({ runs, runId, outcome, labelOf, onRun }: { runs: RunRef[]; runId: string | undefined; outcome: OutcomeFilter; labelOf: (run: RunRef) => string; onRun: (run: string) => void }) {
+/** A group's runs as chips by attempt. */
+export function RunChips({ runs, runId, labelOf, onRun }: { runs: RunRef[]; runId: string | undefined; labelOf: (run: RunRef) => string; onRun: (run: string) => void }) {
   return (
     <span className={styles.chips}>
       {runs.map(run => (
         <button
           key={run.id}
           type="button"
-          className={clsx(controls.pill, controls.small, styles.chip, 'loop-edge', outcome !== EVERY_OUTCOME && run.outcome !== outcome && styles.dimmed)}
+          className={clsx(controls.pill, controls.small, styles.chip, 'loop-edge')}
           onClick={() => onRun(run.id)}
           aria-label={labelOf(run)}
           aria-current={run.id === runId ? 'true' : undefined}

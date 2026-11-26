@@ -7,7 +7,7 @@ import { formatRate } from '../../../components/result/presentation';
 import { ConsoleHeader } from '../../../components/shell/ConsoleHeader';
 import { useLocale } from '../../../i18n/localeContext';
 import { groupedNumber } from '../../../i18n/locales';
-import { StatTile, StatTiles } from '../../../ui/content';
+import { HintedHeading, StatTile, StatTiles } from '../../../ui/content';
 import content from '../../../ui/content.module.css';
 import styles from './BenchmarkOverviewPage.module.css';
 
@@ -27,13 +27,12 @@ export function BenchmarkOverviewPage() {
           value={groupedNumber(locale, totals.passed + totals.failed)}
           note={totals.executionFailed > 0 ? t('console.overview.stats.countedNote', { count: totals.executionFailed }) : undefined}
         />
-        <StatTile label={t('console.overview.stats.passRate')} value={totals.passRate === undefined ? '—' : formatRate(totals.passRate)} note={t('console.overview.stats.passRateNote')} />
-        <StatTile label={t('console.overview.stats.unreviewed')} value={groupedNumber(locale, totals.unreviewed)} note={t('console.overview.stats.unreviewedNote')} />
+        <StatTile label={t('console.overview.stats.passRate')} value={totals.passRate === undefined ? '—' : formatRate(totals.passRate)} about={t('console.overview.stats.passRateNote')} />
+        <StatTile label={t('console.overview.stats.unreviewed')} value={groupedNumber(locale, totals.unreviewed)} about={t('console.overview.stats.unreviewedNote')} />
       </StatTiles>
       <section className={styles.section}>
-        <h2 className="t-heading">{t('console.overview.entrants')}</h2>
+        <HintedHeading rank="h2" className="t-heading" title={t('console.overview.entrants')} about={t('console.overview.entrantsNote')} />
         <EntrantTable benchmarkId={benchmark.id} entrants={entrants} />
-        <p className="t-micro c-faint">{t('console.overview.entrantsNote')}</p>
       </section>
       <div className={styles.columns}>
         <section className={clsx(content.panel, styles.panel)}>

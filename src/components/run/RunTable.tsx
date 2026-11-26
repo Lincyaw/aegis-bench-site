@@ -36,7 +36,7 @@ export function RunFilters({ benchmark, query, onChange, children }: { benchmark
       <SearchField label={t('console.runs.search')} value={query.q} onChange={q => onChange({ q })} className={styles.search} />
       {query.model === undefined && (
         <Select
-          label={t('console.runs.combinationFilter')} value={EVERY_CHOICE} onChange={choose}
+          variant="quiet" label={t('console.runs.combinationFilter')} value={EVERY_CHOICE} onChange={choose}
           choices={[
             { value: EVERY_CHOICE, label: t('console.runs.everyCombination') },
             ...[...keyed].map(([key, { model, harness }]) => ({ value: key, label: `${model.name} · ${harness.name}` })),
@@ -44,11 +44,11 @@ export function RunFilters({ benchmark, query, onChange, children }: { benchmark
         />
       )}
       <Select
-        label={t('console.runs.outcomeFilter')} value={query.outcome ?? EVERY_CHOICE} onChange={outcome => onChange({ outcome: outcome === EVERY_CHOICE ? undefined : outcome as RunOutcome })}
+        variant="quiet" label={t('console.runs.outcomeFilter')} value={query.outcome ?? EVERY_CHOICE} onChange={outcome => onChange({ outcome: outcome === EVERY_CHOICE ? undefined : outcome as RunOutcome })}
         choices={[{ value: EVERY_CHOICE, label: t('console.runs.everyOutcome') }, ...runOutcomeValues.map(outcome => ({ value: outcome, label: t(`runs.outcome.${outcome}`) }))]}
       />
       <Select
-        label={t('console.runs.reviewFilter')} value={query.review ?? EVERY_CHOICE} onChange={review => onChange({ review: review === EVERY_CHOICE ? undefined : review as ReviewFilter })}
+        variant="quiet" label={t('console.runs.reviewFilter')} value={query.review ?? EVERY_CHOICE} onChange={review => onChange({ review: review === EVERY_CHOICE ? undefined : review as ReviewFilter })}
         choices={[{ value: EVERY_CHOICE, label: t('console.runs.everyReview') }, ...consoleReviewFilterValues.map(review => ({ value: review, label: t(`console.runs.review.${review}`) }))]}
       />
       {children}

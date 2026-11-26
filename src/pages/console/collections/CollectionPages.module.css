@@ -3,7 +3,8 @@
 .tabs { --tab-gap: var(--space-6); border-bottom: var(--rule-hairline); }
 .section { display: grid; gap: var(--space-4); }
 .switch, .order { justify-self: start; }
-.footer { display: flex; justify-content: space-between; align-items: center; gap: var(--space-4); flex-wrap: wrap; }
+.switch { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
+.pager { justify-self: end; }
 
 .collections { --columns: minmax(8rem, 1fr) 5rem minmax(9rem, 1.2fr) 6rem minmax(8rem, 1fr); }
 .collections a:hover { text-decoration: underline; text-underline-offset: var(--space-1); }
