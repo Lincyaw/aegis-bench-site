@@ -6,13 +6,14 @@ import {
   useBenchmark, useCombinationTaskPages, useCombinations, useTaskComparison, useTaskFile, useTaskPages, useTaskRuns, useTrajectories,
   type BenchmarkDetail, type Combination, type TaskPage, type TaskSummary,
 } from '../../../api/client';
-import { ComparedRuns, RunChoice, TaskInput, type ComparisonSource } from '../../../components/comparison/TaskComparison';
-import { VendorBadge } from '../../../components/model/ModelBadge';
+import type { ComparisonSource } from '../../../components/comparison/comparison';
+import { RunComparison, TaskInput } from '../../../components/comparison/TaskComparison';
+import { CombinationLabel, VendorBadge } from '../../../components/model/ModelBadge';
 import { HuggingFaceBoundary } from '../../../components/run/HuggingFace';
 import { OutcomeDot } from '../../../components/run/Outcome';
 import { CombinationColumn, Pane, PaneEmpty, PaneHead, PaneList, PaneMore, RunChips, TaskColumn, TaskModeSwitch } from '../../../components/run/RunRecords';
 import { LocaleLink } from '../../../i18n/LocaleRouting';
-import { LIST_SEPARATOR, type ComparisonView } from '../../../routes/comparison';
+import { COMPARISON_NAVIGATE_OPTIONS, type ComparisonView } from '../../../routes/comparison';
 import {
   EVERY_COMBINATION, OUTCOME_FILTERS, RUN_RECORD_VIEWS, TASK_PAGE_SIZE, combinationKey, defaultRunId, parseRunRecordsQuery,
   runRecordsLevel, runRecordsPath, runRecordsSearch, withCombination, withDetail, withFilter, withRecordsView, withRun, withSearch, withTask,
@@ -40,12 +41,11 @@ export function RunRecordsPage() {
   const query = parseRunRecordsQuery(search);
   const level = runRecordsLevel(query, narrow);
   const update = (next: RunRecordsQuery) => {
-    const sameFocus = next.by === query.by && next.combination === query.combination && next.task === query.task && next.run === query.run && next.mode === query.mode;
+    const sameChoice = next.by === query.by && next.combination === query.combination && next.task === query.task && next.run === query.run && next.mode === query.mode;
     // Only a narrow window replacing one level with another starts again from the top.
-    setSearch(runRecordsSearch(next), { replace: sameFocus, preventScrollReset: runRecordsLevel(next, narrow) === level });
+    setSearch(runRecordsSearch(next), { replace: sameChoice, preventScrollReset: runRecordsLevel(next, narrow) === level });
   };
-  // Comparison choices show at once, outside the router's transition, so quick successive choices build on each other.
-  const compare = (next: RunRecordsQuery) => setSearch(runRecordsSearch(next), { replace: true, preventScrollReset: true, flushSync: true });
+  const compare = (next: RunRecordsQuery) => setSearch(runRecordsSearch(next), COMPARISON_NAVIGATE_OPTIONS);
   return (
     <div className={styles.workspace} data-half={benchmark.stage.half}>
       <RunToolbar benchmark={benchmark} query={query} onQuery={update} />
@@ -159,7 +159,7 @@ export function TaskRunsArea({ benchmark, taskId, summary, query, level, onQuery
             {combinations.map(({ model, harness, runs }) => (
               <li key={combinationKey(model.id, harness.id)} className={styles.combination}>
                 <p className={styles.comboName}>
-                  <VendorBadge model={model} /><span className="t-small">{model.name}</span><span className="t-micro c-faint">{harness.name}</span>
+                  <CombinationLabel model={model} harness={harness} />
                   <span className="t-numeric c-muted">{runs.filter(run => run.outcome === 'passed').length} / {runs.length}</span>
                 </p>
                 <RunChips runs={runs} runId={runId} outcome={query.outcome} labelOf={run => t('runs.runOf', { model: model.name, harness: harness.name, attempt: run.attempt })} onRun={run => onQuery(withRun(query, run))} />
@@ -201,8 +201,6 @@ export function TaskCompareArea({ benchmark, taskId, query, level, onQuery, onCo
   // The combination filter narrows the runs to choose from as it narrows the runs listed.
   const entrants = taskRuns.combinations.filter(combination => !query.combination || combinationKey(combination.model.id, combination.harness.id) === query.combination);
   const onView = (view: ComparisonView) => onCompare({ ...query, ...view });
-  // The runs shown stay until the newly chosen ones load.
-  const shown = useDeferredValue(query.runs.join(LIST_SEPARATOR));
   const useComparison = (runIds: string[]) => useTaskComparison(benchmark.id, taskId, runIds);
   const source: ComparisonSource = {
     useComparison, useTrajectories, runPath: runId => runRecordsPath(benchmark.id, { task: taskId, run: runId, combination: query.combination }),
@@ -217,13 +215,7 @@ export function TaskCompareArea({ benchmark, taskId, query, level, onQuery, onCo
       <HuggingFaceBoundary resetKey={taskId}>
         <Suspense fallback={<Loading />}><PublicTaskInput benchmarkId={benchmark.id} taskId={taskId} /></Suspense>
       </HuggingFaceBoundary>
-      {shown ? (
-        <HuggingFaceBoundary resetKey={shown}>
-          <Suspense fallback={<Loading />}>
-            <ComparedRuns runIds={shown.split(LIST_SEPARATOR)} entrants={entrants} source={source} view={query} onView={onView} />
-          </Suspense>
-        </HuggingFaceBoundary>
-      ) : <RunChoice entrants={entrants} view={query} onView={onView} />}
+      <RunComparison entrants={entrants} source={source} view={query} onView={onView} />
     </Pane>
   );
 }
@@ -237,7 +229,7 @@ export function PublicTaskInput({ benchmarkId, taskId }: { benchmarkId: string; 
   return <TaskInput instruction={file.text} />;
 }
 
-/** A run in focus without its combination, as the task view leaves it, opens the model view on the combination that ran it. */
+/** A chosen run without its combination, as the task view leaves it, opens the model view on the combination that ran it. */
 export function RunModelView({ benchmark, query, task, run, level, onQuery }: {
   benchmark: BenchmarkDetail; query: RunRecordsQuery; task: string; run: string; level: RunRecordsLevel; onQuery: (query: RunRecordsQuery) => void;
 }) {

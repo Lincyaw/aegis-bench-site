@@ -1,5 +1,5 @@
 import { clsx } from 'clsx';
-import type { ModelRef } from '../../api/types';
+import type { HarnessRef, ModelRef } from '../../api/types';
 import { LocaleLink } from '../../i18n/LocaleRouting';
 import { modelPath } from '../../routes/site';
 import styles from './ModelBadge.module.css';
@@ -12,6 +12,11 @@ export function VendorBadge({ model }: { model: ModelRef }) {
 /** A model's badge and name. */
 export function ModelLabel({ model }: { model: ModelRef }) {
   return <span className={clsx(styles.model, 't-label')}><VendorBadge model={model} /><span>{model.name}</span></span>;
+}
+
+/** A combination in a list of them: the model's badge and name, then its harness, fainter. */
+export function CombinationLabel({ model, harness }: { model: ModelRef; harness: HarnessRef }) {
+  return <span className={styles.combination}><VendorBadge model={model} /><span className="t-small">{model.name}</span><span className="t-micro c-faint">{harness.name}</span></span>;
 }
 
 /** A model's badge and name, linking to the model's page. */

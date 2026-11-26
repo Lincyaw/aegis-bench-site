@@ -50,7 +50,7 @@ export function RunDetailPage() {
         actions={(
           <>
             {benchmark.replayable && <ButtonLink to={consoleRunReplayPath(benchmark.id, run.id, { step: view.step })} variant="line">{t('console.replay.open')}</ButtonLink>}
-            <ButtonLink to={consoleTaskPath(benchmark.id, run.task.id, { tab: 'compare', runs: [run.id] })} variant="line">{t('console.run.compare')}</ButtonLink>
+            <ButtonLink to={consoleTaskPath(benchmark.id, run.task.id, { tab: 'compare', compared: [run.id] })} variant="line">{t('console.run.compare')}</ButtonLink>
             <ButtonLink to={consoleTaskPath(benchmark.id, run.task.id)} variant="line">{t('console.run.toTask')}</ButtonLink>
           </>
         )}

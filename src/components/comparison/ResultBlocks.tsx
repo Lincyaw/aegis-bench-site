@@ -6,7 +6,7 @@ import { ToggleChip } from '../../ui/controls';
 import controls from '../../ui/controls.module.css';
 import { OutcomeText } from '../run/Outcome';
 import { Diff } from '../run/RunDetail';
-import { numeralOfRun, rowKeyOf, type BlockProps } from './comparison';
+import { numeralOf, rowKeyOf, type BlockProps } from './comparison';
 import { BlockHead, Cell, ExpansionRow, ItemRow } from './ComparisonTable';
 import styles from './ResultBlocks.module.css';
 
@@ -57,7 +57,7 @@ export function FileChanges({ comparison, expanded, onExpand }: BlockProps) {
                   <Cell key={run.id}>
                     <span className={styles.figures}>
                       <ChangeSize additions={change.additions} deletions={change.deletions} />
-                      {change.sameAs && <span className={styles.same}>{t('compare.sameAs', { run: numeralOfRun(comparison, change.sameAs) })}</span>}
+                      {change.sameAs && <span className={styles.same}>{t('compare.sameAs', { run: numeralOf(comparison, change.sameAs) })}</span>}
                     </span>
                   </Cell>
                 ) : <Cell key={run.id} tone="empty"><span className="t-small">{t('compare.unchanged')}</span></Cell>;
@@ -82,7 +82,7 @@ export function ChangeDiff({ comparison, change }: { comparison: TaskComparison;
     return <Cell tone="empty"><span className="t-small">{t('compare.unchanged')}</span></Cell>;
   }
   if (change.sameAs) {
-    return <Cell><span className="t-small c-muted">{t('compare.sameDiff', { run: numeralOfRun(comparison, change.sameAs) })}</span></Cell>;
+    return <Cell><span className="t-small c-muted">{t('compare.sameDiff', { run: numeralOf(comparison, change.sameAs) })}</span></Cell>;
   }
   return <Cell>{change.patch && <Diff lines={change.patch} />}</Cell>;
 }
@@ -180,7 +180,7 @@ export function Reply({ comparison, expanded, onExpand }: BlockProps) {
   const open = expanded.includes(key);
   const toggle = (
     <button type="button" className={clsx(controls.textLink, 't-micro')} aria-expanded={open} onClick={() => onExpand([key])}>
-      {open ? t('compare.collapseInput') : t('compare.expandInput')}
+      {open ? t('compare.collapseReply') : t('compare.expandReply')}
     </button>
   );
   return (

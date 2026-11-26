@@ -350,10 +350,6 @@ export const consoleZh = {
     tabList: '任务的各部分',
     version: '版本 {{version}}',
     solvedBy: '{{solved}} / {{entrants}} 个组合至少通过一次',
-    focus: {
-      hint: '运行和对照只列出这个模型（及框架）的运行；点击后显示全部组合。',
-      clear: '不再只看 {{name}}',
-    },
     content: {
       instruction: '任务说明',
       instructionNote: '智能体收到的原文，未经改写。',
@@ -409,10 +405,6 @@ export const consoleZh = {
     leadFiltered_other: '符合筛选的 {{count, number}} 次运行，共 {{total, number}} 次，最新的在前。执行失败的运行列出，但不计入结果。',
     filters: '筛选运行',
     search: '搜索任务编号或标题',
-    modelFocus: {
-      hint: '列表只显示这个模型的运行；点击后显示全部模型。',
-      clear: '不再只看 {{name}}',
-    },
     combinationFilter: '组合',
     everyCombination: '全部组合',
     outcomeFilter: '结果',
@@ -434,16 +426,8 @@ export const consoleZh = {
   model: {
     allHarnesses: '全部框架',
     harnessLabel: '框架',
-    collection: {
-      name: '展示集 · {{tag}}',
-      hint: '统计、各框架的结果和逐题表现只计这个展示集的任务；点击后显示全部任务。',
-      clear: '不再只看展示集「{{tag}}」',
-    },
-    task: {
-      name: '任务 · {{task}}',
-      hint: '统计、各框架的结果和逐题表现只计这道任务；点击后显示全部任务。',
-      clear: '不再只看任务 {{task}}',
-    },
+    collection: { name: '展示集 · {{tag}}' },
+    task: { name: '任务 · {{task}}' },
     lead_one: '{{vendor}} · 共 {{count}} 种框架',
     lead_other: '{{vendor}} · 共 {{count}} 种框架',
     stats: { passRate: '通过率', everyTime: '每次都通过', steps: '平均步数', cost: '平均成本' },

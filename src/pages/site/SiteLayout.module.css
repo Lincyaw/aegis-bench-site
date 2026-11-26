@@ -40,8 +40,6 @@
 .links { display: flex; gap: var(--space-6); font: var(--type-label); }
 .links a { color: var(--text-muted); transition: color var(--duration-base); }
 .links a:hover, .links a[aria-current="page"] { color: var(--text-main); }
-.signIn { padding: 0 var(--space-2); color: var(--text-muted); font: var(--type-small); transition: color var(--duration-base); }
-.signIn:hover { color: var(--text-main); }
 /* The page's sections scroll sideways inside the pill rather than run under its buttons. */
 .sectionNav { min-width: 0; }
 .sections { --tab-gap: var(--space-6); --tab-padding: var(--space-2) 0; }

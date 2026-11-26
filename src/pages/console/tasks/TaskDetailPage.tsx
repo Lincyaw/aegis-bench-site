@@ -11,11 +11,10 @@ import { TaskContentTab } from '../../../components/task/TaskContent';
 import { TaskFileBrowser, type TaskFileSource } from '../../../components/task/TaskFileBrowser';
 import { LocaleLink } from '../../../i18n/LocaleRouting';
 import { consoleBenchmarkPath } from '../../../routes/console';
-import { TASK_TABS, consoleTaskPath, consoleTasksPath, inFocus, parseTaskPageView, taskPageSearch, type TaskPageView, type TaskTab } from '../../../routes/consoleTasks';
+import { TASK_TABS, consoleTaskPath, consoleTasksPath, inScope, parseTaskPageView, taskPageSearch, type TaskPageView, type TaskTab } from '../../../routes/consoleTasks';
 import { ENTRY_PAGE_SIZE, INSTRUCTION_PATH } from '../../../routes/site';
 import { Loading, Tag } from '../../../ui/content';
-import controls from '../../../ui/controls.module.css';
-import { Hint } from '../../../ui/hint';
+import { ScopeChip } from '../../../ui/controls';
 import { TabRow } from '../../../ui/navigation';
 import navigation from '../../../ui/navigation.module.css';
 import { TaskComparisonTab } from './TaskComparisonTab';
@@ -34,7 +33,7 @@ export function TaskDetailPage() {
   const task = useConsoleTask(benchmark.id, taskId);
   const counts: Record<TaskTab, number | undefined> = {
     content: undefined, grading: task.sizes.checks, reference: undefined,
-    runs: task.entrants.filter(entrant => inFocus(view, entrant)).reduce((sum, entrant) => sum + entrant.runs, 0),
+    runs: task.entrants.filter(entrant => inScope(view, entrant)).reduce((sum, entrant) => sum + entrant.runs, 0),
     compare: undefined, files: task.sizes.files, revisions: task.sizes.revisions,
   };
   return (
@@ -49,7 +48,7 @@ export function TaskDetailPage() {
         {task.spread && <Tag dashed>{t(`console.tasks.spread.${task.spread}`)}</Tag>}
         <EntrantDots entrants={task.entrants} />
         <span className="t-micro c-muted">{t('console.task.solvedBy', { solved: task.entrants.filter(entrant => entrant.solved).length, entrants: task.entrants.length })}</span>
-        {view.model && <FocusChip task={task} view={view} />}
+        {view.model && <TaskScopeChip task={task} view={view} />}
       </div>
       <TabRow current={view.tab} className={styles.tabs} aria-label={t('console.task.tabList')}>
         {TASK_TABS.map(tab => (
@@ -71,22 +70,16 @@ export function TaskDetailPage() {
 }
 
 /** The model and harness the page keeps to, which the reader can let go of to see every combination. */
-export function FocusChip({ task, view }: { task: ConsoleTaskDetail; view: TaskPageView }) {
-  const { t } = useTranslation();
-  const entrant = task.entrants.find(candidate => inFocus(view, candidate));
+export function TaskScopeChip({ task, view }: { task: ConsoleTaskDetail; view: TaskPageView }) {
+  const entrant = task.entrants.find(candidate => inScope(view, candidate));
   if (!entrant) {
     throw new Error(`no combination of ${task.id} runs ${view.model} ${view.harness ?? ''}`);
   }
-  const name = view.harness ? `${entrant.model.name} · ${entrant.harness.name}` : entrant.model.name;
   return (
-    <Hint content={t('console.task.focus.hint')}>
-      <LocaleLink
-        className={clsx(controls.pill, controls.small, styles.focus, 'loop-edge')} aria-label={t('console.task.focus.clear', { name })}
-        to={consoleTaskPath(task.benchmark.id, task.id, { ...view, model: undefined, harness: undefined })} replace preventScrollReset
-      >
-        {name}<span aria-hidden="true">×</span>
-      </LocaleLink>
-    </Hint>
+    <ScopeChip
+      name={view.harness ? `${entrant.model.name} · ${entrant.harness.name}` : entrant.model.name}
+      to={consoleTaskPath(task.benchmark.id, task.id, { ...view, model: undefined, harness: undefined })}
+    />
   );
 }
 

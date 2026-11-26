@@ -7,7 +7,7 @@ import type { ConsoleTaskDetail } from '../../../api/types';
 import { EntrantRunsRow, ValidationRow } from '../../../components/task/TaskRuns';
 import { LocaleLink } from '../../../i18n/LocaleRouting';
 import { consoleRunsPath } from '../../../routes/consoleRuns';
-import { TASK_RUN_VIEWS, inFocus, taskPageSearch, type TaskFocus, type TaskPageView } from '../../../routes/consoleTasks';
+import { TASK_RUN_VIEWS, inScope, taskPageSearch, type TaskPageView, type TaskScope } from '../../../routes/consoleTasks';
 import { combinationKey } from '../../../routes/runRecords';
 import content from '../../../ui/content.module.css';
 import { SegmentedControl } from '../../../ui/controls';
@@ -20,7 +20,7 @@ export function TaskRunsTab({ task, view }: { task: ConsoleTaskDetail; view: Tas
   const { t } = useTranslation();
   const [, setParams] = useSearchParams();
   // The run list keeps to the combination when the page keeps to one, and to the model when the page keeps to a model alone.
-  const focus = view.model && view.harness ? { combination: combinationKey(view.model, view.harness) } : { model: view.model };
+  const runScope = view.model && view.harness ? { combination: combinationKey(view.model, view.harness) } : { model: view.model };
   return (
     <div className={styles.section}>
       <div className={styles.switch}>
@@ -30,13 +30,13 @@ export function TaskRunsTab({ task, view }: { task: ConsoleTaskDetail; view: Tas
           onChange={next => setParams(taskPageSearch({ ...view, tab: 'runs', view: next }), { replace: true, preventScrollReset: true })}
         />
       </div>
-      {view.view === 'entrants' ? <EntrantRuns task={task} focus={view} /> : <CheckMatrix task={task} focus={view} />}
-      <LocaleLink className={clsx(controls.textLink, 't-small')} to={consoleRunsPath(task.benchmark.id, { q: task.id, ...focus })}>{t('console.task.allRuns')}</LocaleLink>
+      {view.view === 'entrants' ? <EntrantRuns task={task} scope={view} /> : <CheckMatrix task={task} scope={view} />}
+      <LocaleLink className={clsx(controls.textLink, 't-small')} to={consoleRunsPath(task.benchmark.id, { q: task.id, ...runScope })}>{t('console.task.allRuns')}</LocaleLink>
     </div>
   );
 }
 
-export function EntrantRuns({ task, focus }: { task: ConsoleTaskDetail; focus: TaskFocus }) {
+export function EntrantRuns({ task, scope }: { task: ConsoleTaskDetail; scope: TaskScope }) {
   const { t } = useTranslation();
   const results = useTaskResults(task.benchmark.id, task.id);
   return (
@@ -50,7 +50,7 @@ export function EntrantRuns({ task, focus }: { task: ConsoleTaskDetail; focus: T
           <span role="columnheader">{t('console.task.runs.column.passRate')}</span>
           <span role="columnheader">{t('console.task.runs.column.review')}</span>
         </div>
-        {results.entrants.filter(entrant => inFocus(focus, entrant)).map(entrant => <EntrantRunsRow key={`${entrant.model.id}-${entrant.harness.id}`} benchmarkId={task.benchmark.id} entrant={entrant} />)}
+        {results.entrants.filter(entrant => inScope(scope, entrant)).map(entrant => <EntrantRunsRow key={`${entrant.model.id}-${entrant.harness.id}`} benchmarkId={task.benchmark.id} entrant={entrant} />)}
       </div>
       <section className={clsx(content.panel, styles.panel)}>
         <h2 className="t-heading">{t('console.task.runs.validations')}</h2>
@@ -62,11 +62,11 @@ export function EntrantRuns({ task, focus }: { task: ConsoleTaskDetail; focus: T
 }
 
 /** Each check against each combination; the cells darken with the share of counted runs that failed the check. */
-export function CheckMatrix({ task, focus }: { task: ConsoleTaskDetail; focus: TaskFocus }) {
+export function CheckMatrix({ task, scope }: { task: ConsoleTaskDetail; scope: TaskScope }) {
   const { t } = useTranslation();
   const results = useTaskCheckResults(task.benchmark.id, task.id);
   // A check's counts follow the entrants' order, so the columns kept are picked by position.
-  const kept = results.entrants.flatMap((entrant, index) => (inFocus(focus, entrant) ? [index] : []));
+  const kept = results.entrants.flatMap((entrant, index) => (inScope(scope, entrant) ? [index] : []));
   const columns = { '--columns': `minmax(14rem, 1.6fr) repeat(${kept.length}, minmax(3.5rem, 1fr))` } as CSSProperties;
   return (
     <>

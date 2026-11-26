@@ -1,7 +1,7 @@
 import { clsx } from 'clsx';
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { DEMO_PASSWORD, useChangeRole, useConsoleUser, useInviteMember, useMembers, useRemoveMember } from '../../../api/consoleClient';
+import { useChangeRole, useConsoleUser, useInviteMember, useMembers, useRemoveMember } from '../../../api/consoleClient';
 import { ACCOUNT_PATTERN } from '../../../api/constraints';
 import { consoleRoleValues } from '../../../api/schema';
 import type { Member, Role } from '../../../api/types';
@@ -12,6 +12,7 @@ import { dateTimeOf } from '../../../i18n/locales';
 import content from '../../../ui/content.module.css';
 import { Button, Select, SubmitButton, TextField } from '../../../ui/controls';
 import table from '../../../ui/table.module.css';
+import { DEMO_PASSWORD } from '../demoAccounts';
 import { mayAdminister } from '../roles';
 import styles from './MembersPage.module.css';
 

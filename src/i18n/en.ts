@@ -40,6 +40,7 @@ export const en: Messages = {
     openOnHuggingFace: 'Open on Hugging Face',
     huggingFaceUnreachable: 'These records could not be read from Hugging Face; this network may not reach it.',
     huggingFaceUnreachableNote: 'They can still be viewed on Hugging Face directly.',
+    clearScope: 'Clear: {{name}}',
   },
   landing: {
     updated: 'Updated {{date, datetime}} · Edition 3',
@@ -135,10 +136,6 @@ export const en: Messages = {
     unknownBenchmark: 'There is no benchmark {{id}}',
     column: { model: 'Model', harness: 'Harness', runs: 'Runs', cost: 'Avg. cost', evaluated: 'Evaluated', records: 'Run records' },
     runsOf: 'Runs of {{model}} · {{harness}}',
-    mark: {
-      hint: 'The leaderboard marks this model’s rows and keeps them marked across benchmarks and ranking views; click to stop marking them.',
-      clear: 'Stop marking {{name}}',
-    },
   },
   models: {
     meta_one: 'Last evaluated {{date}} · {{count}} harness · {{vendor}}',
@@ -277,6 +274,8 @@ export const en: Messages = {
     inputHint: 'The task text exactly as the agent received it; every run received the same.',
     expandInput: 'Show all',
     collapseInput: 'Show less',
+    expandReply: 'Show all',
+    collapseReply: 'Show less',
     pickTitle: 'Choose the runs to compare',
     pickHint: 'Choose 1 to {{max}} runs of any combinations to set side by side. Click a file or a check to open it in place; click a trajectory to read it in the side panel, which sets up to {{open}} runs side by side.',
     pick: 'Choose runs',
@@ -311,7 +310,7 @@ export const en: Messages = {
     steps_other: '{{count}} steps',
     submissions_one: '{{count}} submission',
     submissions_other: '{{count}} submissions',
-    segment: 'Submission {{attempt}}',
+    segment: 'Submission {{submission}}',
     labels: 'Filter the steps by label',
     hiddenSteps_one: '{{count}} step not listed',
     hiddenSteps_other: '{{count}} steps not listed',

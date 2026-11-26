@@ -1,5 +1,5 @@
 import type { RunDetail, RunOutcome, RunRef } from '../api/types';
-import { COMPARISON_PARAMS, parseComparisonView, setComparisonParams, type ComparisonView } from './comparison';
+import { COMPARISON_PARAMS, EMPTY_COMPARISON, parseComparisonView, setComparisonParams, type ComparisonView } from './comparison';
 
 /** The five views of a run, in the order its tabs show them; each is labelled by runs.tab.<view>. */
 export const RUN_TABS = ['input', 'output', 'grading', 'failure', 'trajectory'] as const;
@@ -118,14 +118,14 @@ export function runRecordsPath(benchmarkId: string, query: Partial<RunRecordsQue
   return `/benchmarks/${benchmarkId}/runs${runRecordsSearch(query)}`;
 }
 
-/** Switching the view keeps the task, combination and run in focus, and leaves the comparison. */
+/** Switching the view keeps the chosen task, combination and run, and leaves the comparison. */
 export function withRecordsView(query: RunRecordsQuery, by: RunRecordsView): RunRecordsQuery {
-  return { ...query, by, mode: 'runs', runs: [], expand: [], trajectory: [], labels: [] };
+  return { ...query, by, mode: 'runs', ...EMPTY_COMPARISON };
 }
 
 /** Choosing a task, a run or a filter starts the views below it afresh; a comparison belongs to its task. */
 export function withTask(query: RunRecordsQuery, task: string | undefined): RunRecordsQuery {
-  return { ...query, task, run: undefined, tab: undefined, step: undefined, check: undefined, runs: [], expand: [], trajectory: [], labels: [] };
+  return { ...query, task, run: undefined, tab: undefined, step: undefined, check: undefined, ...EMPTY_COMPARISON };
 }
 
 export function withRun(query: RunRecordsQuery, run: string | undefined): RunRecordsQuery {
@@ -147,8 +147,8 @@ export function withFilter(query: RunRecordsQuery, filter: Pick<RunRecordsQuery,
 
 /** Comparing the chosen task's runs starts with the run in view, if any. */
 export function withMode(query: RunRecordsQuery, mode: TaskMode): RunRecordsQuery {
-  const startWith = mode === 'compare' && query.runs.length === 0 && query.run ? [query.run] : [];
-  return { ...query, mode, runs: [...query.runs, ...startWith] };
+  const startWith = mode === 'compare' && query.compared.length === 0 && query.run ? [query.run] : [];
+  return { ...query, mode, compared: [...query.compared, ...startWith] };
 }
 
 /** The detail's tab and, within it, the step or check it opens. */

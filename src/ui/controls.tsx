@@ -4,6 +4,7 @@ import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LocaleLink } from '../i18n/LocaleRouting';
 import styles from './controls.module.css';
+import { Hint } from './hint';
 
 /** A solid button leads the page forward and carries an arrow; a line button is any other action. */
 type ButtonVariant = 'solid' | 'line';
@@ -85,19 +86,29 @@ export function CopyButton({ label, text }: { label: string; text: () => string 
   );
 }
 
-/** A round button whose icon turns when hovered; a disabled one stays still and faint. */
 /** How a control without words stands: outlined with the ∞ edge, or quiet, its outline left out, as a bar's lesser controls are. */
 export type IconButtonVariant = 'line' | 'quiet';
 
-export function IconButton({ label, onClick, expanded, disabled, variant = 'line', children }: {
-  label: string; onClick: () => void; expanded?: boolean; disabled?: boolean; variant?: IconButtonVariant; children: ReactNode;
-}) {
+/** How large a control without words is: the round control of a bar, or a small one beside small pills in a dense row. */
+export type IconButtonSize = 'regular' | 'small';
+
+/**
+ * A round control whose icon turns when hovered; a disabled one stays still and faint. It runs an action, opens a page
+ * of the site, or opens an address elsewhere in a new tab.
+ */
+export function IconButton({ label, expanded, disabled, variant = 'line', size = 'regular', children, ...action }: {
+  label: string; expanded?: boolean; disabled?: boolean; variant?: IconButtonVariant; size?: IconButtonSize; children: ReactNode;
+} & ({ onClick: () => void } | { to: string } | { href: string })) {
   const quiet = variant === 'quiet';
-  return (
-    <button type="button" className={clsx(styles.pill, styles.icon, quiet && styles.quiet, !disabled && !quiet && 'loop-edge')} aria-label={label} aria-expanded={expanded} disabled={disabled} onClick={onClick}>
-      {children}
-    </button>
-  );
+  const className = clsx(styles.pill, styles.icon, size === 'small' && styles.small, quiet && styles.quiet, !disabled && !quiet && 'loop-edge');
+  // A hint makes the control its trigger by handing it handlers and a ref as props, which the spread passes on.
+  if ('to' in action) {
+    return <LocaleLink {...action} className={className} aria-label={label}>{children}</LocaleLink>;
+  }
+  if ('href' in action) {
+    return <a {...action} className={className} target="_blank" rel="noreferrer" aria-label={label}>{children}</a>;
+  }
+  return <button {...action} type="button" className={className} aria-label={label} aria-expanded={expanded} disabled={disabled}>{children}</button>;
 }
 
 /** Appends a list's next page; its label says how much is shown, and it waits while the page loads. */
@@ -173,6 +184,21 @@ export function MenuIcon() {
   return <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M2 4.5h12M2 8h12M2 11.5h12" stroke="currentColor" strokeWidth="1.5" /></svg>;
 }
 
+/** A cross, for closing or taking something out. */
+export function CloseIcon() {
+  return <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="m3 3 6 6M9 3 3 9" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /></svg>;
+}
+
+/** An arrow up and out, for a link to another page; in an icon button it nudges its way on hover. */
+export function LinkArrowIcon() {
+  return <svg viewBox="0 0 12 12" width="12" height="12" data-direction="up-right" aria-hidden="true"><path d="M4 2.5h5.5V8M9.5 2.5 2.5 9.5" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" /></svg>;
+}
+
+/** A page with a folded corner, for a record's files; in an icon button it keeps upright on hover. */
+export function FileIcon() {
+  return <svg viewBox="0 0 12 12" width="12" height="12" data-upright aria-hidden="true"><path d="M3 1.5h4l2.5 2.5v6.5H3zM7 1.5V4h2.5" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" /></svg>;
+}
+
 /** A pill that opens a glass list of choices; the chosen one carries a check. `className` lets the parent place it. */
 export function Select<T extends string>({ label, choices, value, onChange, className }: { label: string; choices: readonly Choice<T>[]; value: T; onChange: (value: T) => void; className?: string }) {
   return (
@@ -198,5 +224,21 @@ export function Select<T extends string>({ label, choices, value, onChange, clas
         </RadixSelect.Content>
       </RadixSelect.Portal>
     </RadixSelect.Root>
+  );
+}
+
+/**
+ * The scope a page keeps to, such as the model the reader came from, named in a small pill whose × leads back to
+ * everything: `to` is the page's address without the scope, and it replaces the current entry in the history.
+ */
+export function ScopeChip({ name, to }: { name: string; to: string }) {
+  const { t } = useTranslation();
+  const clear = t('ui.clearScope', { name });
+  return (
+    <Hint content={clear}>
+      <LocaleLink className={clsx(styles.pill, styles.small, styles.scope, 'loop-edge')} aria-label={clear} to={to} replace preventScrollReset>
+        {name}<span aria-hidden="true">×</span>
+      </LocaleLink>
+    </Hint>
   );
 }

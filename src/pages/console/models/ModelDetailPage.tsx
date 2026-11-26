@@ -1,4 +1,3 @@
-import { clsx } from 'clsx';
 import { useDeferredValue } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useSearchParams } from 'react-router-dom';
@@ -10,15 +9,12 @@ import { HarnessTable, ModelTaskTable } from '../../../components/model/ModelRes
 import { FailureLegend } from '../../../components/result/FailureBar';
 import { formatCost, formatRate } from '../../../components/result/presentation';
 import { ConsoleHeader } from '../../../components/shell/ConsoleHeader';
-import { LocaleLink } from '../../../i18n/LocaleRouting';
 import { useLocale } from '../../../i18n/localeContext';
 import { groupedNumber } from '../../../i18n/locales';
 import { EVERY_CHOICE, consoleBenchmarkPath } from '../../../routes/console';
 import { MODEL_TASK_PAGE_SIZE, consoleModelPath, consoleModelsPath, modelTaskSearch, parseModelTaskQuery } from '../../../routes/consoleModels';
 import { StatTile, StatTiles } from '../../../ui/content';
-import { SearchField, SegmentedControl, Select } from '../../../ui/controls';
-import controls from '../../../ui/controls.module.css';
-import { Hint } from '../../../ui/hint';
+import { ScopeChip, SearchField, SegmentedControl, Select } from '../../../ui/controls';
 import { Pager } from '../../../ui/navigation';
 import styles from './ModelPages.module.css';
 
@@ -55,8 +51,8 @@ export function ModelDetailPage() {
           label={t('console.model.harnessLabel')} value={query.harness || EVERY_CHOICE} onChange={harness => update({ harness: harness === EVERY_CHOICE ? '' : harness })}
           choices={[{ value: EVERY_CHOICE, label: t('console.model.allHarnesses') }, ...detail.byHarness.map(({ harness }) => ({ value: harness.id, label: harness.name }))]}
         />
-        {query.tag && <CollectionChip benchmarkId={benchmark.id} modelId={detail.model.id} query={query} />}
-        {query.task && <TaskChip benchmarkId={benchmark.id} modelId={detail.model.id} query={query} />}
+        {query.tag && <ScopeChip name={t('console.model.collection.name', { tag: query.tag })} to={consoleModelPath(benchmark.id, detail.model.id, { ...query, tag: '', offset: 0 })} />}
+        {query.task && <ScopeChip name={t('console.model.task.name', { task: query.task })} to={consoleModelPath(benchmark.id, detail.model.id, { ...query, task: '', offset: 0 })} />}
       </div>
       <StatTiles>
         <StatTile label={t('console.model.stats.passRate')} value={scope.passRate === undefined ? '—' : formatRate(scope.passRate)} />
@@ -96,35 +92,5 @@ export function ModelDetailPage() {
         </footer>
       </section>
     </div>
-  );
-}
-
-/** The collection the page keeps to, which the reader can let go of to see every task. */
-export function CollectionChip({ benchmarkId, modelId, query }: { benchmarkId: string; modelId: string; query: ModelTaskQuery }) {
-  const { t } = useTranslation();
-  return (
-    <Hint content={t('console.model.collection.hint')}>
-      <LocaleLink
-        className={clsx(controls.pill, controls.small, styles.focus, 'loop-edge')} aria-label={t('console.model.collection.clear', { tag: query.tag })}
-        to={consoleModelPath(benchmarkId, modelId, { ...query, tag: '', offset: 0 })} replace preventScrollReset
-      >
-        {t('console.model.collection.name', { tag: query.tag })}<span aria-hidden="true">×</span>
-      </LocaleLink>
-    </Hint>
-  );
-}
-
-/** The one task the page keeps to, as the collection's matrix cell it was opened from did; the reader can let it go. */
-export function TaskChip({ benchmarkId, modelId, query }: { benchmarkId: string; modelId: string; query: ModelTaskQuery }) {
-  const { t } = useTranslation();
-  return (
-    <Hint content={t('console.model.task.hint')}>
-      <LocaleLink
-        className={clsx(controls.pill, controls.small, styles.focus, 'loop-edge')} aria-label={t('console.model.task.clear', { task: query.task })}
-        to={consoleModelPath(benchmarkId, modelId, { ...query, task: '', offset: 0 })} replace preventScrollReset
-      >
-        {t('console.model.task.name', { task: query.task })}<span aria-hidden="true">×</span>
-      </LocaleLink>
-    </Hint>
   );
 }

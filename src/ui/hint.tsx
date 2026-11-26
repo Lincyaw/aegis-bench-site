@@ -1,4 +1,5 @@
 import * as Tooltip from '@radix-ui/react-tooltip';
+import { clsx } from 'clsx';
 import type { ReactElement, ReactNode } from 'react';
 import styles from './hint.module.css';
 
@@ -22,7 +23,7 @@ export function Hint({ content, children }: { content: ReactNode; children: Reac
     <Tooltip.Root>
       <Tooltip.Trigger asChild>{children}</Tooltip.Trigger>
       <Tooltip.Portal>
-        <Tooltip.Content className={styles.card} sideOffset={6} collisionPadding={12}>{content}</Tooltip.Content>
+        <Tooltip.Content className={clsx(styles.popover, styles.card)} sideOffset={6} collisionPadding={12}>{content}</Tooltip.Content>
       </Tooltip.Portal>
     </Tooltip.Root>
   );

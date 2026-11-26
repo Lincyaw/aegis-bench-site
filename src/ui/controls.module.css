@@ -33,11 +33,14 @@
 .copied path { stroke-dasharray: 1; animation: draw-check var(--duration-slow) var(--ease-out) both; }
 
 .icon { width: var(--control-icon); height: var(--control-icon); padding: 0; }
+.icon.small { width: var(--control-small); height: var(--control-small); }
 .icon svg { transition: transform var(--duration-slow) var(--ease-out); }
 .icon:hover svg { transform: rotate(180deg); }
-/* An arrow keeps its direction and nudges the way it points. */
+/* An arrow keeps its direction and nudges the way it points; a picture with a right way up stays as it is. */
 .icon:hover svg[data-direction="left"] { transform: translateX(calc(-1 * var(--space-px))); }
 .icon:hover svg[data-direction="right"] { transform: translateX(var(--space-px)); }
+.icon:hover svg[data-direction="up-right"] { transform: translate(var(--space-px), calc(-1 * var(--space-px))); }
+.icon:hover svg[data-upright] { transform: none; }
 .icon:disabled { color: var(--text-faint); background: none; cursor: default; }
 .icon:disabled svg { transform: none; }
 
@@ -136,3 +139,10 @@
 .check { display: grid; }
 .scroll { display: grid; place-items: center; height: var(--space-6); color: var(--text-faint); cursor: default; }
 .up { display: grid; transform: rotate(180deg); }
+
+/*
+ * A page's scope closes from its own chip. Chips that end a row keep to its far end; a chip that leads other controls
+ * stays beside them.
+ */
+.scope { gap: var(--space-2); }
+.scope:not(:has(~ :not(.scope))) { margin-left: auto; }

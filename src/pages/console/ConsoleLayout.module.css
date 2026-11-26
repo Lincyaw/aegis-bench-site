@@ -65,7 +65,7 @@
   transition: background-color var(--duration-base), color var(--duration-base);
 }
 .item:hover { background: var(--bg-muted); color: var(--text-main); }
-.item[aria-current="page"] { background: linear-gradient(var(--brand-dev), var(--brand-ops)) left / var(--size-border-thick) 100% no-repeat, var(--bg-muted); color: var(--text-main); }
+.item[aria-current="page"] { background: var(--row-chosen); color: var(--text-main); }
 
 .main { min-width: 0; padding: var(--space-8) var(--space-10) var(--space-12); }
 

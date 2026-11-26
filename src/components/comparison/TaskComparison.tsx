@@ -1,25 +1,27 @@
 import * as Popover from '@radix-ui/react-popover';
 import { clsx } from 'clsx';
-import { Suspense, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { Suspense, useDeferredValue, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MAX_COMPARED_RUNS } from '../../api/constraints';
-import type { ComparedRun, HarnessRef, ModelRef, RunOutcome, TaskComparison, Trajectory } from '../../api/types';
-import { LocaleLink } from '../../i18n/LocaleRouting';
+import type { CombinationRuns, ComparedRun, TaskComparison } from '../../api/types';
 import {
-  LIST_SEPARATOR, MAX_PANEL_TRAJECTORIES, withComparedRun, withExpanded, withLabel, withPanelRun, withTrajectory, type ComparisonView,
+  LIST_SEPARATOR, MAX_PANEL_TRAJECTORIES, closePanel, showInPanel, toggleComparedRun, toggleExpanded, toggleLabel, togglePanelRun, type ComparisonView,
 } from '../../routes/comparison';
 import { Loading } from '../../ui/content';
+import { CloseIcon, FileIcon, IconButton, LinkArrowIcon } from '../../ui/controls';
 import controls from '../../ui/controls.module.css';
 import { Hint, InfoHint } from '../../ui/hint';
-import { VendorBadge } from '../model/ModelBadge';
+import hint from '../../ui/hint.module.css';
+import { CombinationLabel, VendorBadge } from '../model/ModelBadge';
 import { FailureClassTag } from '../result/FailureClassTag';
 import { formatCost } from '../result/presentation';
 import { HuggingFaceBoundary } from '../run/HuggingFace';
 import { OutcomeBadge, OutcomeDot } from '../run/Outcome';
 import { PanelTrajectories } from '../trajectory/AnnotatedTrajectory';
 import { COMPARISON_BLOCKS } from './blocks';
-import { runNumeralOf } from './comparison';
+import { numeralAt, type ComparisonSource } from './comparison';
 import { BlockHead, Cell, ComparisonTable } from './ComparisonTable';
+import results from './ResultBlocks.module.css';
 import styles from './TaskComparison.module.css';
 
 /*
@@ -27,20 +29,6 @@ import styles from './TaskComparison.module.css';
  * choose from, a column per run whose rows open in place, and a side panel for whole trajectories. Each site lends the
  * comparison how it reads what it shows and where a run's own page is.
  */
-
-/** A combination with its runs of the task, which the comparison offers to choose from. */
-export interface Entrant {
-  model: ModelRef;
-  harness: HarnessRef;
-  runs: { id: string; attempt: number; outcome: RunOutcome }[];
-}
-
-/** What a site lends its comparison: how to read the comparison and whole trajectories, and where a run's own page is. */
-export interface ComparisonSource {
-  useComparison: (runIds: string[]) => TaskComparison;
-  useTrajectories: (runIds: string[]) => Trajectory[];
-  runPath: (runId: string) => string;
-}
 
 /** What every run received, its first lines until asked for the whole. */
 export function TaskInput({ instruction, reportSchema }: { instruction: string; reportSchema?: string }) {
@@ -55,14 +43,30 @@ export function TaskInput({ instruction, reportSchema }: { instruction: string; 
           {whole ? t('compare.collapseInput') : t('compare.expandInput')}
         </button>
       </header>
-      <p className={clsx(styles.instruction, !whole && styles.clamped)}>{instruction}</p>
+      <p className={clsx(styles.instruction, !whole && results.clamped)}>{instruction}</p>
       {whole && reportSchema && <pre className={styles.schema}>{reportSchema}</pre>}
     </section>
   );
 }
 
+/**
+ * The comparison of a task's runs as a page shows it: the runs to choose from until one is chosen, then the chosen
+ * runs side by side, or, when their records on Hugging Face cannot be read, a note saying so in their place.
+ */
+export function RunComparison({ entrants, source, view, onView }: {
+  entrants: CombinationRuns[]; source: ComparisonSource; view: ComparisonView; onView: (view: ComparisonView) => void;
+}) {
+  return view.compared.length > 0 ? (
+    <HuggingFaceBoundary resetKey={view.compared.join(LIST_SEPARATOR)}>
+      <Suspense fallback={<Loading />}>
+        <ComparedRuns entrants={entrants} source={source} view={view} onView={onView} />
+      </Suspense>
+    </HuggingFaceBoundary>
+  ) : <RunChoice entrants={entrants} view={view} onView={onView} />;
+}
+
 /** Before any run is chosen, the comparison is the choice itself. */
-export function RunChoice({ entrants, view, onView }: { entrants: Entrant[]; view: ComparisonView; onView: (view: ComparisonView) => void }) {
+export function RunChoice({ entrants, view, onView }: { entrants: CombinationRuns[]; view: ComparisonView; onView: (view: ComparisonView) => void }) {
   const { t } = useTranslation();
   return (
     <section className={styles.choice}>
@@ -70,20 +74,20 @@ export function RunChoice({ entrants, view, onView }: { entrants: Entrant[]; vie
         <h2 className="t-label">{t('compare.pickTitle')}</h2>
         <InfoHint label={t('ui.about', { subject: t('compare.pickTitle') })}>{t('compare.pickHint', { max: MAX_COMPARED_RUNS, open: MAX_PANEL_TRAJECTORIES })}</InfoHint>
       </header>
-      <EntrantRuns entrants={entrants} view={view} onView={onView} />
+      <RunPicker entrants={entrants} view={view} onView={onView} />
     </section>
   );
 }
 
 /** Every combination's runs of the task as chips that add a run to the comparison or take it out. */
-export function EntrantRuns({ entrants, view, onView }: { entrants: Entrant[]; view: ComparisonView; onView: (view: ComparisonView) => void }) {
+export function RunPicker({ entrants, view, onView }: { entrants: CombinationRuns[]; view: ComparisonView; onView: (view: ComparisonView) => void }) {
   const { t } = useTranslation();
   const list = useRef<HTMLUListElement>(null);
   const [widths, setWidths] = useState<{ name: number; runs: number }>();
   useLayoutEffect(() => {
     const listElement = list.current;
     if (!listElement) {
-      throw new Error('The run choice renders its list before its layout effect runs');
+      throw new Error('The run picker renders its list before its layout effect runs');
     }
     // A range spans a part's contents at their own width, whatever width the part itself is given.
     const widest = (selector: string) => Math.ceil(Math.max(...[...listElement.querySelectorAll(selector)].map(part => {
@@ -100,14 +104,14 @@ export function EntrantRuns({ entrants, view, onView }: { entrants: Entrant[]; v
     <ul ref={list} className={styles.entrants} style={widths && { '--name-width': `${widths.name}px`, '--runs-width': `${widths.runs}px` } as CSSProperties}>
       {entrants.map(({ model, harness, runs }) => (
         <li key={`${model.id}-${harness.id}`} className={styles.entrant}>
-          <span className={styles.entrantName}><VendorBadge model={model} /><span className="t-small">{model.name}</span><span className="t-micro c-faint">{harness.name}</span></span>
+          <span className={styles.entrantName}><CombinationLabel model={model} harness={harness} /></span>
           <span className={styles.chips}>
             {runs.map(run => {
-              const chosen = view.runs.includes(run.id);
+              const chosen = view.compared.includes(run.id);
               return (
                 <button
                   key={run.id} type="button" className={clsx(controls.pill, controls.small, 'loop-edge')} aria-pressed={chosen}
-                  disabled={!chosen && view.runs.length >= MAX_COMPARED_RUNS} onClick={() => onView(withComparedRun(view, run.id))}
+                  disabled={!chosen && view.compared.length >= MAX_COMPARED_RUNS} onClick={() => onView(toggleComparedRun(view, run.id))}
                   aria-label={t('compare.runOf', { attempt: run.attempt, outcome: t(`runs.outcome.${run.outcome}`) })}
                 >
                   <OutcomeDot outcome={run.outcome} />{run.attempt}
@@ -125,20 +129,21 @@ export function EntrantRuns({ entrants, view, onView }: { entrants: Entrant[]; v
  * The comparison: a column per run, a row per part of each block, each item opening in place; a run's trajectory opens
  * in the side panel.
  */
-export function ComparedRuns({ runIds, entrants, source, view, onView }: {
-  runIds: string[]; entrants: Entrant[]; source: ComparisonSource; view: ComparisonView; onView: (view: ComparisonView) => void;
+export function ComparedRuns({ entrants, source, view, onView }: {
+  entrants: CombinationRuns[]; source: ComparisonSource; view: ComparisonView; onView: (view: ComparisonView) => void;
 }) {
   const { t } = useTranslation();
-  const comparison = source.useComparison(runIds);
-  const shown = comparison.runs.filter(run => view.trajectory.includes(run.id));
+  // The runs shown stay until the newly chosen ones load, while the choices show at once.
+  const comparison = source.useComparison(useDeferredValue(view.compared.join(LIST_SEPARATOR)).split(LIST_SEPARATOR));
+  const shown = comparison.runs.filter(run => view.panel.includes(run.id));
   const chooser = (
     <Popover.Root>
       <Popover.Trigger className={clsx(controls.pill, controls.small, styles.choose, 'loop-edge')}>
-        {t('compare.pick')}<span className="t-numeric c-muted">{view.runs.length} / {MAX_COMPARED_RUNS}</span>
+        {t('compare.pick')}<span className="t-numeric c-muted">{view.compared.length} / {MAX_COMPARED_RUNS}</span>
       </Popover.Trigger>
       <Popover.Portal>
-        <Popover.Content className={styles.chooser} align="start" sideOffset={8} collisionPadding={12}>
-          <EntrantRuns entrants={entrants} view={view} onView={onView} />
+        <Popover.Content className={clsx(hint.popover, styles.chooser)} align="start" sideOffset={8} collisionPadding={12}>
+          <RunPicker entrants={entrants} view={view} onView={onView} />
         </Popover.Content>
       </Popover.Portal>
     </Popover.Root>
@@ -149,7 +154,7 @@ export function ComparedRuns({ runIds, entrants, source, view, onView }: {
         <BlockHead title={t('compare.runs')} hint={t('compare.pickHint', { max: MAX_COMPARED_RUNS, open: MAX_PANEL_TRAJECTORIES })} aside={chooser}>
           {comparison.runs.map((run, index) => (
             <Cell key={run.id}>
-              <RunHead run={run} numeral={runNumeralOf(index)}>
+              <RunHead run={run} numeral={numeralAt(index)}>
                 <RunActions run={run} runPath={source.runPath} view={view} onView={onView} />
               </RunHead>
             </Cell>
@@ -160,7 +165,7 @@ export function ComparedRuns({ runIds, entrants, source, view, onView }: {
           return (
             <Block
               key={block} comparison={comparison} expanded={view.expand}
-              onExpand={keys => onView(withExpanded(view, keys))} onTrajectory={run => onView(withTrajectory(view, run))}
+              onExpand={keys => onView(toggleExpanded(view, keys))} onTrajectory={run => onView(showInPanel(view, run))}
             />
           );
         })}
@@ -178,7 +183,7 @@ export function TrajectoryPanel({ comparison, shown, source, view, onView }: {
   comparison: TaskComparison; shown: ComparedRun[]; source: ComparisonSource; view: ComparisonView; onView: (view: ComparisonView) => void;
 }) {
   const { t } = useTranslation();
-  const close = () => onView({ ...view, trajectory: [] });
+  const close = () => onView(closePanel(view));
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -195,20 +200,18 @@ export function TrajectoryPanel({ comparison, shown, source, view, onView }: {
         <span className={styles.panelRuns} role="group" aria-label={t('compare.panel.runs', { max: MAX_PANEL_TRAJECTORIES })}>
           {comparison.runs.map((run, index) => (
             <Hint key={run.id} content={`${run.model.name} · ${run.harness.name} · ${t('compare.attempt', { attempt: run.attempt })}`}>
-              <button type="button" className={clsx(controls.pill, controls.small, 'loop-edge')} aria-pressed={view.trajectory.includes(run.id)} onClick={() => onView(withPanelRun(view, run.id))}>
-                {runNumeralOf(index)}
+              <button type="button" className={clsx(controls.pill, controls.small, 'loop-edge')} aria-pressed={view.panel.includes(run.id)} onClick={() => onView(togglePanelRun(view, run.id))}>
+                {numeralAt(index)}
               </button>
             </Hint>
           ))}
         </span>
-        <button type="button" className={styles.icon} aria-label={t('compare.panel.close')} onClick={close}>
-          <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="m3 3 6 6M9 3 3 9" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /></svg>
-        </button>
+        <IconButton label={t('compare.panel.close')} variant="quiet" size="small" onClick={close}><CloseIcon /></IconButton>
       </header>
       <div className={styles.panelScroll}>
-        <HuggingFaceBoundary resetKey={view.trajectory.join(LIST_SEPARATOR)}>
+        <HuggingFaceBoundary resetKey={view.panel.join(LIST_SEPARATOR)}>
           <Suspense fallback={<Loading />}>
-            <PanelTrajectories comparison={comparison} shown={shown} labels={view.labels} onLabel={label => onView(withLabel(view, label))} useTrajectories={source.useTrajectories} />
+            <PanelTrajectories comparison={comparison} shown={shown} labels={view.labels} onLabel={label => onView(toggleLabel(view, label))} source={source} />
           </Suspense>
         </HuggingFaceBoundary>
       </div>
@@ -244,21 +247,15 @@ export function RunActions({ run, runPath, view, onView }: { run: ComparedRun; r
   return (
     <>
       <Hint content={t('compare.toRun')}>
-        <LocaleLink className={styles.icon} to={runPath(run.id)} aria-label={t('compare.toRun')}>
-          <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M4 2.5h5.5V8M9.5 2.5 2.5 9.5" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
-        </LocaleLink>
+        <IconButton label={t('compare.toRun')} variant="quiet" size="small" to={runPath(run.id)}><LinkArrowIcon /></IconButton>
       </Hint>
       {run.huggingFaceUrl && (
         <Hint content={t('compare.rawFiles')}>
-          <a className={styles.icon} href={run.huggingFaceUrl} target="_blank" rel="noreferrer" aria-label={t('compare.rawFiles')}>
-            <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M3 1.5h4l2.5 2.5v6.5H3zM7 1.5V4h2.5" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" /></svg>
-          </a>
+          <IconButton label={t('compare.rawFiles')} variant="quiet" size="small" href={run.huggingFaceUrl}><FileIcon /></IconButton>
         </Hint>
       )}
       <Hint content={t('compare.remove')}>
-        <button type="button" className={styles.icon} aria-label={t('compare.remove')} onClick={() => onView(withComparedRun(view, run.id))}>
-          <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="m3 3 6 6M9 3 3 9" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /></svg>
-        </button>
+        <IconButton label={t('compare.remove')} variant="quiet" size="small" onClick={() => onView(toggleComparedRun(view, run.id))}><CloseIcon /></IconButton>
       </Hint>
     </>
   );

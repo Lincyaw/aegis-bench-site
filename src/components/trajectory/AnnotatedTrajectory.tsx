@@ -1,16 +1,17 @@
 import { clsx } from 'clsx';
 import { Fragment, useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { AnnotationCategory, ComparedRun, StepAnnotation, TrajectoryStep } from '../../api/types';
+import type { AnnotationCategory, ComparedRun, StepAnnotation, TaskComparison, TrajectoryStep } from '../../api/types';
 import { useLocale } from '../../i18n/localeContext';
 import { dateTimeOf } from '../../i18n/locales';
 import { ToggleChip } from '../../ui/controls';
 import { Hint } from '../../ui/hint';
-import { mostSevere, numeralOfRun, segmentsOf, type BlockProps, type PanelProps } from '../comparison/comparison';
+import { numeralOf, type BlockProps, type ComparisonSource } from '../comparison/comparison';
 import { BlockHead, Cell } from '../comparison/ComparisonTable';
 import timeline from '../run/RunTimeline.module.css';
 import { AtifFields, AtifStepSummary } from './AtifStep';
 import styles from './AnnotatedTrajectory.module.css';
+import { mostSevere, segmentsOf } from './steps';
 
 /*
  * The trajectory block of a comparison. Its row shows each run's steps as a row of marks with the steps annotators
@@ -19,7 +20,7 @@ import styles from './AnnotatedTrajectory.module.css';
  * their reasons in hints.
  */
 
-export function Trajectory({ comparison, onTrajectory }: BlockProps) {
+export function TrajectoryBlock({ comparison, onTrajectory }: BlockProps) {
   const { t } = useTranslation();
   const { runs, categories } = comparison;
   return (
@@ -63,11 +64,16 @@ export function CategoryCard({ category }: { category: AnnotationCategory }) {
   );
 }
 
-/** The trajectories the side panel shows, side by side a submission at a time, filtered to the labels chosen. */
-export function PanelTrajectories({ comparison, shown, labels, onLabel, useTrajectories }: PanelProps) {
+/**
+ * The trajectories the side panel shows, in the comparison's order, side by side a submission at a time; with labels
+ * chosen, only the steps they label.
+ */
+export function PanelTrajectories({ comparison, shown, labels, onLabel, source }: {
+  comparison: TaskComparison; shown: ComparedRun[]; labels: string[]; onLabel: (category: string) => void; source: ComparisonSource;
+}) {
   const { t } = useTranslation();
   const { categories } = comparison;
-  const trajectories = useTrajectories(shown.map(run => run.id));
+  const trajectories = source.useTrajectories(shown.map(run => run.id));
   const segments = shown.map((run, index) => segmentsOf(trajectories[index].steps, run));
   const rows = Math.max(...segments.map(runSegments => runSegments.length));
   return (
@@ -86,7 +92,7 @@ export function PanelTrajectories({ comparison, shown, labels, onLabel, useTraje
       <div className={styles.columns} style={{ '--columns': shown.length } as CSSProperties}>
         {shown.map(run => (
           <p key={run.id} className={clsx(styles.columnHead, 't-small')}>
-            <span className="t-label">{numeralOfRun(comparison, run.id)}</span>
+            <span className="t-label">{numeralOf(comparison, run.id)}</span>
             <span>{run.model.name}</span>
             <span className="c-muted">{run.harness.name} · {t('compare.attempt', { attempt: run.attempt })}</span>
             <span className="t-micro c-faint">{t('compare.steps', { count: run.metrics.steps })} · {t('compare.submissions', { count: run.metrics.submissions })}</span>
@@ -94,7 +100,7 @@ export function PanelTrajectories({ comparison, shown, labels, onLabel, useTraje
         ))}
         {Array.from({ length: rows }, (_, index) => (
           <Fragment key={index}>
-            <h3 className={clsx(styles.segment, 't-micro c-faint')}>{t('compare.segment', { attempt: index + 1 })}</h3>
+            <h3 className={clsx(styles.segment, 't-micro c-faint')}>{t('compare.segment', { submission: index + 1 })}</h3>
             {shown.map((run, runIndex) => {
               const steps = segments[runIndex][index];
               return <div key={run.id}>{steps && <StepList steps={steps} run={run} categories={categories} labels={labels} />}</div>;

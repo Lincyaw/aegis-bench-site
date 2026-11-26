@@ -15,4 +15,5 @@
 .vendor[data-slot="D"] { background: var(--series-moonshot); }
 
 .model { display: inline-flex; align-items: center; gap: var(--space-3); color: var(--text-main); }
+.combination { display: inline-flex; align-items: center; gap: var(--space-2); }
 a.model:hover span:last-child { text-decoration: underline; text-underline-offset: var(--space-1); }

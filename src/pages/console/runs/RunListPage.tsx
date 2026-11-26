@@ -1,4 +1,3 @@
-import { clsx } from 'clsx';
 import { useDeferredValue } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useSearchParams } from 'react-router-dom';
@@ -7,9 +6,8 @@ import type { ConsoleBenchmark, ConsoleRunQuery } from '../../../api/types';
 import { RunFilters, RunTable } from '../../../components/run/RunTable';
 import { ConsoleHeader } from '../../../components/shell/ConsoleHeader';
 import { consoleBenchmarkPath } from '../../../routes/console';
-import { RUN_LIST_PAGE_SIZE, isFilteredRunQuery, parseRunQuery, runQuerySearch } from '../../../routes/consoleRuns';
-import controls from '../../../ui/controls.module.css';
-import { Hint } from '../../../ui/hint';
+import { RUN_LIST_PAGE_SIZE, consoleRunsPath, isFilteredRunQuery, parseRunQuery, runQuerySearch } from '../../../routes/consoleRuns';
+import { ScopeChip } from '../../../ui/controls';
 import { Pager } from '../../../ui/navigation';
 import styles from './RunListPage.module.css';
 
@@ -30,7 +28,7 @@ export function RunListPage() {
         lead={isFilteredRunQuery(query) ? t('console.runs.leadFiltered', { count: page.total, total: benchmark.runCount }) : t('console.runs.lead', { count: benchmark.runCount })}
       />
       <RunFilters benchmark={benchmark} query={query} onChange={update}>
-        {query.model && <ModelFocusChip benchmark={benchmark} modelId={query.model} onClear={() => update({ model: '' })} />}
+        {query.model && <ModelScopeChip benchmark={benchmark} query={query} />}
       </RunFilters>
       {page.items.length === 0 ? <p className="t-small c-muted">{t('console.runs.empty')}</p> : <RunTable benchmarkId={benchmark.id} rows={page.items} />}
       {page.total > RUN_LIST_PAGE_SIZE && (
@@ -45,18 +43,10 @@ export function RunListPage() {
 }
 
 /** The model the list keeps to, which the reader can let go of to see every model's runs. */
-export function ModelFocusChip({ benchmark, modelId, onClear }: { benchmark: ConsoleBenchmark; modelId: string; onClear: () => void }) {
-  const { t } = useTranslation();
-  const entrant = benchmark.entrants.find(candidate => candidate.model.id === modelId);
+export function ModelScopeChip({ benchmark, query }: { benchmark: ConsoleBenchmark; query: ConsoleRunQuery }) {
+  const entrant = benchmark.entrants.find(candidate => candidate.model.id === query.model);
   if (!entrant) {
-    throw new Error(`no model ${modelId} ran on ${benchmark.id}`);
+    throw new Error(`no model ${query.model} ran on ${benchmark.id}`);
   }
-  const { name } = entrant.model;
-  return (
-    <Hint content={t('console.runs.modelFocus.hint')}>
-      <button type="button" className={clsx(controls.pill, controls.small, styles.focus, 'loop-edge')} aria-label={t('console.runs.modelFocus.clear', { name })} onClick={onClear}>
-        {name}<span aria-hidden="true">×</span>
-      </button>
-    </Hint>
-  );
+  return <ScopeChip name={entrant.model.name} to={consoleRunsPath(benchmark.id, { ...query, offset: 0, model: '' })} />;
 }

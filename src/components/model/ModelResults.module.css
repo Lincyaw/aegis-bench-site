@@ -1,6 +1,6 @@
 .harnesses { --columns: minmax(8rem, 1fr) minmax(9rem, 1.2fr) 7rem 7rem 6rem minmax(8rem, 1fr); }
 /* :where keeps the mark as weak as a row's own class, so hovering the row replaces it as on any other row. */
-.harnesses > :where([aria-current="true"]) { background: linear-gradient(var(--brand-dev), var(--brand-ops)) left / var(--size-border-thick) 100% no-repeat, var(--bg-muted); }
+.harnesses > :where([aria-current="true"]) { background: var(--row-chosen); }
 
 .tasks { --columns: minmax(12rem, 1.5fr) minmax(10rem, 1.3fr) minmax(9rem, 1fr) minmax(8rem, 1fr); }
 .task { display: grid; gap: var(--space-px); min-width: 0; }

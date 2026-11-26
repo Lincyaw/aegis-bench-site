@@ -73,7 +73,7 @@ export function SiteNav({ sections }: { sections: PageSections | null }) {
         <div className={styles.end}>
           <LanguageSwitch path={sitePath(locale, pathname)} search={search} />
           <IconButton label={t('site.toggleTheme')} onClick={toggleTheme} variant="quiet"><ThemeIcon /></IconButton>
-          <LocaleLink className={styles.signIn} to={CONSOLE_PATH}>{t('site.signIn')}</LocaleLink>
+          <LocaleLink className={clsx(controls.pill, controls.medium, controls.quiet)} to={CONSOLE_PATH}>{t('site.signIn')}</LocaleLink>
           <LocaleLink className={clsx(controls.pill, controls.medium, styles.contact, 'loop-edge')} to={CONTACT_PATH}>{t('site.contact')}</LocaleLink>
           <span className={styles.menuButton}>
             <IconButton label={t('site.openMenu')} expanded={open} onClick={() => { setOpen(!open); setOpenedAt(pathname); }}><MenuIcon /></IconButton>

@@ -61,6 +61,8 @@
   /* Keeps text legible where it lies over a drawing. */
   --shadow-text-halo: 0 0 6px var(--bg-page), 0 0 12px var(--bg-page);
   --loop-gradient: linear-gradient(90deg, var(--brand-dev), var(--brand-ops));
+  /* The chosen row of a list: the hover shade, with a bar of the loop's two halves down its left edge. */
+  --row-chosen: linear-gradient(var(--brand-dev), var(--brand-ops)) left / var(--size-border-thick) 100% no-repeat, var(--bg-muted);
 }
 
 @media (max-width: 1280px) { :root { --page-gutter: 48px; } }

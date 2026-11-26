@@ -5,7 +5,7 @@ import type { Combination, RunRef, TaskPage } from '../../api/types';
 import { EVERY_OUTCOME, TASK_MODES, combinationKey, withMode, type OutcomeFilter, type RunRecordsQuery } from '../../routes/runRecords';
 import { MoreButton, SegmentedControl } from '../../ui/controls';
 import controls from '../../ui/controls.module.css';
-import { VendorBadge } from '../model/ModelBadge';
+import { CombinationLabel } from '../model/ModelBadge';
 import { OutcomeDot } from './Outcome';
 import styles from './RunRecords.module.css';
 
@@ -96,7 +96,7 @@ export function CombinationColumn({ combinations, current, onCombination }: { co
           return (
             <li key={key}>
               <button type="button" className={clsx(styles.task, styles.entrant)} onClick={() => onCombination(key)} aria-current={key === current ? 'true' : undefined}>
-                <VendorBadge model={model} /><span className="t-small">{model.name}</span><span className="t-micro c-faint">{harness.name}</span>
+                <CombinationLabel model={model} harness={harness} />
               </button>
             </li>
           );

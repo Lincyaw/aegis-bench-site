@@ -5,7 +5,7 @@
 
 .task { display: grid; gap: var(--space-px); width: 100%; padding: var(--space-3) var(--space-4); text-align: left; transition: background-color var(--duration-base); }
 .task:hover { background: var(--bg-muted); }
-.task[aria-current="true"] { background: linear-gradient(var(--brand-dev), var(--brand-ops)) left / var(--size-border-thick) 100% no-repeat, var(--bg-muted); }
+.task[aria-current="true"] { background: var(--row-chosen); }
 .taskTop { display: flex; justify-content: space-between; align-items: center; }
 .entrant { display: flex; align-items: center; gap: var(--space-2); }
 .empty { padding: var(--space-4); }

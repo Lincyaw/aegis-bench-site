@@ -59,17 +59,17 @@ export const TASK_RUN_VIEWS = ['entrants', 'checks'] as const;
 export type TaskRunView = (typeof TASK_RUN_VIEWS)[number];
 
 /** The model, and within it the harness, that a task's page keeps to, as the page the reader came from did. */
-export interface TaskFocus {
+export interface TaskScope {
   model?: string;
   harness?: string;
 }
 
 /** Whether a combination is one the page keeps to; every combination is when it keeps to none. */
-export function inFocus(focus: TaskFocus, { model, harness }: { model: { id: string }; harness: { id: string } }): boolean {
-  return (!focus.model || model.id === focus.model) && (!focus.harness || harness.id === focus.harness);
+export function inScope(scope: TaskScope, { model, harness }: { model: { id: string }; harness: { id: string } }): boolean {
+  return (!scope.model || model.id === scope.model) && (!scope.harness || harness.id === scope.harness);
 }
 
-export interface TaskPageView extends ComparisonView, TaskFocus {
+export interface TaskPageView extends ComparisonView, TaskScope {
   tab: TaskTab;
   view: TaskRunView;
 

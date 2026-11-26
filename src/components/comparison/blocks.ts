@@ -1,6 +1,6 @@
 import type { ComponentType } from 'react';
 import type { ComparisonBlock } from '../../api/types';
-import { Trajectory } from '../trajectory/AnnotatedTrajectory';
+import { TrajectoryBlock } from '../trajectory/AnnotatedTrajectory';
 import type { BlockProps } from './comparison';
 import { Checks, FileChanges, Reply } from './ResultBlocks';
 
@@ -12,5 +12,5 @@ export const COMPARISON_BLOCKS: Record<ComparisonBlock, ComponentType<BlockProps
   fileChanges: FileChanges,
   checks: Checks,
   reply: Reply,
-  trajectory: Trajectory,
+  trajectory: TrajectoryBlock,
 };

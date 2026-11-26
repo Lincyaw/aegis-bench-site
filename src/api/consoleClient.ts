@@ -20,16 +20,6 @@ export function startSession(queryClient: QueryClient, session: SessionState) {
   queryClient.setQueryData(SESSION_QUERY_KEY, session);
 }
 
-/** The demo's mock server lets every member in with this password, and the sign-in page says so. */
-export const DEMO_PASSWORD = 'demo';
-
-/** The accounts the sign-in page suggests for the demo, one per role; the first is the one the demo opens with. */
-export const DEMO_ACCOUNTS: { account: string; role: Role }[] = [
-  { account: 'lin.fang', role: 'admin' },
-  { account: 'zhou.yu', role: 'editor' },
-  { account: 'he.ming', role: 'viewer' },
-];
-
 /** Who is signed in on this browser; the console's layout reads it before anything else. */
 export function useConsoleSession() {
   return useSuspenseQuery({

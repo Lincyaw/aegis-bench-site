@@ -40,6 +40,7 @@ export const zh = {
     openOnHuggingFace: '在 Hugging Face 打开',
     huggingFaceUnreachable: '无法从 Hugging Face 读取这部分记录，可能是当前网络访问不了 Hugging Face。',
     huggingFaceUnreachableNote: '记录仍可以直接在 Hugging Face 上查看。',
+    clearScope: '取消限定：{{name}}',
   },
   landing: {
     updated: '最近更新：{{date, datetime}} · 第 3 版',
@@ -135,10 +136,6 @@ export const zh = {
     unknownBenchmark: '没有评测基准 {{id}}',
     column: { model: '模型', harness: '框架', runs: '运行次数', cost: '平均成本', evaluated: '评测日期', records: '运行记录' },
     runsOf: '{{model}} · {{harness}} 的运行记录',
-    mark: {
-      hint: '排行榜标出这个模型的各行，切换评测基准或排行方式时保留；点击后不再标出。',
-      clear: '不再标出 {{name}}',
-    },
   },
   models: {
     meta_one: '最近评测 {{date}} · {{count}} 种评测框架 · {{vendor}}',
@@ -277,6 +274,8 @@ export const zh = {
     inputHint: '智能体收到的任务说明原文，每次运行都相同。',
     expandInput: '展开全文',
     collapseInput: '收起',
+    expandReply: '展开全文',
+    collapseReply: '收起',
     pickTitle: '选择要对照的运行',
     pickHint: '从各组合的运行中选 1 到 {{max}} 次并排对照。点文件或检查在原处展开细节；点轨迹在侧栏查看，侧栏最多并排 {{open}} 次运行。',
     pick: '选择运行',
@@ -311,7 +310,7 @@ export const zh = {
     steps_other: '{{count}} 步',
     submissions_one: '{{count}} 次提交',
     submissions_other: '{{count}} 次提交',
-    segment: '第 {{attempt}} 次提交',
+    segment: '第 {{submission}} 次提交',
     labels: '按标注筛选步骤',
     hiddenSteps_one: '{{count}} 步未列出',
     hiddenSteps_other: '{{count}} 步未列出',

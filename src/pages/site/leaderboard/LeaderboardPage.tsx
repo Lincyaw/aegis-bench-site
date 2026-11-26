@@ -8,11 +8,10 @@ import { LeaderboardTable } from '../../../components/leaderboard/LeaderboardTab
 import { HalfDot } from '../../../components/lifecycle/LifecycleMap';
 import { benchmarksAt } from '../../../components/lifecycle/stages';
 import { LocaleLink } from '../../../i18n/LocaleRouting';
-import { LEADERBOARD_PAGE_SIZE, benchmarkPath, leaderboardSearch, parseLeaderboardView, type LeaderboardQuery } from '../../../routes/site';
+import { LEADERBOARD_PAGE_SIZE, benchmarkPath, leaderboardPath, leaderboardSearch, parseLeaderboardView, type LeaderboardQuery } from '../../../routes/site';
 import { Loading } from '../../../ui/content';
-import { MoreButton, SegmentedControl } from '../../../ui/controls';
+import { MoreButton, ScopeChip, SegmentedControl } from '../../../ui/controls';
 import controls from '../../../ui/controls.module.css';
-import { Hint } from '../../../ui/hint';
 import styles from './LeaderboardPage.module.css';
 
 /** Message keys of the leaderboard's views, in the order the switch shows them. */
@@ -34,7 +33,7 @@ export function LeaderboardPage() {
     throw new Error(t('leaderboard.unknownBenchmark', { id: benchmarkId }));
   }
   const view = parseLeaderboardView(search.get('view'));
-  // The model a page sent the reader here for stays marked across benchmarks and views until the reader lets it go.
+  // The model a page sent the reader here for is the page's scope: its rows stay marked across benchmarks and views until the reader lets it go.
   const model = search.get('model') ?? undefined;
   const choose = (next: LeaderboardQuery) => setSearch(leaderboardSearch({ bench: benchmark.id, view, model, ...next }), { replace: true, preventScrollReset: true });
   return (
@@ -66,7 +65,7 @@ export function LeaderboardPage() {
           <span className="t-micro c-faint">{t('leaderboard.meta', { stage: `${benchmark.stage.id} ${benchmark.stage.name}`, metric: benchmark.metric.name, version: benchmark.version, date: benchmark.updatedOn })}</span>
         </div>
         <div className={styles.tools}>
-          {model && <MarkedModel modelId={model} onClear={() => choose({ model: undefined })} />}
+          {model && <ModelScopeChip modelId={model} to={leaderboardPath({ bench: benchmark.id, view })} />}
           <SegmentedControl label={t('leaderboard.viewLabel')} choices={leaderboardViewValues.map(value => ({ value, label: t(LEADERBOARD_VIEW_LABELS[value]) }))} value={view} onChange={next => choose({ view: next })} />
           <LocaleLink className={clsx(controls.textLink, 't-small')} to={benchmarkPath(benchmark.id)}>{t('leaderboard.details')}</LocaleLink>
         </div>
@@ -79,17 +78,10 @@ export function LeaderboardPage() {
   );
 }
 
-/** The model whose rows the board marks; its chip lets the mark go. */
-export function MarkedModel({ modelId, onClear }: { modelId: string; onClear: () => void }) {
-  const { t } = useTranslation();
+/** The model the page keeps to, whose rows the board marks; `to` is the leaderboard without it. */
+export function ModelScopeChip({ modelId, to }: { modelId: string; to: string }) {
   const { model } = useModelProfile(modelId);
-  return (
-    <Hint content={t('leaderboard.mark.hint')}>
-      <button type="button" className={clsx(controls.pill, controls.small, styles.mark, 'loop-edge')} aria-label={t('leaderboard.mark.clear', { name: model.name })} onClick={onClear}>
-        {model.name}<span aria-hidden="true">×</span>
-      </button>
-    </Hint>
-  );
+  return <ScopeChip name={model.name} to={to} />;
 }
 
 /** The ranking, a page at a time. */

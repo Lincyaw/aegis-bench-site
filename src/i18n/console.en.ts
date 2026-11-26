@@ -351,10 +351,6 @@ export const consoleEn: ConsoleMessages = {
     tabList: 'Parts of the task',
     version: 'Version {{version}}',
     solvedBy: '{{solved}} of {{entrants}} combinations passed at least once',
-    focus: {
-      hint: 'The runs and the comparison list only this model\'s runs (in this harness); click to show every combination.',
-      clear: 'Stop keeping to {{name}}',
-    },
     content: {
       instruction: 'Task text',
       instructionNote: 'Exactly as the agent receives it.',
@@ -410,10 +406,6 @@ export const consoleEn: ConsoleMessages = {
     leadFiltered_other: '{{count, number}} of {{total, number}} runs match, newest first. Execution failures are listed but not counted.',
     filters: 'Filter runs',
     search: 'Search task id or title',
-    modelFocus: {
-      hint: 'The list shows only this model\'s runs; click to show every model.',
-      clear: 'Stop keeping to {{name}}',
-    },
     combinationFilter: 'Combination',
     everyCombination: 'All combinations',
     outcomeFilter: 'Outcome',
@@ -435,16 +427,8 @@ export const consoleEn: ConsoleMessages = {
   model: {
     allHarnesses: 'All harnesses',
     harnessLabel: 'Harness',
-    collection: {
-      name: 'Collection · {{tag}}',
-      hint: 'The figures, the results by harness and the task list cover only this collection’s tasks; click to show every task.',
-      clear: 'Stop keeping to collection {{tag}}',
-    },
-    task: {
-      name: 'Task · {{task}}',
-      hint: 'The figures, the results by harness and the task list cover only this task; click to show every task.',
-      clear: 'Stop keeping to task {{task}}',
-    },
+    collection: { name: 'Collection · {{tag}}' },
+    task: { name: 'Task · {{task}}' },
     lead_one: '{{vendor}} · {{count}} harness',
     lead_other: '{{vendor}} · {{count}} harnesses',
     stats: { passRate: 'Pass rate', everyTime: 'Passed every time', steps: 'Mean steps', cost: 'Mean cost' },
