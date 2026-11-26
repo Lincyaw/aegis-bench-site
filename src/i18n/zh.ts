@@ -29,6 +29,7 @@ export const zh = {
     toBenchmarks: '查看评测基准',
   },
   ui: {
+    about: '关于「{{subject}}」',
     breadcrumbs: '当前位置',
     loading: '正在加载…',
     copyBibtex: '复制 BibTeX',

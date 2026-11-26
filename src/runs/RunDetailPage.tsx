@@ -45,7 +45,12 @@ export function RunDetailPage() {
         crumbs={[{ label: benchmark.name, to: consoleBenchmarkPath(benchmark.id) }, { label: t('console.runs.title'), to: consoleRunsPath(benchmark.id) }, { label: run.task.id }]}
         title={run.task.title}
         lead={t('console.run.label', { model: run.model.name, harness: run.harness.name, attempt: run.attempt })}
-        actions={<ButtonLink to={consoleTaskPath(benchmark.id, run.task.id)} variant="line">{t('console.run.toTask')}</ButtonLink>}
+        actions={(
+          <>
+            <ButtonLink to={consoleTaskPath(benchmark.id, run.task.id, { tab: 'compare', runs: [run.id], open: [run.id] })} variant="line">{t('console.run.compare')}</ButtonLink>
+            <ButtonLink to={consoleTaskPath(benchmark.id, run.task.id)} variant="line">{t('console.run.toTask')}</ButtonLink>
+          </>
+        )}
       />
       <div className={styles.facts}>
         <OutcomeBadge outcome={run.outcome} />

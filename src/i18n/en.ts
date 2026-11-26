@@ -29,6 +29,7 @@ export const en: Messages = {
     toBenchmarks: 'View benchmarks',
   },
   ui: {
+    about: 'About {{subject}}',
     breadcrumbs: 'You are here',
     loading: 'Loading…',
     copyBibtex: 'Copy BibTeX',

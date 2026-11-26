@@ -12,6 +12,7 @@ import { Loading, Tag } from '../ui/content';
 import { TabRow } from '../ui/navigation';
 import navigation from '../ui/navigation.module.css';
 import { TASK_TABS, consoleTaskPath, consoleTasksPath, parseTaskPageView, type TaskPageView, type TaskTab } from './consoleTaskQuery';
+import { TaskComparisonTab } from './TaskComparisonTab';
 import { TaskContentTab, TaskGradingTab, TaskReferenceTab } from './TaskDefinitionTabs';
 import { HuggingFaceBoundary } from '../runs/HuggingFace';
 import { TaskFileBrowser, type TaskFileSource } from './TaskFileBrowser';
@@ -29,7 +30,7 @@ export function TaskDetailPage() {
   const benchmark = useConsoleBenchmark(benchmarkId);
   const task = useConsoleTask(benchmark.id, taskId);
   const counts: Record<TaskTab, number | undefined> = {
-    content: undefined, grading: task.sizes.checks, reference: undefined, runs: task.result.runs, files: task.sizes.files, revisions: task.sizes.revisions,
+    content: undefined, grading: task.sizes.checks, reference: undefined, runs: task.result.runs, compare: undefined, files: task.sizes.files, revisions: task.sizes.revisions,
   };
   return (
     <div className={styles.page} data-half={benchmark.stage.half}>
@@ -69,6 +70,7 @@ export function TaskTabContent({ task, view }: { task: ConsoleTaskDetail; view: 
     case 'grading': return <TaskGradingTab task={task} />;
     case 'reference': return <TaskReferenceTab task={task} />;
     case 'runs': return <TaskRunsTab task={task} view={view.view} />;
+    case 'compare': return <TaskComparisonTab task={task} view={view} />;
     case 'files': return <TaskFilesTab task={task} file={view.file ?? INSTRUCTION_PATH} />;
     case 'revisions': return <TaskRevisionsTab task={task} />;
   }

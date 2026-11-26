@@ -13,6 +13,8 @@
 - **控件有设计感和动效。** 不用默认样式的按钮；在选项之间切换时，选中态要滑过去；悬浮反馈不能和周围的边框冲突。头部和工具栏不挤占阅读空间，工具型页面占满窗口，在各自的栏内滚动。
 - **文案正式。** 中英文都用正式的书面语，不用口语化的标签。
 - **按评测基准变化的内容做成可替换的 block。** 新的评测基准先加数据，再在它的 `benchmark.json` 里写明各个页面用哪些 block、按什么顺序；接口把这份配置交给前端，前端按配置从登记表里取组件。加一种题型，只需要新增一个 block，并写进相应评测基准的配置。
+  - 配置在 `benchmark.json` 的 `blocks` 里，每个页面一个列表。每个页面的 block 在 spec 中是一个枚举，例如 `spec/console/comparison.tsp` 的 `ComparisonBlock`。
+  - 登记表放在 `src/runs/comparisonBlocks.ts`。每个 block 实现两层：第一屏每次运行一格的 `Overview`，展开后的 `Detail`，接口约定见 `src/runs/comparison.ts`。
 
 ## 仓库约束
 

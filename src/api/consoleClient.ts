@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient, useSuspenseInfiniteQuery, useSuspenseQuery, type QueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient, useSuspenseInfiniteQuery, useSuspenseQueries, useSuspenseQuery, type QueryClient } from '@tanstack/react-query';
 import { useLocale } from '../i18n/localeContext';
 import { SITE_QUERY, api, languageHeader, nextPageOffset, responseBody } from './client';
 import type {
@@ -178,6 +178,17 @@ export function useTaskResults(benchmarkId: string, taskId: string) {
   }).data;
 }
 
+/** Runs of a task side by side, in the order given. */
+export function useTaskComparison(benchmarkId: string, taskId: string, runs: string[]) {
+  const locale = useLocale();
+  return useSuspenseQuery({
+    queryKey: [CONSOLE_QUERY, 'taskComparison', benchmarkId, taskId, runs, locale],
+    queryFn: () => responseBody(api.GET('/console/benchmarks/{benchmarkId}/tasks/{taskId}/comparison', {
+      params: { path: { benchmarkId, taskId }, query: { runs }, header: languageHeader(locale) },
+    })),
+  }).data;
+}
+
 export function useTaskCheckResults(benchmarkId: string, taskId: string) {
   const locale = useLocale();
   return useSuspenseQuery({
@@ -243,12 +254,14 @@ export function useConsoleRun(runId: string) {
   }).data;
 }
 
-/** A run's whole trajectory, every step at once; a trajectory is a record, the same in every language. */
-export function useConsoleTrajectory(runId: string) {
-  return useSuspenseQuery({
-    queryKey: [CONSOLE_QUERY, 'trajectory', runId],
-    queryFn: () => responseBody(api.GET('/console/runs/{runId}/trajectory', { params: { path: { runId } } })),
-  }).data;
+/** Runs' whole trajectories, every step at once, in the order given; a trajectory is a record, the same in every language. */
+export function useConsoleTrajectories(runIds: string[]) {
+  return useSuspenseQueries({
+    queries: runIds.map(runId => ({
+      queryKey: [CONSOLE_QUERY, 'trajectory', runId],
+      queryFn: () => responseBody(api.GET('/console/runs/{runId}/trajectory', { params: { path: { runId } } })),
+    })),
+  }).map(query => query.data);
 }
 
 /** One page of a run's trajectory as the console reads it. */

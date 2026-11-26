@@ -1,0 +1,35 @@
+/* A narrow window scrolls the table inside its box rather than the page. */
+.scroller { overflow-x: auto; overscroll-behavior-x: contain; }
+
+.table {
+  display: grid;
+  grid-template-columns: 15rem repeat(var(--columns, 1), minmax(12rem, 1fr));
+  border: var(--rule-hairline);
+  border-radius: var(--radius-md);
+}
+
+.row { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; }
+.row + .row { border-top: var(--rule-hairline); }
+.blockHead { background: var(--bg-panel); }
+.row + .blockHead { border-top: var(--rule-emphasis); }
+.blockHead:first-child { border-radius: var(--radius-md) var(--radius-md) 0 0; }
+
+.label { display: grid; align-content: start; justify-items: start; gap: var(--space-2); min-width: 0; padding: var(--space-3) var(--space-4); border-right: var(--rule-hairline); }
+.title { display: flex; align-items: center; gap: var(--space-1); }
+.item .label { padding-left: var(--space-6); }
+.differs { position: relative; }
+.differs::before {
+  content: "";
+  position: absolute;
+  top: calc(var(--space-3) + var(--space-2) - var(--size-dot-sm) / 2);
+  left: var(--space-3);
+  width: var(--size-dot-sm);
+  height: var(--size-dot-sm);
+  border-radius: var(--radius-full);
+  background: var(--ink-warn);
+}
+
+.cell { min-width: 0; padding: var(--space-3) var(--space-4); }
+.cell + .cell { border-left: var(--rule-hairline); }
+.failed { background: var(--bg-warning-soft); }
+.empty { color: var(--text-faint); }
