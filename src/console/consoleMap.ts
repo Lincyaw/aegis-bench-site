@@ -1,5 +1,5 @@
 import openapi from '../api/openapi.json';
-import type { ConsoleBenchmark, Role } from '../api/types';
+import type { ConsoleBenchmark } from '../api/types';
 import type { NavIcon } from './ConsoleIcons';
 
 /** The form an account name takes, as the spec declares it; the sign-in form checks it before asking the API. */
@@ -22,9 +22,6 @@ export const MAX_REPORT_CHECKS = PUBLICATION_RULES.reportChecks.maxItems;
 /** Every path of the console, as site paths; links add the reader's locale. */
 export const CONSOLE_PATH = '/console';
 export const SIGN_IN_PATH = `${CONSOLE_PATH}/sign-in`;
-
-/** The demo's mock server lets every member in with this password, and the sign-in page says so. */
-export const DEMO_PASSWORD = 'demo';
 
 /** The choice of a console filter that keeps everything; no tag, spread, combination, outcome or review is spelt this way. */
 export const EVERY_CHOICE = 'all';
@@ -76,13 +73,6 @@ export const WORKSPACE_NAV: { label?: 'console.nav.administration'; sections: Wo
       { path: SETTINGS_PATH, label: 'console.nav.settings', icon: 'settings' },
     ],
   },
-];
-
-/** The accounts the sign-in page suggests for the demo, one per role; every member signs in with the demo password. */
-export const DEMO_ACCOUNTS: { account: string; role: Role }[] = [
-  { account: 'lin.fang', role: 'admin' },
-  { account: 'zhou.yu', role: 'editor' },
-  { account: 'he.ming', role: 'viewer' },
 ];
 
 export function consoleBenchmarkPath(benchmarkId: string): string {

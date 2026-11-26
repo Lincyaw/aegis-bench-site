@@ -1,12 +1,12 @@
 import { clsx } from 'clsx';
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useChangeRole, useConsoleUser, useInviteMember, useMembers, useRemoveMember } from '../api/consoleClient';
+import { DEMO_PASSWORD, useChangeRole, useConsoleUser, useInviteMember, useMembers, useRemoveMember } from '../api/consoleClient';
 import { consoleRoleValues } from '../api/schema';
 import type { Member, Role } from '../api/types';
 import { ConsoleHeader } from '../console/ConsoleHeader';
 import { ChangeFailure } from '../console/ConsolePages';
-import { ACCOUNT_PATTERN, DEMO_PASSWORD } from '../console/consoleMap';
+import { ACCOUNT_PATTERN } from '../console/consoleMap';
 import { useLocale } from '../i18n/localeContext';
 import { dateTimeOf } from '../i18n/locales';
 import content from '../ui/content.module.css';

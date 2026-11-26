@@ -2,11 +2,11 @@ import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { ApiError } from '../api/client';
-import { useSignIn } from '../api/consoleClient';
+import { DEMO_ACCOUNTS, DEMO_PASSWORD, useSignIn } from '../api/consoleClient';
 import { useLocalizedNavigate } from '../i18n/localeContext';
 import { BrandMark } from '../site/SiteLayout';
 import { SubmitButton, TextField } from '../ui/controls';
-import { ACCOUNT_PATTERN, DEMO_ACCOUNTS, DEMO_PASSWORD, nextPathOf } from './consoleMap';
+import { ACCOUNT_PATTERN, nextPathOf } from './consoleMap';
 import styles from './SignInPage.module.css';
 
 /** The console's door: an account and its password, then back to the page the reader was opening. */

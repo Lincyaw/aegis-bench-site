@@ -20,7 +20,7 @@ import styles from './ConsoleLayout.module.css';
 
 /**
  * Every console page but the sign-in page: the bar along the top, the sidebar of the benchmark being read and the page.
- * A browser that is not signed in goes to the sign-in page, which brings it back here.
+ * A browser that has signed out goes to the sign-in page, which brings it back here.
  */
 export function ConsoleLayout() {
   const session = useConsoleSession();

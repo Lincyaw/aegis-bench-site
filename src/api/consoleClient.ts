@@ -20,11 +20,28 @@ export function startSession(queryClient: QueryClient, session: SessionState) {
   queryClient.setQueryData(SESSION_QUERY_KEY, session);
 }
 
-/** Who is signed in on this browser; the console's layout reads it before anything else. */
+/** The demo's mock server lets every member in with this password, and the sign-in page says so. */
+export const DEMO_PASSWORD = 'demo';
+
+/** The accounts the sign-in page suggests for the demo, one per role; the first is the one the demo opens with. */
+export const DEMO_ACCOUNTS: { account: string; role: Role }[] = [
+  { account: 'lin.fang', role: 'admin' },
+  { account: 'zhou.yu', role: 'editor' },
+  { account: 'he.ming', role: 'viewer' },
+];
+
+/**
+ * Who is signed in on this browser; the console's layout reads it before anything else. The demo opens without asking:
+ * a browser nobody is signed in on is signed in as the first demo account, and one that signs out stays out until the
+ * page is loaded again.
+ */
 export function useConsoleSession() {
   return useSuspenseQuery({
     queryKey: SESSION_QUERY_KEY,
-    queryFn: () => responseBody(api.GET('/console/session')),
+    queryFn: async () => {
+      const session = await responseBody(api.GET('/console/session'));
+      return session.user ? session : responseBody(api.POST('/console/session', { body: { account: DEMO_ACCOUNTS[0].account, password: DEMO_PASSWORD } }));
+    },
   }).data;
 }
 
