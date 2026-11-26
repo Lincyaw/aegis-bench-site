@@ -1,0 +1,4 @@
+.mark { display: block; flex: none; }
+.mark path { fill: none; stroke-width: 1.6; stroke-linejoin: round; }
+.mark path:first-child { stroke: var(--brand-dev); }
+.mark path:last-child { stroke: var(--brand-ops); }

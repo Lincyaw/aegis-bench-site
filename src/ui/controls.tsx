@@ -160,6 +160,19 @@ export function ChevronIcon() {
   return <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M3 4.5 6 7.5 9 4.5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>;
 }
 
+export function ThemeIcon() {
+  return (
+    <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+      <circle cx="8" cy="8" r="6.25" fill="none" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M8 1.75a6.25 6.25 0 0 1 0 12.5z" fill="currentColor" />
+    </svg>
+  );
+}
+
+export function MenuIcon() {
+  return <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M2 4.5h12M2 8h12M2 11.5h12" stroke="currentColor" strokeWidth="1.5" /></svg>;
+}
+
 /** A pill that opens a glass list of choices; the chosen one carries a check. `className` lets the parent place it. */
 export function Select<T extends string>({ label, choices, value, onChange, className }: { label: string; choices: readonly Choice<T>[]; value: T; onChange: (value: T) => void; className?: string }) {
   return (

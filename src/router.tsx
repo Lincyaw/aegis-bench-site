@@ -1,37 +1,37 @@
 import { createBrowserRouter, type RouteObject } from 'react-router-dom';
-import { AnalysisPage } from './analysis/AnalysisPage';
-import { HuntPage } from './analysis/HuntPage';
-import { BenchmarkOverviewPage } from './benchmarks/BenchmarkOverviewPage';
-import { BenchmarkPage } from './benchmarks/BenchmarkPage';
-import { ConsoleLayout } from './console/ConsoleLayout';
-import { ConsoleError, ConsoleNotFound } from './console/ConsolePages';
-import { SignInPage } from './console/SignInPage';
-import { BenchmarksPage } from './benchmarks/BenchmarksPage';
-import { CollectionListPage } from './collections/CollectionListPage';
-import { CollectionPage } from './collections/CollectionPage';
 import { LocaleRoot } from './i18n/LocaleRouting';
 import { LOCALES, LOCALE_PREFIX } from './i18n/locales';
-import { LeaderboardPage } from './leaderboard/LeaderboardPage';
-import { MembersPage } from './members/MembersPage';
-import { ModelDetailPage } from './models/ModelDetailPage';
-import { ModelListPage } from './models/ModelListPage';
-import { ModelPage } from './models/ModelPage';
-import { BenchmarkReleasesPage } from './releases/BenchmarkReleasesPage';
-import { ReleaseLogPage } from './releases/ReleaseLogPage';
-import { ReleasePage } from './releases/ReleasePage';
-import { ReportListPage } from './reports/ReportListPage';
-import { ReportPage, ReportsPage } from './reports/ReportsPage';
-import { RunDetailPage } from './runs/RunDetailPage';
-import { RunListPage } from './runs/RunListPage';
-import { RunRecordsPage } from './runs/RunRecordsPage';
-import { SettingsPage } from './settings/SettingsPage';
-import { SiteLayout, type RouteHandle } from './site/SiteLayout';
-import { PageError, PendingPage } from './site/SitePages';
-import { TaskDetailPage } from './tasks/TaskDetailPage';
-import { TaskFilesPage } from './tasks/TaskFilesPage';
-import { TaskListPage } from './tasks/TaskListPage';
-import { ChangelogPage } from './workspace/ChangelogPage';
-import { WorkbenchPage } from './workspace/WorkbenchPage';
+import { ConsoleLayout } from './pages/console/ConsoleLayout';
+import { ConsoleError, ConsoleNotFound } from './pages/console/ConsolePages';
+import { SignInPage } from './pages/console/SignInPage';
+import { AnalysisPage } from './pages/console/analysis/AnalysisPage';
+import { HuntPage } from './pages/console/analysis/HuntPage';
+import { CollectionListPage } from './pages/console/collections/CollectionListPage';
+import { CollectionPage } from './pages/console/collections/CollectionPage';
+import { MembersPage } from './pages/console/members/MembersPage';
+import { ModelDetailPage } from './pages/console/models/ModelDetailPage';
+import { ModelListPage } from './pages/console/models/ModelListPage';
+import { BenchmarkOverviewPage } from './pages/console/overview/BenchmarkOverviewPage';
+import { BenchmarkReleasesPage } from './pages/console/releases/BenchmarkReleasesPage';
+import { ReleaseLogPage } from './pages/console/releases/ReleaseLogPage';
+import { ReleasePage } from './pages/console/releases/ReleasePage';
+import { ReportListPage } from './pages/console/reports/ReportListPage';
+import { RunDetailPage } from './pages/console/runs/RunDetailPage';
+import { RunListPage } from './pages/console/runs/RunListPage';
+import { SettingsPage } from './pages/console/settings/SettingsPage';
+import { TaskDetailPage } from './pages/console/tasks/TaskDetailPage';
+import { TaskListPage } from './pages/console/tasks/TaskListPage';
+import { ChangelogPage } from './pages/console/workspace/ChangelogPage';
+import { WorkbenchPage } from './pages/console/workspace/WorkbenchPage';
+import { SiteLayout, type RouteHandle } from './pages/site/SiteLayout';
+import { PageError, PendingPage } from './pages/site/SitePages';
+import { BenchmarkPage } from './pages/site/benchmarks/BenchmarkPage';
+import { BenchmarksPage } from './pages/site/benchmarks/BenchmarksPage';
+import { LeaderboardPage } from './pages/site/leaderboard/LeaderboardPage';
+import { ModelPage } from './pages/site/models/ModelPage';
+import { ReportPage, ReportsPage } from './pages/site/reports/ReportsPage';
+import { RunRecordsPage } from './pages/site/runs/RunRecordsPage';
+import { TaskFilesPage } from './pages/site/tasks/TaskFilesPage';
 
 /** The site's pages, built afresh for each locale's root so that no route object has two parents. */
 export function sitePages(): RouteObject[] {
@@ -39,7 +39,7 @@ export function sitePages(): RouteObject[] {
     {
       index: true,
       // The landing page brings three.js and anime.js, so it loads on its own.
-      lazy: async () => ({ Component: (await import('./landing/LandingPage')).LandingPage }),
+      lazy: async () => ({ Component: (await import('./pages/site/landing/LandingPage')).LandingPage }),
       hydrateFallbackElement: null,
     },
     {
@@ -84,7 +84,7 @@ export function sitePages(): RouteObject[] {
           { path: 'benchmarks/:benchmarkId/collections/:tag', element: <CollectionPage /> },
           { path: 'benchmarks/:benchmarkId/reports', element: <ReportListPage /> },
           // The editor compiles MDX in the browser, so it loads on its own.
-          { path: 'benchmarks/:benchmarkId/reports/:reportId', lazy: async () => ({ Component: (await import('./reports/ReportEditorPage')).ReportEditorPage }) },
+          { path: 'benchmarks/:benchmarkId/reports/:reportId', lazy: async () => ({ Component: (await import('./pages/console/reports/ReportEditorPage')).ReportEditorPage }) },
           { path: 'benchmarks/:benchmarkId/releases', element: <BenchmarkReleasesPage /> },
           { path: 'benchmarks/:benchmarkId/releases/:releaseId', element: <ReleasePage /> },
           { path: '*', element: <ConsoleNotFound /> },
