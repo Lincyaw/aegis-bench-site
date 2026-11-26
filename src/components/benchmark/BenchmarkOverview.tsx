@@ -1,5 +1,6 @@
 import { clsx } from 'clsx';
 import { useTranslation } from 'react-i18next';
+import { combinationKey } from '../../api/constraints';
 import type { EntrantResult, PendingWork, RunRow } from '../../api/types';
 import { LocaleLink } from '../../i18n/LocaleRouting';
 import { useLocale } from '../../i18n/localeContext';
@@ -28,7 +29,7 @@ export function EntrantTable({ benchmarkId, entrants }: { benchmarkId: string; e
         <span role="columnheader">{t('console.overview.column.steps')}</span>
       </div>
       {entrants.map(({ model, harness, result }) => (
-        <div key={`${model.id}-${harness.id}`} className={clsx(table.row, table.link)} role="row">
+        <div key={combinationKey(model.id, harness.id)} className={clsx(table.row, table.link)} role="row">
           <span role="cell" className={styles.entrant}>
             <LocaleLink className={table.primary} to={consoleModelPath(benchmarkId, model.id, { harness: harness.id })}><ModelLabel model={model} /></LocaleLink>
             <span className="t-small c-muted">{harness.name}</span>

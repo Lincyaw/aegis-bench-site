@@ -1,9 +1,17 @@
 import openapi from './openapi.json';
 
 /*
- * The bounds and forms the spec declares for what a form sends, read from the OpenAPI document, so a form checks them
- * before asking the API and the two never disagree.
+ * The bounds and forms the spec declares for what the site sends, read from the OpenAPI document where it states them,
+ * so the site checks and builds them as the API does and the two never disagree.
  */
+
+/**
+ * The key the spec names a model and harness pair by, "<model id>-<harness id>": a combination's identity in the API's
+ * paths and queries and in the site's addresses.
+ */
+export function combinationKey(modelId: string, harnessId: string): string {
+  return `${modelId}-${harnessId}`;
+}
 
 /** The form an account name takes; the sign-in form checks it. */
 export const ACCOUNT_PATTERN = openapi.components.schemas['Console.AccountName'].pattern;

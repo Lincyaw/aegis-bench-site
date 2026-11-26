@@ -1,8 +1,9 @@
 import { clsx } from 'clsx';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { combinationKey } from '../../api/constraints';
 import type { Combination, RunRef, TaskPage } from '../../api/types';
-import { EVERY_OUTCOME, TASK_MODES, combinationKey, withMode, type OutcomeFilter, type RunRecordsQuery } from '../../routes/runRecords';
+import { EVERY_OUTCOME, TASK_MODES, withMode, type OutcomeFilter, type RunRecordsQuery } from '../../routes/runRecords';
 import { MoreButton, SegmentedControl } from '../../ui/controls';
 import controls from '../../ui/controls.module.css';
 import { CombinationLabel } from '../model/ModelBadge';
@@ -30,6 +31,12 @@ export function PaneMore({ label, loading, onClick }: { label: string; loading: 
   return <MoreButton className={styles.more} label={label} loading={loading} onClick={onClick} />;
 }
 
+/** A pass rate as the run records write it, or that no run counts when there is none. */
+export function PassRateText({ rate }: { rate: number | undefined }) {
+  const { t } = useTranslation();
+  return rate === undefined ? t('runs.noCountedRun') : t('runs.passRate', { rate: Math.round(rate * 100) });
+}
+
 export function TaskColumn({ tasks, currentTask, onTask, loadingMore, onMore }: { tasks: TaskPage; currentTask: string | undefined; onTask: (task: string) => void; loadingMore: boolean; onMore: () => void }) {
   const { t } = useTranslation();
   return (
@@ -39,7 +46,7 @@ export function TaskColumn({ tasks, currentTask, onTask, loadingMore, onMore }: 
         {tasks.items.map(task => (
           <li key={task.id}>
             <button type="button" className={styles.task} onClick={() => onTask(task.id)} aria-current={task.id === currentTask ? 'true' : undefined}>
-              <span className={styles.taskTop}><span className="t-mono c-faint">{task.id}</span><span className="t-micro c-faint">{t('runs.passRate', { rate: Math.round(task.passRate * 100) })}</span></span>
+              <span className={styles.taskTop}><span className="t-mono c-faint">{task.id}</span><span className="t-micro c-faint"><PassRateText rate={task.passRate} /></span></span>
               <span className="t-small">{task.title}</span>
             </button>
           </li>

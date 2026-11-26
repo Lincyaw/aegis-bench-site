@@ -1,5 +1,6 @@
 import { consoleTaskOrderValues } from '../api/schema';
 import type { TaskOrder } from '../api/types';
+import { pathWithSearch, searchOf, type AddressTable } from './address';
 import { consoleBenchmarkPath } from './console';
 import { TASK_ORDER_DEFAULT } from './consoleTasks';
 
@@ -21,12 +22,15 @@ export interface CollectionView {
   offset: number;
 }
 
+/** Every parameter a collection's page keeps in its address, with the value the address leaves unsaid. */
+export const COLLECTION_PARAMS: AddressTable<CollectionView> = { tab: 'matrix', chart: 'ranking', order: TASK_ORDER_DEFAULT, offset: 0 };
+
 /** The view an address names; a value outside its set fails the page rather than showing nothing. */
 export function parseCollectionView(params: URLSearchParams): CollectionView {
-  const tab = params.get('tab') ?? 'matrix';
-  const chart = params.get('chart') ?? 'ranking';
-  const order = params.get('order') ?? TASK_ORDER_DEFAULT;
-  const offset = Number(params.get('offset') ?? 0);
+  const tab = params.get('tab') ?? COLLECTION_PARAMS.tab;
+  const chart = params.get('chart') ?? COLLECTION_PARAMS.chart;
+  const order = params.get('order') ?? COLLECTION_PARAMS.order;
+  const offset = Number(params.get('offset') ?? COLLECTION_PARAMS.offset);
   if (!COLLECTION_TABS.includes(tab as CollectionTab)) {
     throw new Error(`a collection has no tab ${tab}`);
   }
@@ -42,29 +46,10 @@ export function parseCollectionView(params: URLSearchParams): CollectionView {
   return { tab: tab as CollectionTab, chart: chart as CollectionChart, order: order as TaskOrder, offset };
 }
 
-/** A view's address parameters, leaving out the defaults. */
-export function collectionSearch(view: Partial<CollectionView>): URLSearchParams {
-  const params = new URLSearchParams();
-  if (view.tab && view.tab !== 'matrix') {
-    params.set('tab', view.tab);
-  }
-  if (view.chart && view.chart !== 'ranking') {
-    params.set('chart', view.chart);
-  }
-  if (view.order && view.order !== TASK_ORDER_DEFAULT) {
-    params.set('order', view.order);
-  }
-  if (view.offset) {
-    params.set('offset', String(view.offset));
-  }
-  return params;
-}
-
 export function collectionsPath(benchmarkId: string): string {
   return `${consoleBenchmarkPath(benchmarkId)}/collections`;
 }
 
 export function collectionPath(benchmarkId: string, tag: string, view: Partial<CollectionView> = {}): string {
-  const search = collectionSearch(view).toString();
-  return `${collectionsPath(benchmarkId)}/${encodeURIComponent(tag)}${search ? `?${search}` : ''}`;
+  return pathWithSearch(`${collectionsPath(benchmarkId)}/${encodeURIComponent(tag)}`, searchOf(COLLECTION_PARAMS, view));
 }

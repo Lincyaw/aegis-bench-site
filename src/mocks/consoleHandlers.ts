@@ -9,13 +9,13 @@ import {
   tagCountsOf, taskEntrantRunsOf, taskGradingOf, taskRowOf,
 } from './consoleTasks';
 import { DEFAULT_HUNT_TRIAL_PAGE_SIZE, filteredTrialsOf, huntById, huntOf, huntTrialOf, runHuntFindingsOf } from './hunts';
-import { http, localeOf, pageOf, writtenIn } from './protocol';
+import { combinationScopeOf, http, localeOf, pageOf, writtenIn } from './protocol';
 import { openedIndexes } from './records';
 import { contentProblemOf, createDraft, discardDraft, draftOf, makeCurrent, releaseById, releaseDetailOf, releaseSummaryOf, releasesOf, restoreRelease, updateDraft } from './releases';
 import { mayEdit, refusalFor } from './members';
 import { replayOf } from './replays';
 import { releaseOverview } from './workspace';
-import { consoleBenchmarkOf, overviewOf } from './results';
+import { consoleBenchmarkOf, overviewOf, rankingIn, unknownScopeMessage } from './results';
 import { DEFAULT_ENTRY_PAGE_SIZE, taskFileOf } from './taskFiles';
 import { DEFAULT_TRAJECTORY_PAGE_SIZE, trajectoryOf } from './trajectories';
 import { SIGN_IN_REQUIRED, sessionUserOf } from './session';
@@ -56,7 +56,7 @@ export const consoleHandlers = [
     return response(200).json({ ...page, items: page.items.map(task => taskRowOf(params.benchmarkId, task, locale)), tags: tagCountsOf(params.benchmarkId) }, writtenIn(locale));
   }),
 
-  http.get('/console/benchmarks/{benchmarkId}/tasks/{taskId}', async ({ cookies, params, request, response }) => {
+  http.get('/console/benchmarks/{benchmarkId}/tasks/{taskId}', async ({ cookies, params, query, request, response }) => {
     if (!sessionUserOf(cookies)) {
       return response(401).json(SIGN_IN_REQUIRED);
     }
@@ -64,9 +64,13 @@ export const consoleHandlers = [
     if (!task) {
       return response(404).json({ message: `no task ${params.taskId} in ${params.benchmarkId}` });
     }
+    const scope = combinationScopeOf(query);
+    if (rankingIn(params.benchmarkId, scope).length === 0) {
+      return response(404).json({ message: unknownScopeMessage(params.benchmarkId, scope) });
+    }
     const locale = localeOf(request);
     await delay(80);
-    return response(200).json(consoleTaskOf(params.benchmarkId, task, locale), writtenIn(locale));
+    return response(200).json(consoleTaskOf(params.benchmarkId, task, scope, locale), writtenIn(locale));
   }),
 
   http.get('/console/benchmarks/{benchmarkId}/tasks/{taskId}/grading', async ({ cookies, params, response }) => {
@@ -85,7 +89,7 @@ export const consoleHandlers = [
     return task ? response(200).json(await referenceFilesOf(params.benchmarkId, task)) : response(404).json({ message: `no task ${params.taskId} in ${params.benchmarkId}` });
   }),
 
-  http.get('/console/benchmarks/{benchmarkId}/tasks/{taskId}/results', async ({ cookies, params, request, response }) => {
+  http.get('/console/benchmarks/{benchmarkId}/tasks/{taskId}/results', async ({ cookies, params, query, request, response }) => {
     if (!sessionUserOf(cookies)) {
       return response(401).json(SIGN_IN_REQUIRED);
     }
@@ -93,9 +97,13 @@ export const consoleHandlers = [
     if (!task) {
       return response(404).json({ message: `no task ${params.taskId} in ${params.benchmarkId}` });
     }
+    const scope = combinationScopeOf(query);
+    if (rankingIn(params.benchmarkId, scope).length === 0) {
+      return response(404).json({ message: unknownScopeMessage(params.benchmarkId, scope) });
+    }
     const locale = localeOf(request);
     await delay(80);
-    return response(200).json(taskEntrantRunsOf(params.benchmarkId, task, locale), writtenIn(locale));
+    return response(200).json(taskEntrantRunsOf(params.benchmarkId, task, scope, locale), writtenIn(locale));
   }),
 
   http.get('/console/benchmarks/{benchmarkId}/tasks/{taskId}/comparison', async ({ cookies, params, query, request, response }) => {
@@ -111,7 +119,7 @@ export const consoleHandlers = [
     return comparison ? response(200).json(comparison, writtenIn(locale)) : response(404).json({ message: `not every run compared is a run of ${task.id}` });
   }),
 
-  http.get('/console/benchmarks/{benchmarkId}/tasks/{taskId}/check-results', async ({ cookies, params, request, response }) => {
+  http.get('/console/benchmarks/{benchmarkId}/tasks/{taskId}/check-results', async ({ cookies, params, query, request, response }) => {
     if (!sessionUserOf(cookies)) {
       return response(401).json(SIGN_IN_REQUIRED);
     }
@@ -119,9 +127,13 @@ export const consoleHandlers = [
     if (!task) {
       return response(404).json({ message: `no task ${params.taskId} in ${params.benchmarkId}` });
     }
+    const scope = combinationScopeOf(query);
+    if (rankingIn(params.benchmarkId, scope).length === 0) {
+      return response(404).json({ message: unknownScopeMessage(params.benchmarkId, scope) });
+    }
     const locale = localeOf(request);
     await delay(80);
-    return response(200).json(checkResultsOf(params.benchmarkId, task, locale), writtenIn(locale));
+    return response(200).json(checkResultsOf(params.benchmarkId, task, scope, locale), writtenIn(locale));
   }),
 
   http.get('/console/benchmarks/{benchmarkId}/tasks/{taskId}/revisions', ({ cookies, params, response }) => {
@@ -407,8 +419,16 @@ export const consoleHandlers = [
     if (!hasBenchmark(params.benchmarkId)) {
       return response(404).json({ message: `no benchmark ${params.benchmarkId}` });
     }
+    const task = query.get('task') ?? '';
+    if (task && !namedTaskOf(params.benchmarkId, task)) {
+      return response(404).json({ message: `no task ${task} in ${params.benchmarkId}` });
+    }
+    const scope = combinationScopeOf(query);
+    if (rankingIn(params.benchmarkId, scope).length === 0) {
+      return response(404).json({ message: unknownScopeMessage(params.benchmarkId, scope) });
+    }
     const locale = localeOf(request);
-    const filter = { q: (query.get('q') ?? '').trim(), model: query.get('model') ?? '', combination: query.get('combination') ?? '', outcome: query.get('outcome') ?? undefined, review: query.get('review') ?? undefined };
+    const filter = { q: (query.get('q') ?? '').trim(), task, ...scope, outcome: query.get('outcome') ?? undefined, review: query.get('review') ?? undefined };
     const page = pageOf(filteredRunsOf(params.benchmarkId, filter), query, DEFAULT_RUN_PAGE_SIZE);
     await delay(100);
     return response(200).json({ ...page, items: page.items.map(fact => runRowOf(params.benchmarkId, fact, locale)) }, writtenIn(locale));

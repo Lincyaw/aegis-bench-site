@@ -1,9 +1,15 @@
 import type { ConsoleBenchmark } from '../../api/types';
 import type { NavIcon } from '../../components/shell/NavIcons';
 import { CHANGELOG_PATH, CONSOLE_PATH, MEMBERS_PATH, RELEASE_LOG_PATH, SETTINGS_PATH } from '../../routes/console';
+import { benchmarkPath } from '../../routes/site';
 
 /** The sidebar's choice for the workspace, beside the benchmarks; no benchmark id is spelt this way. */
 export const WORKSPACE_CHOICE = 'workspace';
+
+/** Where the console's link to the public site leads: the public page of the benchmark being read, or the public home. */
+export function publicSitePathOf(benchmarkId: string | undefined): string {
+  return benchmarkId ? benchmarkPath(benchmarkId) : '/';
+}
 
 /** A page of the workspace in the sidebar; the label is a message key. */
 export interface WorkspaceSection {

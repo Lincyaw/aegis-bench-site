@@ -1,5 +1,6 @@
 import type { LeaderboardView } from '../api/types';
 import { leaderboardViewValues } from '../api/schema';
+import { pathWithSearch, searchOf, type AddressTable } from './address';
 
 export const BENCHMARKS_PATH = '/benchmarks';
 export const LEADERBOARD_PATH = '/leaderboard';
@@ -27,24 +28,21 @@ export function stagePath(stageId: string): string {
 /** What a leaderboard address names: the benchmark it opens on, its view, and the model whose rows it marks. */
 export interface LeaderboardQuery {
   bench?: string;
-  view?: string;
+  view: LeaderboardView;
   model?: string;
 }
 
-/** The address search of a leaderboard state; what it leaves unnamed is left out. */
-export function leaderboardSearch(query: LeaderboardQuery): URLSearchParams {
-  return new URLSearchParams(Object.entries(query).filter((entry): entry is [string, string] => entry[1] !== undefined));
-}
+/** Every parameter the leaderboard keeps in its address, with the value the address leaves unsaid. */
+export const LEADERBOARD_PARAMS: AddressTable<LeaderboardQuery> = { bench: undefined, view: 'combination', model: undefined };
 
 /** The leaderboard, opened on one benchmark and marking one model's rows when given. */
-export function leaderboardPath(query: LeaderboardQuery = {}): string {
-  const search = leaderboardSearch(query).toString();
-  return search ? `${LEADERBOARD_PATH}?${search}` : LEADERBOARD_PATH;
+export function leaderboardPath(query: Partial<LeaderboardQuery> = {}): string {
+  return pathWithSearch(LEADERBOARD_PATH, searchOf(LEADERBOARD_PARAMS, query));
 }
 
 /** The view a leaderboard address names; an address naming no view shows the combinations. */
 export function parseLeaderboardView(value: string | null): LeaderboardView {
-  const view = value ?? 'combination';
+  const view = value ?? LEADERBOARD_PARAMS.view;
   if (!leaderboardViewValues.includes(view as LeaderboardView)) {
     throw new Error(`no leaderboard view ${view}`);
   }
@@ -65,14 +63,22 @@ export function reportPath(slug: string): string {
 /** The file a task's page opens on: the task text the model receives. */
 export const INSTRUCTION_PATH = 'instruction.md';
 
-/** The search parameter that names the open file. */
-export const FILE_PARAM = 'path';
+/** What a task's files page keeps in its address: the open file. */
+export interface TaskFilesView {
+  path: string;
+}
+
+/** The task's files page opens on the task text unless its address names another file. */
+export const TASK_FILES_PARAMS: AddressTable<TaskFilesView> = { path: INSTRUCTION_PATH };
+
+export function parseTaskFilesView(params: URLSearchParams): TaskFilesView {
+  return { path: params.get('path') ?? TASK_FILES_PARAMS.path };
+}
 
 /** Entries a directory shows at first and adds each time the reader asks for more. */
 export const ENTRY_PAGE_SIZE = 50;
 
 /** A task's files, opened on one file when given. */
 export function taskFilesPath(benchmarkId: string, taskId: string, file?: string): string {
-  const path = `${BENCHMARKS_PATH}/${benchmarkId}/tasks/${taskId}`;
-  return file ? `${path}?${new URLSearchParams({ [FILE_PARAM]: file }).toString()}` : path;
+  return pathWithSearch(`${BENCHMARKS_PATH}/${benchmarkId}/tasks/${taskId}`, searchOf(TASK_FILES_PARAMS, { path: file }));
 }

@@ -1,0 +1,14 @@
+/* One row per event; an opened event becomes a panel holding its whole record, as a trajectory step does. */
+.events { display: grid; grid-template-columns: minmax(0, 1fr); border-top: var(--rule-hairline); }
+.event { border-bottom: var(--rule-hairline); }
+.event:has(> .head[aria-expanded="true"]) { margin: var(--space-2) 0; border: var(--rule-hairline); border-radius: var(--radius-md); background: var(--bg-panel); }
+.head { display: flex; align-items: baseline; gap: var(--space-2); width: 100%; padding: var(--space-2) var(--space-3); text-align: left; transition: background-color var(--duration-base); }
+.head:hover { background: var(--bg-muted); }
+.head[aria-expanded="true"]:hover { background: none; }
+.head > :not(.excerpt) { flex: none; }
+.index { min-width: var(--space-8); text-align: right; }
+/* The excerpt is cut to the width the row leaves it, so its length never widens the row. */
+.excerpt { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; contain: inline-size; }
+.failed .excerpt { color: var(--accent-warning); }
+.record { display: grid; gap: var(--space-3); padding: 0 var(--space-3) var(--space-4); }
+.record > button { justify-self: start; }

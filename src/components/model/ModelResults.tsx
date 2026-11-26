@@ -42,7 +42,7 @@ export function HarnessTable({ benchmarkId, modelId, query, results }: { benchma
 }
 
 /** The model's runs on each task, grouped by harness; each dot opens its run. */
-export function ModelTaskTable({ benchmarkId, modelId, harness, rows }: { benchmarkId: string; modelId: string; harness: string; rows: ModelTaskRow[] }) {
+export function ModelTaskTable({ benchmarkId, modelId, harness, rows }: { benchmarkId: string; modelId: string; harness: string | undefined; rows: ModelTaskRow[] }) {
   const { t } = useTranslation();
   return (
     <div className={clsx(table.table, styles.tasks)} role="table" aria-label={t('console.model.tasks')}>
@@ -54,7 +54,7 @@ export function ModelTaskTable({ benchmarkId, modelId, harness, rows }: { benchm
       </div>
       {rows.map(row => (
         <div key={row.task.id} className={table.row} role="row">
-          <span role="cell" className={styles.task}><LocaleLink to={consoleTaskPath(benchmarkId, row.task.id, { tab: 'runs', model: modelId, harness: harness || undefined })} className="t-label">{row.task.title}</LocaleLink><span className="t-mono c-faint">{row.task.id}</span></span>
+          <span role="cell" className={styles.task}><LocaleLink to={consoleTaskPath(benchmarkId, row.task.id, { tab: 'runs', model: modelId, harness })} className="t-label">{row.task.title}</LocaleLink><span className="t-mono c-faint">{row.task.id}</span></span>
           <span role="cell" className={styles.runGroups}>
             {[...Map.groupBy(row.runs, run => run.harness.id).values()].map(runs => (
               <span key={runs[0].harness.id} className={styles.runGroup}>

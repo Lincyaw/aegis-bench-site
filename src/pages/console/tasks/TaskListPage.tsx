@@ -5,8 +5,9 @@ import { useConsoleBenchmark, useConsoleTaskPage } from '../../../api/consoleCli
 import type { ConsoleTaskQuery } from '../../../api/types';
 import { ConsoleHeader } from '../../../components/shell/ConsoleHeader';
 import { TaskFilters, TaskTable } from '../../../components/task/TaskTable';
+import { searchOf } from '../../../routes/address';
 import { consoleBenchmarkPath } from '../../../routes/console';
-import { TASK_LIST_PAGE_SIZE, parseTaskQuery, taskQuerySearch } from '../../../routes/consoleTasks';
+import { TASK_LIST_PAGE_SIZE, TASK_QUERY_PARAMS, parseTaskQuery } from '../../../routes/consoleTasks';
 import { Pager } from '../../../ui/navigation';
 import styles from './TaskListPage.module.css';
 
@@ -19,7 +20,7 @@ export function TaskListPage() {
   const query = parseTaskQuery(params);
   // The page in view stays until the next one arrives.
   const page = useConsoleTaskPage(benchmark.id, parseTaskQuery(new URLSearchParams(useDeferredValue(params.toString()))), TASK_LIST_PAGE_SIZE);
-  const update = (next: Partial<ConsoleTaskQuery>) => setParams(taskQuerySearch({ ...query, offset: 0, ...next }), { replace: true, preventScrollReset: true });
+  const update = (next: Partial<ConsoleTaskQuery>) => setParams(searchOf(TASK_QUERY_PARAMS, { ...query, offset: 0, ...next }), { replace: true, preventScrollReset: true });
   const last = Math.min(query.offset + TASK_LIST_PAGE_SIZE, page.total);
   return (
     <div className={styles.page} data-half={benchmark.stage.half}>

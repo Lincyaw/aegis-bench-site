@@ -14,9 +14,10 @@ import { ConsoleHeader } from '../../../components/shell/ConsoleHeader';
 import { TrajectoryView } from '../../../components/trajectory/TrajectoryView';
 import { useLocale } from '../../../i18n/localeContext';
 import { dateTimeOf, groupedNumber } from '../../../i18n/locales';
+import { searchOf } from '../../../routes/address';
 import { consoleBenchmarkPath } from '../../../routes/console';
 import { consoleRunReplayPath } from '../../../routes/consoleReplay';
-import { CONSOLE_RUN_TABS, consoleRunsPath, parseConsoleRunView, runQuerySearch, type ConsoleRunView } from '../../../routes/consoleRuns';
+import { CONSOLE_RUN_TABS, RUN_VIEW_PARAMS, consoleRunsPath, parseConsoleRunView, type ConsoleRunView } from '../../../routes/consoleRuns';
 import { consoleTaskPath } from '../../../routes/consoleTasks';
 import { defaultRunTab } from '../../../routes/runRecords';
 import { FactList, Loading } from '../../../ui/content';
@@ -39,7 +40,7 @@ export function RunDetailPage() {
   const benchmark = useConsoleBenchmark(benchmarkId);
   const run = useConsoleRun(runId);
   const view = parseConsoleRunView(params, defaultRunTab(run));
-  const onView = (next: ConsoleRunView) => setParams(runQuerySearch(next), { replace: true, preventScrollReset: true });
+  const onView = (next: ConsoleRunView) => setParams(searchOf(RUN_VIEW_PARAMS, next), { replace: true, preventScrollReset: true });
   const counts: Partial<Record<ConsoleRunView['tab'], number>> = { grading: run.grading.total, failure: run.failure?.failedChecks.length, trajectory: run.metrics.steps };
   return (
     <div className={styles.page} data-half={benchmark.stage.half}>

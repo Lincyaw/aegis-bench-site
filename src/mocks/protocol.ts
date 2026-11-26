@@ -4,11 +4,12 @@ import { createOpenApiHttp } from 'openapi-msw';
 import { localeValues, type paths } from '../api/schema';
 import { API_ROOT } from '../api/server';
 import type { HuggingFaceUnreachableAnswer, Locale } from '../api/types';
+import type { CombinationScope } from './catalog';
 import { HuggingFaceReadError } from './records';
 
 /*
- * The conventions every operation of the spec shares: handlers typed by its paths, the reader's language, the pages of
- * a list, and the answer when records kept on Hugging Face cannot be read.
+ * The conventions the operations of the spec share: handlers typed by its paths, the reader's language, the
+ * combinations a request keeps to, the pages of a list, and the answer when records kept on Hugging Face cannot be read.
  */
 
 /** The status the spec's HuggingFaceUnreachableError answers with. */
@@ -47,6 +48,11 @@ export function localeOf(request: Request): Locale {
 /** The headers of a response written in a locale. */
 export function writtenIn(locale: Locale) {
   return { headers: { 'Content-Language': locale } };
+}
+
+/** The combinations a request keeps to with the spec's CombinationScopeQuery parameters. */
+export function combinationScopeOf(query: { get(name: 'model' | 'harness'): string | null }): CombinationScope {
+  return { model: query.get('model') ?? '', harness: query.get('harness') ?? '' };
 }
 
 /** The page of a list a request asks for with the spec's PageQuery parameters, and the length of the whole list. */

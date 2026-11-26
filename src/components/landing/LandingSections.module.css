@@ -18,7 +18,8 @@
 
 .title { margin: var(--space-4) 0 var(--space-3); font: var(--type-hero); letter-spacing: -0.01em; }
 .heading { margin: var(--space-3) 0 var(--space-2); font: var(--type-section); }
-.nowrap { white-space: nowrap; }
+/* The title breaks between its halves; on a narrow screen a half wider than the line wraps within itself. */
+.titleHalf { white-space: nowrap; }
 .lead { max-width: 32em; margin: 0 auto var(--space-6); }
 .duty { margin-bottom: var(--space-6); }
 .actions { display: flex; flex-wrap: wrap; gap: var(--space-3); }
@@ -66,6 +67,7 @@
   .panel, .coveredPanel { align-items: flex-end; padding-bottom: 8vh; }
   .mapPanel { padding-top: calc(25vh + var(--space-64)); }
   .copy { margin-left: 0; }
+  .titleHalf { display: inline-block; white-space: normal; }
   .leaders li { grid-template-columns: var(--space-4) var(--space-5) minmax(0, 1fr) 5.75rem; }
   .bar { display: none; }
   .logos { grid-template-columns: repeat(2, minmax(0, 1fr)); }

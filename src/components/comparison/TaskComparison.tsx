@@ -2,7 +2,7 @@ import * as Popover from '@radix-ui/react-popover';
 import { clsx } from 'clsx';
 import { Suspense, useDeferredValue, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { MAX_COMPARED_RUNS } from '../../api/constraints';
+import { MAX_COMPARED_RUNS, combinationKey } from '../../api/constraints';
 import type { CombinationRuns, ComparedRun, TaskComparison } from '../../api/types';
 import {
   LIST_SEPARATOR, MAX_PANEL_TRAJECTORIES, closePanel, showInPanel, toggleComparedRun, toggleExpanded, toggleLabel, togglePanelRun, type ComparisonView,
@@ -103,7 +103,7 @@ export function RunPicker({ entrants, view, onView }: { entrants: CombinationRun
   return (
     <ul ref={list} className={styles.entrants} style={widths && { '--name-width': `${widths.name}px`, '--runs-width': `${widths.runs}px` } as CSSProperties}>
       {entrants.map(({ model, harness, runs }) => (
-        <li key={`${model.id}-${harness.id}`} className={styles.entrant}>
+        <li key={combinationKey(model.id, harness.id)} className={styles.entrant}>
           <span className={styles.entrantName}><CombinationLabel model={model} harness={harness} /></span>
           <span className={styles.chips}>
             {runs.map(run => {

@@ -8,7 +8,8 @@ import { LeaderboardTable } from '../../../components/leaderboard/LeaderboardTab
 import { HalfDot } from '../../../components/lifecycle/LifecycleMap';
 import { benchmarksAt } from '../../../components/lifecycle/stages';
 import { LocaleLink } from '../../../i18n/LocaleRouting';
-import { LEADERBOARD_PAGE_SIZE, benchmarkPath, leaderboardPath, leaderboardSearch, parseLeaderboardView, type LeaderboardQuery } from '../../../routes/site';
+import { searchOf } from '../../../routes/address';
+import { LEADERBOARD_PAGE_SIZE, LEADERBOARD_PARAMS, benchmarkPath, leaderboardPath, parseLeaderboardView, type LeaderboardQuery } from '../../../routes/site';
 import { Loading } from '../../../ui/content';
 import { MoreButton, ScopeChip, SegmentedControl } from '../../../ui/controls';
 import controls from '../../../ui/controls.module.css';
@@ -35,7 +36,7 @@ export function LeaderboardPage() {
   const view = parseLeaderboardView(search.get('view'));
   // The model a page sent the reader here for is the page's scope: its rows stay marked across benchmarks and views until the reader lets it go.
   const model = search.get('model') ?? undefined;
-  const choose = (next: LeaderboardQuery) => setSearch(leaderboardSearch({ bench: benchmark.id, view, model, ...next }), { replace: true, preventScrollReset: true });
+  const choose = (next: Partial<LeaderboardQuery>) => setSearch(searchOf(LEADERBOARD_PARAMS, { bench: benchmark.id, view, model, ...next }), { replace: true, preventScrollReset: true });
   return (
     <div className={clsx('page', styles.page)}>
       <header className={styles.head}>

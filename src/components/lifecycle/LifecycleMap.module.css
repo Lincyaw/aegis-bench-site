@@ -25,6 +25,7 @@
 .left { right: var(--space-3); text-align: right; }
 .right { left: var(--space-3); text-align: left; }
 .number { position: absolute; left: 0; top: 0; pointer-events: none; }
+.labelledNumber { display: none; }
 
 .hint {
   position: absolute;
@@ -64,3 +65,9 @@
 
 .dot { display: inline-block; flex: none; width: var(--size-dot); height: var(--size-dot); border-radius: var(--radius-full); background: var(--half-color); }
 .buildingDot { background: none; border: var(--size-stroke) dashed var(--text-faint); }
+
+/* A narrow map numbers every stage, and the list that follows it names them. */
+@media (max-width: 760px) {
+  .label { display: none; }
+  .labelledNumber { display: block; }
+}

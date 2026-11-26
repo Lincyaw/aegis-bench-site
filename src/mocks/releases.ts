@@ -1,5 +1,6 @@
-import type { PublishedRelease, ReleaseChanges, ReleaseContent, ReleaseDetail, ReleaseStatus, ReleaseSummary } from '../api/types';
+import type { EntrantKey, PublishedRelease, ReleaseChanges, ReleaseContent, ReleaseDetail, ReleaseStatus, ReleaseSummary } from '../api/types';
 import { benchmarkOf, benchmarkRef } from './benchmarks';
+import { combinationKey } from './catalog';
 import { openedIndexes } from './records';
 import { rankingOf } from './results';
 
@@ -63,7 +64,7 @@ export function releaseById(releaseId: string): ReleaseRecord | undefined {
 
 export function changesOf(release: ReleaseRecord): ReleaseChanges {
   const { content, baseline } = release;
-  const keyOf = (entrant: { modelId: string; harnessId: string }) => `${entrant.modelId}-${entrant.harnessId}`;
+  const keyOf = (entrant: EntrantKey) => combinationKey(entrant.modelId, entrant.harnessId);
   const entrants = new Set(content.entrants.map(keyOf));
   const before = new Set(baseline.entrants.map(keyOf));
   return {

@@ -32,7 +32,7 @@ export function Hero({ benchmarks }: { benchmarks: BenchmarkSummary[] }) {
           <span className={styles.live} />
           {t('landing.updated', { date: new Date(updatedOn), formatParams: { date: { dateStyle: 'long', timeZone: 'UTC' } } })}
         </p>
-        <h1 className={styles.title}><span className={styles.nowrap}>{t('landing.titleStart')}</span><wbr /><span className={styles.nowrap}>{t('landing.titleEnd')}</span></h1>
+        <h1 className={styles.title}><span className={styles.titleHalf}>{t('landing.titleStart')}</span><wbr /><span className={styles.titleHalf}>{t('landing.titleEnd')}</span></h1>
         <p className={clsx(styles.lead, 't-lead c-muted')}>{t('landing.lead')}</p>
         <div className={styles.actions}>
           <ButtonLink to={leaderboardPath()} variant="solid">{t('benchmarks.viewLeaderboard')}</ButtonLink>

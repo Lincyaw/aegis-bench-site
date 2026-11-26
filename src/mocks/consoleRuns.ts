@@ -1,6 +1,6 @@
 import type { ConsoleRunDetail, Locale, ReviewFilter, RunEvent, RunEventKind, RunFact, RunOutcome, RunRow, RunUsage, Trajectory } from '../api/types';
-import { benchmarkOf, taskRefOf } from './benchmarks';
-import { harnessRef, modelRef } from './catalog';
+import { benchmarkOf, matchesTaskSearch, taskRefOf } from './benchmarks';
+import { harnessRef, keepsTo, modelRef, type CombinationScope } from './catalog';
 import { openedIndexes, readRunFile, readTrajectory } from './records';
 import { runDetailOf } from './runs';
 
@@ -26,14 +26,11 @@ export function runRowOf(benchmarkId: string, fact: RunFact, locale: Locale): Ru
   };
 }
 
-export interface RunFilter {
+export interface RunFilter extends CombinationScope {
   q: string;
 
-  /** A model's id; every model when empty */
-  model: string;
-
-  /** A model and harness pair as "<model id>-<harness id>"; every pair when empty */
-  combination: string;
+  /** A task's id; every task when empty */
+  task: string;
 
   outcome?: RunOutcome;
   review?: ReviewFilter;
@@ -47,9 +44,9 @@ export function matchesReview(fact: RunFact, review: ReviewFilter): boolean {
 /** The runs a filter selects, newest first. */
 export function filteredRunsOf(benchmarkId: string, filter: RunFilter): RunFact[] {
   return benchmarkOf(benchmarkId).runs
-    .filter(fact => (!filter.q || fact.taskId.includes(filter.q) || taskRefOf(benchmarkId, fact.taskId).title.includes(filter.q))
-      && (!filter.model || fact.modelId === filter.model)
-      && (!filter.combination || `${fact.modelId}-${fact.harnessId}` === filter.combination)
+    .filter(fact => matchesTaskSearch(taskRefOf(benchmarkId, fact.taskId), filter.q)
+      && (!filter.task || fact.taskId === filter.task)
+      && keepsTo(filter, fact.modelId, fact.harnessId)
       && (!filter.outcome || fact.outcome === filter.outcome)
       && (!filter.review || matchesReview(fact, filter.review)))
     .toSorted((a, b) => b.finishedAt.localeCompare(a.finishedAt));

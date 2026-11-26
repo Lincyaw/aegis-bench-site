@@ -12,12 +12,11 @@ import { LocaleLink, LocaleNavigate } from '../../i18n/LocaleRouting';
 import { useLocale, useLocalizedNavigate } from '../../i18n/localeContext';
 import { groupedNumber, sitePath } from '../../i18n/locales';
 import { CONSOLE_PATH, benchmarkSectionOf, benchmarkSectionPath, signInPath } from '../../routes/console';
-import { benchmarkPath } from '../../routes/site';
 import { Loading } from '../../ui/content';
-import { Button, IconButton, MenuIcon, Select, ThemeIcon } from '../../ui/controls';
+import { Button, IconButton, LinkArrowIcon, MenuIcon, Select, ThemeIcon } from '../../ui/controls';
 import controls from '../../ui/controls.module.css';
 import { toggleTheme } from '../../ui/theme';
-import { BENCHMARK_NAV, WORKSPACE_CHOICE, WORKSPACE_NAV } from './consoleNav';
+import { BENCHMARK_NAV, WORKSPACE_CHOICE, WORKSPACE_NAV, publicSitePathOf } from './consoleNav';
 import styles from './ConsoleLayout.module.css';
 
 /** What a console route tells the layout: a tool page that fills the window takes the sidebar's width too, which then opens from the menu at every width. */
@@ -63,7 +62,7 @@ export function ConsoleBar({ user, benchmarkId, menuOpen, onMenu }: { user: Cons
         <span className="t-small c-muted">{t('console.name')}</span>
       </LocaleLink>
       <div className={styles.end}>
-        <LocaleLink className={clsx(controls.pill, controls.medium, controls.quiet, styles.publicSite)} to={benchmarkId ? benchmarkPath(benchmarkId) : '/'}>{t('console.publicSite')}</LocaleLink>
+        <LocaleLink className={clsx(controls.pill, controls.medium, controls.quiet, styles.publicSite)} to={publicSitePathOf(benchmarkId)}>{t('console.publicSite')}</LocaleLink>
         <LanguageSwitch path={sitePath(locale, pathname)} search={search} />
         <IconButton label={t('site.toggleTheme')} onClick={toggleTheme} variant="quiet"><ThemeIcon /></IconButton>
         <AccountMenu user={user} />
@@ -95,7 +94,8 @@ export function AccountMenu({ user }: { user: ConsoleUser }) {
 
 /**
  * The workspace or the benchmark being read, which another can replace in the same section, and its pages. On a narrow
- * screen it is a drawer, which any choice closes.
+ * screen it is a drawer, which any choice closes. Where the bar has no room for the link to the public site, the
+ * sidebar ends with it.
  */
 export function ConsoleSidebar({ benchmarkId, open, onNavigate }: { benchmarkId: string | undefined; open: boolean; onNavigate: () => void }) {
   const { t } = useTranslation();
@@ -150,6 +150,14 @@ export function ConsoleSidebar({ benchmarkId, open, onNavigate }: { benchmarkId:
           ))}
         </>
       )}
+      <ul className={clsx(styles.items, styles.publicSiteEntry)}>
+        <li>
+          <LocaleLink className={styles.item} to={publicSitePathOf(benchmarkId)} onClick={onNavigate}>
+            <LinkArrowIcon />
+            <span className="t-label">{t('console.publicSite')}</span>
+          </LocaleLink>
+        </li>
+      </ul>
     </nav>
   );
 }

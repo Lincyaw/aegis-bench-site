@@ -82,10 +82,18 @@ model ComparedRun {
   metrics: RunMetrics;
   passCount: int32;
 
-  /** The last submission, which the grading judged */
+  /** The last submission, which the grading judged, and how much it changed */
   submission: {
     attempt: int32;
     step: int32;
+
+    /** Files it changed */
+    changedFiles: int32;
+
+    /** Lines it added and deleted, over every file it changed */
+    additions: int32;
+
+    deletions: int32;
   };
 
   finalReply: {

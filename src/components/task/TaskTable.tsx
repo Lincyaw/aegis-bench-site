@@ -20,7 +20,7 @@ export function TaskFilters({ query, tags, onChange }: { query: ConsoleTaskQuery
     <div className={styles.filters} role="search" aria-label={t('console.tasks.filters')}>
       <SearchField label={t('console.tasks.search')} value={query.q} onChange={q => onChange({ q })} className={styles.search} />
       <Select
-        label={t('console.tasks.tagFilter')} value={query.tag || EVERY_CHOICE} onChange={tag => onChange({ tag: tag === EVERY_CHOICE ? '' : tag })}
+        label={t('console.tasks.tagFilter')} value={query.tag ?? EVERY_CHOICE} onChange={tag => onChange({ tag: tag === EVERY_CHOICE ? undefined : tag })}
         choices={[{ value: EVERY_CHOICE, label: t('console.tasks.everyTag') }, ...tags.map(({ tag, tasks }) => ({ value: tag, label: `${tag} · ${groupedNumber(locale, tasks)}` }))]}
       />
       <Select

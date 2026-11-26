@@ -1,18 +1,22 @@
 import { consoleTaskOrderValues, consoleTaskSpreadValues } from '../api/schema';
-import type { ConsoleTaskQuery, TaskOrder, TaskSpread } from '../api/types';
-import { parseComparisonView, setComparisonParams, type ComparisonView } from './comparison';
-import { consoleBenchmarkPath } from './console';
+import type { CombinationScope, ConsoleTaskQuery, TaskOrder, TaskSpread } from '../api/types';
+import { pathWithSearch, searchOf, type AddressTable } from './address';
+import { EMPTY_COMPARISON, parseComparisonView, type ComparisonView } from './comparison';
+import { consoleBenchmarkPath, parseCombinationScope } from './console';
 
 /** Tasks per page of the console's task list. */
 export const TASK_LIST_PAGE_SIZE = 20;
 
 export const TASK_ORDER_DEFAULT: TaskOrder = 'hardest';
 
+/** Every parameter the task list keeps in its address, with the value the address leaves unsaid. */
+export const TASK_QUERY_PARAMS: AddressTable<ConsoleTaskQuery> = { q: '', tag: undefined, spread: undefined, order: TASK_ORDER_DEFAULT, offset: 0 };
+
 /** The list's state from its address; a value outside its set fails the page rather than showing nothing. */
 export function parseTaskQuery(params: URLSearchParams): ConsoleTaskQuery {
   const spread = params.get('spread') ?? undefined;
-  const order = params.get('order') ?? TASK_ORDER_DEFAULT;
-  const offset = Number(params.get('offset') ?? 0);
+  const order = params.get('order') ?? TASK_QUERY_PARAMS.order;
+  const offset = Number(params.get('offset') ?? TASK_QUERY_PARAMS.offset);
   if (spread !== undefined && !consoleTaskSpreadValues.includes(spread as TaskSpread)) {
     throw new Error(`no task spread ${spread}`);
   }
@@ -22,28 +26,7 @@ export function parseTaskQuery(params: URLSearchParams): ConsoleTaskQuery {
   if (!Number.isInteger(offset) || offset < 0 || offset % TASK_LIST_PAGE_SIZE !== 0) {
     throw new Error(`no page of tasks starts at ${params.get('offset')}`);
   }
-  return { q: params.get('q') ?? '', tag: params.get('tag') ?? '', spread: spread as TaskSpread | undefined, order: order as TaskOrder, offset };
-}
-
-/** The list's address parameters, leaving out what equals the default. */
-export function taskQuerySearch(query: ConsoleTaskQuery): URLSearchParams {
-  const params = new URLSearchParams();
-  if (query.q) {
-    params.set('q', query.q);
-  }
-  if (query.tag) {
-    params.set('tag', query.tag);
-  }
-  if (query.spread) {
-    params.set('spread', query.spread);
-  }
-  if (query.order !== TASK_ORDER_DEFAULT) {
-    params.set('order', query.order);
-  }
-  if (query.offset > 0) {
-    params.set('offset', String(query.offset));
-  }
-  return params;
+  return { q: params.get('q') ?? TASK_QUERY_PARAMS.q, tag: params.get('tag') ?? undefined, spread: spread as TaskSpread | undefined, order: order as TaskOrder, offset };
 }
 
 export function consoleTasksPath(benchmarkId: string): string {
@@ -58,18 +41,8 @@ export type TaskTab = (typeof TASK_TABS)[number];
 export const TASK_RUN_VIEWS = ['entrants', 'checks'] as const;
 export type TaskRunView = (typeof TASK_RUN_VIEWS)[number];
 
-/** The model, and within it the harness, that a task's page keeps to, as the page the reader came from did. */
-export interface TaskScope {
-  model?: string;
-  harness?: string;
-}
-
-/** Whether a combination is one the page keeps to; every combination is when it keeps to none. */
-export function inScope(scope: TaskScope, { model, harness }: { model: { id: string }; harness: { id: string } }): boolean {
-  return (!scope.model || model.id === scope.model) && (!scope.harness || harness.id === scope.harness);
-}
-
-export interface TaskPageView extends ComparisonView, TaskScope {
+/** A task's page: the part it shows, and the combinations it keeps to, as the page the reader came from did. */
+export interface TaskPageView extends ComparisonView, CombinationScope {
   tab: TaskTab;
   view: TaskRunView;
 
@@ -80,53 +53,27 @@ export interface TaskPageView extends ComparisonView, TaskScope {
   version?: string;
 }
 
+/** Every parameter a task's page keeps in its address, with the value the address leaves unsaid. */
+export const TASK_PAGE_PARAMS: AddressTable<TaskPageView> = {
+  tab: 'content', view: 'entrants', file: undefined, version: undefined, model: undefined, harness: undefined, ...EMPTY_COMPARISON,
+};
+
 export function parseTaskPageView(params: URLSearchParams): TaskPageView {
-  const tab = params.get('tab') ?? 'content';
-  const view = params.get('view') ?? 'entrants';
-  const model = params.get('model') ?? undefined;
-  const harness = params.get('harness') ?? undefined;
+  const tab = params.get('tab') ?? TASK_PAGE_PARAMS.tab;
+  const view = params.get('view') ?? TASK_PAGE_PARAMS.view;
   if (!TASK_TABS.includes(tab as TaskTab)) {
     throw new Error(`a task has no tab ${tab}`);
   }
   if (!TASK_RUN_VIEWS.includes(view as TaskRunView)) {
     throw new Error(`a task's runs have no view ${view}`);
   }
-  if (harness && !model) {
-    throw new Error(`a task's page keeps to a harness only within a model, not to ${harness} alone`);
-  }
   return {
-    tab: tab as TaskTab, view: view as TaskRunView, file: params.get('file') ?? undefined, version: params.get('version') ?? undefined, model, harness,
-    ...parseComparisonView(params),
+    tab: tab as TaskTab, view: view as TaskRunView, file: params.get('file') ?? undefined, version: params.get('version') ?? undefined,
+    ...parseCombinationScope(params), ...parseComparisonView(params),
   };
 }
 
 /** A task's console page at one of its parts; the content tab, the combination view and empty lists are the defaults. */
 export function consoleTaskPath(benchmarkId: string, taskId: string, view: Partial<TaskPageView> = {}): string {
-  const search = taskPageSearch(view).toString();
-  return `${consoleTasksPath(benchmarkId)}/${taskId}${search ? `?${search}` : ''}`;
-}
-
-/** The address parameters of a view of a task's page, leaving out the defaults. */
-export function taskPageSearch(view: Partial<TaskPageView>): URLSearchParams {
-  const params = new URLSearchParams();
-  if (view.tab && view.tab !== 'content') {
-    params.set('tab', view.tab);
-  }
-  if (view.view && view.view !== 'entrants') {
-    params.set('view', view.view);
-  }
-  if (view.file) {
-    params.set('file', view.file);
-  }
-  if (view.version) {
-    params.set('version', view.version);
-  }
-  if (view.model) {
-    params.set('model', view.model);
-  }
-  if (view.harness) {
-    params.set('harness', view.harness);
-  }
-  setComparisonParams(params, view);
-  return params;
+  return pathWithSearch(`${consoleTasksPath(benchmarkId)}/${taskId}`, searchOf(TASK_PAGE_PARAMS, view));
 }

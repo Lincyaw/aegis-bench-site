@@ -12,7 +12,8 @@ import { ConsoleHeader } from '../../../components/shell/ConsoleHeader';
 import { useLocale } from '../../../i18n/localeContext';
 import { groupedNumber } from '../../../i18n/locales';
 import { EVERY_CHOICE, consoleBenchmarkPath } from '../../../routes/console';
-import { MODEL_TASK_PAGE_SIZE, consoleModelPath, consoleModelsPath, modelTaskSearch, parseModelTaskQuery } from '../../../routes/consoleModels';
+import { searchOf } from '../../../routes/address';
+import { MODEL_TASK_PAGE_SIZE, MODEL_TASK_PARAMS, consoleModelPath, consoleModelsPath, parseModelTaskQuery } from '../../../routes/consoleModels';
 import { StatTile, StatTiles } from '../../../ui/content';
 import { ScopeChip, SearchField, SegmentedControl, Select } from '../../../ui/controls';
 import { Pager } from '../../../ui/navigation';
@@ -33,7 +34,7 @@ export function ModelDetailPage() {
   const shown = parseModelTaskQuery(new URLSearchParams(useDeferredValue(params.toString())));
   const detail = useConsoleModel(benchmark.id, modelId, shown);
   const page = useModelTaskPage(benchmark.id, modelId, shown, MODEL_TASK_PAGE_SIZE);
-  const update = (next: Partial<ModelTaskQuery>) => setParams(modelTaskSearch({ ...query, offset: 0, ...next }), { replace: true, preventScrollReset: true });
+  const update = (next: Partial<ModelTaskQuery>) => setParams(searchOf(MODEL_TASK_PARAMS, { ...query, offset: 0, ...next }), { replace: true, preventScrollReset: true });
   const scope = query.harness ? detail.byHarness.find(entry => entry.harness.id === query.harness)?.result : detail.result;
   if (!scope) {
     throw new Error(`${detail.model.name} did not run in harness ${query.harness}`);
@@ -48,11 +49,11 @@ export function ModelDetailPage() {
       <div className={styles.scope}>
         <VendorBadge model={detail.model} />
         <SegmentedControl
-          label={t('console.model.harnessLabel')} value={query.harness || EVERY_CHOICE} onChange={harness => update({ harness: harness === EVERY_CHOICE ? '' : harness })}
+          label={t('console.model.harnessLabel')} value={query.harness ?? EVERY_CHOICE} onChange={harness => update({ harness: harness === EVERY_CHOICE ? undefined : harness })}
           choices={[{ value: EVERY_CHOICE, label: t('console.model.allHarnesses') }, ...detail.byHarness.map(({ harness }) => ({ value: harness.id, label: harness.name }))]}
         />
-        {query.tag && <ScopeChip name={t('console.model.collection.name', { tag: query.tag })} to={consoleModelPath(benchmark.id, detail.model.id, { ...query, tag: '', offset: 0 })} />}
-        {query.task && <ScopeChip name={t('console.model.task.name', { task: query.task })} to={consoleModelPath(benchmark.id, detail.model.id, { ...query, task: '', offset: 0 })} />}
+        {query.tag && <ScopeChip name={t('console.scope.collection', { tag: query.tag })} to={consoleModelPath(benchmark.id, detail.model.id, { ...query, tag: undefined, offset: 0 })} />}
+        {query.task && <ScopeChip name={t('console.scope.task', { task: query.task })} to={consoleModelPath(benchmark.id, detail.model.id, { ...query, task: undefined, offset: 0 })} />}
       </div>
       <StatTiles>
         <StatTile label={t('console.model.stats.passRate')} value={scope.passRate === undefined ? '—' : formatRate(scope.passRate)} />

@@ -14,13 +14,10 @@ enum TaskSpread {
   discriminating,
 }
 
-/** Whether a combination passed a task at least once, and how many times it ran the task. */
+/** Whether a combination passed a task at least once. */
 model EntrantMark {
   ...Combination;
   solved: boolean;
-
-  /** The combination's runs on the task, execution failures included */
-  runs: int32;
 }
 
 model ConsoleTaskRow {
@@ -93,10 +90,14 @@ model ConsoleTaskDetail {
   tools: string[];
 
   acceptance: AcceptancePoint[];
+
+  /** What the runs of the combinations the request keeps to come to */
   result: ResultCounts;
+
+  /** How those runs fall; absent while none counts */
   spread?: TaskSpread;
 
-  /** Every combination, in ranking order */
+  /** The combinations the request keeps to, in ranking order */
   entrants: EntrantMark[];
 
   /** How much each of the task's other views holds */
@@ -163,7 +164,7 @@ model ValidationRun {
 }
 
 model TaskResults {
-  /** Every combination, best pass rate first */
+  /** The combinations the request keeps to that ran the task, best pass rate first */
   entrants: TaskEntrantRuns[];
 
   validations: ValidationRun[];
@@ -186,7 +187,9 @@ model CheckResultRow {
 
 /** Each check against each combination: which requirements the models miss. */
 model TaskCheckResults {
+  /** The combinations the request keeps to, in ranking order */
   entrants: Combination[];
+
   checks: CheckResultRow[];
 }
 
@@ -254,9 +257,10 @@ interface ConsoleTasks {
     ...LanguageHeader,
   ): Localized<ConsoleTaskPage> | SignInRequiredError | NotFoundError;
 
+  /** The task, with what the runs of the combinations a scope keeps to come to; a scope that keeps to none of the benchmark's combinations is not found */
   @get
   @route("/{taskId}")
-  read(@path benchmarkId: string, @path taskId: string, ...LanguageHeader): Localized<ConsoleTaskDetail> | SignInRequiredError | NotFoundError;
+  read(@path benchmarkId: string, @path taskId: string, ...CombinationScopeQuery, ...LanguageHeader): Localized<ConsoleTaskDetail> | SignInRequiredError | NotFoundError;
 
   @get
   @route("/{taskId}/grading")
@@ -267,14 +271,15 @@ interface ConsoleTasks {
   @route("/{taskId}/reference")
   reference(@path benchmarkId: string, @path taskId: string): ReferenceFile[] | SignInRequiredError | NotFoundError;
 
-  /** Each combination's runs on the task, and the runs that check the task itself */
+  /** The runs on the task of each combination a scope keeps to, and the runs that check the task itself */
   @get
   @route("/{taskId}/results")
-  results(@path benchmarkId: string, @path taskId: string, ...LanguageHeader): Localized<TaskResults> | SignInRequiredError | NotFoundError;
+  results(@path benchmarkId: string, @path taskId: string, ...CombinationScopeQuery, ...LanguageHeader): Localized<TaskResults> | SignInRequiredError | NotFoundError;
 
+  /** Each check against each combination a scope keeps to */
   @get
   @route("/{taskId}/check-results")
-  checkResults(@path benchmarkId: string, @path taskId: string, ...LanguageHeader): Localized<TaskCheckResults> | SignInRequiredError | NotFoundError;
+  checkResults(@path benchmarkId: string, @path taskId: string, ...CombinationScopeQuery, ...LanguageHeader): Localized<TaskCheckResults> | SignInRequiredError | NotFoundError;
 
   /** The versions that led to the task's current one, newest first */
   @get

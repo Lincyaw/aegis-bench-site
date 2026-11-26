@@ -20,7 +20,7 @@ export interface ComparisonView {
   labels: string[];
 }
 
-/** A comparison with nothing chosen, opened or filtered. */
+/** A comparison with nothing chosen, opened or filtered, which its address leaves unsaid. */
 export const EMPTY_COMPARISON: ComparisonView = { compared: [], expand: [], panel: [], labels: [] };
 
 /** A list in the address is its ids joined by commas. */
@@ -42,15 +42,6 @@ export function parseComparisonView(params: URLSearchParams): ComparisonView {
     throw new Error(`the side panel shows at most ${MAX_PANEL_TRAJECTORIES} of the compared runs' trajectories`);
   }
   return { compared, expand, panel, labels };
-}
-
-/** Writes a comparison's state into address parameters, leaving out its empty lists. */
-export function setComparisonParams(params: URLSearchParams, view: Partial<ComparisonView>) {
-  for (const name of COMPARISON_PARAMS) {
-    if (view[name]?.length) {
-      params.set(name, view[name].join(LIST_SEPARATOR));
-    }
-  }
 }
 
 /** Adds a run to the comparison or takes it out, and its trajectory out of the side panel with it. */

@@ -1,15 +1,20 @@
 import { delay } from 'msw';
-import { DEFAULT_LEADERBOARD_PAGE_SIZE, benchmarkDetail, benchmarkOf, benchmarkSummary, hasBenchmark, leaderboardView, stagesWithBenchmarks, taskOf } from './benchmarks';
+import {
+  DEFAULT_LEADERBOARD_PAGE_SIZE, benchmarkDetail, benchmarkOf, benchmarkSummary, hasBenchmark, leaderboardView, matchesTaskSearch, stagesWithBenchmarks, taskOf,
+} from './benchmarks';
+import { combinationKey } from './catalog';
 import { consoleHandlers } from './consoleHandlers';
 import { hasModel, modelProfile } from './models';
 import { answeringUnreachableRecords, http, localeOf, pageOf, writtenIn } from './protocol';
-import { publishedCombinationOf, publishedEntriesOf, publishedRecentRunsOf, publishedShowingOf, publishedTaskComparisonOf, publishedTaskRuns } from './published';
+import {
+  publishedEntrantOf, publishedEntriesOf, publishedRecentRunsOf, publishedShowingOf, publishedTaskComparisonOf, publishedTaskRuns, publishedTaskSummariesOf,
+} from './published';
 import { openedIndexes } from './records';
 import { reportHandlers } from './reportHandlers';
 import { runDetailOf } from './runs';
 import { currentSettings } from './settings';
 import { DEFAULT_ENTRY_PAGE_SIZE, directoryEntriesOf, taskFileOf, withheldUnder } from './taskFiles';
-import { DEFAULT_TASK_PAGE_SIZE, combinationTasksOf, passRateOf, taskRunsOf, taskSummariesOf } from './tasks';
+import { DEFAULT_TASK_PAGE_SIZE, combinationTasksOf, taskRunsOf, taskSummaryOf } from './tasks';
 import { DEFAULT_TRAJECTORY_PAGE_SIZE, trajectoryOf } from './trajectories';
 import { workspaceHandlers } from './workspaceHandlers';
 
@@ -70,12 +75,12 @@ export const publicHandlers = [
   }),
 
   http.get('/benchmarks/{benchmarkId}/combinations/{combination}/tasks', async ({ params, query, response }) => {
-    const entry = hasBenchmark(params.benchmarkId) ? publishedCombinationOf(params.benchmarkId, params.combination) : undefined;
-    if (!entry) {
+    const entrant = hasBenchmark(params.benchmarkId) ? publishedEntrantOf(params.benchmarkId, params.combination) : undefined;
+    if (!entrant) {
       return response(404).json({ message: `no published combination ${params.combination} in ${params.benchmarkId}` });
     }
     const q = (query.get('q') ?? '').trim();
-    const matching = combinationTasksOf(params.benchmarkId, entry.model.id, entry.harness.id).filter(({ task }) => !q || task.id.includes(q) || task.title.includes(q));
+    const matching = combinationTasksOf(params.benchmarkId, entrant.modelId, entrant.harnessId).filter(({ task }) => matchesTaskSearch(task, q));
     await delay(80);
     return response(200).json(pageOf(matching, query, DEFAULT_TASK_PAGE_SIZE));
   }),
@@ -84,21 +89,14 @@ export const publicHandlers = [
     if (!hasBenchmark(params.benchmarkId)) {
       return response(404).json({ message: `no benchmark ${params.benchmarkId}` });
     }
-    const combination = query.get('combination');
-    const entry = combination === null ? undefined : publishedCombinationOf(params.benchmarkId, combination);
-    if (combination !== null && !entry) {
-      return response(404).json({ message: `no published combination ${combination} in ${params.benchmarkId}` });
-    }
-    // A combination's tasks are those it ran, each with its pass rate over the combination's runs.
-    const summaries = entry ? combinationTasksOf(params.benchmarkId, entry.model.id, entry.harness.id).map(row => row.task) : taskSummariesOf(params.benchmarkId);
     const q = (query.get('q') ?? '').trim();
-    const matching = summaries.filter(task => !q || task.id.includes(q) || task.title.includes(q));
+    const matching = publishedTaskSummariesOf(params.benchmarkId).filter(task => matchesTaskSearch(task, q));
     await delay(80);
     return response(200).json(pageOf(matching, query, DEFAULT_TASK_PAGE_SIZE));
   }),
 
   http.get('/benchmarks/{benchmarkId}/tasks/{taskId}', ({ params, response }) => {
-    const task = hasBenchmark(params.benchmarkId) ? taskSummariesOf(params.benchmarkId).find(summary => summary.id === params.taskId) : undefined;
+    const task = hasBenchmark(params.benchmarkId) ? publishedTaskSummariesOf(params.benchmarkId).find(summary => summary.id === params.taskId) : undefined;
     return task ? response(200).json(task) : response(404).json({ message: `no task ${params.taskId} in ${params.benchmarkId}` });
   }),
 
@@ -131,16 +129,21 @@ export const publicHandlers = [
     return response(200).json(published);
   }),
 
-  http.get('/benchmarks/{benchmarkId}/tasks/{taskId}/runs', async ({ params, request, response }) => {
+  http.get('/benchmarks/{benchmarkId}/tasks/{taskId}/runs', async ({ params, query, request, response }) => {
     const task = hasBenchmark(params.benchmarkId) ? taskOf(params.benchmarkId, params.taskId) : undefined;
     if (!task) {
       return response(404).json({ message: `no task ${params.taskId} in ${params.benchmarkId}` });
     }
+    const combination = query.get('combination');
+    if (combination !== null && !publishedEntrantOf(params.benchmarkId, combination)) {
+      return response(404).json({ message: `no published combination ${combination} in ${params.benchmarkId}` });
+    }
     const locale = localeOf(request);
-    const combinations = publishedTaskRuns(params.benchmarkId, taskRunsOf(params.benchmarkId, task.id, locale));
+    const combinations = publishedTaskRuns(params.benchmarkId, taskRunsOf(params.benchmarkId, task.id, locale))
+      .filter(candidate => combination === null || combinationKey(candidate.model.id, candidate.harness.id) === combination);
     await delay(80);
     return response(200).json({
-      task: { id: task.id, title: task.title, passRate: passRateOf(combinations.flatMap(combination => combination.runs)) }, runsPerTask: benchmarkOf(params.benchmarkId).record.runsPerTask, combinations,
+      task: taskSummaryOf(params.benchmarkId, task, combinations.flatMap(candidate => candidate.runs)), runsPerTask: benchmarkOf(params.benchmarkId).record.runsPerTask, combinations,
     }, writtenIn(locale));
   }),
 

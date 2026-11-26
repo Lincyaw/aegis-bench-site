@@ -2,11 +2,11 @@ import type {
   ConsoleTaskDetail, ConsoleTaskEntry, ConsoleTaskRow, EntrantMark, Locale, ReferenceFile, ResultCounts, RunFact, TagCount, TaskCheckResults, TaskGrading,
   TaskOrder, TaskRecord, TaskResults, TaskRevision, TaskSpread,
 } from '../api/types';
-import { benchmarkOf, benchmarkRef, hasBenchmark, taskOf } from './benchmarks';
-import { harnessRef, modelRef } from './catalog';
+import { benchmarkOf, benchmarkRef, hasBenchmark, matchesTaskSearch, taskOf } from './benchmarks';
+import { combinationKey, harnessRef, keepsTo, modelRef, type CombinationScope } from './catalog';
 import { runRowOf } from './consoleRuns';
 import { huggingFacePageOf, readTaskFile, taskDirectoryOf } from './records';
-import { rankingOf, resultCountsOf } from './results';
+import { rankingIn, resultCountsOf } from './results';
 import { directoryEntriesOf, taskFileOf } from './taskFiles';
 
 /*
@@ -39,6 +39,14 @@ export function taskResultCountsOf(benchmarkId: string, taskId: string): ResultC
   return resultCountsOf(runFactsByTask(benchmarkId).get(taskId) ?? []);
 }
 
+/** The scope that keeps to every combination. */
+export const ALL_COMBINATIONS: CombinationScope = { model: '', harness: '' };
+
+/** A task's runs by the combinations a scope keeps to. */
+export function taskFactsIn(benchmarkId: string, taskId: string, scope: CombinationScope): RunFact[] {
+  return (runFactsByTask(benchmarkId).get(taskId) ?? []).filter(fact => keepsTo(scope, fact.modelId, fact.harnessId));
+}
+
 /** How a task's counted runs fall, or nothing while none counts. */
 export function spreadOf(result: ResultCounts): TaskSpread | undefined {
   const counted = result.passed + result.failed;
@@ -48,13 +56,13 @@ export function spreadOf(result: ResultCounts): TaskSpread | undefined {
   return result.passed === counted ? 'saturated' : result.passed === 0 ? 'unsolved' : 'discriminating';
 }
 
-/** Whether each combination, in ranking order, passed the task at least once, and how many times it ran it. */
-export function entrantMarksOf(benchmarkId: string, taskId: string, locale: Locale): EntrantMark[] {
-  const facts = runFactsByTask(benchmarkId).get(taskId) ?? [];
-  return rankingOf(benchmarkId).map(({ modelId, harnessId }) => {
-    const runs = facts.filter(fact => fact.modelId === modelId && fact.harnessId === harnessId);
-    return { model: modelRef(modelId, locale), harness: harnessRef(harnessId, locale), solved: runs.some(fact => fact.outcome === 'passed'), runs: runs.length };
-  });
+/** Whether each combination a scope keeps to, in ranking order, passed the task at least once. */
+export function entrantMarksOf(benchmarkId: string, taskId: string, scope: CombinationScope, locale: Locale): EntrantMark[] {
+  const facts = taskFactsIn(benchmarkId, taskId, scope);
+  return rankingIn(benchmarkId, scope).map(({ modelId, harnessId }) => ({
+    model: modelRef(modelId, locale), harness: harnessRef(harnessId, locale),
+    solved: facts.some(fact => fact.modelId === modelId && fact.harnessId === harnessId && fact.outcome === 'passed'),
+  }));
 }
 
 export function taskRowOf(benchmarkId: string, task: TaskRecord, locale: Locale): ConsoleTaskRow {
@@ -62,7 +70,7 @@ export function taskRowOf(benchmarkId: string, task: TaskRecord, locale: Locale)
   const spread = spreadOf(result);
   return {
     id: task.id, title: task.title, tags: task.tags, version: task.version, result, ...(spread && { spread }),
-    entrants: entrantMarksOf(benchmarkId, task.id, locale),
+    entrants: entrantMarksOf(benchmarkId, task.id, ALL_COMBINATIONS, locale),
   };
 }
 
@@ -88,11 +96,6 @@ export function sortedTasks<Item>(items: Item[], order: TaskOrder, idOf: (item: 
   }
 }
 
-/** Whether a task's id or title holds the search text. */
-export function matchesTaskSearch(task: { id: string; title: string }, q: string): boolean {
-  return !q || task.id.includes(q) || task.title.includes(q);
-}
-
 /** The tasks a filter selects, in its order. */
 export function filteredTasksOf(benchmarkId: string, filter: TaskFilter): TaskRecord[] {
   const { tasks } = benchmarkOf(benchmarkId);
@@ -103,15 +106,16 @@ export function filteredTasksOf(benchmarkId: string, filter: TaskFilter): TaskRe
   return sortedTasks(matching, filter.order, task => task.id, task => results.get(task.id)?.passRate);
 }
 
-export function consoleTaskOf(benchmarkId: string, task: TaskRecord, locale: Locale): ConsoleTaskDetail {
-  const result = taskResultCountsOf(benchmarkId, task.id);
+/** A task as the console shows it, with what the runs of the combinations a scope keeps to come to. */
+export function consoleTaskOf(benchmarkId: string, task: TaskRecord, scope: CombinationScope, locale: Locale): ConsoleTaskDetail {
+  const result = resultCountsOf(taskFactsIn(benchmarkId, task.id, scope));
   const spread = spreadOf(result);
   const huggingFaceUrl = huggingFacePageOf(benchmarkOf(benchmarkId).record, taskDirectoryOf(task.id));
   return {
     id: task.id, title: task.title, benchmark: benchmarkRef(benchmarkId), tags: task.tags, version: task.version,
     instruction: task.instruction, reportSchema: task.reportSchema, environment: task.environment, tools: task.tools,
     acceptance: task.checks.map(check => ({ checkId: check.id, requirement: check.title })), result, ...(spread && { spread }),
-    entrants: entrantMarksOf(benchmarkId, task.id, locale),
+    entrants: entrantMarksOf(benchmarkId, task.id, scope, locale),
     sizes: { checks: task.checks.length, files: task.files.length, revisions: task.revisions.length },
     ...(huggingFaceUrl && { huggingFaceUrl }),
   };
@@ -142,8 +146,9 @@ export function referenceFilesOf(benchmarkId: string, task: TaskRecord): Promise
     .map(async ({ file, reason }) => ({ reason, file: await taskFileOf(benchmarkId, task.id, file) })));
 }
 
-export function taskEntrantRunsOf(benchmarkId: string, task: TaskRecord, locale: Locale): TaskResults {
-  const byEntrant = Map.groupBy(runFactsByTask(benchmarkId).get(task.id) ?? [], fact => `${fact.modelId}-${fact.harnessId}`);
+/** The runs on a task of each combination a scope keeps to, best pass rate first, and the runs that check the task. */
+export function taskEntrantRunsOf(benchmarkId: string, task: TaskRecord, scope: CombinationScope, locale: Locale): TaskResults {
+  const byEntrant = Map.groupBy(taskFactsIn(benchmarkId, task.id, scope), fact => combinationKey(fact.modelId, fact.harnessId));
   const entrants = [...byEntrant.values()].map(facts => ({
     model: modelRef(facts[0].modelId, locale), harness: harnessRef(facts[0].harnessId, locale),
     runs: facts.map(fact => runRowOf(benchmarkId, fact, locale)), result: resultCountsOf(facts),
@@ -151,10 +156,10 @@ export function taskEntrantRunsOf(benchmarkId: string, task: TaskRecord, locale:
   return { entrants: entrants.sort((a, b) => (b.result.passRate ?? -1) - (a.result.passRate ?? -1)), validations: task.validations };
 }
 
-/** Each check against each combination: of a combination's counted runs, how many passed the check. */
-export function checkResultsOf(benchmarkId: string, task: TaskRecord, locale: Locale): TaskCheckResults {
-  const ranking = rankingOf(benchmarkId);
-  const facts = (runFactsByTask(benchmarkId).get(task.id) ?? []).filter(fact => fact.outcome !== 'executionFailed');
+/** Each check against each combination a scope keeps to: of a combination's counted runs, how many passed the check. */
+export function checkResultsOf(benchmarkId: string, task: TaskRecord, scope: CombinationScope, locale: Locale): TaskCheckResults {
+  const ranking = rankingIn(benchmarkId, scope);
+  const facts = taskFactsIn(benchmarkId, task.id, scope).filter(fact => fact.outcome !== 'executionFailed');
   return {
     entrants: ranking.map(({ modelId, harnessId }) => ({ model: modelRef(modelId, locale), harness: harnessRef(harnessId, locale) })),
     checks: task.checks.map(check => ({

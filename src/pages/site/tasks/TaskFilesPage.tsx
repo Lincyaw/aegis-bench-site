@@ -2,8 +2,9 @@ import { useTranslation } from 'react-i18next';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { useBenchmark, useTask, useTaskEntryPages, useTaskFile } from '../../../api/client';
 import { TaskFileBrowser, type TaskFileSource } from '../../../components/task/TaskFileBrowser';
+import { searchOf } from '../../../routes/address';
 import { runRecordsPath } from '../../../routes/runRecords';
-import { BENCHMARKS_PATH, ENTRY_PAGE_SIZE, FILE_PARAM, INSTRUCTION_PATH, benchmarkPath, stagePath } from '../../../routes/site';
+import { BENCHMARKS_PATH, ENTRY_PAGE_SIZE, TASK_FILES_PARAMS, benchmarkPath, parseTaskFilesView, stagePath } from '../../../routes/site';
 import { Breadcrumbs } from '../../../ui/navigation';
 import styles from './TaskFilesPage.module.css';
 
@@ -41,8 +42,8 @@ export function TaskFilesPage() {
       </header>
       <TaskFileBrowser
         className={styles.browser} source={source} note={t('tasks.harbor')} huggingFaceUrl={task.huggingFaceUrl}
-        open={search.get(FILE_PARAM) ?? INSTRUCTION_PATH}
-        onOpen={file => setSearch({ [FILE_PARAM]: file }, { replace: true, preventScrollReset: true })}
+        open={parseTaskFilesView(search).path}
+        onOpen={file => setSearch(searchOf(TASK_FILES_PARAMS, { path: file }), { replace: true, preventScrollReset: true })}
       />
     </div>
   );

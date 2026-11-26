@@ -66,6 +66,9 @@
 }
 .item:hover { background: var(--bg-muted); color: var(--text-main); }
 .item[aria-current="page"] { background: var(--row-chosen); color: var(--text-main); }
+.item > svg { justify-self: center; }
+/* The sidebar's way back to the public site, for the widths at which the bar hides its own. */
+.publicSiteEntry { display: none; padding-top: var(--space-3); border-top: var(--rule-hairline); }
 
 .main { min-width: 0; padding: var(--space-8) var(--space-10) var(--space-12); }
 
@@ -80,6 +83,7 @@
 
 @media (max-width: 1100px) {
   .publicSite { display: none; }
+  .publicSiteEntry { display: grid; }
 }
 
 @media (max-width: 760px) {

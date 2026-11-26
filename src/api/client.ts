@@ -4,7 +4,7 @@ import { useLocale } from '../i18n/localeContext';
 import { ApiError, HUGGING_FACE_UNREACHABLE_STATUS, HuggingFaceUnreachableError } from './errors';
 import type { paths } from './schema';
 import { API_ROOT } from './server';
-import type { HuggingFaceUnreachableAnswer, LeaderboardView, Locale } from './types';
+import type { HuggingFaceUnreachableAnswer, LeaderboardView, Locale, TaskPage } from './types';
 
 export type * from './types';
 
@@ -97,13 +97,21 @@ export function useCombinations(benchmarkId: string) {
 
 /**
  * The tasks matching a search, a page at a time: each further page asks only for the tasks after those already
- * loaded. Given a combination, the tasks it ran, each with its pass rate over the combination's runs. Tasks are
- * records, so their list is the same in every language.
+ * loaded. Given a combination, the combination's own task list, whose rows carry each task's summary in the
+ * combination's terms. Tasks are records, so their list is the same in every language.
  */
 export function useTaskPages(benchmarkId: string, q: string, combination: string | undefined, pageSize: number) {
   return useSuspenseInfiniteQuery({
     queryKey: ['tasks', benchmarkId, q, combination, pageSize],
-    queryFn: ({ pageParam }) => responseBody(api.GET('/benchmarks/{benchmarkId}/tasks', { params: { path: { benchmarkId }, query: { q, combination, offset: pageParam, limit: pageSize } } })),
+    queryFn: async ({ pageParam }): Promise<TaskPage> => {
+      if (combination === undefined) {
+        return responseBody(api.GET('/benchmarks/{benchmarkId}/tasks', { params: { path: { benchmarkId }, query: { q, offset: pageParam, limit: pageSize } } }));
+      }
+      const page = await responseBody(api.GET('/benchmarks/{benchmarkId}/combinations/{combination}/tasks', {
+        params: { path: { benchmarkId, combination }, query: { q, offset: pageParam, limit: pageSize } },
+      }));
+      return { items: page.items.map(row => row.task), total: page.total };
+    },
     initialPageParam: 0,
     getNextPageParam: nextPageOffset,
   });
@@ -145,11 +153,12 @@ export function useTaskFile(benchmarkId: string, taskId: string, path: string) {
   }).data;
 }
 
-export function useTaskRuns(benchmarkId: string, taskId: string) {
+/** A task's runs by published combination; given a combination, its runs alone, and the task's pass rate over them. */
+export function useTaskRuns(benchmarkId: string, taskId: string, combination: string | undefined) {
   const locale = useLocale();
   return useSuspenseQuery({
-    queryKey: ['taskRuns', benchmarkId, taskId, locale],
-    queryFn: () => responseBody(api.GET('/benchmarks/{benchmarkId}/tasks/{taskId}/runs', { params: { path: { benchmarkId, taskId }, header: languageHeader(locale) } })),
+    queryKey: ['taskRuns', benchmarkId, taskId, combination, locale],
+    queryFn: () => responseBody(api.GET('/benchmarks/{benchmarkId}/tasks/{taskId}/runs', { params: { path: { benchmarkId, taskId }, query: { combination }, header: languageHeader(locale) } })),
   }).data;
 }
 

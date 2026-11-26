@@ -1,10 +1,12 @@
 /* A step's row: its fields side by side, the message taking the width that is left. */
 .summary { display: flex; flex: 1; align-items: baseline; gap: var(--space-2); min-width: 0; }
 .id { flex: none; min-width: var(--space-6); text-align: right; }
-.call { flex: none; padding: 0 var(--space-1); border-radius: var(--radius-sm); background: var(--bg-muted); color: var(--text-main); }
+/* The chip is outlined, so it stays clear on every surface its row takes: plain, hovered or opened. */
+.call { flex: none; padding: 0 var(--space-1); border: var(--rule-emphasis); border-radius: var(--radius-sm); color: var(--text-main); }
 .passed { color: var(--accent-success); }
 .failed { color: var(--accent-warning); }
-.message { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* The message is cut to the width the row leaves it, so its length never widens the row. */
+.message { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; contain: inline-size; }
 
 /* A record's fields: names in a column of their own, values beside them; a nested record steps in under its name. */
 .fields { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: var(--space-2) var(--space-4); margin: 0; }

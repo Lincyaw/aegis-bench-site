@@ -1,6 +1,6 @@
 import type { BenchmarkOverview, ConsoleBenchmark, EntrantKey, EntrantResult, LeaderboardEntry, Locale, PendingWork, ResultCounts, RunFact } from '../api/types';
 import { benchmarkOf, benchmarkRef } from './benchmarks';
-import { harnessRef, modelRef, stageRef } from './catalog';
+import { combinationKey, harnessRef, keepsTo, modelRef, stageRef, type CombinationScope } from './catalog';
 import { runRowOf } from './consoleRuns';
 
 /** Failed runs the overview lists, newest first. */
@@ -43,7 +43,7 @@ export function rankingOf(benchmarkId: string): RankedEntrant[] {
   const { record, runs } = benchmarkOf(benchmarkId);
   const counted = runs.filter(fact => fact.outcome !== 'executionFailed');
   const better = record.metric.higherIsBetter ? -1 : 1;
-  const ranking = [...Map.groupBy(counted, fact => `${fact.modelId}-${fact.harnessId}`).values()]
+  const ranking = [...Map.groupBy(counted, fact => combinationKey(fact.modelId, fact.harnessId)).values()]
     .map(facts => ({
       modelId: facts[0].modelId, harnessId: facts[0].harnessId,
       score: facts.reduce((sum, fact) => sum + fact.score, 0) / facts.length,
@@ -52,6 +52,16 @@ export function rankingOf(benchmarkId: string): RankedEntrant[] {
     .sort((a, b) => better * (a.score - b.score) || a.modelId.localeCompare(b.modelId) || a.harnessId.localeCompare(b.harnessId));
   rankingCache.set(benchmarkId, ranking);
   return ranking;
+}
+
+/** The ranked combinations a scope keeps to, best first; none when the scope names a model or harness the benchmark lacks. */
+export function rankingIn(benchmarkId: string, scope: CombinationScope): RankedEntrant[] {
+  return rankingOf(benchmarkId).filter(ranked => keepsTo(scope, ranked.modelId, ranked.harnessId));
+}
+
+/** What a 404 says of a scope that keeps to none of a benchmark's combinations. */
+export function unknownScopeMessage(benchmarkId: string, scope: CombinationScope): string {
+  return `no combination of ${scope.model || 'any model'} in ${scope.harness || 'any harness'} on ${benchmarkId}`;
 }
 
 /** The given combinations ranked by their results on the benchmark, best first. */
@@ -80,7 +90,7 @@ export function consoleBenchmarkOf(benchmarkId: string, locale: Locale): Console
 
 /** Every combination's result, best pass rate first. */
 export function entrantResultsOf(benchmarkId: string, locale: Locale): EntrantResult[] {
-  const byEntrant = Map.groupBy(benchmarkOf(benchmarkId).runs, fact => `${fact.modelId}-${fact.harnessId}`);
+  const byEntrant = Map.groupBy(benchmarkOf(benchmarkId).runs, fact => combinationKey(fact.modelId, fact.harnessId));
   return [...byEntrant.values()]
     .map(facts => ({ model: modelRef(facts[0].modelId, locale), harness: harnessRef(facts[0].harnessId, locale), result: resultCountsOf(facts) }))
     .sort((a, b) => (b.result.passRate ?? 0) - (a.result.passRate ?? 0));

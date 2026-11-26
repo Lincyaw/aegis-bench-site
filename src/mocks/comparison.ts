@@ -28,10 +28,15 @@ export function annotationCategoriesOf(record: BenchmarkFile, locale: Locale): A
 
 export function comparedRunOf(record: BenchmarkFile, { fact, run, trajectory, annotations }: RunRecords, locale: Locale): ComparedRun {
   const huggingFaceUrl = huggingFacePageOf(record, runDirectoryOf(fact.id));
+  const { attempt, step, files } = run.output.submission;
   return {
     id: fact.id, model: modelRef(fact.modelId, locale), harness: harnessRef(fact.harnessId, locale), attempt: fact.attempt, outcome: fact.outcome,
     metrics: { steps: fact.steps, ...run.metrics, costUsd: fact.costUsd }, passCount: run.grading.passCount,
-    submission: { attempt: run.output.submission.attempt, step: run.output.submission.step }, finalReply: run.output.finalReply,
+    submission: {
+      attempt, step, changedFiles: files.length,
+      additions: files.reduce((sum, file) => sum + file.additions, 0), deletions: files.reduce((sum, file) => sum + file.deletions, 0),
+    },
+    finalReply: run.output.finalReply,
     timeline: timelineOf(trajectory, record.changeTools), annotations,
     ...(fact.failureClass && { failureClass: fact.failureClass }), ...(run.failure?.review && { review: run.failure.review }),
     ...(huggingFaceUrl && { huggingFaceUrl }),

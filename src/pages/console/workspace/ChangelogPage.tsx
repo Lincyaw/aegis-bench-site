@@ -7,7 +7,8 @@ import type { ChangelogQuery, RevisionChange } from '../../../api/types';
 import { ConsoleHeader } from '../../../components/shell/ConsoleHeader';
 import { ChangelogTable } from '../../../components/workspace/ChangelogTable';
 import { EVERY_CHOICE } from '../../../routes/console';
-import { CHANGELOG_PAGE_SIZE, changelogQuerySearch, parseChangelogQuery } from '../../../routes/consoleChangelog';
+import { searchOf } from '../../../routes/address';
+import { CHANGELOG_PAGE_SIZE, CHANGELOG_PARAMS, parseChangelogQuery } from '../../../routes/consoleChangelog';
 import { Select } from '../../../ui/controls';
 import { Pager } from '../../../ui/navigation';
 import styles from './WorkspacePages.module.css';
@@ -20,14 +21,14 @@ export function ChangelogPage() {
   const query = parseChangelogQuery(params);
   // The page in view stays until the next one arrives.
   const page = useChangelog(parseChangelogQuery(new URLSearchParams(useDeferredValue(params.toString()))), CHANGELOG_PAGE_SIZE);
-  const update = (next: Partial<ChangelogQuery>) => setParams(changelogQuerySearch({ ...query, offset: 0, ...next }), { replace: true, preventScrollReset: true });
+  const update = (next: Partial<ChangelogQuery>) => setParams(searchOf(CHANGELOG_PARAMS, { ...query, offset: 0, ...next }), { replace: true, preventScrollReset: true });
   const last = Math.min(query.offset + CHANGELOG_PAGE_SIZE, page.total);
   return (
     <div className={styles.page}>
       <ConsoleHeader title={t('console.changelog.title')} lead={t('console.changelog.lead')} />
       <div className={styles.filters} role="search" aria-label={t('console.changelog.title')}>
         <Select
-          label={t('console.changelog.benchmarkFilter')} value={query.benchmarkId || EVERY_CHOICE} onChange={benchmarkId => update({ benchmarkId: benchmarkId === EVERY_CHOICE ? '' : benchmarkId })}
+          label={t('console.changelog.benchmarkFilter')} value={query.benchmark ?? EVERY_CHOICE} onChange={benchmark => update({ benchmark: benchmark === EVERY_CHOICE ? undefined : benchmark })}
           choices={[{ value: EVERY_CHOICE, label: t('console.changelog.everyBenchmark') }, ...benchmarks.map(benchmark => ({ value: benchmark.id, label: benchmark.name }))]}
         />
         <Select

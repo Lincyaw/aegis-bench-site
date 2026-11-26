@@ -33,6 +33,11 @@ export function taskRefOf(benchmarkId: string, taskId: string): TaskRef {
   return { id: task.id, title: task.title };
 }
 
+/** Whether a task's id or title holds the search text; every task matches an empty search. */
+export function matchesTaskSearch(task: TaskRef, q: string): boolean {
+  return !q || task.id.includes(q) || task.title.includes(q);
+}
+
 /** The eight stages, each with the benchmarks published at it. */
 export function stagesWithBenchmarks(locale: Locale): Stage[] {
   const { catalog, benchmarks } = openedIndexes();

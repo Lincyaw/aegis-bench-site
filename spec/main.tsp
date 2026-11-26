@@ -206,7 +206,9 @@ enum LeaderboardView {
 
 model TaskSummary {
   ...TaskRef;
-  passRate: float64;
+
+  /** Share of the counted runs that passed; execution failures are not counted, and the rate is absent when no run counts */
+  passRate?: float64;
 
   /** The task's Harbor directory on Hugging Face, when its files are kept there */
   huggingFaceUrl?: url;
@@ -293,15 +295,21 @@ model Combination {
   harness: HarnessRef;
 }
 
+/** A combination's runs of one task, by attempt. */
 model CombinationRuns {
   ...Combination;
   runs: RunRef[];
+
+  /** Share of those runs that passed, counted as the task's pass rate is; absent when none counts */
+  passRate?: float64;
 }
 
-/** Every run of every combination on one task. */
+/** A task's runs by combination; the task's pass rate is over the runs of the combinations listed. */
 model TaskRuns {
   task: TaskSummary;
   runsPerTask: int32;
+
+  /** In ranking order */
   combinations: CombinationRuns[];
 }
 
@@ -609,7 +617,10 @@ interface Benchmarks {
   @route("/{benchmarkId}/combinations")
   combinations(@path benchmarkId: string, ...LanguageHeader): Localized<Combination[]> | NotFoundError;
 
-  /** A published combination's runs, a page of tasks at a time in the benchmark's order */
+  /**
+   * A published combination's tasks, a page at a time in the benchmark's order: the tasks it ran, each with its runs and
+   * its pass rate over those runs only
+   */
   @get
   @route("/{benchmarkId}/combinations/{combination}/tasks")
   combinationTasks(
@@ -624,7 +635,10 @@ interface Benchmarks {
     ...PageQuery<14>,
   ): CombinationTaskPage | NotFoundError;
 
-  /** Tasks are records: their titles stay in the language the task was written in */
+  /**
+   * Every task, each with its pass rate over the runs of the published combinations; a combination's own tasks are
+   * listed under the combination. Tasks are records: their titles stay in the language the task was written in.
+   */
   @get
   @route("/{benchmarkId}/tasks")
   tasks(
@@ -632,12 +646,6 @@ interface Benchmarks {
 
     /** Matches the task id or title */
     @query(#{ explode: true }) q?: string,
-
-    /**
-     * A published model and harness pair as "<model id>-<harness id>": the list keeps to the tasks it ran, and each
-     * task's pass rate is over its runs only
-     */
-    @query(#{ explode: true }) combination?: string,
 
     ...PageQuery<14>,
   ): TaskPage | NotFoundError;
@@ -673,9 +681,21 @@ interface Benchmarks {
     @query(#{ explode: true }) path: string,
   ): TaskFile | NotFoundError | WithheldError | HuggingFaceUnreachableError;
 
+  /** The task's runs by published combination */
   @get
   @route("/{benchmarkId}/tasks/{taskId}/runs")
-  taskRuns(@path benchmarkId: string, @path taskId: string, ...LanguageHeader): Localized<TaskRuns> | NotFoundError;
+  taskRuns(
+    @path benchmarkId: string,
+    @path taskId: string,
+
+    /**
+     * A published model and harness pair as "<model id>-<harness id>": only its runs are listed, and the task's pass rate
+     * is over them; every published combination's when absent
+     */
+    @query(#{ explode: true }) combination?: string,
+
+    ...LanguageHeader,
+  ): Localized<TaskRuns> | NotFoundError;
 
   /** Runs of the task side by side, in the blocks the benchmark's configuration lists */
   @get

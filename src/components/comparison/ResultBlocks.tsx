@@ -33,17 +33,14 @@ export function FileChanges({ comparison, expanded, onExpand }: BlockProps) {
   return (
     <>
       <BlockHead title={t('compare.blocks.fileChanges.title')} hint={t('compare.blocks.fileChanges.hint')} aside={toggleAll}>
-        {runs.map(run => {
-          const changes = files.flatMap(file => file.changes.filter(change => change.runId === run.id));
-          return (
-            <Cell key={run.id}>
-              <span className={styles.figures}>
-                <ChangeSize additions={changes.reduce((sum, change) => sum + change.additions, 0)} deletions={changes.reduce((sum, change) => sum + change.deletions, 0)} />
-                <span className="t-small c-muted">{t('compare.files', { count: changes.length })}</span>
-              </span>
-            </Cell>
-          );
-        })}
+        {runs.map(({ id, submission }) => (
+          <Cell key={id}>
+            <span className={styles.figures}>
+              <ChangeSize additions={submission.additions} deletions={submission.deletions} />
+              <span className="t-small c-muted">{t('compare.files', { count: submission.changedFiles })}</span>
+            </span>
+          </Cell>
+        ))}
       </BlockHead>
       {files.map(file => {
         const key = rowKeyOf('file', file.path);

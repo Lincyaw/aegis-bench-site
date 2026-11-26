@@ -1,9 +1,10 @@
 import { clsx } from 'clsx';
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { combinationKey } from '../../api/constraints';
 import type { LeaderboardEntry, Metric } from '../../api/types';
 import { LocaleLink } from '../../i18n/LocaleRouting';
-import { combinationKey, runRecordsPath } from '../../routes/runRecords';
+import { runRecordsPath } from '../../routes/runRecords';
 import { REDUCED_MOTION_QUERY } from '../../ui/media';
 import table from '../../ui/table.module.css';
 import { ModelLink } from '../model/ModelBadge';

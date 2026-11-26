@@ -4,19 +4,23 @@ import { useTranslation } from 'react-i18next';
 import { useParams, useSearchParams } from 'react-router-dom';
 import {
   useBenchmark, useCombinationTaskPages, useCombinations, useTaskComparison, useTaskFile, useTaskPages, useTaskRuns, useTrajectories,
-  type BenchmarkDetail, type Combination, type TaskPage, type TaskSummary,
+  type BenchmarkDetail, type Combination, type TaskPage,
 } from '../../../api/client';
+import { combinationKey } from '../../../api/constraints';
 import type { ComparisonSource } from '../../../components/comparison/comparison';
 import { RunComparison, TaskInput } from '../../../components/comparison/TaskComparison';
 import { CombinationLabel, VendorBadge } from '../../../components/model/ModelBadge';
 import { HuggingFaceBoundary } from '../../../components/run/HuggingFace';
 import { OutcomeDot } from '../../../components/run/Outcome';
-import { CombinationColumn, Pane, PaneEmpty, PaneHead, PaneList, PaneMore, RunChips, TaskColumn, TaskModeSwitch } from '../../../components/run/RunRecords';
+import {
+  CombinationColumn, Pane, PaneEmpty, PaneHead, PaneList, PaneMore, PassRateText, RunChips, TaskColumn, TaskModeSwitch,
+} from '../../../components/run/RunRecords';
 import { LocaleLink } from '../../../i18n/LocaleRouting';
+import { searchOf } from '../../../routes/address';
 import { COMPARISON_NAVIGATE_OPTIONS, type ComparisonView } from '../../../routes/comparison';
 import {
-  EVERY_COMBINATION, OUTCOME_FILTERS, RUN_RECORD_VIEWS, TASK_PAGE_SIZE, combinationKey, defaultRunId, parseRunRecordsQuery,
-  runRecordsLevel, runRecordsPath, runRecordsSearch, withCombination, withDetail, withFilter, withRecordsView, withRun, withSearch, withTask,
+  EVERY_COMBINATION, OUTCOME_FILTERS, RUN_RECORDS_PARAMS, RUN_RECORD_VIEWS, TASK_PAGE_SIZE, defaultRunId, parseRunRecordsQuery,
+  runRecordsLevel, runRecordsPath, withCombination, withDetail, withFilter, withRecordsView, withRun, withSearch, withTask,
   type RunRecordsLevel, type RunRecordsQuery,
 } from '../../../routes/runRecords';
 import { BENCHMARKS_PATH, INSTRUCTION_PATH, benchmarkPath, stagePath, taskFilesPath } from '../../../routes/site';
@@ -43,9 +47,9 @@ export function RunRecordsPage() {
   const update = (next: RunRecordsQuery) => {
     const sameChoice = next.by === query.by && next.combination === query.combination && next.task === query.task && next.run === query.run && next.mode === query.mode;
     // Only a narrow window replacing one level with another starts again from the top.
-    setSearch(runRecordsSearch(next), { replace: sameChoice, preventScrollReset: runRecordsLevel(next, narrow) === level });
+    setSearch(searchOf(RUN_RECORDS_PARAMS, next), { replace: sameChoice, preventScrollReset: runRecordsLevel(next, narrow) === level });
   };
-  const compare = (next: RunRecordsQuery) => setSearch(runRecordsSearch(next), COMPARISON_NAVIGATE_OPTIONS);
+  const compare = (next: RunRecordsQuery) => setSearch(searchOf(RUN_RECORDS_PARAMS, next), COMPARISON_NAVIGATE_OPTIONS);
   return (
     <div className={styles.workspace} data-half={benchmark.stage.half}>
       <RunToolbar benchmark={benchmark} query={query} onQuery={update} />
@@ -124,7 +128,7 @@ export function TaskView({ benchmark, query, level, onQuery, onCompare }: {
         <Suspense fallback={<Pane><Loading /></Pane>}>
           {query.mode === 'compare'
             ? <TaskCompareArea benchmark={benchmark} taskId={taskId} query={query} level={level} onQuery={onQuery} onCompare={onCompare} />
-            : <TaskRunsArea benchmark={benchmark} taskId={taskId} summary={tasks.items.find(task => task.id === taskId)} query={query} level={level} onQuery={onQuery} />}
+            : <TaskRunsArea benchmark={benchmark} taskId={taskId} query={query} level={level} onQuery={onQuery} />}
         </Suspense>
       )}
     </>
@@ -132,17 +136,15 @@ export function TaskView({ benchmark, query, level, onQuery, onCompare }: {
 }
 
 /**
- * The chosen task's combinations and, beside them, the chosen run; on a narrow window, whichever level is open. The
- * task's pass rate is the one the task list gives it, the combination kept to's when there is one.
+ * The chosen task's combinations and, beside them, the chosen run; on a narrow window, whichever level is open. With a
+ * combination filter, the task's runs and its pass rate are the combination's, as the API gives them.
  */
-export function TaskRunsArea({ benchmark, taskId, summary, query, level, onQuery }: {
-  benchmark: BenchmarkDetail; taskId: string; summary: TaskSummary | undefined; query: RunRecordsQuery; level: RunRecordsLevel; onQuery: (query: RunRecordsQuery) => void;
+export function TaskRunsArea({ benchmark, taskId, query, level, onQuery }: {
+  benchmark: BenchmarkDetail; taskId: string; query: RunRecordsQuery; level: RunRecordsLevel; onQuery: (query: RunRecordsQuery) => void;
 }) {
   const { t } = useTranslation();
-  const taskRuns = useTaskRuns(benchmark.id, taskId);
-  const combinations = taskRuns.combinations.filter(combination => !query.combination || combinationKey(combination.model.id, combination.harness.id) === query.combination);
-  // A task the list has not loaded yet is rated over all its runs until it has.
-  const passRate = (summary ?? taskRuns.task).passRate;
+  // The runs in view stay while another combination's load.
+  const { task, runsPerTask, combinations } = useTaskRuns(benchmark.id, taskId, useDeferredValue(query.combination));
   const runId = query.run ?? (level === 'threePanes' ? defaultRunId(combinations.flatMap(combination => combination.runs), query.outcome) : undefined);
   return (
     <>
@@ -150,17 +152,17 @@ export function TaskRunsArea({ benchmark, taskId, summary, query, level, onQuery
         <Pane label={t('runs.runs')}>
           <PaneHead className={styles.stacked}>
             {level === 'runs' && <button type="button" className={clsx(styles.back, 't-micro c-muted')} onClick={() => onQuery(withTask(query, undefined))}>‹ {t('runs.allTasks')}</button>}
-            <span className="t-label">{taskRuns.task.id} {taskRuns.task.title}</span>
-            <span className="t-micro c-faint">{t('runs.taskSummary', { combinations: combinations.length, runs: taskRuns.runsPerTask, rate: Math.round(passRate * 100) })}</span>
-            <LocaleLink className={clsx(controls.textLink, styles.taskFiles, 't-micro')} to={taskFilesPath(benchmark.id, taskRuns.task.id)}>{t('tasks.files')}</LocaleLink>
+            <span className="t-label">{task.id} {task.title}</span>
+            <span className="t-micro c-faint">{t('runs.taskSummary', { combinations: combinations.length, runs: runsPerTask })} · <PassRateText rate={task.passRate} /></span>
+            <LocaleLink className={clsx(controls.textLink, styles.taskFiles, 't-micro')} to={taskFilesPath(benchmark.id, task.id)}>{t('tasks.files')}</LocaleLink>
             <span className={styles.modeSwitch}><TaskModeSwitch query={query} onQuery={onQuery} /></span>
           </PaneHead>
           <PaneList>
-            {combinations.map(({ model, harness, runs }) => (
+            {combinations.map(({ model, harness, runs, passRate }) => (
               <li key={combinationKey(model.id, harness.id)} className={styles.combination}>
                 <p className={styles.comboName}>
                   <CombinationLabel model={model} harness={harness} />
-                  <span className="t-numeric c-muted">{runs.filter(run => run.outcome === 'passed').length} / {runs.length}</span>
+                  <span className="t-micro c-muted"><PassRateText rate={passRate} /></span>
                 </p>
                 <RunChips runs={runs} runId={runId} outcome={query.outcome} labelOf={run => t('runs.runOf', { model: model.name, harness: harness.name, attempt: run.attempt })} onRun={run => onQuery(withRun(query, run))} />
               </li>
@@ -169,7 +171,7 @@ export function TaskRunsArea({ benchmark, taskId, summary, query, level, onQuery
         </Pane>
       )}
       {(level === 'threePanes' || level === 'detail') && (
-        <RunDetailColumn benchmark={benchmark} runId={runId} query={query} back={level === 'detail' ? t('runs.allRunsOf', { task: taskRuns.task.id }) : undefined} onQuery={onQuery} />
+        <RunDetailColumn benchmark={benchmark} runId={runId} query={query} back={level === 'detail' ? t('runs.allRunsOf', { task: task.id }) : undefined} onQuery={onQuery} />
       )}
     </>
   );
@@ -197,9 +199,8 @@ export function TaskCompareArea({ benchmark, taskId, query, level, onQuery, onCo
   benchmark: BenchmarkDetail; taskId: string; query: RunRecordsQuery; level: RunRecordsLevel; onQuery: (query: RunRecordsQuery) => void; onCompare: (query: RunRecordsQuery) => void;
 }) {
   const { t } = useTranslation();
-  const taskRuns = useTaskRuns(benchmark.id, taskId);
   // The combination filter narrows the runs to choose from as it narrows the runs listed.
-  const entrants = taskRuns.combinations.filter(combination => !query.combination || combinationKey(combination.model.id, combination.harness.id) === query.combination);
+  const { task, combinations } = useTaskRuns(benchmark.id, taskId, useDeferredValue(query.combination));
   const onView = (view: ComparisonView) => onCompare({ ...query, ...view });
   const useComparison = (runIds: string[]) => useTaskComparison(benchmark.id, taskId, runIds);
   const source: ComparisonSource = {
@@ -209,13 +210,13 @@ export function TaskCompareArea({ benchmark, taskId, query, level, onQuery, onCo
     <Pane label={t('compare.label')} className={styles.compareArea}>
       <div className={styles.compareHead}>
         {level === 'runs' && <button type="button" className={clsx(styles.back, 't-micro c-muted')} onClick={() => onQuery(withTask(query, undefined))}>‹ {t('runs.allTasks')}</button>}
-        <span className="t-label">{taskRuns.task.id} {taskRuns.task.title}</span>
+        <span className="t-label">{task.id} {task.title}</span>
         <TaskModeSwitch query={query} onQuery={onQuery} />
       </div>
       <HuggingFaceBoundary resetKey={taskId}>
         <Suspense fallback={<Loading />}><PublicTaskInput benchmarkId={benchmark.id} taskId={taskId} /></Suspense>
       </HuggingFaceBoundary>
-      <RunComparison entrants={entrants} source={source} view={query} onView={onView} />
+      <RunComparison entrants={combinations} source={source} view={query} onView={onView} />
     </Pane>
   );
 }
@@ -233,7 +234,7 @@ export function PublicTaskInput({ benchmarkId, taskId }: { benchmarkId: string; 
 export function RunModelView({ benchmark, query, task, run, level, onQuery }: {
   benchmark: BenchmarkDetail; query: RunRecordsQuery; task: string; run: string; level: RunRecordsLevel; onQuery: (query: RunRecordsQuery) => void;
 }) {
-  const { combinations } = useTaskRuns(benchmark.id, task);
+  const { combinations } = useTaskRuns(benchmark.id, task, undefined);
   const holder = combinations.find(combination => combination.runs.some(candidate => candidate.id === run));
   if (!holder) {
     throw new Error(`${run} is not a published run of ${task}`);
@@ -290,7 +291,7 @@ export function CombinationRunsArea({ benchmark, entry, query, level, onQuery }:
               <li key={task.id} className={styles.combination}>
                 <p className={styles.comboName}>
                   <span className="t-mono c-faint">{task.id}</span><span className="t-small">{task.title}</span>
-                  <span className="t-numeric c-muted">{runs.filter(run => run.outcome === 'passed').length} / {runs.length}</span>
+                  <span className="t-micro c-muted"><PassRateText rate={task.passRate} /></span>
                 </p>
                 <RunChips runs={runs} runId={runId} outcome={query.outcome} labelOf={run => t('runs.runOf', { model: model.name, harness: harness.name, attempt: run.attempt })} onRun={run => onQuery(withRun(withTask(query, task.id), run))} />
               </li>

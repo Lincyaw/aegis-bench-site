@@ -1,6 +1,7 @@
 import { clsx } from 'clsx';
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
+import { combinationKey } from '../../api/constraints';
 import type { Combination, ConsoleBenchmark, EntrantKey, ReleaseContent } from '../../api/types';
 import { LocaleLink } from '../../i18n/LocaleRouting';
 import { consoleRunPath } from '../../routes/consoleRuns';
@@ -25,7 +26,7 @@ export function ReleaseContentView({ benchmark, shown }: { benchmark: ConsoleBen
         <h2 className="t-heading">{t('console.release.entrants')}</h2>
         <ul className={styles.entrants}>
           {benchmark.entrants.filter(entrant => shown.entrants.some(key => isEntrant(key, entrant))).map(({ model, harness }) => (
-            <li key={`${model.id}-${harness.id}`}><ModelLabel model={model} /><span className="t-small c-muted">{harness.name}</span></li>
+            <li key={combinationKey(model.id, harness.id)}><ModelLabel model={model} /><span className="t-small c-muted">{harness.name}</span></li>
           ))}
         </ul>
       </section>
@@ -52,7 +53,7 @@ export function EntrantChoice({ entrants, chosen, onChange }: { entrants: Combin
           const pressed = chosen.some(key => isEntrant(key, entrant));
           return (
             <ToggleChip
-              key={`${entrant.model.id}-${entrant.harness.id}`} pressed={pressed} disabled={pressed && chosen.length === 1}
+              key={combinationKey(entrant.model.id, entrant.harness.id)} pressed={pressed} disabled={pressed && chosen.length === 1}
               onToggle={() => onChange(pressed ? chosen.filter(key => !isEntrant(key, entrant)) : [...chosen, { modelId: entrant.model.id, harnessId: entrant.harness.id }])}
             >
               {entrant.model.name} · {entrant.harness.name}

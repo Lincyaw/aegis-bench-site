@@ -47,17 +47,22 @@ export function LifecycleMiniMap({ stages, current }: { stages: Stage[]; current
   );
 }
 
+/** A labelled stage also carries its number, which takes the label's place on a narrow map, where labels have no room. */
 export function StageCaption({ stage, label }: { stage: Stage; label: StageLabel | undefined }) {
+  const [dx, dy] = numberOffset(stage.id);
+  const number = <span className={clsx(styles.number, label && styles.labelledNumber, 't-mono c-faint')} style={{ transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))` }}>{stage.id}</span>;
   if (!label) {
-    const [dx, dy] = numberOffset(stage.id);
-    return <span className={clsx(styles.number, 't-mono c-faint')} style={{ transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))` }}>{stage.id}</span>;
+    return number;
   }
   const { above, towardLeft } = labelPlacement(stage.id);
   return (
-    <span className={clsx(styles.label, above ? styles.above : styles.below, towardLeft ? styles.left : styles.right)}>
-      <span className="t-micro c-main">{label.primary}</span>
-      <span className="t-micro c-faint">{label.secondary}</span>
-    </span>
+    <>
+      <span className={clsx(styles.label, above ? styles.above : styles.below, towardLeft ? styles.left : styles.right)}>
+        <span className="t-micro c-main">{label.primary}</span>
+        <span className="t-micro c-faint">{label.secondary}</span>
+      </span>
+      {number}
+    </>
   );
 }
 

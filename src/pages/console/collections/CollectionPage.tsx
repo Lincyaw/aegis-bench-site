@@ -15,7 +15,10 @@ import { LocaleLink } from '../../../i18n/LocaleRouting';
 import { useLocale } from '../../../i18n/localeContext';
 import { groupedNumber } from '../../../i18n/locales';
 import { consoleBenchmarkPath } from '../../../routes/console';
-import { COLLECTION_CHARTS, COLLECTION_TABS, MATRIX_PAGE_SIZE, collectionPath, collectionSearch, collectionsPath, parseCollectionView, type CollectionView } from '../../../routes/consoleCollections';
+import { searchOf } from '../../../routes/address';
+import {
+  COLLECTION_CHARTS, COLLECTION_PARAMS, COLLECTION_TABS, MATRIX_PAGE_SIZE, collectionPath, collectionsPath, parseCollectionView, type CollectionView,
+} from '../../../routes/consoleCollections';
 import { consoleModelPath } from '../../../routes/consoleModels';
 import { consoleTaskPath } from '../../../routes/consoleTasks';
 import { Loading, Tag } from '../../../ui/content';
@@ -36,7 +39,7 @@ export function CollectionPage() {
     throw new Error(`no collection ${tag} in ${benchmark.name}`);
   }
   const view = parseCollectionView(params);
-  const onView = (next: Partial<CollectionView>) => setParams(collectionSearch({ ...view, ...next }), { replace: true, preventScrollReset: true });
+  const onView = (next: Partial<CollectionView>) => setParams(searchOf(COLLECTION_PARAMS, { ...view, ...next }), { replace: true, preventScrollReset: true });
   return (
     <div className={styles.page} data-half={benchmark.stage.half}>
       <ConsoleHeader

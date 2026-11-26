@@ -1,5 +1,6 @@
 import type { RunDetail, RunOutcome, RunRef } from '../api/types';
-import { COMPARISON_PARAMS, EMPTY_COMPARISON, parseComparisonView, setComparisonParams, type ComparisonView } from './comparison';
+import { pathWithSearch, searchOf, type AddressTable } from './address';
+import { EMPTY_COMPARISON, parseComparisonView, type ComparisonView } from './comparison';
 
 /** The five views of a run, in the order its tabs show them; each is labelled by runs.tab.<view>. */
 export const RUN_TABS = ['input', 'output', 'grading', 'failure', 'trajectory'] as const;
@@ -46,7 +47,7 @@ export interface RunRecordsQuery extends ComparisonView {
   by: RunRecordsView;
   q: string;
 
-  /** A model and harness pair, as combinationKey writes it: the task view's filter, the model view's choice */
+  /** A model and harness pair, as combinationKey names it: the task view's filter, the model view's choice */
   combination?: string;
 
   outcome: OutcomeFilter;
@@ -61,21 +62,20 @@ export interface RunRecordsQuery extends ComparisonView {
   check?: string;
 }
 
-/** The values the address leaves out. */
-export const RUN_RECORDS_DEFAULTS = { by: 'task', outcome: EVERY_OUTCOME, mode: 'runs' } as const satisfies Partial<RunRecordsQuery>;
+/** Every parameter the page keeps in its address, with the value the address leaves unsaid. */
+export const RUN_RECORDS_PARAMS: AddressTable<RunRecordsQuery> = {
+  by: 'task', q: '', combination: undefined, outcome: EVERY_OUTCOME, task: undefined, mode: 'runs', run: undefined, tab: undefined, step: undefined,
+  check: undefined, ...EMPTY_COMPARISON,
+};
 
 /** The combination filter's choice that shows every combination; a select's choices cannot be empty. */
 export const EVERY_COMBINATION = 'all';
 
-export function combinationKey(modelId: string, harnessId: string): string {
-  return `${modelId}-${harnessId}`;
-}
-
 /** The page's state from its address; a value outside its set fails the page rather than showing nothing. */
 export function parseRunRecordsQuery(params: URLSearchParams): RunRecordsQuery {
-  const by = params.get('by') ?? RUN_RECORDS_DEFAULTS.by;
-  const outcome = params.get('outcome') ?? RUN_RECORDS_DEFAULTS.outcome;
-  const mode = params.get('mode') ?? RUN_RECORDS_DEFAULTS.mode;
+  const by = params.get('by') ?? RUN_RECORDS_PARAMS.by;
+  const outcome = params.get('outcome') ?? RUN_RECORDS_PARAMS.outcome;
+  const mode = params.get('mode') ?? RUN_RECORDS_PARAMS.mode;
   const tab = params.get('tab') ?? undefined;
   const step = params.get('step') ?? undefined;
   if (!RUN_RECORD_VIEWS.some(view => view === by)) {
@@ -100,22 +100,8 @@ export function parseRunRecordsQuery(params: URLSearchParams): RunRecordsQuery {
   };
 }
 
-/** The address search of a page state; empty values and defaults are left out. */
-export function runRecordsSearch(query: Partial<RunRecordsQuery>): string {
-  const params = new URLSearchParams();
-  for (const [key, value] of Object.entries(query)) {
-    const isDefault = key in RUN_RECORDS_DEFAULTS && RUN_RECORDS_DEFAULTS[key as keyof typeof RUN_RECORDS_DEFAULTS] === value;
-    if (value !== undefined && value !== '' && !isDefault && !COMPARISON_PARAMS.some(name => name === key)) {
-      params.set(key, String(value));
-    }
-  }
-  setComparisonParams(params, query);
-  const search = params.toString();
-  return search && `?${search}`;
-}
-
 export function runRecordsPath(benchmarkId: string, query: Partial<RunRecordsQuery> = {}): string {
-  return `/benchmarks/${benchmarkId}/runs${runRecordsSearch(query)}`;
+  return pathWithSearch(`/benchmarks/${benchmarkId}/runs`, searchOf(RUN_RECORDS_PARAMS, query));
 }
 
 /** Switching the view keeps the chosen task, combination and run, and leaves the comparison. */

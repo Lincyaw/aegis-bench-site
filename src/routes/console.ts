@@ -1,3 +1,6 @@
+import type { CombinationScope } from '../api/types';
+import { pathWithSearch } from './address';
+
 /** Every path of the console, as site paths; links add the reader's locale. */
 export const CONSOLE_PATH = '/console';
 export const SIGN_IN_PATH = `${CONSOLE_PATH}/sign-in`;
@@ -9,7 +12,20 @@ export const EVERY_CHOICE = 'all';
 export const NEXT_PARAM = 'next';
 
 export function signInPath(next: string): string {
-  return `${SIGN_IN_PATH}?${new URLSearchParams({ [NEXT_PARAM]: next })}`;
+  return pathWithSearch(SIGN_IN_PATH, new URLSearchParams({ [NEXT_PARAM]: next }));
+}
+
+/**
+ * The combinations a console page keeps to, from its address, where every page names them the same way: a model, and
+ * within it a harness. A harness without its model fails the page rather than showing something else.
+ */
+export function parseCombinationScope(params: URLSearchParams): CombinationScope {
+  const model = params.get('model') ?? undefined;
+  const harness = params.get('harness') ?? undefined;
+  if (harness !== undefined && model === undefined) {
+    throw new Error(`a page keeps to a harness only within a model, not to ${harness} alone`);
+  }
+  return { model, harness };
 }
 
 /** The page the sign-in page returns to: a console page, the console's home when the address names none. */

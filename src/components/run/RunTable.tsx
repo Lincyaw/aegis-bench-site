@@ -1,6 +1,7 @@
 import { clsx } from 'clsx';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { combinationKey } from '../../api/constraints';
 import { consoleReviewFilterValues, runOutcomeValues } from '../../api/schema';
 import type { ConsoleBenchmark, ConsoleRunQuery, ReviewFilter, RunOutcome, RunRow } from '../../api/types';
 import { LocaleLink } from '../../i18n/LocaleRouting';
@@ -8,7 +9,6 @@ import { useLocale } from '../../i18n/localeContext';
 import { dateTimeOf, groupedNumber } from '../../i18n/locales';
 import { EVERY_CHOICE } from '../../routes/console';
 import { consoleRunPath } from '../../routes/consoleRuns';
-import { combinationKey } from '../../routes/runRecords';
 import { SearchField, Select } from '../../ui/controls';
 import table from '../../ui/table.module.css';
 import { ModelLabel } from '../model/ModelBadge';
@@ -17,19 +17,32 @@ import { formatCost } from '../result/presentation';
 import { OutcomeBadge } from './Outcome';
 import styles from './RunTable.module.css';
 
+/**
+ * The run list's search and filters, then `children`, the chips that let go of what the list keeps to. A list that
+ * keeps to no combination chooses one here; one that keeps to some shows them among its chips instead.
+ */
 export function RunFilters({ benchmark, query, onChange, children }: { benchmark: ConsoleBenchmark; query: ConsoleRunQuery; onChange: (next: Partial<ConsoleRunQuery>) => void; children: ReactNode }) {
   const { t } = useTranslation();
-  const entrants = benchmark.entrants.filter(({ model }) => !query.model || model.id === query.model);
+  const keyed = new Map(benchmark.entrants.map(entrant => [combinationKey(entrant.model.id, entrant.harness.id), entrant]));
+  const choose = (key: string) => {
+    const entrant = keyed.get(key);
+    if (!entrant) {
+      throw new Error(`${benchmark.id} has no combination ${key}`);
+    }
+    onChange({ model: entrant.model.id, harness: entrant.harness.id });
+  };
   return (
     <div className={styles.filters} role="search" aria-label={t('console.runs.filters')}>
       <SearchField label={t('console.runs.search')} value={query.q} onChange={q => onChange({ q })} className={styles.search} />
-      <Select
-        label={t('console.runs.combinationFilter')} value={query.combination || EVERY_CHOICE} onChange={combination => onChange({ combination: combination === EVERY_CHOICE ? '' : combination })}
-        choices={[
-          { value: EVERY_CHOICE, label: t('console.runs.everyCombination') },
-          ...entrants.map(({ model, harness }) => ({ value: combinationKey(model.id, harness.id), label: `${model.name} · ${harness.name}` })),
-        ]}
-      />
+      {query.model === undefined && (
+        <Select
+          label={t('console.runs.combinationFilter')} value={EVERY_CHOICE} onChange={choose}
+          choices={[
+            { value: EVERY_CHOICE, label: t('console.runs.everyCombination') },
+            ...[...keyed].map(([key, { model, harness }]) => ({ value: key, label: `${model.name} · ${harness.name}` })),
+          ]}
+        />
+      )}
       <Select
         label={t('console.runs.outcomeFilter')} value={query.outcome ?? EVERY_CHOICE} onChange={outcome => onChange({ outcome: outcome === EVERY_CHOICE ? undefined : outcome as RunOutcome })}
         choices={[{ value: EVERY_CHOICE, label: t('console.runs.everyOutcome') }, ...runOutcomeValues.map(outcome => ({ value: outcome, label: t(`runs.outcome.${outcome}`) }))]}

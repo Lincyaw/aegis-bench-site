@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { combinationKey } from '../../api/constraints';
 import type { EntrantMark } from '../../api/types';
 import { OutcomeDot } from '../run/Outcome';
 import { formatRate } from './presentation';
@@ -20,7 +21,7 @@ export function EntrantDots({ entrants }: { entrants: EntrantMark[] }) {
       {entrants.map(({ model, harness, solved }) => {
         const entrant = `${model.name} · ${harness.name}`;
         const label = solved ? t('console.tasks.entrantSolved', { entrant }) : t('console.tasks.entrantUnsolved', { entrant });
-        return <span key={`${model.id}-${harness.id}`} className={styles.dot} title={label} role="img" aria-label={label}><OutcomeDot outcome={solved ? 'passed' : 'failed'} /></span>;
+        return <span key={combinationKey(model.id, harness.id)} className={styles.dot} title={label} role="img" aria-label={label}><OutcomeDot outcome={solved ? 'passed' : 'failed'} /></span>;
       })}
     </span>
   );

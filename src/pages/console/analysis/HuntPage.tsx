@@ -8,8 +8,9 @@ import type { Hunt, HuntTrialQuery, HuntVerdict } from '../../../api/types';
 import { FacetPanel, HuntCoverageTiles } from '../../../components/hunt/Hunt';
 import { HuntTrialRow } from '../../../components/hunt/HuntTrials';
 import { ConsoleHeader } from '../../../components/shell/ConsoleHeader';
+import { searchOf } from '../../../routes/address';
 import { EVERY_CHOICE, consoleBenchmarkPath } from '../../../routes/console';
-import { HUNT_TRIAL_PAGE_SIZE, analysisPath, huntTrialSearch, parseHuntTrialQuery } from '../../../routes/consoleAnalysis';
+import { HUNT_TRIAL_PAGE_SIZE, HUNT_TRIAL_PARAMS, analysisPath, parseHuntTrialQuery } from '../../../routes/consoleAnalysis';
 import { Select } from '../../../ui/controls';
 import { Pager } from '../../../ui/navigation';
 import table from '../../../ui/table.module.css';
@@ -26,7 +27,7 @@ export function HuntPage() {
     throw new Error(`no hunt ${huntId} on ${benchmark.name}`);
   }
   const query = parseHuntTrialQuery(params);
-  const update = (next: Partial<HuntTrialQuery>) => setParams(huntTrialSearch({ ...query, offset: 0, ...next }), { replace: true, preventScrollReset: true });
+  const update = (next: Partial<HuntTrialQuery>) => setParams(searchOf(HUNT_TRIAL_PARAMS, { ...query, offset: 0, ...next }), { replace: true, preventScrollReset: true });
   return (
     <div className={styles.page} data-half={benchmark.stage.half}>
       <ConsoleHeader
@@ -55,7 +56,7 @@ export function HuntTrials({ benchmarkId, hunt, query, onChange }: { benchmarkId
       <h2 className="t-heading">{t('console.analysis.trials')}</h2>
       <div className={styles.filters}>
         <Select
-          label={t('console.analysis.facetFilter')} value={query.facet || EVERY_CHOICE} onChange={facet => onChange({ facet: facet === EVERY_CHOICE ? '' : facet })}
+          label={t('console.analysis.facetFilter')} value={query.facet ?? EVERY_CHOICE} onChange={facet => onChange({ facet: facet === EVERY_CHOICE ? undefined : facet })}
           choices={[{ value: EVERY_CHOICE, label: t('console.analysis.everyFacet') }, ...hunt.facets.map(facet => ({ value: facet.id, label: facet.name }))]}
         />
         <Select

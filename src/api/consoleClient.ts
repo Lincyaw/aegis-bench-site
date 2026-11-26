@@ -2,8 +2,8 @@ import { useMutation, useQueryClient, useSuspenseInfiniteQuery, useSuspenseQueri
 import { useLocale } from '../i18n/localeContext';
 import { SITE_QUERY, api, languageHeader, nextPageOffset, responseBody } from './client';
 import type {
-  ChangelogQuery, ConsoleRunQuery, ConsoleTaskQuery, HuntTrialQuery, Invitation, ModelTaskQuery, NewReport, ReleaseContent, ReportDraft, ReportEdit,
-  ReviewRequest, Role, RunEventQuery, SessionState, SettingsChange, SignInRequest, TaskOrder,
+  ChangelogQuery, CombinationScope, ConsoleRunQuery, ConsoleTaskQuery, HuntTrialQuery, Invitation, ModelTaskQuery, NewReport, ReleaseContent, ReportDraft,
+  ReportEdit, ReviewRequest, Role, RunEventQuery, SessionState, SettingsChange, SignInRequest, TaskOrder,
 } from './types';
 
 /** Every console query key starts with this, so signing in or out can drop what the previous session read. */
@@ -138,11 +138,12 @@ export function useConsoleTaskPage(benchmarkId: string, query: ConsoleTaskQuery,
   }).data;
 }
 
-export function useConsoleTask(benchmarkId: string, taskId: string) {
+/** A task, with what the runs of the combinations a scope keeps to come to. */
+export function useConsoleTask(benchmarkId: string, taskId: string, { model, harness }: CombinationScope) {
   const locale = useLocale();
   return useSuspenseQuery({
-    queryKey: [CONSOLE_QUERY, 'task', benchmarkId, taskId, locale],
-    queryFn: () => responseBody(api.GET('/console/benchmarks/{benchmarkId}/tasks/{taskId}', { params: { path: { benchmarkId, taskId }, header: languageHeader(locale) } })),
+    queryKey: [CONSOLE_QUERY, 'task', benchmarkId, taskId, model, harness, locale],
+    queryFn: () => responseBody(api.GET('/console/benchmarks/{benchmarkId}/tasks/{taskId}', { params: { path: { benchmarkId, taskId }, query: { model, harness }, header: languageHeader(locale) } })),
   }).data;
 }
 
@@ -161,11 +162,12 @@ export function useTaskReference(benchmarkId: string, taskId: string) {
   }).data;
 }
 
-export function useTaskResults(benchmarkId: string, taskId: string) {
+/** The runs on a task of each combination a scope keeps to, and the runs that check the task itself. */
+export function useTaskResults(benchmarkId: string, taskId: string, { model, harness }: CombinationScope) {
   const locale = useLocale();
   return useSuspenseQuery({
-    queryKey: [CONSOLE_QUERY, 'taskResults', benchmarkId, taskId, locale],
-    queryFn: () => responseBody(api.GET('/console/benchmarks/{benchmarkId}/tasks/{taskId}/results', { params: { path: { benchmarkId, taskId }, header: languageHeader(locale) } })),
+    queryKey: [CONSOLE_QUERY, 'taskResults', benchmarkId, taskId, model, harness, locale],
+    queryFn: () => responseBody(api.GET('/console/benchmarks/{benchmarkId}/tasks/{taskId}/results', { params: { path: { benchmarkId, taskId }, query: { model, harness }, header: languageHeader(locale) } })),
   }).data;
 }
 
@@ -180,11 +182,14 @@ export function useConsoleTaskComparison(benchmarkId: string, taskId: string, ru
   }).data;
 }
 
-export function useTaskCheckResults(benchmarkId: string, taskId: string) {
+/** Each check of a task against each combination a scope keeps to. */
+export function useTaskCheckResults(benchmarkId: string, taskId: string, { model, harness }: CombinationScope) {
   const locale = useLocale();
   return useSuspenseQuery({
-    queryKey: [CONSOLE_QUERY, 'taskCheckResults', benchmarkId, taskId, locale],
-    queryFn: () => responseBody(api.GET('/console/benchmarks/{benchmarkId}/tasks/{taskId}/check-results', { params: { path: { benchmarkId, taskId }, header: languageHeader(locale) } })),
+    queryKey: [CONSOLE_QUERY, 'taskCheckResults', benchmarkId, taskId, model, harness, locale],
+    queryFn: () => responseBody(api.GET('/console/benchmarks/{benchmarkId}/tasks/{taskId}/check-results', {
+      params: { path: { benchmarkId, taskId }, query: { model, harness }, header: languageHeader(locale) },
+    })),
   }).data;
 }
 
@@ -219,7 +224,7 @@ export function useConsoleRunPage(benchmarkId: string, query: ConsoleRunQuery, p
     queryFn: () => responseBody(api.GET('/console/benchmarks/{benchmarkId}/runs', {
       params: {
         path: { benchmarkId }, header: languageHeader(locale),
-        query: { q: query.q, model: query.model, combination: query.combination, outcome: query.outcome, review: query.review, offset: query.offset, limit: pageSize },
+        query: { q: query.q, task: query.task, model: query.model, harness: query.harness, outcome: query.outcome, review: query.review, offset: query.offset, limit: pageSize },
       },
     })),
   }).data;
@@ -360,7 +365,7 @@ export function useWorkbench() {
 export function useChangelog(query: ChangelogQuery, pageSize: number) {
   return useSuspenseQuery({
     queryKey: [CONSOLE_QUERY, 'changelog', query, pageSize],
-    queryFn: () => responseBody(api.GET('/console/changelog', { params: { query: { benchmarkId: query.benchmarkId, change: query.change, offset: query.offset, limit: pageSize } } })),
+    queryFn: () => responseBody(api.GET('/console/changelog', { params: { query: { benchmarkId: query.benchmark, change: query.change, offset: query.offset, limit: pageSize } } })),
   }).data;
 }
 

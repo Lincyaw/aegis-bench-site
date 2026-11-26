@@ -1,20 +1,21 @@
 import { clsx } from 'clsx';
-import { Suspense } from 'react';
+import { Suspense, useDeferredValue } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { useConsoleBenchmark, useConsoleTask, useConsoleTaskEntryPages, useConsoleTaskFile } from '../../../api/consoleClient';
 import type { ConsoleTaskDetail } from '../../../api/types';
+import { CombinationScopeChip } from '../../../components/model/ModelBadge';
 import { EntrantDots } from '../../../components/result/PassRate';
 import { HuggingFaceBoundary } from '../../../components/run/HuggingFace';
 import { ConsoleHeader } from '../../../components/shell/ConsoleHeader';
 import { TaskContentTab } from '../../../components/task/TaskContent';
 import { TaskFileBrowser, type TaskFileSource } from '../../../components/task/TaskFileBrowser';
 import { LocaleLink } from '../../../i18n/LocaleRouting';
+import { searchOf } from '../../../routes/address';
 import { consoleBenchmarkPath } from '../../../routes/console';
-import { TASK_TABS, consoleTaskPath, consoleTasksPath, inScope, parseTaskPageView, taskPageSearch, type TaskPageView, type TaskTab } from '../../../routes/consoleTasks';
+import { TASK_PAGE_PARAMS, TASK_TABS, consoleTaskPath, consoleTasksPath, parseTaskPageView, type TaskPageView, type TaskTab } from '../../../routes/consoleTasks';
 import { ENTRY_PAGE_SIZE, INSTRUCTION_PATH } from '../../../routes/site';
 import { Loading, Tag } from '../../../ui/content';
-import { ScopeChip } from '../../../ui/controls';
 import { TabRow } from '../../../ui/navigation';
 import navigation from '../../../ui/navigation.module.css';
 import { TaskComparisonTab } from './TaskComparisonTab';
@@ -30,11 +31,10 @@ export function TaskDetailPage() {
   const [params] = useSearchParams();
   const view = parseTaskPageView(params);
   const benchmark = useConsoleBenchmark(benchmarkId);
-  const task = useConsoleTask(benchmark.id, taskId);
+  // The task as the page kept to it stays until the task as it now keeps to arrives.
+  const task = useConsoleTask(benchmark.id, taskId, parseTaskPageView(new URLSearchParams(useDeferredValue(params.toString()))));
   const counts: Record<TaskTab, number | undefined> = {
-    content: undefined, grading: task.sizes.checks, reference: undefined,
-    runs: task.entrants.filter(entrant => inScope(view, entrant)).reduce((sum, entrant) => sum + entrant.runs, 0),
-    compare: undefined, files: task.sizes.files, revisions: task.sizes.revisions,
+    content: undefined, grading: task.sizes.checks, reference: undefined, runs: task.result.runs, compare: undefined, files: task.sizes.files, revisions: task.sizes.revisions,
   };
   return (
     <div className={styles.page} data-half={benchmark.stage.half}>
@@ -48,7 +48,9 @@ export function TaskDetailPage() {
         {task.spread && <Tag dashed>{t(`console.tasks.spread.${task.spread}`)}</Tag>}
         <EntrantDots entrants={task.entrants} />
         <span className="t-micro c-muted">{t('console.task.solvedBy', { solved: task.entrants.filter(entrant => entrant.solved).length, entrants: task.entrants.length })}</span>
-        {view.model && <TaskScopeChip task={task} view={view} />}
+        {view.model && (
+          <CombinationScopeChip entrants={benchmark.entrants} scope={view} to={consoleTaskPath(benchmark.id, task.id, { ...view, model: undefined, harness: undefined })} />
+        )}
       </div>
       <TabRow current={view.tab} className={styles.tabs} aria-label={t('console.task.tabList')}>
         {TASK_TABS.map(tab => (
@@ -66,20 +68,6 @@ export function TaskDetailPage() {
         </Suspense>
       </HuggingFaceBoundary>
     </div>
-  );
-}
-
-/** The model and harness the page keeps to, which the reader can let go of to see every combination. */
-export function TaskScopeChip({ task, view }: { task: ConsoleTaskDetail; view: TaskPageView }) {
-  const entrant = task.entrants.find(candidate => inScope(view, candidate));
-  if (!entrant) {
-    throw new Error(`no combination of ${task.id} runs ${view.model} ${view.harness ?? ''}`);
-  }
-  return (
-    <ScopeChip
-      name={view.harness ? `${entrant.model.name} · ${entrant.harness.name}` : entrant.model.name}
-      to={consoleTaskPath(task.benchmark.id, task.id, { ...view, model: undefined, harness: undefined })}
-    />
   );
 }
 
@@ -118,7 +106,7 @@ export function TaskFilesTab({ task, view }: { task: ConsoleTaskDetail; view: Ta
   return (
     <TaskFileBrowser
       className={styles.browser} source={source} note={t('console.task.files.note')} huggingFaceUrl={task.huggingFaceUrl} open={view.file ?? INSTRUCTION_PATH}
-      onOpen={next => setParams(taskPageSearch({ ...view, tab: 'files', file: next }), { replace: true, preventScrollReset: true })}
+      onOpen={next => setParams(searchOf(TASK_PAGE_PARAMS, { ...view, tab: 'files', file: next }), { replace: true, preventScrollReset: true })}
     />
   );
 }

@@ -29,6 +29,18 @@ model RunRow {
 
 model RunRowPage is Page<RunRow>;
 
+/**
+ * The combinations an operation keeps to: a model's, those in a harness, or one model's in one harness; every
+ * combination when both are empty.
+ */
+model CombinationScopeQuery {
+  /** A model's id; every model when empty */
+  @query(#{ explode: true }) `model`?: string = "";
+
+  /** A harness's id; every harness when empty */
+  @query(#{ explode: true }) harness?: string = "";
+}
+
 /** Which failed runs a list keeps by their review: the unreviewed ones, or those a review gave one class. */
 enum ReviewFilter {
   unreviewed,
@@ -105,18 +117,17 @@ model RunEventPage is Page<RunEvent>;
 @route("/console/benchmarks/{benchmarkId}/runs")
 @useAuth(SessionCookie)
 interface ConsoleRuns {
-  /** The benchmark's runs, newest first, a page at a time */
+  /** The benchmark's runs, newest first, a page at a time; a task the benchmark lacks, or a scope that keeps to none of its combinations, is not found */
   @get list(
     @path benchmarkId: string,
 
     /** Matches the task id or title */
     @query(#{ explode: true }) q?: string = "",
 
-    /** A model's id; every model when empty */
-    @query(#{ explode: true }) `model`?: string = "",
+    /** Only the runs of this task, by its id; every task when empty */
+    @query(#{ explode: true }) task?: string = "",
 
-    /** A model and harness pair as "<model id>-<harness id>"; every pair when empty */
-    @query(#{ explode: true }) combination?: string = "",
+    ...CombinationScopeQuery,
 
     @query(#{ explode: true }) outcome?: RunOutcome,
 
