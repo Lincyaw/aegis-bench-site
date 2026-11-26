@@ -1,6 +1,6 @@
 import type { ComponentType } from 'react';
 import { consoleAnnotationSeverityValues } from '../api/schema';
-import type { AnnotationCategory, AnnotationSeverity, ComparedRun, StepAnnotation, TaskComparison, TrajectoryStep } from '../api/types';
+import type { AnnotationCategory, AnnotationSeverity, ComparedRun, ComparisonBlock, StepAnnotation, TaskComparison, TrajectoryStep } from '../api/types';
 
 /*
  * How a comparison of a task's runs is read: the numerals that tell its runs apart, the contract every block of the
@@ -27,6 +27,16 @@ export interface BlockProps {
   comparison: TaskComparison;
 }
 
+export interface OverviewProps extends BlockProps {
+  /** Opens a run below and brings the block's detail into view; the detail's head carries the block's anchor */
+  onOpen: (runId: string) => void;
+}
+
+/** The id of a block's head among the opened runs, where opening a run from the block's overview scrolls to. */
+export function detailAnchorOf(block: ComparisonBlock): string {
+  return `compare-${block}`;
+}
+
 export interface DetailProps extends BlockProps {
   /** The runs opened in detail, in the comparison's order */
   opened: ComparedRun[];
@@ -39,7 +49,7 @@ export interface DetailProps extends BlockProps {
 
 /** A block shows a row in the overview, a cell per compared run, and its whole content for the runs opened in detail. */
 export interface BlockParts {
-  Overview: ComponentType<BlockProps>;
+  Overview: ComponentType<OverviewProps>;
   Detail: ComponentType<DetailProps>;
 }
 

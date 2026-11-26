@@ -422,6 +422,7 @@ export const consoleEn: ConsoleMessages = {
         reply: { title: 'Final reply', hint: 'What the agent said when the run ended, as it said it.' },
         trajectory: { title: 'Trajectory', hint: 'One mark per step: taller for a change, green and red for a passed and a failed submission. The flags beneath mark the steps the annotating model labelled; hover over a label for its reason.' },
       },
+      openTrajectory: 'Open this run\'s trajectory',
       files_one: '{{count}} file',
       files_other: '{{count}} files',
       unchanged: 'Unchanged',

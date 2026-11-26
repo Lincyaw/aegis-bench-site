@@ -421,6 +421,7 @@ export const consoleZh = {
         reply: { title: '最终回复', hint: '智能体在运行结束时的回复原文。' },
         trajectory: { title: '轨迹', hint: '一格代表一步：较高的是改动，绿色和红色是通过与未通过的提交。下方的色条标出标注模型标记的步骤，悬停在标签上可以看到理由。' },
       },
+      openTrajectory: '展开这次运行的轨迹',
       files_one: '{{count}} 个文件',
       files_other: '{{count}} 个文件',
       unchanged: '未改动',

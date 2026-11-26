@@ -3,8 +3,16 @@
 :is(.step, .flag, .tag, .swatch, .cardName, .note)[data-severity="warning"] { --severity-ink: var(--ink-warn); --severity-tint: var(--bg-warn-soft); }
 :is(.step, .flag, .tag, .swatch, .cardName, .note)[data-severity="note"] { --severity-ink: var(--accent-info); --severity-tint: var(--bg-info-soft); }
 
-/* The labelled steps sit as flags under the timeline's marks, one slot per step. */
-.strip { display: grid; gap: var(--space-px); }
+/* The labelled steps sit as flags under the timeline's marks, one slot per step; the strip opens the run's steps below. */
+.strip {
+  display: grid;
+  gap: var(--space-px);
+  margin: calc(-1 * var(--space-1)) calc(-1 * var(--space-2));
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  transition: background var(--duration-base);
+}
+.strip:hover { background: var(--bg-muted); }
 .strip .flags .flag { height: var(--space-1); background: var(--severity-ink, transparent); opacity: 1; }
 
 .counts { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin-top: var(--space-2); }

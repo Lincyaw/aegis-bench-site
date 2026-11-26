@@ -4,12 +4,12 @@ import { Suspense, useDeferredValue, useLayoutEffect, useRef, useState, type CSS
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { useTaskComparison, useTaskResults } from '../api/consoleClient';
-import type { ComparedRun, ConsoleTaskDetail, TaskComparison } from '../api/types';
+import type { ComparedRun, ComparisonBlock, ConsoleTaskDetail, TaskComparison } from '../api/types';
 import { LocaleLink } from '../i18n/LocaleRouting';
 import { VendorBadge } from '../models/ModelBadge';
 import { FailureClassTag } from '../results/FailureClassTag';
 import { formatCost } from '../results/presentation';
-import { runNumeralOf } from '../runs/comparison';
+import { detailAnchorOf, runNumeralOf } from '../runs/comparison';
 import { COMPARISON_BLOCKS } from '../runs/comparisonBlocks';
 import { BlockHead, Cell, ComparisonTable } from '../runs/ComparisonTable';
 import { consoleRunPath } from '../runs/consoleRunQuery';
@@ -134,6 +134,13 @@ export function ComparedRuns({ task, runIds, view, onView }: { task: ConsoleTask
   const { t } = useTranslation();
   const comparison = useTaskComparison(task.benchmark.id, task.id, runIds);
   const opened = comparison.runs.filter(run => view.open.includes(run.id));
+  const [focus, setFocus] = useState<ComparisonBlock>();
+  const openAt = (block: ComparisonBlock) => (runId: string) => {
+    if (!view.open.includes(runId)) {
+      onView(withOpenedRun(view, runId));
+    }
+    setFocus(block);
+  };
   const chooser = (
     <Popover.Root>
       <Popover.Trigger className={clsx(controls.pill, controls.small, styles.choose, 'loop-edge')}>
@@ -160,37 +167,55 @@ export function ComparedRuns({ task, runIds, view, onView }: { task: ConsoleTask
         </BlockHead>
         {comparison.blocks.map(block => {
           const { Overview } = COMPARISON_BLOCKS[block];
-          return <Overview key={block} comparison={comparison} />;
+          return <Overview key={block} comparison={comparison} onOpen={openAt(block)} />;
         })}
       </ComparisonTable>
-      {opened.length > 0 && <OpenedRuns comparison={comparison} opened={opened} view={view} onView={onView} />}
+      {opened.length > 0 && (
+        <Suspense fallback={<Loading />}>
+          <OpenedRuns comparison={comparison} opened={opened} view={view} onView={onView} focus={focus} onFocused={setFocus} />
+        </Suspense>
+      )}
     </>
   );
 }
 
-/** The opened runs side by side, every block whole. */
-export function OpenedRuns({ comparison, opened, view, onView }: { comparison: TaskComparison; opened: ComparedRun[]; view: TaskComparisonView; onView: (view: TaskComparisonView) => void }) {
+/**
+ * The opened runs side by side, every block whole. A block an overview opened a run from is brought into view once
+ * the runs' records have arrived.
+ */
+export function OpenedRuns({ comparison, opened, view, onView, focus, onFocused }: {
+  comparison: TaskComparison; opened: ComparedRun[]; view: TaskComparisonView; onView: (view: TaskComparisonView) => void;
+  focus: ComparisonBlock | undefined; onFocused: (focus: undefined) => void;
+}) {
   const { t } = useTranslation();
+  useLayoutEffect(() => {
+    if (focus) {
+      const head = document.getElementById(detailAnchorOf(focus));
+      if (!head) {
+        throw new Error(`the ${focus} block opens runs from its overview but its detail has no anchor`);
+      }
+      head.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      onFocused(undefined);
+    }
+  }, [focus, onFocused]);
   return (
-    <Suspense fallback={<Loading />}>
-      <ComparisonTable columns={opened.length} label={t('console.task.compare.detailLabel')}>
-        <BlockHead title={t('console.task.compare.detail')} hint={t('console.task.compare.detailHint', { open: MAX_OPENED_RUNS })}>
-          {opened.map(run => (
-            <Cell key={run.id}>
-              <RunHead run={run} numeral={runNumeralOf(comparison.runs.indexOf(run))}>
-                <button type="button" className={clsx(controls.pill, controls.small, 'loop-edge')} aria-pressed onClick={() => onView(withOpenedRun(view, run.id))}>
-                  {t('console.task.compare.close')}
-                </button>
-              </RunHead>
-            </Cell>
-          ))}
-        </BlockHead>
-        {comparison.blocks.map(block => {
-          const { Detail } = COMPARISON_BLOCKS[block];
-          return <Detail key={block} comparison={comparison} opened={opened} labels={view.labels} onLabel={label => onView(withLabel(view, label))} />;
-        })}
-      </ComparisonTable>
-    </Suspense>
+    <ComparisonTable columns={opened.length} label={t('console.task.compare.detailLabel')}>
+      <BlockHead title={t('console.task.compare.detail')} hint={t('console.task.compare.detailHint', { open: MAX_OPENED_RUNS })}>
+        {opened.map(run => (
+          <Cell key={run.id}>
+            <RunHead run={run} numeral={runNumeralOf(comparison.runs.indexOf(run))}>
+              <button type="button" className={clsx(controls.pill, controls.small, 'loop-edge')} aria-pressed onClick={() => onView(withOpenedRun(view, run.id))}>
+                {t('console.task.compare.close')}
+              </button>
+            </RunHead>
+          </Cell>
+        ))}
+      </BlockHead>
+      {comparison.blocks.map(block => {
+        const { Detail } = COMPARISON_BLOCKS[block];
+        return <Detail key={block} comparison={comparison} opened={opened} labels={view.labels} onLabel={label => onView(withLabel(view, label))} />;
+      })}
+    </ComparisonTable>
   );
 }
 

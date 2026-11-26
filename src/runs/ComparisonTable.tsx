@@ -17,11 +17,11 @@ export function ComparisonTable({ columns, label, children }: { columns: number;
   );
 }
 
-/** The row that starts a block: its name with what it shows behind a hint, and a cell per run. */
-export function BlockHead({ title, hint, aside, children }: { title: string; hint: string; aside?: ReactNode; children: ReactNode }) {
+/** The row that starts a block: its name with what it shows behind a hint, and a cell per run; `id` lets a link scroll to it. */
+export function BlockHead({ title, hint, aside, id, children }: { title: string; hint: string; aside?: ReactNode; id?: string; children: ReactNode }) {
   const { t } = useTranslation();
   return (
-    <div className={clsx(styles.row, styles.blockHead)} role="row">
+    <div id={id} className={clsx(styles.row, styles.blockHead)} role="row">
       <div className={styles.label} role="rowheader">
         <span className={styles.title}><span className="t-label">{title}</span><InfoHint label={t('ui.about', { subject: title })}>{hint}</InfoHint></span>
         {aside}

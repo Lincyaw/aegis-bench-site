@@ -7,7 +7,7 @@ import { useLocale } from '../i18n/localeContext';
 import { dateTimeOf } from '../i18n/locales';
 import { ToggleChip } from '../ui/controls';
 import { Hint } from '../ui/hint';
-import { mostSevere, segmentsOf, type BlockProps, type DetailProps } from './comparison';
+import { detailAnchorOf, mostSevere, segmentsOf, type DetailProps, type OverviewProps } from './comparison';
 import { BlockHead, Cell, ItemRow } from './ComparisonTable';
 import { isKnownTool } from './presentation';
 import timeline from './RunTimeline.module.css';
@@ -20,7 +20,7 @@ import styles from './AnnotatedTrajectory.module.css';
  * line that opens to its record, the labelled ones highlighted with their reasons in hints.
  */
 
-export function TrajectoryOverview({ comparison }: BlockProps) {
+export function TrajectoryOverview({ comparison, onOpen }: OverviewProps) {
   const { t } = useTranslation();
   const { runs, categories } = comparison;
   return (
@@ -29,12 +29,14 @@ export function TrajectoryOverview({ comparison }: BlockProps) {
         const byStep = Map.groupBy(run.annotations, annotation => annotation.step);
         return (
           <Cell key={run.id}>
-            <span className={styles.strip} aria-hidden="true">
-              <span className={timeline.timeline}>{run.timeline.map(step => <span key={step.stepId} className={clsx(timeline.mark, timeline[step.mark])} />)}</span>
-              <span className={clsx(timeline.timeline, styles.flags)}>
-                {run.timeline.map(step => <span key={step.stepId} className={clsx(timeline.mark, styles.flag)} data-severity={mostSevere(categories, byStep.get(step.stepId) ?? [])} />)}
-              </span>
-            </span>
+            <Hint content={t('console.task.compare.openTrajectory')}>
+              <button type="button" className={styles.strip} aria-label={t('console.task.compare.openTrajectory')} onClick={() => onOpen(run.id)}>
+                <span className={timeline.timeline}>{run.timeline.map(step => <span key={step.stepId} className={clsx(timeline.mark, timeline[step.mark])} />)}</span>
+                <span className={clsx(timeline.timeline, styles.flags)}>
+                  {run.timeline.map(step => <span key={step.stepId} className={clsx(timeline.mark, styles.flag)} data-severity={mostSevere(categories, byStep.get(step.stepId) ?? [])} />)}
+                </span>
+              </button>
+            </Hint>
             <span className={styles.counts}>
               <span className="t-small c-muted">{t('console.task.compare.steps', { count: run.metrics.steps })}</span>
               {categories.map(category => {
@@ -82,7 +84,7 @@ export function TrajectoryDetail({ comparison, opened, labels, onLabel }: Detail
   );
   return (
     <>
-      <BlockHead title={t('console.task.compare.blocks.trajectory.title')} hint={t('console.task.compare.blocks.trajectory.hint')} aside={filter}>
+      <BlockHead title={t('console.task.compare.blocks.trajectory.title')} hint={t('console.task.compare.blocks.trajectory.hint')} aside={filter} id={detailAnchorOf('trajectory')}>
         {opened.map(run => (
           <Cell key={run.id}>
             <span className="t-small c-muted">{t('console.task.compare.steps', { count: run.metrics.steps })} · {t('console.task.compare.submissions', { count: run.metrics.submissions })}</span>
