@@ -29,6 +29,9 @@ export function runRowOf(benchmarkId: string, fact: RunFact, locale: Locale): Ru
 export interface RunFilter {
   q: string;
 
+  /** A model's id; every model when empty */
+  model: string;
+
   /** A model and harness pair as "<model id>-<harness id>"; every pair when empty */
   combination: string;
 
@@ -45,6 +48,7 @@ export function matchesReview(fact: RunFact, review: ReviewFilter): boolean {
 export function filteredRunsOf(benchmarkId: string, filter: RunFilter): RunFact[] {
   return benchmarkOf(benchmarkId).runs
     .filter(fact => (!filter.q || fact.taskId.includes(filter.q) || taskRefOf(benchmarkId, fact.taskId).title.includes(filter.q))
+      && (!filter.model || fact.modelId === filter.model)
       && (!filter.combination || `${fact.modelId}-${fact.harnessId}` === filter.combination)
       && (!filter.outcome || fact.outcome === filter.outcome)
       && (!filter.review || matchesReview(fact, filter.review)))

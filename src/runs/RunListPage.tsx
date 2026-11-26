@@ -14,6 +14,8 @@ import { ModelLabel } from '../models/ModelBadge';
 import { FailureClassTag } from '../results/FailureClassTag';
 import { formatCost } from '../results/presentation';
 import { SearchField, Select } from '../ui/controls';
+import controls from '../ui/controls.module.css';
+import { Hint } from '../ui/hint';
 import { Pager } from '../ui/navigation';
 import table from '../ui/table.module.css';
 import { RUN_LIST_PAGE_SIZE, consoleRunPath, parseRunQuery, runQuerySearch } from './consoleRunQuery';
@@ -50,6 +52,7 @@ export function RunListPage() {
 
 export function RunFilters({ benchmark, query, onChange }: { benchmark: ConsoleBenchmark; query: ConsoleRunQuery; onChange: (next: Partial<ConsoleRunQuery>) => void }) {
   const { t } = useTranslation();
+  const entrants = benchmark.entrants.filter(({ model }) => !query.model || model.id === query.model);
   return (
     <div className={styles.filters} role="search" aria-label={t('console.runs.filters')}>
       <SearchField label={t('console.runs.search')} value={query.q} onChange={q => onChange({ q })} className={styles.search} />
@@ -57,7 +60,7 @@ export function RunFilters({ benchmark, query, onChange }: { benchmark: ConsoleB
         label={t('console.runs.combinationFilter')} value={query.combination || EVERY_CHOICE} onChange={combination => onChange({ combination: combination === EVERY_CHOICE ? '' : combination })}
         choices={[
           { value: EVERY_CHOICE, label: t('console.runs.everyCombination') },
-          ...benchmark.entrants.map(({ model, harness }) => ({ value: combinationKey(model.id, harness.id), label: `${model.name} · ${harness.name}` })),
+          ...entrants.map(({ model, harness }) => ({ value: combinationKey(model.id, harness.id), label: `${model.name} · ${harness.name}` })),
         ]}
       />
       <Select
@@ -68,7 +71,25 @@ export function RunFilters({ benchmark, query, onChange }: { benchmark: ConsoleB
         label={t('console.runs.reviewFilter')} value={query.review ?? EVERY_CHOICE} onChange={review => onChange({ review: review === EVERY_CHOICE ? undefined : review as ReviewFilter })}
         choices={[{ value: EVERY_CHOICE, label: t('console.runs.everyReview') }, ...consoleReviewFilterValues.map(review => ({ value: review, label: t(`console.runs.review.${review}`) }))]}
       />
+      {query.model && <ModelFocusChip benchmark={benchmark} modelId={query.model} onClear={() => onChange({ model: '' })} />}
     </div>
+  );
+}
+
+/** The model the list keeps to, which the reader can let go of to see every model's runs. */
+export function ModelFocusChip({ benchmark, modelId, onClear }: { benchmark: ConsoleBenchmark; modelId: string; onClear: () => void }) {
+  const { t } = useTranslation();
+  const entrant = benchmark.entrants.find(candidate => candidate.model.id === modelId);
+  if (!entrant) {
+    throw new Error(`no model ${modelId} ran on ${benchmark.id}`);
+  }
+  const { name } = entrant.model;
+  return (
+    <Hint content={t('console.runs.modelFocus.hint')}>
+      <button type="button" className={clsx(controls.pill, controls.small, styles.focus, 'loop-edge')} aria-label={t('console.runs.modelFocus.clear', { name })} onClick={onClear}>
+        {name}<span aria-hidden="true">×</span>
+      </button>
+    </Hint>
   );
 }
 

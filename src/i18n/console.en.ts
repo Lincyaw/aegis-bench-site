@@ -407,6 +407,10 @@ export const consoleEn: ConsoleMessages = {
     lead_other: '{{count, number}} runs, newest first. Execution failures are listed but not counted.',
     filters: 'Filter runs',
     search: 'Search task id or title',
+    modelFocus: {
+      hint: 'The list shows only this model\'s runs; click to show every model.',
+      clear: 'Stop keeping to {{name}}',
+    },
     combinationFilter: 'Combination',
     everyCombination: 'All combinations',
     outcomeFilter: 'Outcome',

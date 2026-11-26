@@ -406,6 +406,10 @@ export const consoleZh = {
     lead_other: '共 {{count, number}} 次运行，最新的在前。执行失败的运行列出，但不计入结果。',
     filters: '筛选运行',
     search: '搜索任务编号或标题',
+    modelFocus: {
+      hint: '列表只显示这个模型的运行；点击后显示全部模型。',
+      clear: '不再只看 {{name}}',
+    },
     combinationFilter: '组合',
     everyCombination: '全部组合',
     outcomeFilter: '结果',

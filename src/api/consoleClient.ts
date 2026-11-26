@@ -242,6 +242,9 @@ export function useConsoleTaskFile(benchmarkId: string, taskId: string, path: st
 export interface ConsoleRunQuery {
   q: string;
 
+  /** A model's id; every model when empty */
+  model: string;
+
   /** A model and harness pair as "<model id>-<harness id>"; every pair when empty */
   combination: string;
 
@@ -257,7 +260,7 @@ export function useConsoleRunPage(benchmarkId: string, query: ConsoleRunQuery, p
     queryFn: () => responseBody(api.GET('/console/benchmarks/{benchmarkId}/runs', {
       params: {
         path: { benchmarkId }, header: languageHeader(locale),
-        query: { q: query.q, combination: query.combination, outcome: query.outcome, review: query.review, offset: query.offset, limit: pageSize },
+        query: { q: query.q, model: query.model, combination: query.combination, outcome: query.outcome, review: query.review, offset: query.offset, limit: pageSize },
       },
     })),
   }).data;

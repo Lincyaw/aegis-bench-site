@@ -1,8 +1,10 @@
 .page { display: grid; gap: var(--space-5); }
 .page > header { margin-bottom: 0; }
 
-.filters { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+.filters { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
 .search { width: 18rem; }
+/* The model the list keeps to closes from its own chip. */
+.focus { gap: var(--space-2); margin-left: auto; }
 
 .table { --columns: minmax(12rem, 1.6fr) minmax(12rem, 1.4fr) 7rem 6rem 4rem 4.5rem 6.5rem; }
 .task { display: grid; gap: var(--space-px); min-width: 0; }

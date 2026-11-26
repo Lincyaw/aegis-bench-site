@@ -24,7 +24,10 @@ export function parseRunQuery(params: URLSearchParams): ConsoleRunQuery {
   if (!Number.isInteger(offset) || offset < 0 || offset % RUN_LIST_PAGE_SIZE !== 0) {
     throw new Error(`no page of runs starts at ${params.get('offset')}`);
   }
-  return { q: params.get('q') ?? '', combination: params.get('combination') ?? '', outcome: outcome as RunOutcome | undefined, review: review as ReviewFilter | undefined, offset };
+  return {
+    q: params.get('q') ?? '', model: params.get('model') ?? '', combination: params.get('combination') ?? '', outcome: outcome as RunOutcome | undefined,
+    review: review as ReviewFilter | undefined, offset,
+  };
 }
 
 /** Address parameters for a run list or a run's view, leaving out what is unset; an offset of 0 is the first page and goes unsaid. */

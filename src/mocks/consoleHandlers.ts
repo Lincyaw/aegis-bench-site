@@ -399,7 +399,7 @@ export const consoleHandlers = [
       return response(404).json({ message: `no benchmark ${params.benchmarkId}` });
     }
     const locale = localeOf(request);
-    const filter = { q: (query.get('q') ?? '').trim(), combination: query.get('combination') ?? '', outcome: query.get('outcome') ?? undefined, review: query.get('review') ?? undefined };
+    const filter = { q: (query.get('q') ?? '').trim(), model: query.get('model') ?? '', combination: query.get('combination') ?? '', outcome: query.get('outcome') ?? undefined, review: query.get('review') ?? undefined };
     const page = pageOf(filteredRunsOf(params.benchmarkId, filter), query, DEFAULT_RUN_PAGE_SIZE);
     await delay(100);
     return response(200).json({ ...page, items: page.items.map(fact => runRowOf(params.benchmarkId, fact, locale)) }, writtenIn(locale));

@@ -112,6 +112,9 @@ interface ConsoleRuns {
     /** Matches the task id or title */
     @query(#{ explode: true }) q?: string = "",
 
+    /** A model's id; every model when empty */
+    @query(#{ explode: true }) `model`?: string = "",
+
     /** A model and harness pair as "<model id>-<harness id>"; every pair when empty */
     @query(#{ explode: true }) combination?: string = "",
 
