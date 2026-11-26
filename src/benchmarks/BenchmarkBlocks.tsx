@@ -25,7 +25,7 @@ export function LeaderboardBlock({ top = 5 }: { top?: number }) {
   return (
     <div className={styles.block}>
       <LeaderboardTable benchmarkId={benchmark.id} entries={benchmark.topFive.slice(0, top)} metric={benchmark.metric} />
-      <LocaleLink className={clsx(controls.textLink, 't-small')} to={leaderboardPath(benchmark.id)}>{t('benchmarks.fullLeaderboard')}</LocaleLink>
+      <LocaleLink className={clsx(controls.textLink, 't-small')} to={leaderboardPath({ bench: benchmark.id })}>{t('benchmarks.fullLeaderboard')}</LocaleLink>
     </div>
   );
 }

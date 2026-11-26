@@ -60,7 +60,7 @@ export function BenchmarkHero({ benchmark }: { benchmark: BenchmarkDetail }) {
           { label: t('benchmarks.facts.runsPerTask'), value: t('benchmarks.times', { count: benchmark.runsPerTask }) },
         ]} />
         <div className={styles.actions}>
-          <ButtonLink variant="solid" to={leaderboardPath(benchmark.id)}>{t('benchmarks.viewLeaderboard')}</ButtonLink>
+          <ButtonLink variant="solid" to={leaderboardPath({ bench: benchmark.id })}>{t('benchmarks.viewLeaderboard')}</ButtonLink>
           <ButtonLink variant="line" to={runRecordsPath(benchmark.id)}>{t('benchmarks.runRecords')}</ButtonLink>
           <a className={clsx(controls.textLink, 't-small')} href={`#${CITATION_ANCHOR}`}>{t('benchmarks.cite')}</a>
         </div>

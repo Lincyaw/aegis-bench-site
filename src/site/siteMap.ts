@@ -32,9 +32,22 @@ export function stagePath(stageId: string): string {
   return `${BENCHMARKS_PATH}#${stageAnchor(stageId)}`;
 }
 
-/** The leaderboard, opened on one benchmark when given. */
-export function leaderboardPath(benchmarkId?: string): string {
-  return benchmarkId ? `${LEADERBOARD_PATH}?bench=${benchmarkId}` : LEADERBOARD_PATH;
+/** What a leaderboard address names: the benchmark it opens on, its view, and the model whose rows it marks. */
+export interface LeaderboardQuery {
+  bench?: string;
+  view?: string;
+  model?: string;
+}
+
+/** The address search of a leaderboard state; what it leaves unnamed is left out. */
+export function leaderboardSearch(query: LeaderboardQuery): URLSearchParams {
+  return new URLSearchParams(Object.entries(query).filter((entry): entry is [string, string] => entry[1] !== undefined));
+}
+
+/** The leaderboard, opened on one benchmark and marking one model's rows when given. */
+export function leaderboardPath(query: LeaderboardQuery = {}): string {
+  const search = leaderboardSearch(query).toString();
+  return search ? `${LEADERBOARD_PATH}?${search}` : LEADERBOARD_PATH;
 }
 
 export function modelPath(modelId: string): string {

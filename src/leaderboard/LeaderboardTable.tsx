@@ -1,19 +1,30 @@
 import { clsx } from 'clsx';
+import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { LeaderboardEntry, Metric } from '../api/client';
 import { LocaleLink } from '../i18n/LocaleRouting';
 import { useLocalizedNavigate } from '../i18n/localeContext';
 import { ModelLink } from '../models/ModelBadge';
 import { combinationKey, runRecordsPath } from '../runs/runRecordsQuery';
+import { REDUCED_MOTION_QUERY } from '../ui/media';
 import table from '../ui/table.module.css';
 import { formatScore } from './presentation';
 import { ScoreBar } from './ScoreBar';
 import styles from './LeaderboardTable.module.css';
 
-/** Ranked combinations: the model name opens the model, the rest of the row that combination's run records. */
-export function LeaderboardTable({ benchmarkId, entries, metric }: { benchmarkId: string; entries: LeaderboardEntry[]; metric: Metric }) {
+/**
+ * Ranked combinations: the model name opens the model, the rest of the row that combination's run records. A marked
+ * model's rows stand out, and the first of them comes into view whenever the board shows a new one.
+ */
+export function LeaderboardTable({ benchmarkId, entries, metric, markedModel }: { benchmarkId: string; entries: LeaderboardEntry[]; metric: Metric; markedModel?: string }) {
   const { t } = useTranslation();
   const navigate = useLocalizedNavigate();
+  const firstMarked = entries.find(entry => entry.model.id === markedModel);
+  const firstMarkedKey = firstMarked && combinationKey(firstMarked.model.id, firstMarked.harness.id);
+  const firstMarkedRow = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    firstMarkedRow.current?.scrollIntoView({ block: 'center', behavior: matchMedia(REDUCED_MOTION_QUERY).matches ? 'auto' : 'smooth' });
+  }, [benchmarkId, firstMarkedKey]);
   return (
     <div className={clsx(table.table, styles.table)} role="table" aria-label={t('leaderboard.title')}>
       <div className={clsx(table.row, table.head, 't-micro c-faint')} role="row">
@@ -26,7 +37,9 @@ export function LeaderboardTable({ benchmarkId, entries, metric }: { benchmarkId
         // A combination's row opens its own runs task by task.
         const runs = runRecordsPath(benchmarkId, { by: 'model', combination: key });
         return (
-          <div key={key} role="row" className={clsx(table.row, table.link)} onClick={event => { if (!(event.target as HTMLElement).closest('a')) { navigate(runs); } }}>
+          <div
+            key={key} ref={key === firstMarkedKey ? firstMarkedRow : undefined} role="row" className={clsx(table.row, table.link)}
+            aria-current={entry.model.id === markedModel ? 'true' : undefined} onClick={event => { if (!(event.target as HTMLElement).closest('a')) { navigate(runs); } }}>
             <span role="cell" className="t-numeric c-muted">{entry.rank}</span>
             <span role="cell"><ModelLink model={entry.model} /></span>
             <span role="cell" className="t-small c-muted">{entry.harness.name}</span>

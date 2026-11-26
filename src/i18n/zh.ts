@@ -135,6 +135,10 @@ export const zh = {
     unknownBenchmark: '没有评测基准 {{id}}',
     column: { model: '模型', harness: '框架', runs: '运行次数', cost: '平均成本', evaluated: '评测日期' },
     runsOf: '{{model}} · {{harness}} 的运行记录',
+    mark: {
+      hint: '排行榜标出这个模型的各行，切换评测基准或排行方式时保留；点击后不再标出。',
+      clear: '不再标出 {{name}}',
+    },
   },
   models: {
     meta_one: '最近评测 {{date}} · {{count}} 种评测框架 · {{vendor}}',

@@ -41,7 +41,7 @@ export function ModelPage() {
   );
 }
 
-/** The model's best combination and rank on each benchmark; each row opens that benchmark's leaderboard. */
+/** The model's best combination and rank on each benchmark; each row opens that benchmark's leaderboard with the model's rows marked. */
 export function Standings({ profile }: { profile: ModelProfile }) {
   const { t } = useTranslation();
   return (
@@ -54,7 +54,7 @@ export function Standings({ profile }: { profile: ModelProfile }) {
           <span role="columnheader">{t('models.standings.score')}</span><span role="columnheader" />
         </div>
         {profile.standings.map(standing => (
-          <LocaleLink key={standing.benchmark.id} role="row" className={clsx(table.row, table.link)} to={leaderboardPath(standing.benchmark.id)} data-half={standing.stage.half}>
+          <LocaleLink key={standing.benchmark.id} role="row" className={clsx(table.row, table.link)} to={leaderboardPath({ bench: standing.benchmark.id, model: profile.model.id })} data-half={standing.stage.half}>
             <span role="cell" className="t-micro c-muted"><HalfDot half={standing.stage.half} />{standing.stage.id} {standing.stage.name}</span>
             <span role="cell" className="t-bench">{standing.benchmark.name}</span>
             <span role="cell" className="t-micro c-muted">{standing.bestHarness.name}</span>

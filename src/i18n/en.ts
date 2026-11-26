@@ -135,6 +135,10 @@ export const en: Messages = {
     unknownBenchmark: 'There is no benchmark {{id}}',
     column: { model: 'Model', harness: 'Harness', runs: 'Runs', cost: 'Avg. cost', evaluated: 'Evaluated' },
     runsOf: 'Runs of {{model}} · {{harness}}',
+    mark: {
+      hint: 'The leaderboard marks this model’s rows and keeps them marked across benchmarks and ranking views; click to stop marking them.',
+      clear: 'Stop marking {{name}}',
+    },
   },
   models: {
     meta_one: 'Last evaluated {{date}} · {{count}} harness · {{vendor}}',
