@@ -24,14 +24,14 @@ export function FileChangesOverview({ comparison }: BlockProps) {
   const { runs, files } = comparison;
   return (
     <>
-      <BlockHead title={t('console.task.compare.blocks.fileChanges.title')} hint={t('console.task.compare.blocks.fileChanges.hint')}>
+      <BlockHead title={t('compare.blocks.fileChanges.title')} hint={t('compare.blocks.fileChanges.hint')}>
         {runs.map(run => {
           const changes = files.flatMap(file => file.changes.filter(change => change.runId === run.id));
           return (
             <Cell key={run.id}>
               <span className={styles.figures}>
                 <ChangeSize additions={changes.reduce((sum, change) => sum + change.additions, 0)} deletions={changes.reduce((sum, change) => sum + change.deletions, 0)} />
-                <span className="t-small c-muted">{t('console.task.compare.files', { count: changes.length })}</span>
+                <span className="t-small c-muted">{t('compare.files', { count: changes.length })}</span>
               </span>
             </Cell>
           );
@@ -45,10 +45,10 @@ export function FileChangesOverview({ comparison }: BlockProps) {
               <Cell key={run.id}>
                 <span className={styles.figures}>
                   <ChangeSize additions={change.additions} deletions={change.deletions} />
-                  {change.sameAs && <span className={styles.same}>{t('console.task.compare.sameAs', { run: numeralOfRun(comparison, change.sameAs) })}</span>}
+                  {change.sameAs && <span className={styles.same}>{t('compare.sameAs', { run: numeralOfRun(comparison, change.sameAs) })}</span>}
                 </span>
               </Cell>
-            ) : <Cell key={run.id} tone="empty"><span className="t-small">{t('console.task.compare.unchanged')}</span></Cell>;
+            ) : <Cell key={run.id} tone="empty"><span className="t-small">{t('compare.unchanged')}</span></Cell>;
           })}
         </ItemRow>
       ))}
@@ -63,7 +63,7 @@ export function FileChangesDetail({ comparison, opened }: DetailProps) {
   const sameOpened = (change: RunFileChange) => change.sameAs !== undefined && openedIds.includes(change.sameAs);
   return (
     <>
-      <BlockHead title={t('console.task.compare.blocks.fileChanges.title')} hint={t('console.task.compare.blocks.fileChanges.hint')}>
+      <BlockHead title={t('compare.blocks.fileChanges.title')} hint={t('compare.blocks.fileChanges.hint')}>
         {opened.map(run => <Cell key={run.id} />)}
       </BlockHead>
       {comparison.files.filter(file => file.changes.some(change => openedIds.includes(change.runId))).map(file => (
@@ -71,13 +71,13 @@ export function FileChangesDetail({ comparison, opened }: DetailProps) {
           {opened.map(run => {
             const change = file.changes.find(candidate => candidate.runId === run.id);
             if (!change) {
-              return <Cell key={run.id} tone="empty"><span className="t-small">{t('console.task.compare.unchanged')}</span></Cell>;
+              return <Cell key={run.id} tone="empty"><span className="t-small">{t('compare.unchanged')}</span></Cell>;
             }
             return (
               <Cell key={run.id}>
                 <span className={styles.figures}>
                   <ChangeSize additions={change.additions} deletions={change.deletions} />
-                  {change.sameAs && <span className={styles.same}>{t('console.task.compare.sameAs', { run: numeralOfRun(comparison, change.sameAs) })}</span>}
+                  {change.sameAs && <span className={styles.same}>{t('compare.sameAs', { run: numeralOfRun(comparison, change.sameAs) })}</span>}
                 </span>
                 {change.patch && !sameOpened(change) && <Diff lines={change.patch} />}
               </Cell>
@@ -93,7 +93,7 @@ export function FileChangesDetail({ comparison, opened }: DetailProps) {
 export function VerdictCell({ verdict }: { verdict: RunCheckVerdict | undefined }) {
   const { t } = useTranslation();
   if (!verdict) {
-    return <Cell tone="empty"><span className="t-small">{t('console.task.compare.notGraded')}</span></Cell>;
+    return <Cell tone="empty"><span className="t-small">{t('compare.notGraded')}</span></Cell>;
   }
   const outcome = verdict.passed ? 'passed' : 'failed';
   const text = <span className="t-small"><OutcomeText outcome={outcome}>{t(`runs.outcome.${outcome}`)}</OutcomeText></span>;
@@ -129,15 +129,15 @@ export function ChecksOverview({ comparison }: BlockProps) {
   return (
     <>
       <BlockHead
-        title={t('console.task.compare.blocks.checks.title')} hint={t('console.task.compare.blocks.checks.hint')}
-        aside={differing.length > 0 && <ToggleChip pressed={onlyDifferent} onToggle={() => setOnlyDifferent(!onlyDifferent)}>{t('console.task.compare.onlyDifferent', { count: differing.length })}</ToggleChip>}
+        title={t('compare.blocks.checks.title')} hint={t('compare.blocks.checks.hint')}
+        aside={differing.length > 0 && <ToggleChip pressed={onlyDifferent} onToggle={() => setOnlyDifferent(!onlyDifferent)}>{t('compare.onlyDifferent', { count: differing.length })}</ToggleChip>}
       >
         {runs.map(run => (run.outcome === 'executionFailed'
-          ? <Cell key={run.id} tone="empty"><span className="t-small">{t('console.task.compare.notGraded')}</span></Cell>
+          ? <Cell key={run.id} tone="empty"><span className="t-small">{t('compare.notGraded')}</span></Cell>
           : <Cell key={run.id}><span className="t-numeric">{run.passCount} / {checks.length}</span></Cell>))}
       </BlockHead>
       {differing.length === 0 && (
-        <ItemRow label={<span className="t-small c-muted">{t('console.task.compare.allSame')}</span>} differs={false}>
+        <ItemRow label={<span className="t-small c-muted">{t('compare.allSame')}</span>} differs={false}>
           {runs.map(run => <Cell key={run.id} />)}
         </ItemRow>
       )}
@@ -155,7 +155,7 @@ export function ChecksDetail({ comparison, opened }: DetailProps) {
   const { t } = useTranslation();
   return (
     <>
-      <BlockHead title={t('console.task.compare.blocks.checks.title')} hint={t('console.task.compare.blocks.checks.hint')}>
+      <BlockHead title={t('compare.blocks.checks.title')} hint={t('compare.blocks.checks.hint')}>
         {opened.map(run => <Cell key={run.id} />)}
       </BlockHead>
       {comparison.checks.map(check => (
@@ -163,7 +163,7 @@ export function ChecksDetail({ comparison, opened }: DetailProps) {
           {opened.map(run => {
             const verdict = check.verdicts.find(candidate => candidate.runId === run.id);
             if (!verdict) {
-              return <Cell key={run.id} tone="empty"><span className="t-small">{t('console.task.compare.notGraded')}</span></Cell>;
+              return <Cell key={run.id} tone="empty"><span className="t-small">{t('compare.notGraded')}</span></Cell>;
             }
             const outcome = verdict.passed ? 'passed' : 'failed';
             return (
@@ -176,7 +176,7 @@ export function ChecksDetail({ comparison, opened }: DetailProps) {
         </ItemRow>
       ))}
       {opened.some(run => run.outcome === 'failed') && (
-        <ItemRow label={<span className="t-small">{t('console.task.compare.review')}</span>} differs={false}>
+        <ItemRow label={<span className="t-small">{t('compare.review')}</span>} differs={false}>
           {opened.map(run => (
             <Cell key={run.id} tone={run.outcome === 'failed' ? undefined : 'empty'}>
               {run.outcome === 'failed' && <FailureClassTag failureClass={run.failureClass} />}
@@ -192,7 +192,7 @@ export function ChecksDetail({ comparison, opened }: DetailProps) {
 export function ReplyOverview({ comparison }: BlockProps) {
   const { t } = useTranslation();
   return (
-    <BlockHead title={t('console.task.compare.blocks.reply.title')} hint={t('console.task.compare.blocks.reply.hint')}>
+    <BlockHead title={t('compare.blocks.reply.title')} hint={t('compare.blocks.reply.hint')}>
       {comparison.runs.map(run => <Cell key={run.id}><p className={styles.clamped}>{run.finalReply.text}</p></Cell>)}
     </BlockHead>
   );
@@ -201,7 +201,7 @@ export function ReplyOverview({ comparison }: BlockProps) {
 export function ReplyDetail({ opened }: DetailProps) {
   const { t } = useTranslation();
   return (
-    <BlockHead title={t('console.task.compare.blocks.reply.title')} hint={t('console.task.compare.blocks.reply.hint')}>
+    <BlockHead title={t('compare.blocks.reply.title')} hint={t('compare.blocks.reply.hint')}>
       {opened.map(run => <Cell key={run.id}><p className={styles.reply}>{run.finalReply.text}</p></Cell>)}
     </BlockHead>
   );

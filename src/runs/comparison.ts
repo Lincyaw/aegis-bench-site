@@ -1,6 +1,6 @@
 import type { ComponentType } from 'react';
 import { annotationSeverityValues } from '../api/schema';
-import type { AnnotationCategory, AnnotationSeverity, ComparedRun, ComparisonBlock, StepAnnotation, TaskComparison, TrajectoryStep } from '../api/types';
+import type { AnnotationCategory, AnnotationSeverity, ComparedRun, ComparisonBlock, StepAnnotation, TaskComparison, Trajectory, TrajectoryStep } from '../api/types';
 
 /*
  * How a comparison of a task's runs is read: the numerals that tell its runs apart, the contract every block of the
@@ -21,6 +21,65 @@ export function runNumeralOf(index: number): string {
 /** The run's numeral in the comparison. */
 export function numeralOfRun(comparison: TaskComparison, runId: string): string {
   return runNumeralOf(comparison.runs.findIndex(run => run.id === runId));
+}
+
+/** The most runs a comparison holds, as the spec declares, and the most opened in detail side by side. */
+export const MAX_COMPARED_RUNS = 4;
+export const MAX_OPENED_RUNS = 2;
+
+/** The runs a comparison sets side by side, the ones opened in detail, and the labels their trajectories are filtered to. */
+export interface ComparisonView {
+  runs: string[];
+
+  /** Each one of runs */
+  open: string[];
+
+  /** Annotation categories; every step shows when empty */
+  labels: string[];
+}
+
+/** A list in the address is its ids joined by commas. */
+export const LIST_SEPARATOR = ',';
+
+/** The address parameters a comparison keeps its state in. */
+export const COMPARISON_PARAMS = ['runs', 'open', 'labels'] as const satisfies readonly (keyof ComparisonView)[];
+
+/** A comparison's state from an address; more runs than a comparison holds, or an opened run it does not hold, fails the page. */
+export function parseComparisonView(params: URLSearchParams): ComparisonView {
+  const [runs, open, labels] = COMPARISON_PARAMS.map(name => params.get(name)?.split(LIST_SEPARATOR) ?? []);
+  if (runs.length > MAX_COMPARED_RUNS || new Set(runs).size < runs.length) {
+    throw new Error(`a comparison holds at most ${MAX_COMPARED_RUNS} different runs`);
+  }
+  if (open.length > MAX_OPENED_RUNS || !open.every(run => runs.includes(run))) {
+    throw new Error(`at most ${MAX_OPENED_RUNS} of the compared runs open in detail`);
+  }
+  return { runs, open, labels };
+}
+
+/** Writes a comparison's state into address parameters, leaving out its empty lists. */
+export function setComparisonParams(params: URLSearchParams, view: Partial<ComparisonView>) {
+  for (const name of COMPARISON_PARAMS) {
+    if (view[name]?.length) {
+      params.set(name, view[name].join(LIST_SEPARATOR));
+    }
+  }
+}
+
+/** Adds a run to the comparison or takes it out, closing its detail with it. */
+export function withComparedRun<View extends ComparisonView>(view: View, run: string): View {
+  return view.runs.includes(run)
+    ? { ...view, runs: view.runs.filter(id => id !== run), open: view.open.filter(id => id !== run) }
+    : { ...view, runs: [...view.runs, run] };
+}
+
+/** Opens a compared run's detail or closes it; opening one more than fits closes the earliest opened. */
+export function withOpenedRun<View extends ComparisonView>(view: View, run: string): View {
+  return { ...view, open: view.open.includes(run) ? view.open.filter(id => id !== run) : [...view.open, run].slice(-MAX_OPENED_RUNS) };
+}
+
+/** Shows or stops showing the steps an annotation category labels. */
+export function withLabel<View extends ComparisonView>(view: View, label: string): View {
+  return { ...view, labels: view.labels.includes(label) ? view.labels.filter(id => id !== label) : [...view.labels, label] };
 }
 
 export interface BlockProps {
@@ -45,6 +104,9 @@ export interface DetailProps extends BlockProps {
   labels: string[];
 
   onLabel: (category: string) => void;
+
+  /** Reads the opened runs' whole trajectories, from the public site's API or the console's */
+  useTrajectories: (runIds: string[]) => Trajectory[];
 }
 
 /** A block shows a row in the overview, a cell per compared run, and its whole content for the runs opened in detail. */

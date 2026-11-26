@@ -2,6 +2,7 @@ import type { ConsoleTaskQuery } from '../api/consoleClient';
 import { consoleTaskOrderValues, consoleTaskSpreadValues } from '../api/schema';
 import type { TaskOrder, TaskSpread } from '../api/types';
 import { consoleBenchmarkPath } from '../console/consoleMap';
+import { parseComparisonView, setComparisonParams, type ComparisonView } from '../runs/comparison';
 
 /** Tasks per page of the console's task list. */
 export const TASK_LIST_PAGE_SIZE = 20;
@@ -58,22 +59,7 @@ export type TaskTab = (typeof TASK_TABS)[number];
 export const TASK_RUN_VIEWS = ['entrants', 'checks'] as const;
 export type TaskRunView = (typeof TASK_RUN_VIEWS)[number];
 
-/** The most runs a comparison holds, as the spec declares, and the most opened in detail side by side. */
-export const MAX_COMPARED_RUNS = 4;
-export const MAX_OPENED_RUNS = 2;
-
-/** The runs the compare tab sets side by side, the ones opened in detail, and the labels their trajectories are filtered to. */
-export interface TaskComparisonView {
-  runs: string[];
-
-  /** Each one of runs */
-  open: string[];
-
-  /** Annotation categories; every step shows when empty */
-  labels: string[];
-}
-
-export interface TaskPageView extends TaskComparisonView {
+export interface TaskPageView extends ComparisonView {
   tab: TaskTab;
   view: TaskRunView;
 
@@ -81,28 +67,16 @@ export interface TaskPageView extends TaskComparisonView {
   file?: string;
 }
 
-/** The comparison's state: a list in the address is its ids joined by commas. */
-export const LIST_SEPARATOR = ',';
-
 export function parseTaskPageView(params: URLSearchParams): TaskPageView {
   const tab = params.get('tab') ?? 'content';
   const view = params.get('view') ?? 'entrants';
-  const listOf = (name: keyof TaskComparisonView) => params.get(name)?.split(LIST_SEPARATOR) ?? [];
-  const runs = listOf('runs');
-  const open = listOf('open');
   if (!TASK_TABS.includes(tab as TaskTab)) {
     throw new Error(`a task has no tab ${tab}`);
   }
   if (!TASK_RUN_VIEWS.includes(view as TaskRunView)) {
     throw new Error(`a task's runs have no view ${view}`);
   }
-  if (runs.length > MAX_COMPARED_RUNS || new Set(runs).size < runs.length) {
-    throw new Error(`a comparison holds at most ${MAX_COMPARED_RUNS} different runs`);
-  }
-  if (open.length > MAX_OPENED_RUNS || !open.every(run => runs.includes(run))) {
-    throw new Error(`at most ${MAX_OPENED_RUNS} of the compared runs open in detail`);
-  }
-  return { tab: tab as TaskTab, view: view as TaskRunView, file: params.get('file') ?? undefined, runs, open, labels: listOf('labels') };
+  return { tab: tab as TaskTab, view: view as TaskRunView, file: params.get('file') ?? undefined, ...parseComparisonView(params) };
 }
 
 /** A task's console page at one of its parts; the content tab, the combination view and empty lists are the defaults. */
@@ -123,27 +97,6 @@ export function taskPageSearch(view: Partial<TaskPageView>): URLSearchParams {
   if (view.file) {
     params.set('file', view.file);
   }
-  for (const name of ['runs', 'open', 'labels'] as const) {
-    if (view[name]?.length) {
-      params.set(name, view[name].join(LIST_SEPARATOR));
-    }
-  }
+  setComparisonParams(params, view);
   return params;
-}
-
-/** Adds a run to the comparison or takes it out, closing its detail with it. */
-export function withComparedRun(view: TaskComparisonView, run: string): TaskComparisonView {
-  return view.runs.includes(run)
-    ? { ...view, runs: view.runs.filter(id => id !== run), open: view.open.filter(id => id !== run) }
-    : { ...view, runs: [...view.runs, run] };
-}
-
-/** Opens a compared run's detail or closes it; opening one more than fits closes the earliest opened. */
-export function withOpenedRun(view: TaskComparisonView, run: string): TaskComparisonView {
-  return { ...view, open: view.open.includes(run) ? view.open.filter(id => id !== run) : [...view.open, run].slice(-MAX_OPENED_RUNS) };
-}
-
-/** Shows or stops showing the steps an annotation category labels. */
-export function withLabel(view: TaskComparisonView, label: string): TaskComparisonView {
-  return { ...view, labels: view.labels.includes(label) ? view.labels.filter(id => id !== label) : [...view.labels, label] };
 }
