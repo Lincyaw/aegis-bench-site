@@ -60,9 +60,9 @@ export const en: Messages = {
     institution: 'Institution logo',
     news: 'Latest',
     updates: [
+      { date: '2026-11-26', kind: 'Report', title: 'Why a cache avalanche run failed on a health check its task never stated', source: 'Research report · Bench C' },
       { date: '2026-11-20', kind: 'News', title: 'Edition 3 of the benchmark adds tasks for the operations stage', source: 'Release notes' },
       { date: '2026-11-18', kind: 'Paper', title: 'An agent benchmark across the whole software engineering lifecycle', source: 'Conference 2027' },
-      { date: '2026-10-25', kind: 'Report', title: 'Why the agent still exported complete results after a rollback', source: 'Research report · Bench C' },
     ],
     team: 'Research team',
     member: { initial: 'N', name: 'Name', role: 'Institution · Role' },

@@ -1,0 +1,36 @@
+---
+title: "Why a cache avalanche run failed on a health check its task never stated"
+date: "2026-11-26"
+summary: "In one run of Model Alpha on the Bench C cache avalanche task, three of four checks passed and only the service health check failed; the review found that the task text never states this requirement, a defect of the task."
+models: ["jia"]
+benchmarks: ["bench-c"]
+---
+
+<Callout>This is a sample report in a design demo; its models and figures are placeholders.</Callout>
+
+## What we saw
+
+Model Alpha ran the Bench C task task-044, 缓存雪崩 (cache avalanche), under Harness X. The task text asks the agent to find the cause of the fault and restore the service, and, once the remediation is done, to write a `report.json` in the working directory giving the root cause, the remediation performed and whether the service has recovered.
+
+<Replay run="bench-c.task-044.jia-x.1" />
+
+The run took <RunNumber run="bench-c.task-044.jia-x.1" field="steps" /> steps. In steps 2 to 57 the model queried metrics 24 times, logs 8 times and traces 8 times, restarted services 8 times and edited configuration 8 times; it submitted at step 58. The submission changes `pool_size` in `config/payment-callback.yaml` from 8 to 32 and adds `report.json`. The model's final reply reads, in translation: "The callback thread pool was saturated at peak hours, so callbacks queued and timed out. I enlarged the pool to 32 and restarted the service, and the error rate has come down. The conclusion is in report.json."
+
+Of the four checks, three passed: H2 (error rate of key endpoints back to baseline), R1 (root cause judged correctly) and R2 (remediation notes match the actual operations). H1 (service health check passes) was not met, and the run failed.
+
+## Review
+
+We followed the run's trajectory step by step:
+
+1. Step 1 is the task text. It asks for the cause, the recovery of the service and a `report.json`, and it does not mention a service health check.
+2. At step 19 the model edited `config/payment-callback.yaml`, the only configuration file the submission changes; at step 31 it restarted payment-callback.
+3. At step 53 the model queried the p99 latency of gateway, and the result was that it had risen to 1760 ms after the fault began.
+4. At step 58 the model submitted `report.json` and the run ended, with three of four checks passed.
+
+The review conclusion rests on steps 53 and 58. It reads, in translation:
+
+> The review finds the task defective: the requirement of the check "service health check passes" is not stated in the task text and cannot be inferred from the data available.
+
+## Conclusion
+
+This failure is neither a model error nor a grading error but a defect of the task: grading checks that the service health check passes, while the task text does not state this requirement and the data available does not imply it. The next version of the task text will state it: once the remediation is done, the service must pass its health check.

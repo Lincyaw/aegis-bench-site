@@ -60,9 +60,9 @@ export const zh = {
     institution: '机构标识',
     news: '最新动态',
     updates: [
+      { date: '2026-11-26', kind: '报告', title: '缓存雪崩任务为何因未写明的健康检查判为未通过', source: '研究报告 · Bench C' },
       { date: '2026-11-20', kind: '新闻', title: '评测基准第 3 版发布，新增运维保障环节任务', source: '发布说明' },
       { date: '2026-11-18', kind: '论文', title: '面向软件工程全生命周期的智能体评测基准', source: '会议名称 2027' },
-      { date: '2026-10-25', kind: '报告', title: '智能体为何在回退后仍能导出完整结果', source: '研究报告 · Bench C' },
     ],
     team: '研究团队',
     member: { initial: '姓', name: '姓名', role: '所属机构 · 职务' },
