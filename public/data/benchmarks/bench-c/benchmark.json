@@ -74,7 +74,7 @@
   ],
   "huggingFace": {
     "repo": "PolarBear2026/agent-eval-demo",
-    "revision": "8d988fd28486b4f33dd1dd82d45eae8722f65fc7",
+    "revision": "5d707cc9fc20127c4f06f721eafe5dc65c693f19",
     "directory": "benchmarks/bench-c"
   }
 }
