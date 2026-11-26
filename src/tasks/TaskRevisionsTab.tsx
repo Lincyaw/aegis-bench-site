@@ -1,4 +1,5 @@
 import { clsx } from 'clsx';
+import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useTaskRevisions } from '../api/consoleClient';
 import type { ConsoleTaskDetail } from '../api/types';
@@ -8,11 +9,19 @@ import { Tag } from '../ui/content';
 import table from '../ui/table.module.css';
 import styles from './TaskDetailPage.module.css';
 
-/** The versions that led to the task's current one, newest first, with the runs each version's results count. */
-export function TaskRevisionsTab({ task }: { task: ConsoleTaskDetail }) {
+/**
+ * The versions that led to the task's current one, newest first, with the runs each version's results count; the
+ * version the reader came for is marked and scrolled to.
+ */
+export function TaskRevisionsTab({ task, version }: { task: ConsoleTaskDetail; version?: string }) {
   const { t } = useTranslation();
   const locale = useLocale();
   const revisions = useTaskRevisions(task.benchmark.id, task.id);
+  const marked = useRef<HTMLDivElement>(null);
+  useEffect(() => marked.current?.scrollIntoView({ block: 'center' }), [version]);
+  if (version && !revisions.some(revision => revision.version === version)) {
+    throw new Error(`${task.id} has no version ${version}`);
+  }
   return (
     <div className={styles.section}>
       <div className={clsx(table.table, styles.revisions)} role="table" aria-label={t('console.task.tabs.revisions')}>
@@ -25,7 +34,10 @@ export function TaskRevisionsTab({ task }: { task: ConsoleTaskDetail }) {
           <span role="columnheader">{t('console.task.revisions.column.runs')}</span>
         </div>
         {revisions.map(revision => (
-          <div key={revision.version} className={table.row} role="row">
+          <div
+            key={revision.version} ref={revision.version === version ? marked : undefined} className={table.row} role="row"
+            aria-current={revision.version === version ? 'true' : undefined}
+          >
             <span role="cell" className={styles.version}><span className="t-mono">{revision.version}</span>{revision.current && <Tag>{t('console.task.revisions.current')}</Tag>}</span>
             <span role="cell" className="t-small">{t(`console.task.revisions.change.${revision.change}`)}</span>
             <span role="cell" className="t-small c-muted">{revision.note}</span>

@@ -95,7 +95,7 @@ export function TaskTabContent({ task, view }: { task: ConsoleTaskDetail; view: 
     case 'runs': return <TaskRunsTab task={task} view={view} />;
     case 'compare': return <TaskComparisonTab task={task} view={view} />;
     case 'files': return <TaskFilesTab task={task} file={view.file ?? INSTRUCTION_PATH} />;
-    case 'revisions': return <TaskRevisionsTab task={task} />;
+    case 'revisions': return <TaskRevisionsTab task={task} version={view.version} />;
   }
 }
 

@@ -52,7 +52,7 @@ export function ChangelogPage() {
   );
 }
 
-/** One row per task version; the row opens the task's version history. */
+/** One row per task version; the row opens the task's version history with that version marked. */
 export function ChangelogTable({ entries }: { entries: ChangelogEntry[] }) {
   const { t } = useTranslation();
   const locale = useLocale();
@@ -68,7 +68,7 @@ export function ChangelogTable({ entries }: { entries: ChangelogEntry[] }) {
         <span role="columnheader">{t('console.changelog.column.author')}</span>
       </div>
       {entries.map(({ benchmark, task, revision }) => {
-        const to = consoleTaskPath(benchmark.id, task.id, { tab: 'revisions' });
+        const to = consoleTaskPath(benchmark.id, task.id, { tab: 'revisions', version: revision.version });
         return (
           <div key={`${benchmark.id}-${task.id}-${revision.version}`} className={clsx(table.row, table.link)} role="row" onClick={event => { if (!(event.target as HTMLElement).closest('a')) { navigate(to); } }}>
             <span role="cell" className="t-mono c-faint">{dateTimeOf(locale, revision.registeredAt)}</span>

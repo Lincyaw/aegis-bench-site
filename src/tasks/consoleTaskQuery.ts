@@ -76,6 +76,9 @@ export interface TaskPageView extends ComparisonView, TaskFocus {
 
   /** The file the files tab opens */
   file?: string;
+
+  /** The version the revisions tab marks */
+  version?: string;
 }
 
 export function parseTaskPageView(params: URLSearchParams): TaskPageView {
@@ -92,7 +95,10 @@ export function parseTaskPageView(params: URLSearchParams): TaskPageView {
   if (harness && !model) {
     throw new Error(`a task's page keeps to a harness only within a model, not to ${harness} alone`);
   }
-  return { tab: tab as TaskTab, view: view as TaskRunView, file: params.get('file') ?? undefined, model, harness, ...parseComparisonView(params) };
+  return {
+    tab: tab as TaskTab, view: view as TaskRunView, file: params.get('file') ?? undefined, version: params.get('version') ?? undefined, model, harness,
+    ...parseComparisonView(params),
+  };
 }
 
 /** A task's console page at one of its parts; the content tab, the combination view and empty lists are the defaults. */
@@ -112,6 +118,9 @@ export function taskPageSearch(view: Partial<TaskPageView>): URLSearchParams {
   }
   if (view.file) {
     params.set('file', view.file);
+  }
+  if (view.version) {
+    params.set('version', view.version);
   }
   if (view.model) {
     params.set('model', view.model);
