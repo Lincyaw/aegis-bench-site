@@ -1,0 +1,43 @@
+import * as Tooltip from '@radix-ui/react-tooltip';
+import type { ReactElement, ReactNode } from 'react';
+import styles from './hint.module.css';
+
+/*
+ * Hints keep pages quiet: an explanation or the detail of a mark waits in a card that opens while the pointer rests on
+ * its trigger or the trigger has focus, instead of standing on the page as small print.
+ */
+
+/** How long the pointer rests on a trigger before its hint opens, and how soon the next one opens while moving between triggers. */
+export const HINT_DELAY_MS = 250;
+export const HINT_SKIP_DELAY_MS = 400;
+
+/** Lets hints share their delays: once one has opened, the next opens at once. Wraps the whole site. */
+export function HintProvider({ children }: { children: ReactNode }) {
+  return <Tooltip.Provider delayDuration={HINT_DELAY_MS} skipDelayDuration={HINT_SKIP_DELAY_MS}>{children}</Tooltip.Provider>;
+}
+
+/** A card of detail beside its trigger, which must be an element that takes focus. */
+export function Hint({ content, children }: { content: ReactNode; children: ReactElement }) {
+  return (
+    <Tooltip.Root>
+      <Tooltip.Trigger asChild>{children}</Tooltip.Trigger>
+      <Tooltip.Portal>
+        <Tooltip.Content className={styles.card} sideOffset={6} collisionPadding={12}>{content}</Tooltip.Content>
+      </Tooltip.Portal>
+    </Tooltip.Root>
+  );
+}
+
+/** A small round mark that explains what stands next to it; `label` names it for screen readers. */
+export function InfoHint({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <Hint content={children}>
+      <button type="button" className={styles.info} aria-label={label}>
+        <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true">
+          <circle cx="6" cy="6" r="5" fill="none" stroke="currentColor" strokeWidth="1.2" />
+          <path d="M6 5.3v3.2M6 3.4v.1" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+        </svg>
+      </button>
+    </Hint>
+  );
+}

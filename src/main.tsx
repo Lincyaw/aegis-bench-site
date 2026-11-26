@@ -5,6 +5,7 @@ import { createRoot } from 'react-dom/client';
 import { RouterProvider } from 'react-router-dom';
 import { worker } from './mocks/browser';
 import { router } from './router';
+import { HintProvider } from './ui/hint';
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { staleTime: Infinity, retry: false } } });
 
@@ -19,7 +20,9 @@ await worker.start({ serviceWorker: { url: `${import.meta.env.BASE_URL}mockServi
 createRoot(root).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
+      <HintProvider>
+        <RouterProvider router={router} />
+      </HintProvider>
     </QueryClientProvider>
   </StrictMode>,
 );
