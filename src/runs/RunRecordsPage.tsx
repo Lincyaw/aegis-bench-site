@@ -108,8 +108,8 @@ export function RunToolbar({ benchmark, query, onQuery }: { benchmark: Benchmark
 export function TaskView({ benchmark, query, level, onQuery, onCompare }: {
   benchmark: BenchmarkDetail; query: RunRecordsQuery; level: RunRecordsLevel; onQuery: (query: RunRecordsQuery) => void; onCompare: (query: RunRecordsQuery) => void;
 }) {
-  // The list keeps showing the last results while a new search loads.
-  const taskPages = useTaskPages(benchmark.id, useDeferredValue(query.q), TASK_PAGE_SIZE);
+  // The list keeps showing the last results while a new search or combination loads; a combination's pass rates are its own.
+  const taskPages = useTaskPages(benchmark.id, useDeferredValue(query.q), useDeferredValue(query.combination), TASK_PAGE_SIZE);
   if (taskPages.isFetchNextPageError) {
     throw taskPages.error;
   }

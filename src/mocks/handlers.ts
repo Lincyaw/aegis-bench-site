@@ -1,10 +1,9 @@
 import { delay } from 'msw';
 import { DEFAULT_LEADERBOARD_PAGE_SIZE, benchmarkDetail, benchmarkOf, benchmarkSummary, hasBenchmark, leaderboardView, stagesWithBenchmarks, taskOf } from './benchmarks';
-import { RECORD_LOCALE } from './catalog';
 import { consoleHandlers } from './consoleHandlers';
 import { hasModel, modelProfile } from './models';
 import { answeringUnreachableRecords, http, localeOf, pageOf, writtenIn } from './protocol';
-import { publishedEntriesOf, publishedRecentRunsOf, publishedShowingOf, publishedTaskComparisonOf, publishedTaskRuns } from './published';
+import { publishedCombinationOf, publishedEntriesOf, publishedRecentRunsOf, publishedShowingOf, publishedTaskComparisonOf, publishedTaskRuns } from './published';
 import { openedIndexes } from './records';
 import { reportHandlers } from './reportHandlers';
 import { runDetailOf } from './runs';
@@ -71,9 +70,7 @@ export const publicHandlers = [
   }),
 
   http.get('/benchmarks/{benchmarkId}/combinations/{combination}/tasks', async ({ params, query, response }) => {
-    const entry = hasBenchmark(params.benchmarkId)
-      ? publishedEntriesOf(params.benchmarkId, RECORD_LOCALE).find(({ model, harness }) => `${model.id}-${harness.id}` === params.combination)
-      : undefined;
+    const entry = hasBenchmark(params.benchmarkId) ? publishedCombinationOf(params.benchmarkId, params.combination) : undefined;
     if (!entry) {
       return response(404).json({ message: `no published combination ${params.combination} in ${params.benchmarkId}` });
     }
@@ -87,8 +84,15 @@ export const publicHandlers = [
     if (!hasBenchmark(params.benchmarkId)) {
       return response(404).json({ message: `no benchmark ${params.benchmarkId}` });
     }
+    const combination = query.get('combination');
+    const entry = combination === null ? undefined : publishedCombinationOf(params.benchmarkId, combination);
+    if (combination !== null && !entry) {
+      return response(404).json({ message: `no published combination ${combination} in ${params.benchmarkId}` });
+    }
+    // A combination's tasks are those it ran, each with its pass rate over the combination's runs.
+    const summaries = entry ? combinationTasksOf(params.benchmarkId, entry.model.id, entry.harness.id).map(row => row.task) : taskSummariesOf(params.benchmarkId);
     const q = (query.get('q') ?? '').trim();
-    const matching = taskSummariesOf(params.benchmarkId).filter(task => !q || task.id.includes(q) || task.title.includes(q));
+    const matching = summaries.filter(task => !q || task.id.includes(q) || task.title.includes(q));
     await delay(80);
     return response(200).json(pageOf(matching, query, DEFAULT_TASK_PAGE_SIZE));
   }),

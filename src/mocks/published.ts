@@ -1,5 +1,6 @@
 import type { CombinationRuns, HarnessRef, LeaderboardEntry, Locale, ModelRef, PublicTaskComparison, RecentRun, TaskRecord } from '../api/types';
 import type { BenchmarkShowing } from './benchmarks';
+import { RECORD_LOCALE } from './catalog';
 import { taskComparisonOf } from './comparison';
 import { currentReleaseOf } from './releases';
 import { leaderboardOf } from './results';
@@ -21,6 +22,11 @@ export function publishedShowingOf(benchmarkId: string, locale: Locale): Benchma
 
 export function publishedRecentRunsOf(benchmarkId: string, locale: Locale): Promise<RecentRun[]> {
   return recentRunsOf(currentReleaseOf(benchmarkId).content.replays, locale);
+}
+
+/** The combination a "<model id>-<harness id>" key names, when the current release publishes it. */
+export function publishedCombinationOf(benchmarkId: string, combination: string): LeaderboardEntry | undefined {
+  return publishedEntriesOf(benchmarkId, RECORD_LOCALE).find(({ model, harness }) => `${model.id}-${harness.id}` === combination);
 }
 
 /** Whether the current release publishes a model and harness pair. */

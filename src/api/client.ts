@@ -123,12 +123,13 @@ export function useCombinations(benchmarkId: string) {
 
 /**
  * The tasks matching a search, a page at a time: each further page asks only for the tasks after those already
- * loaded. Tasks are records, so their list is the same in every language.
+ * loaded. Given a combination, the tasks it ran, each with its pass rate over the combination's runs. Tasks are
+ * records, so their list is the same in every language.
  */
-export function useTaskPages(benchmarkId: string, q: string, pageSize: number) {
+export function useTaskPages(benchmarkId: string, q: string, combination: string | undefined, pageSize: number) {
   return useSuspenseInfiniteQuery({
-    queryKey: ['tasks', benchmarkId, q, pageSize],
-    queryFn: ({ pageParam }) => responseBody(api.GET('/benchmarks/{benchmarkId}/tasks', { params: { path: { benchmarkId }, query: { q, offset: pageParam, limit: pageSize } } })),
+    queryKey: ['tasks', benchmarkId, q, combination, pageSize],
+    queryFn: ({ pageParam }) => responseBody(api.GET('/benchmarks/{benchmarkId}/tasks', { params: { path: { benchmarkId }, query: { q, combination, offset: pageParam, limit: pageSize } } })),
     initialPageParam: 0,
     getNextPageParam: nextPageOffset,
   });

@@ -631,6 +631,12 @@ interface Benchmarks {
     /** Matches the task id or title */
     @query(#{ explode: true }) q?: string,
 
+    /**
+     * A published model and harness pair as "<model id>-<harness id>": the list keeps to the tasks it ran, and each
+     * task's pass rate is over its runs only
+     */
+    @query(#{ explode: true }) combination?: string,
+
     ...PageQuery<14>,
   ): TaskPage | NotFoundError;
 
