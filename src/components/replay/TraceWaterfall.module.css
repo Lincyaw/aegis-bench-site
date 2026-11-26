@@ -1,0 +1,24 @@
+/* A waterfall: one row per span, its node, a bar on the trace's own time, and the operation; a trace after the step's moment is faded. */
+.trace { display: grid; gap: var(--space-1); padding: var(--space-2); border: var(--rule-hairline); border-radius: var(--radius-md); transition: opacity var(--duration-base) var(--ease-out); }
+.trace[data-later] { opacity: .45; }
+.head { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-2); }
+.failed { color: var(--accent-warning); }
+.spans { display: grid; gap: var(--space-px); margin: 0; padding: 0; list-style: none; }
+.span { display: grid; grid-template-columns: 8rem minmax(4rem, 1fr) minmax(0, 10rem); align-items: center; gap: var(--space-2); }
+.name { justify-self: start; padding: 0 0 0 calc(var(--depth, 0) * var(--space-2)); border: 0; background: none; color: var(--text-muted); font: var(--type-mono); text-align: left; cursor: pointer; }
+.name:hover { color: var(--text-main); text-decoration: underline; }
+.span[data-own] .name { color: var(--text-main); }
+.track { position: relative; height: var(--space-2); }
+.bar {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(var(--from, 0) * 100%);
+  width: calc(var(--share, 1) * 100%);
+  min-width: var(--size-border-thick);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--data-cat-1) 45%, var(--bg-page));
+}
+.span[data-own] .bar { background: var(--data-cat-1); }
+.span[data-status="error"] .bar { background: var(--accent-warning); }
+.span > :last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

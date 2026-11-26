@@ -113,7 +113,10 @@ export function frameAt(world: World, footprint: Footprint, step: number): Repla
         if (!node) {
           throw new Error(`an event changes ${change.node}, which the world does not have`);
         }
-        nodes.set(node.id, { ...node, ...(change.status && { status: change.status }), ...(change.attrs && { attrs: { ...node.attrs, ...change.attrs } }) });
+        nodes.set(node.id, {
+          ...node, ...(change.status && { status: change.status }), ...(change.attrs && { attrs: { ...node.attrs, ...change.attrs } }),
+          ...(change.content !== undefined && { content: change.content }),
+        });
         break;
       }
       case 'addEdge':

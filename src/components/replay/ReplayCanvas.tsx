@@ -1,5 +1,5 @@
 import { clsx } from 'clsx';
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Touch, TouchKind, WorldLayer, WorldNode } from '../../api/types';
 import { ChevronIcon } from '../../ui/controls';
@@ -8,6 +8,7 @@ import { REDUCED_MOTION_QUERY, useMediaQuery } from '../../ui/media';
 import { CHANGE_GLYPHS, focusOf, type ReplayFrame } from './frame';
 import { NODE_HEIGHT, across, bandLines, drawnNodes, layoutBands, nodeWidth, pathKey, type BandLine, type Placed } from './layout';
 import { NodeCard } from './NodeCard';
+import { useWidth } from './useWidth';
 import marks from './marks.module.css';
 import styles from './ReplayCanvas.module.css';
 
@@ -54,19 +55,7 @@ export interface ReplayCanvasProps {
  */
 export function ReplayCanvas({ layers, frame, nodes, parents, folded, hidden, touchesByNode, selected, onSelect, onFold }: ReplayCanvasProps) {
   const { t } = useTranslation();
-  const scroller = useRef<HTMLDivElement>(null);
-  const [width, setWidth] = useState(0);
-  useLayoutEffect(() => {
-    const element = scroller.current;
-    if (!element) {
-      throw new Error('the canvas renders its scroller before its layout effect runs');
-    }
-    const measure = () => setWidth(element.clientWidth);
-    measure();
-    const observer = new ResizeObserver(measure);
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, []);
+  const [scroller, width] = useWidth<HTMLDivElement>();
   const statusOf = useCallback((node: WorldNode) => (node.status && node.status !== 'healthy' ? t(`console.replay.status.${node.status}`) : undefined), [t]);
   const drawing = useMemo(
     () => layoutBands(layers, nodes, frame.edges, width, node => nodeWidth(node.label, statusOf(node), parents.has(node.id))),
@@ -116,7 +105,7 @@ export function ReplayCanvas({ layers, frame, nodes, parents, folded, hidden, to
     if (left !== element.scrollLeft || top !== element.scrollTop) {
       element.scrollTo({ left, top, behavior: reduceMotion ? 'auto' : 'smooth' });
     }
-  }, [focusRect, reduceMotion]);
+  }, [scroller, focusRect, reduceMotion]);
   const box = (entry: Placed) => (
     <WorldNodeBox
       key={entry.node.id} entry={entry} frame={frame} status={statusOf(entry.node)} parent={parents.has(entry.node.id)} folded={folded.has(entry.node.id)}

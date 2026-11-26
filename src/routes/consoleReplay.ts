@@ -9,6 +9,13 @@ export type ReplayViewMode = (typeof REPLAY_VIEWS)[number];
 export const DEFAULT_REPLAY_VIEW: ReplayViewMode = 'global';
 
 /**
+ * How the side panel shows a node's data: as the agent saw it at a step, or whole. The address leaves it unsaid while
+ * the panel shows what the agent saw, or the whole when the agent never saw any of the node's data.
+ */
+export const PANEL_SCOPES = ['seen', 'whole'] as const;
+export type PanelScope = (typeof PANEL_SCOPES)[number];
+
+/**
  * A replay's state in its address: the step it shows, the view, the layers the reader hid, the nodes the reader folded
  * and the node open in the side panel. A replay without a step shows the trajectory's first.
  */
@@ -18,6 +25,7 @@ export interface ReplayView {
   hidden: string[];
   folded: string[];
   node?: string;
+  scope?: PanelScope;
 }
 
 /** A replay's state from its address; a step or a view outside its set fails the page rather than showing something else. */
@@ -30,9 +38,14 @@ export function parseReplayView(params: URLSearchParams): ReplayView {
   if (!REPLAY_VIEWS.includes(view as ReplayViewMode)) {
     throw new Error(`a replay has no view ${view}`);
   }
+  const scope = params.get('scope') ?? undefined;
+  if (scope !== undefined && !PANEL_SCOPES.includes(scope as PanelScope)) {
+    throw new Error(`a replay's panel has no scope ${scope}`);
+  }
   return {
     step: step === undefined ? undefined : Number(step), view: view as ReplayViewMode,
     hidden: params.get('hide')?.split(LIST_SEPARATOR) ?? [], folded: params.get('fold')?.split(LIST_SEPARATOR) ?? [], node: params.get('node') ?? undefined,
+    scope: scope as PanelScope | undefined,
   };
 }
 
@@ -53,6 +66,9 @@ export function replaySearch(view: Partial<ReplayView>): URLSearchParams {
   }
   if (view.node !== undefined) {
     params.set('node', view.node);
+  }
+  if (view.scope !== undefined) {
+    params.set('scope', view.scope);
   }
   return params;
 }

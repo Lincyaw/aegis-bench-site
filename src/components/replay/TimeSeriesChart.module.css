@@ -1,0 +1,14 @@
+/* A metric's chart: a thin line over a recessive grid, the queried windows shaded behind it, the step's moment a solid rule. */
+.chart { display: grid; gap: var(--space-1); margin: 0; }
+.head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); }
+.plot { position: relative; min-width: 0; }
+.plot svg { display: block; overflow: visible; }
+.grid { stroke: var(--border-hairline); stroke-width: var(--size-hairline); }
+.axis { fill: var(--text-faint); font: var(--type-mono); }
+.window { fill: var(--bg-muted); }
+.line { fill: none; stroke: var(--data-cat-1); stroke-width: var(--size-border-thick); stroke-linejoin: round; stroke-linecap: round; }
+.tick { stroke: var(--replay-tool); stroke-width: var(--size-border-thick); stroke-linecap: round; }
+.pointer { stroke: var(--text-main); stroke-width: var(--size-stroke); }
+.hover line { stroke: var(--text-muted); stroke-width: var(--size-hairline); stroke-dasharray: 2 2; }
+.hover circle { fill: var(--data-cat-1); stroke: var(--bg-page); stroke-width: var(--size-border-thick); }
+.surface { position: absolute; inset: 0; padding: 0; border: 0; background: none; cursor: crosshair; }

@@ -1,0 +1,17 @@
+/* A log list scrolls in a box of its own; the rule at the step's moment is a line across it. */
+/* Positioned, so the rule's offset is measured from the list it scrolls. */
+.list { position: relative; display: grid; gap: var(--space-px); max-height: 20rem; margin: 0; padding: 0; overflow-y: auto; overscroll-behavior: contain; list-style: none; }
+.entry { padding: var(--space-1) var(--space-2); border-radius: var(--radius-sm); transition: opacity var(--duration-base) var(--ease-out); }
+.entry:hover { background: var(--bg-muted); }
+.entry[data-later] { opacity: .45; }
+.line { display: grid; grid-template-columns: max-content 3rem minmax(0, 1fr) max-content; align-items: baseline; gap: var(--space-2); }
+.level { color: var(--text-muted); }
+.level[data-level="warn"] { color: var(--ink-warn); }
+.level[data-level="error"] { color: var(--accent-warning); }
+.message { overflow-wrap: anywhere; }
+.toggle { padding: 0 var(--space-2); border: var(--rule-hairline); border-radius: var(--radius-full); background: none; color: var(--text-muted); cursor: pointer; }
+.toggle:hover, .toggle[aria-expanded="true"] { color: var(--text-main); border-color: var(--border-emphasis); }
+.frames { display: grid; gap: var(--space-px); margin: var(--space-1) 0 0 calc(3rem + 5.5rem); padding: 0 0 0 var(--space-3); border-left: var(--rule-hairline); list-style: none; }
+.frame { padding: 0; border: 0; background: none; color: var(--text-main); font: inherit; text-decoration: underline; text-decoration-color: var(--border-emphasis); cursor: pointer; }
+.frame:hover { text-decoration-color: currentcolor; }
+.rule { height: 0; margin: var(--space-1) 0; border-top: var(--size-stroke) solid var(--text-main); }

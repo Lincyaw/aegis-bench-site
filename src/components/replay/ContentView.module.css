@@ -1,0 +1,9 @@
+/* A file's text in a box of its own; a seen line carries a bar on its left, an added line the change colour, a removed line struck through. */
+.content { max-height: 24rem; margin: 0; padding: var(--space-2) 0; overflow: auto; border: var(--rule-hairline); border-radius: var(--radius-md); background: var(--bg-panel); list-style: none; }
+.row { display: grid; grid-template-columns: 2.5rem 1rem max-content; gap: var(--space-2); padding-right: var(--space-3); }
+.row > :first-child { text-align: right; }
+.row[data-seen] { background: linear-gradient(var(--replay-tool), var(--replay-tool)) left / var(--size-border-thick) 100% no-repeat, var(--bg-muted); }
+.row[data-change="add"] { background: color-mix(in srgb, var(--replay-edit) 16%, var(--bg-panel)); }
+.row[data-change="remove"] { color: var(--text-faint); text-decoration: line-through; }
+.text { font: var(--type-code); white-space: pre; }
+.gap { padding: 0 0 0 2.5rem; }
