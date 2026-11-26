@@ -244,6 +244,14 @@ export function useConsoleRun(runId: string) {
 }
 
 /** One page of a run's trajectory as the console reads it; a trajectory is a record, the same in every language. */
+/** A run's whole trajectory, every step at once. */
+export function useConsoleTrajectory(runId: string) {
+  return useSuspenseQuery({
+    queryKey: [CONSOLE_QUERY, 'trajectory', runId],
+    queryFn: () => responseBody(api.GET('/console/runs/{runId}/trajectory', { params: { path: { runId } } })),
+  }).data;
+}
+
 export function useConsoleTrajectoryPage(runId: string, offset: number, pageSize: number) {
   return useSuspenseQuery({
     queryKey: [CONSOLE_QUERY, 'trajectory', runId, offset, pageSize],

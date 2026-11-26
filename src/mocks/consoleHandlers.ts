@@ -393,6 +393,15 @@ export const consoleHandlers = [
     return run ? response(200).json(run, writtenIn(locale)) : response(404).json({ message: `no run ${params.runId}` });
   }),
 
+  http.get('/console/runs/{runId}/trajectory', async ({ cookies, params, response }) => {
+    if (!sessionUserOf(cookies)) {
+      return response(401).json(SIGN_IN_REQUIRED);
+    }
+    const trajectory = await trajectoryOf(params.runId);
+    await delay(120);
+    return trajectory ? response(200).json(trajectory) : response(404).json({ message: `no run ${params.runId}` });
+  }),
+
   http.get('/console/runs/{runId}/trajectory/steps', async ({ cookies, params, query, response }) => {
     if (!sessionUserOf(cookies)) {
       return response(401).json(SIGN_IN_REQUIRED);

@@ -141,6 +141,11 @@ interface ConsoleRuns {
 interface ConsoleRunRecords {
   @get read(@path runId: string, ...LanguageHeader): Localized<ConsoleRunDetail> | SignInRequiredError | NotFoundError | HuggingFaceUnreachableError;
 
+  /** The run's whole trajectory in ATIF, for reading every step on one page */
+  @get
+  @route("/trajectory")
+  trajectory(@path runId: string): ATIF.Trajectory | SignInRequiredError | NotFoundError | HuggingFaceUnreachableError;
+
   /** The run's trajectory a page of steps at a time */
   @get
   @route("/trajectory/steps")

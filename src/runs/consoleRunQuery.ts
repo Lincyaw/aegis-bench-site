@@ -3,6 +3,7 @@ import { consoleReviewFilterValues, runOutcomeValues } from '../api/schema';
 import type { PendingKind, ReviewFilter, RunOutcome } from '../api/types';
 import { consoleBenchmarkPath } from '../console/consoleMap';
 import { RUN_TABS } from './presentation';
+import type { RunRecordsView } from './runRecordsQuery';
 
 /** Runs per page of the console's run list. */
 export const RUN_LIST_PAGE_SIZE = 25;
@@ -62,18 +63,25 @@ export interface ConsoleRunView {
   tab: ConsoleRunTab;
   step?: number;
   check?: string;
+
+  /** Set when the run is laid out for checking its grading instead of read by its tabs */
+  view?: Extract<RunRecordsView, 'compare'>;
 }
 
 export function parseConsoleRunView(params: URLSearchParams, defaultTab: ConsoleRunTab): ConsoleRunView {
   const tab = params.get('tab') ?? defaultTab;
   const step = params.get('step') ?? undefined;
+  const view = params.get('view') ?? undefined;
   if (!CONSOLE_RUN_TABS.includes(tab as ConsoleRunTab)) {
     throw new Error(`a run has no tab ${tab}`);
   }
   if (step !== undefined && !Number.isInteger(Number(step))) {
     throw new Error(`no step ${step}`);
   }
-  return { tab: tab as ConsoleRunTab, step: step === undefined ? undefined : Number(step), check: params.get('check') ?? undefined };
+  if (view !== undefined && view !== 'compare') {
+    throw new Error(`a run has no view ${view}`);
+  }
+  return { tab: tab as ConsoleRunTab, step: step === undefined ? undefined : Number(step), check: params.get('check') ?? undefined, view };
 }
 
 export function consoleRunPath(benchmarkId: string, runId: string, view: Partial<ConsoleRunView> = {}): string {

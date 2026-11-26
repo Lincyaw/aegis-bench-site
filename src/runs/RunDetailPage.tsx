@@ -3,7 +3,7 @@ import { Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { RunHuntsTab } from '../analysis/RunHuntsTab';
-import { useConsoleBenchmark, useConsoleRun, useConsoleTrajectoryPage } from '../api/consoleClient';
+import { useConsoleBenchmark, useConsoleRun, useConsoleTrajectory, useConsoleTrajectoryPage } from '../api/consoleClient';
 import type { ConsoleBenchmark, ConsoleRunDetail } from '../api/types';
 import { ConsoleHeader } from '../console/ConsoleHeader';
 import { consoleBenchmarkPath } from '../console/consoleMap';
@@ -13,14 +13,17 @@ import { FailureClassTag } from '../results/FailureClassTag';
 import { formatCost } from '../results/presentation';
 import { consoleTaskPath } from '../tasks/consoleTaskQuery';
 import { FactList, Loading } from '../ui/content';
-import { ButtonLink } from '../ui/controls';
+import { ButtonLink, SegmentedControl } from '../ui/controls';
+import { NARROW_QUERY, useMediaQuery } from '../ui/media';
 import { TabRow } from '../ui/navigation';
 import navigation from '../ui/navigation.module.css';
 import { CONSOLE_RUN_TABS, consoleRunsPath, parseConsoleRunView, runQuerySearch, type ConsoleRunView } from './consoleRunQuery';
 import { HuggingFaceBoundary, HuggingFaceNote } from './HuggingFace';
 import { OutcomeBadge } from './Outcome';
 import { defaultRunTab } from './presentation';
+import { SingleRunComparison } from './RunComparison';
 import { FailureTab, GradingTab, InputTab, OutputTab } from './RunDetailPanel';
+import { RUN_RECORDS_VIEWS } from './runRecordsQuery';
 import { RunEventsTab, RunUsageTab } from './RunRecordTabs';
 import { TrajectoryView } from './TrajectoryView';
 import styles from './RunDetailPage.module.css';
@@ -38,6 +41,9 @@ export function RunDetailPage() {
   const run = useConsoleRun(runId);
   const view = parseConsoleRunView(params, defaultRunTab(run));
   const onView = (next: ConsoleRunView) => setParams(runQuerySearch(next), { replace: true, preventScrollReset: true });
+  // The comparison needs a wide window; a narrow one reads the run by its tabs.
+  const narrow = useMediaQuery(NARROW_QUERY);
+  const comparing = view.view === 'compare' && !narrow;
   const counts: Partial<Record<ConsoleRunView['tab'], number>> = { grading: run.grading.total, failure: run.failure?.failedChecks.length, trajectory: run.metrics.steps };
   return (
     <div className={styles.page} data-half={benchmark.stage.half}>
@@ -45,7 +51,19 @@ export function RunDetailPage() {
         crumbs={[{ label: benchmark.name, to: consoleBenchmarkPath(benchmark.id) }, { label: t('console.runs.title'), to: consoleRunsPath(benchmark.id) }, { label: run.task.id }]}
         title={run.task.title}
         lead={t('console.run.label', { model: run.model.name, harness: run.harness.name, attempt: run.attempt })}
-        actions={<ButtonLink to={consoleTaskPath(benchmark.id, run.task.id)} variant="line">{t('console.run.toTask')}</ButtonLink>}
+        actions={(
+          <>
+            {!narrow && (
+              <SegmentedControl
+                label={t('runs.view.label')}
+                choices={RUN_RECORDS_VIEWS.map(choice => ({ value: choice, label: t(`runs.view.${choice}`) }))}
+                value={comparing ? 'compare' : 'browse'}
+                onChange={choice => onView({ tab: view.tab, ...(choice === 'compare' && { view: choice }) })}
+              />
+            )}
+            <ButtonLink to={consoleTaskPath(benchmark.id, run.task.id)} variant="line">{t('console.run.toTask')}</ButtonLink>
+          </>
+        )}
       />
       <div className={styles.facts}>
         <OutcomeBadge outcome={run.outcome} />
@@ -66,24 +84,39 @@ export function RunDetailPage() {
         { label: t('runs.metrics.cost'), value: formatCost(run.metrics.costUsd) },
         { label: t('runs.metrics.endReason'), value: t(`runs.endReason.${run.metrics.endReason}`) },
       ]} />
-      <TabRow current={view.tab} className={styles.tabs} role="tablist" aria-label={t('console.run.tabList')}>
-        {CONSOLE_RUN_TABS.map(tab => (
-          <button key={tab} type="button" role="tab" data-tab={tab} aria-selected={tab === view.tab} className={clsx(navigation.tab, 't-small')} onClick={() => onView({ tab })}>
-            {tab === 'events' || tab === 'usage' ? t(`console.run.tabs.${tab}`) : tab === 'hunts' ? t('console.analysis.runTab') : t(`runs.tab.${tab}`)}
-            {counts[tab] !== undefined && <span className={styles.count}>{counts[tab]}</span>}
-          </button>
-        ))}
-      </TabRow>
-      {run.huggingFaceUrl && <HuggingFaceNote text={t('runs.huggingFace')} url={run.huggingFaceUrl} />}
-      <div className={styles.panel} role="tabpanel">
-        <HuggingFaceBoundary resetKey={view.tab}>
+      {comparing ? (
+        <HuggingFaceBoundary resetKey={run.id}>
           <Suspense fallback={<Loading />}>
-            <RunTabContent benchmark={benchmark} run={run} view={view} onView={onView} />
+            <ConsoleRunCompared run={run} />
           </Suspense>
         </HuggingFaceBoundary>
-      </div>
+      ) : (
+        <>
+          {run.huggingFaceUrl && <HuggingFaceNote text={t('runs.huggingFace')} url={run.huggingFaceUrl} />}
+          <TabRow current={view.tab} className={styles.tabs} role="tablist" aria-label={t('console.run.tabList')}>
+            {CONSOLE_RUN_TABS.map(tab => (
+              <button key={tab} type="button" role="tab" data-tab={tab} aria-selected={tab === view.tab} className={clsx(navigation.tab, 't-small')} onClick={() => onView({ tab })}>
+                {tab === 'events' || tab === 'usage' ? t(`console.run.tabs.${tab}`) : tab === 'hunts' ? t('console.analysis.runTab') : t(`runs.tab.${tab}`)}
+                {counts[tab] !== undefined && <span className={styles.count}>{counts[tab]}</span>}
+              </button>
+            ))}
+          </TabRow>
+          <div className={styles.panel} role="tabpanel">
+            <HuggingFaceBoundary resetKey={view.tab}>
+              <Suspense fallback={<Loading />}>
+                <RunTabContent benchmark={benchmark} run={run} view={view} onView={onView} />
+              </Suspense>
+            </HuggingFaceBoundary>
+          </div>
+        </>
+      )}
     </div>
   );
+}
+
+/** The run laid out for checking its grading, with its whole trajectory. */
+export function ConsoleRunCompared({ run }: { run: ConsoleRunDetail }) {
+  return <SingleRunComparison run={run} trajectory={useConsoleTrajectory(run.id)} />;
 }
 
 export function RunTabContent({ benchmark, run, view, onView }: { benchmark: ConsoleBenchmark; run: ConsoleRunDetail; view: ConsoleRunView; onView: (view: ConsoleRunView) => void }) {
