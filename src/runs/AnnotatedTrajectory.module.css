@@ -3,7 +3,7 @@
 :is(.step, .flag, .tag, .swatch, .cardName, .note)[data-severity="warning"] { --severity-ink: var(--ink-warn); --severity-tint: var(--bg-warn-soft); }
 :is(.step, .flag, .tag, .swatch, .cardName, .note)[data-severity="note"] { --severity-ink: var(--accent-info); --severity-tint: var(--bg-info-soft); }
 
-/* The labelled steps sit as flags under the timeline's marks, one slot per step; the strip opens the run's steps below. */
+/* The labelled steps sit as flags under the timeline's marks, one slot per step; the strip opens the run's trajectory in the side panel. */
 .strip {
   display: grid;
   gap: var(--space-px);
@@ -36,6 +36,12 @@
 .reason + .reason { padding-top: var(--space-2); border-top: var(--rule-hairline); }
 
 .filter { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+
+/* The side panel's trajectories: the labels' filter, then a column per run and, across them, a row per submission. */
+.panelBody { display: grid; gap: var(--space-4); }
+.columns { display: grid; grid-template-columns: repeat(var(--columns, 1), minmax(0, 1fr)); align-items: start; gap: var(--space-2) var(--space-5); }
+.columnHead { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-1) var(--space-2); padding-bottom: var(--space-2); border-bottom: var(--rule-hairline); }
+.segment { grid-column: 1 / -1; padding-top: var(--space-3); }
 .swatch { width: var(--size-dot); height: var(--size-dot); border-radius: var(--radius-full); background: var(--severity-ink, var(--text-faint)); }
 
 .steps { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-px); }

@@ -1,6 +1,5 @@
-import type { ComponentType } from 'react';
 import { annotationSeverityValues } from '../api/schema';
-import type { AnnotationCategory, AnnotationSeverity, ComparedRun, ComparisonBlock, StepAnnotation, TaskComparison, Trajectory, TrajectoryStep } from '../api/types';
+import type { AnnotationCategory, AnnotationSeverity, ComparedRun, StepAnnotation, TaskComparison, Trajectory, TrajectoryStep } from '../api/types';
 
 /*
  * How a comparison of a task's runs is read: the numerals that tell its runs apart, the contract every block of the
@@ -23,16 +22,22 @@ export function numeralOfRun(comparison: TaskComparison, runId: string): string 
   return runNumeralOf(comparison.runs.findIndex(run => run.id === runId));
 }
 
-/** The most runs a comparison holds, as the spec declares, and the most opened in detail side by side. */
+/** The most runs a comparison holds, as the spec declares, and the most whose trajectories the side panel sets side by side. */
 export const MAX_COMPARED_RUNS = 4;
-export const MAX_OPENED_RUNS = 2;
+export const MAX_PANEL_TRAJECTORIES = 2;
 
-/** The runs a comparison sets side by side, the ones opened in detail, and the labels their trajectories are filtered to. */
+/**
+ * A comparison's state: the runs set side by side, the rows opened in place, the runs whose trajectories the side
+ * panel shows, and the labels those trajectories are filtered to.
+ */
 export interface ComparisonView {
   runs: string[];
 
-  /** Each one of runs */
-  open: string[];
+  /** Rows opened in place, each named as rowKeyOf names it */
+  expand: string[];
+
+  /** Each one of runs; the side panel is closed when empty */
+  trajectory: string[];
 
   /** Annotation categories; every step shows when empty */
   labels: string[];
@@ -42,18 +47,23 @@ export interface ComparisonView {
 export const LIST_SEPARATOR = ',';
 
 /** The address parameters a comparison keeps its state in. */
-export const COMPARISON_PARAMS = ['runs', 'open', 'labels'] as const satisfies readonly (keyof ComparisonView)[];
+export const COMPARISON_PARAMS = ['runs', 'expand', 'trajectory', 'labels'] as const satisfies readonly (keyof ComparisonView)[];
 
-/** A comparison's state from an address; more runs than a comparison holds, or an opened run it does not hold, fails the page. */
+/** The key a row of a block opens in place by: the block's kind of row and, for a row per item, the item. */
+export function rowKeyOf(kind: 'file' | 'check' | 'reply' | 'review', item?: string): string {
+  return item === undefined ? kind : `${kind}:${item}`;
+}
+
+/** A comparison's state from an address; more runs than a comparison holds, or a trajectory of a run it does not hold, fails the page. */
 export function parseComparisonView(params: URLSearchParams): ComparisonView {
-  const [runs, open, labels] = COMPARISON_PARAMS.map(name => params.get(name)?.split(LIST_SEPARATOR) ?? []);
+  const [runs, expand, trajectory, labels] = COMPARISON_PARAMS.map(name => params.get(name)?.split(LIST_SEPARATOR) ?? []);
   if (runs.length > MAX_COMPARED_RUNS || new Set(runs).size < runs.length) {
     throw new Error(`a comparison holds at most ${MAX_COMPARED_RUNS} different runs`);
   }
-  if (open.length > MAX_OPENED_RUNS || !open.every(run => runs.includes(run))) {
-    throw new Error(`at most ${MAX_OPENED_RUNS} of the compared runs open in detail`);
+  if (trajectory.length > MAX_PANEL_TRAJECTORIES || !trajectory.every(run => runs.includes(run))) {
+    throw new Error(`the side panel shows at most ${MAX_PANEL_TRAJECTORIES} of the compared runs' trajectories`);
   }
-  return { runs, open, labels };
+  return { runs, expand, trajectory, labels };
 }
 
 /** Writes a comparison's state into address parameters, leaving out its empty lists. */
@@ -65,16 +75,27 @@ export function setComparisonParams(params: URLSearchParams, view: Partial<Compa
   }
 }
 
-/** Adds a run to the comparison or takes it out, closing its detail with it. */
+/** Adds a run to the comparison or takes it out, and its trajectory out of the side panel with it. */
 export function withComparedRun<View extends ComparisonView>(view: View, run: string): View {
   return view.runs.includes(run)
-    ? { ...view, runs: view.runs.filter(id => id !== run), open: view.open.filter(id => id !== run) }
+    ? { ...view, runs: view.runs.filter(id => id !== run), trajectory: view.trajectory.filter(id => id !== run) }
     : { ...view, runs: [...view.runs, run] };
 }
 
-/** Opens a compared run's detail or closes it; opening one more than fits closes the earliest opened. */
-export function withOpenedRun<View extends ComparisonView>(view: View, run: string): View {
-  return { ...view, open: view.open.includes(run) ? view.open.filter(id => id !== run) : [...view.open, run].slice(-MAX_OPENED_RUNS) };
+/** Opens rows in place, or closes them when every one of them is open already. */
+export function withExpanded<View extends ComparisonView>(view: View, keys: string[]): View {
+  const open = keys.every(key => view.expand.includes(key));
+  return { ...view, expand: open ? view.expand.filter(key => !keys.includes(key)) : [...view.expand, ...keys.filter(key => !view.expand.includes(key))] };
+}
+
+/** Shows a run's trajectory in the side panel, alone unless the panel shows it already. */
+export function withTrajectory<View extends ComparisonView>(view: View, run: string): View {
+  return view.trajectory.includes(run) ? view : { ...view, trajectory: [run] };
+}
+
+/** Adds a run's trajectory to the side panel or takes it out; adding one more than fits takes out the earliest. */
+export function withPanelRun<View extends ComparisonView>(view: View, run: string): View {
+  return { ...view, trajectory: view.trajectory.includes(run) ? view.trajectory.filter(id => id !== run) : [...view.trajectory, run].slice(-MAX_PANEL_TRAJECTORIES) };
 }
 
 /** Shows or stops showing the steps an annotation category labels. */
@@ -82,37 +103,37 @@ export function withLabel<View extends ComparisonView>(view: View, label: string
   return { ...view, labels: view.labels.includes(label) ? view.labels.filter(id => id !== label) : [...view.labels, label] };
 }
 
+/**
+ * A block's part of the comparison: its rows, a cell per compared run, each item row opening in place; the trajectory
+ * block opens a run's trajectory in the side panel instead.
+ */
 export interface BlockProps {
   comparison: TaskComparison;
+
+  /** The rows open in place */
+  expanded: string[];
+
+  /** Opens the rows, or closes them when all are open */
+  onExpand: (keys: string[]) => void;
+
+  /** Shows a run's trajectory in the side panel */
+  onTrajectory: (runId: string) => void;
 }
 
-export interface OverviewProps extends BlockProps {
-  /** Opens a run below and brings the block's detail into view; the detail's head carries the block's anchor */
-  onOpen: (runId: string) => void;
-}
+/** What the side panel needs of the trajectories it shows: the runs, their labels' filter and how to read them. */
+export interface PanelProps {
+  comparison: TaskComparison;
 
-/** The id of a block's head among the opened runs, where opening a run from the block's overview scrolls to. */
-export function detailAnchorOf(block: ComparisonBlock): string {
-  return `compare-${block}`;
-}
-
-export interface DetailProps extends BlockProps {
-  /** The runs opened in detail, in the comparison's order */
-  opened: ComparedRun[];
+  /** In the comparison's order */
+  shown: ComparedRun[];
 
   /** The annotation categories the trajectories show; every step when empty */
   labels: string[];
 
   onLabel: (category: string) => void;
 
-  /** Reads the opened runs' whole trajectories, from the public site's API or the console's */
+  /** Reads whole trajectories, from the public site's API or the console's */
   useTrajectories: (runIds: string[]) => Trajectory[];
-}
-
-/** A block shows a row in the overview, a cell per compared run, and its whole content for the runs opened in detail. */
-export interface BlockParts {
-  Overview: ComponentType<OverviewProps>;
-  Detail: ComponentType<DetailProps>;
 }
 
 /** The category an annotation names, which the benchmark must declare. */

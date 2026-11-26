@@ -97,12 +97,12 @@ export function runRecordsPath(benchmarkId: string, query: Partial<RunRecordsQue
 
 /** Switching the view keeps the task, combination and run in focus, and leaves the comparison. */
 export function withRecordsView(query: RunRecordsQuery, by: RunRecordsView): RunRecordsQuery {
-  return { ...query, by, mode: 'runs', runs: [], open: [], labels: [] };
+  return { ...query, by, mode: 'runs', runs: [], expand: [], trajectory: [], labels: [] };
 }
 
 /** Choosing a task, a run or a filter starts the views below it afresh; a comparison belongs to its task. */
 export function withTask(query: RunRecordsQuery, task: string | undefined): RunRecordsQuery {
-  return { ...query, task, run: undefined, tab: undefined, step: undefined, check: undefined, runs: [], open: [], labels: [] };
+  return { ...query, task, run: undefined, tab: undefined, step: undefined, check: undefined, runs: [], expand: [], trajectory: [], labels: [] };
 }
 
 export function withRun(query: RunRecordsQuery, run: string | undefined): RunRecordsQuery {
@@ -125,7 +125,7 @@ export function withFilter(query: RunRecordsQuery, filter: Pick<RunRecordsQuery,
 /** Comparing the chosen task's runs starts with the run in view, if any. */
 export function withMode(query: RunRecordsQuery, mode: TaskMode): RunRecordsQuery {
   const startWith = mode === 'compare' && query.runs.length === 0 && query.run ? [query.run] : [];
-  return { ...query, mode, runs: [...query.runs, ...startWith], open: [...query.open, ...startWith] };
+  return { ...query, mode, runs: [...query.runs, ...startWith] };
 }
 
 /** The detail's tab and, within it, the step or check it opens. */

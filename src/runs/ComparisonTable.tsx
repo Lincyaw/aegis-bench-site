@@ -17,11 +17,11 @@ export function ComparisonTable({ columns, label, children }: { columns: number;
   );
 }
 
-/** The row that starts a block: its name with what it shows behind a hint, and a cell per run; `id` lets a link scroll to it. */
-export function BlockHead({ title, hint, aside, id, children }: { title: string; hint: string; aside?: ReactNode; id?: string; children: ReactNode }) {
+/** The row that starts a block: its name with what it shows behind a hint, and a cell per run. */
+export function BlockHead({ title, hint, aside, children }: { title: string; hint: string; aside?: ReactNode; children: ReactNode }) {
   const { t } = useTranslation();
   return (
-    <div id={id} className={clsx(styles.row, styles.blockHead)} role="row">
+    <div className={clsx(styles.row, styles.blockHead)} role="row">
       <div className={styles.label} role="rowheader">
         <span className={styles.title}><span className="t-label">{title}</span><InfoHint label={t('ui.about', { subject: title })}>{hint}</InfoHint></span>
         {aside}
@@ -31,11 +31,31 @@ export function BlockHead({ title, hint, aside, id, children }: { title: string;
   );
 }
 
-/** One thing the block compares, such as a file or a check; a dot marks the rows where the runs differ. */
-export function ItemRow({ label, differs, children }: { label: ReactNode; differs: boolean; children: ReactNode }) {
+/**
+ * One thing the block compares, such as a file or a check; a dot marks the rows where the runs differ. A row that
+ * opens in place does so from anywhere on it, its label being the button that says whether it is open.
+ */
+export function ItemRow({ label, differs, expanded, onToggle, children }: { label: ReactNode; differs: boolean; expanded?: boolean; onToggle?: () => void; children: ReactNode }) {
   return (
-    <div className={clsx(styles.row, styles.item)} role="row">
-      <div className={clsx(styles.label, differs && styles.differs)} role="rowheader">{label}</div>
+    <div className={clsx(styles.row, styles.item, onToggle && styles.expandable)} role="row" onClick={onToggle}>
+      <div className={clsx(styles.label, differs && styles.differs)} role="rowheader">
+        {onToggle ? (
+          <button type="button" className={styles.toggle} aria-expanded={expanded}>
+            <svg className={styles.chevron} viewBox="0 0 10 10" width="10" height="10" aria-hidden="true"><path d="m3.5 2 3 3-3 3" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            {label}
+          </button>
+        ) : label}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+/** What an item row opens to: a cell per run beneath its own. */
+export function ExpansionRow({ children }: { children: ReactNode }) {
+  return (
+    <div className={clsx(styles.row, styles.expansion)} role="row">
+      <div className={styles.label} role="rowheader" />
       {children}
     </div>
   );

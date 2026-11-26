@@ -1,30 +1,38 @@
-import { useState } from 'react';
+import { clsx } from 'clsx';
+import { Fragment, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { ComparedCheck, RunCheckVerdict, RunFileChange } from '../api/types';
-import { FailureClassTag } from '../results/FailureClassTag';
+import type { ComparedCheck, RunCheckVerdict, RunFileChange, TaskComparison } from '../api/types';
 import { ToggleChip } from '../ui/controls';
-import { Hint } from '../ui/hint';
-import { numeralOfRun, type BlockProps, type DetailProps } from './comparison';
-import { BlockHead, Cell, ItemRow } from './ComparisonTable';
+import controls from '../ui/controls.module.css';
+import { numeralOfRun, rowKeyOf, type BlockProps } from './comparison';
+import { BlockHead, Cell, ExpansionRow, ItemRow } from './ComparisonTable';
 import { OutcomeText } from './Outcome';
 import { Diff } from './RunDetailPanel';
 import styles from './ResultBlocks.module.css';
 
 /*
  * The comparison's blocks for what a run produced and how it was graded: the files it changed, its verdict on each
- * check, and its final reply.
+ * check, and its final reply. Each shows its sizes and verdicts first and opens in place to the rest.
  */
 
 export function ChangeSize({ additions, deletions }: { additions: number; deletions: number }) {
   return <span className="t-numeric"><span className="c-ok">+{additions}</span> <span className="c-bad">−{deletions}</span></span>;
 }
 
-export function FileChangesOverview({ comparison }: BlockProps) {
+/** The files the runs changed, as a pull request lists them: each file's size by run, opening in place to every run's diff. */
+export function FileChanges({ comparison, expanded, onExpand }: BlockProps) {
   const { t } = useTranslation();
   const { runs, files } = comparison;
+  const keys = files.map(file => rowKeyOf('file', file.path));
+  const allOpen = keys.length > 0 && keys.every(key => expanded.includes(key));
+  const toggleAll = files.length > 1 && (
+    <button type="button" className={clsx(controls.textLink, 't-micro')} aria-expanded={allOpen} onClick={() => onExpand(keys)}>
+      {allOpen ? t('compare.collapseAll') : t('compare.expandAll')}
+    </button>
+  );
   return (
     <>
-      <BlockHead title={t('compare.blocks.fileChanges.title')} hint={t('compare.blocks.fileChanges.hint')}>
+      <BlockHead title={t('compare.blocks.fileChanges.title')} hint={t('compare.blocks.fileChanges.hint')} aside={toggleAll}>
         {runs.map(run => {
           const changes = files.flatMap(file => file.changes.filter(change => change.runId === run.id));
           return (
@@ -37,82 +45,71 @@ export function FileChangesOverview({ comparison }: BlockProps) {
           );
         })}
       </BlockHead>
-      {files.map(file => (
-        <ItemRow key={file.path} label={<span className={styles.path}>{file.path}</span>} differs={file.differs}>
-          {runs.map(run => {
-            const change = file.changes.find(candidate => candidate.runId === run.id);
-            return change ? (
-              <Cell key={run.id}>
-                <span className={styles.figures}>
-                  <ChangeSize additions={change.additions} deletions={change.deletions} />
-                  {change.sameAs && <span className={styles.same}>{t('compare.sameAs', { run: numeralOfRun(comparison, change.sameAs) })}</span>}
-                </span>
-              </Cell>
-            ) : <Cell key={run.id} tone="empty"><span className="t-small">{t('compare.unchanged')}</span></Cell>;
-          })}
-        </ItemRow>
-      ))}
+      {files.map(file => {
+        const key = rowKeyOf('file', file.path);
+        const open = expanded.includes(key);
+        return (
+          <Fragment key={file.path}>
+            <ItemRow label={<span className={styles.path}>{file.path}</span>} differs={file.differs} expanded={open} onToggle={() => onExpand([key])}>
+              {runs.map(run => {
+                const change = file.changes.find(candidate => candidate.runId === run.id);
+                return change ? (
+                  <Cell key={run.id}>
+                    <span className={styles.figures}>
+                      <ChangeSize additions={change.additions} deletions={change.deletions} />
+                      {change.sameAs && <span className={styles.same}>{t('compare.sameAs', { run: numeralOfRun(comparison, change.sameAs) })}</span>}
+                    </span>
+                  </Cell>
+                ) : <Cell key={run.id} tone="empty"><span className="t-small">{t('compare.unchanged')}</span></Cell>;
+              })}
+            </ItemRow>
+            {open && (
+              <ExpansionRow>
+                {runs.map(run => <ChangeDiff key={run.id} comparison={comparison} change={file.changes.find(candidate => candidate.runId === run.id)} />)}
+              </ExpansionRow>
+            )}
+          </Fragment>
+        );
+      })}
     </>
   );
 }
 
-/** Each opened run's change to each file, whole; a change the other opened run made the same way is not repeated. */
-export function FileChangesDetail({ comparison, opened }: DetailProps) {
+/** A run's diff of a file; a change an earlier run made the same way is not repeated. */
+export function ChangeDiff({ comparison, change }: { comparison: TaskComparison; change: RunFileChange | undefined }) {
   const { t } = useTranslation();
-  const openedIds = opened.map(run => run.id);
-  const sameOpened = (change: RunFileChange) => change.sameAs !== undefined && openedIds.includes(change.sameAs);
-  return (
-    <>
-      <BlockHead title={t('compare.blocks.fileChanges.title')} hint={t('compare.blocks.fileChanges.hint')}>
-        {opened.map(run => <Cell key={run.id} />)}
-      </BlockHead>
-      {comparison.files.filter(file => file.changes.some(change => openedIds.includes(change.runId))).map(file => (
-        <ItemRow key={file.path} label={<span className={styles.path}>{file.path}</span>} differs={file.differs}>
-          {opened.map(run => {
-            const change = file.changes.find(candidate => candidate.runId === run.id);
-            if (!change) {
-              return <Cell key={run.id} tone="empty"><span className="t-small">{t('compare.unchanged')}</span></Cell>;
-            }
-            return (
-              <Cell key={run.id}>
-                <span className={styles.figures}>
-                  <ChangeSize additions={change.additions} deletions={change.deletions} />
-                  {change.sameAs && <span className={styles.same}>{t('compare.sameAs', { run: numeralOfRun(comparison, change.sameAs) })}</span>}
-                </span>
-                {change.patch && !sameOpened(change) && <Diff lines={change.patch} />}
-              </Cell>
-            );
-          })}
-        </ItemRow>
-      ))}
-    </>
-  );
+  if (!change) {
+    return <Cell tone="empty"><span className="t-small">{t('compare.unchanged')}</span></Cell>;
+  }
+  if (change.sameAs) {
+    return <Cell><span className="t-small c-muted">{t('compare.sameDiff', { run: numeralOfRun(comparison, change.sameAs) })}</span></Cell>;
+  }
+  return <Cell>{change.patch && <Diff lines={change.patch} />}</Cell>;
 }
 
-/** A run's verdict on a check; a failed one keeps what the run produced behind a hint. */
+/** A run's verdict on a check; one the run was not graded on says so. */
 export function VerdictCell({ verdict }: { verdict: RunCheckVerdict | undefined }) {
   const { t } = useTranslation();
   if (!verdict) {
     return <Cell tone="empty"><span className="t-small">{t('compare.notGraded')}</span></Cell>;
   }
   const outcome = verdict.passed ? 'passed' : 'failed';
-  const text = <span className="t-small"><OutcomeText outcome={outcome}>{t(`runs.outcome.${outcome}`)}</OutcomeText></span>;
-  const said = verdict.observed ?? verdict.detail;
-  return (
-    <Cell tone={verdict.passed ? undefined : 'failed'}>
-      {said ? <Hint content={<VerdictCard verdict={verdict} />}><button type="button" className={styles.verdict}>{text}</button></Hint> : text}
-    </Cell>
-  );
+  return <Cell tone={verdict.passed ? undefined : 'failed'}><span className="t-small"><OutcomeText outcome={outcome}>{t(`runs.outcome.${outcome}`)}</OutcomeText></span></Cell>;
 }
 
-/** What a run produced for a check it failed and why the grading failed it. */
-export function VerdictCard({ verdict }: { verdict: RunCheckVerdict }) {
+/** What a run produced for a check and why the grading judged it so. */
+export function VerdictDetail({ verdict }: { verdict: RunCheckVerdict | undefined }) {
   const { t } = useTranslation();
+  if (!verdict) {
+    return <Cell tone="empty"><span className="t-small">{t('compare.notGraded')}</span></Cell>;
+  }
   return (
-    <>
-      {verdict.observed && <p>{t('runs.grading.observed', { observed: verdict.observed })}</p>}
-      {verdict.detail && <p className="c-muted">{verdict.detail}</p>}
-    </>
+    <Cell>
+      <div className={styles.said}>
+        {verdict.observed && <p>{t('runs.grading.observed', { observed: verdict.observed })}</p>}
+        {verdict.detail && <p className="c-muted">{verdict.detail}</p>}
+      </div>
+    </Cell>
   );
 }
 
@@ -120,12 +117,16 @@ export function CheckLabel({ check }: { check: ComparedCheck }) {
   return <span className={styles.check}><span className="t-mono c-faint">{check.id}</span><span className="t-small">{check.title}</span></span>;
 }
 
-/** Checks the runs disagree on, or all of them; how many each run passed heads the block. */
-export function ChecksOverview({ comparison }: BlockProps) {
+/**
+ * Checks the runs disagree on, or all of them, how many each run passed heading the block; a check opens in place to
+ * what each run produced for it, and the failures' reviews follow.
+ */
+export function Checks({ comparison, expanded, onExpand }: BlockProps) {
   const { t } = useTranslation();
   const { runs, checks } = comparison;
   const [onlyDifferent, setOnlyDifferent] = useState(true);
   const differing = checks.filter(check => check.differs);
+  const reviewKey = rowKeyOf('review');
   return (
     <>
       <BlockHead
@@ -141,46 +142,29 @@ export function ChecksOverview({ comparison }: BlockProps) {
           {runs.map(run => <Cell key={run.id} />)}
         </ItemRow>
       )}
-      {(onlyDifferent ? differing : checks).map(check => (
-        <ItemRow key={check.id} label={<CheckLabel check={check} />} differs={check.differs}>
-          {runs.map(run => <VerdictCell key={run.id} verdict={check.verdicts.find(verdict => verdict.runId === run.id)} />)}
-        </ItemRow>
-      ))}
-    </>
-  );
-}
-
-/** Every check with what each opened run produced for it, then the human review of the failed ones. */
-export function ChecksDetail({ comparison, opened }: DetailProps) {
-  const { t } = useTranslation();
-  return (
-    <>
-      <BlockHead title={t('compare.blocks.checks.title')} hint={t('compare.blocks.checks.hint')}>
-        {opened.map(run => <Cell key={run.id} />)}
-      </BlockHead>
-      {comparison.checks.map(check => (
-        <ItemRow key={check.id} label={<CheckLabel check={check} />} differs={check.differs}>
-          {opened.map(run => {
-            const verdict = check.verdicts.find(candidate => candidate.runId === run.id);
-            if (!verdict) {
-              return <Cell key={run.id} tone="empty"><span className="t-small">{t('compare.notGraded')}</span></Cell>;
-            }
-            const outcome = verdict.passed ? 'passed' : 'failed';
-            return (
-              <Cell key={run.id} tone={verdict.passed ? undefined : 'failed'}>
-                <span className="t-small"><OutcomeText outcome={outcome}>{t(`runs.outcome.${outcome}`)}</OutcomeText></span>
-                <div className={styles.said}><VerdictCard verdict={verdict} /></div>
-              </Cell>
-            );
-          })}
-        </ItemRow>
-      ))}
-      {opened.some(run => run.outcome === 'failed') && (
-        <ItemRow label={<span className="t-small">{t('compare.review')}</span>} differs={false}>
-          {opened.map(run => (
-            <Cell key={run.id} tone={run.outcome === 'failed' ? undefined : 'empty'}>
-              {run.outcome === 'failed' && <FailureClassTag failureClass={run.failureClass} />}
-              {run.review && <p className={styles.said}>{run.review.text}</p>}
+      {(onlyDifferent ? differing : checks).map(check => {
+        const key = rowKeyOf('check', check.id);
+        const open = expanded.includes(key);
+        // Only a check some run produced something for has anything to open to.
+        const said = check.verdicts.some(verdict => verdict.observed || verdict.detail);
+        return (
+          <Fragment key={check.id}>
+            <ItemRow label={<CheckLabel check={check} />} differs={check.differs} expanded={open} onToggle={said ? () => onExpand([key]) : undefined}>
+              {runs.map(run => <VerdictCell key={run.id} verdict={check.verdicts.find(verdict => verdict.runId === run.id)} />)}
+            </ItemRow>
+            {open && (
+              <ExpansionRow>
+                {runs.map(run => <VerdictDetail key={run.id} verdict={check.verdicts.find(verdict => verdict.runId === run.id)} />)}
+              </ExpansionRow>
+            )}
+          </Fragment>
+        );
+      })}
+      {runs.some(run => run.review) && (
+        <ItemRow label={<span className="t-small">{t('compare.review')}</span>} differs={false} expanded={expanded.includes(reviewKey)} onToggle={() => onExpand([reviewKey])}>
+          {runs.map(run => (
+            <Cell key={run.id} tone={run.review ? undefined : 'empty'}>
+              {run.review && <p className={clsx(styles.said, !expanded.includes(reviewKey) && styles.clampedShort)}>{run.review.text}</p>}
             </Cell>
           ))}
         </ItemRow>
@@ -189,20 +173,19 @@ export function ChecksDetail({ comparison, opened }: DetailProps) {
   );
 }
 
-export function ReplyOverview({ comparison }: BlockProps) {
+/** Each run's final reply, its first lines until asked for the whole. */
+export function Reply({ comparison, expanded, onExpand }: BlockProps) {
   const { t } = useTranslation();
-  return (
-    <BlockHead title={t('compare.blocks.reply.title')} hint={t('compare.blocks.reply.hint')}>
-      {comparison.runs.map(run => <Cell key={run.id}><p className={styles.clamped}>{run.finalReply.text}</p></Cell>)}
-    </BlockHead>
+  const key = rowKeyOf('reply');
+  const open = expanded.includes(key);
+  const toggle = (
+    <button type="button" className={clsx(controls.textLink, 't-micro')} aria-expanded={open} onClick={() => onExpand([key])}>
+      {open ? t('compare.collapseInput') : t('compare.expandInput')}
+    </button>
   );
-}
-
-export function ReplyDetail({ opened }: DetailProps) {
-  const { t } = useTranslation();
   return (
-    <BlockHead title={t('compare.blocks.reply.title')} hint={t('compare.blocks.reply.hint')}>
-      {opened.map(run => <Cell key={run.id}><p className={styles.reply}>{run.finalReply.text}</p></Cell>)}
+    <BlockHead title={t('compare.blocks.reply.title')} hint={t('compare.blocks.reply.hint')} aside={toggle}>
+      {comparison.runs.map(run => <Cell key={run.id}><p className={clsx(styles.reply, !open && styles.clamped)}>{run.finalReply.text}</p></Cell>)}
     </BlockHead>
   );
 }

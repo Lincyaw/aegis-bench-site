@@ -16,7 +16,7 @@
 - **文案正式。** 中英文都用正式的书面语，不用口语化的标签。
 - **按评测基准变化的内容做成可替换的 block。** 新的评测基准先加数据，再在它的 `benchmark.json` 里写明各个页面用哪些 block、按什么顺序；接口把这份配置交给前端，前端按配置从登记表里取组件。加一种题型，只需要新增一个 block，并写进相应评测基准的配置。
   - 配置在 `benchmark.json` 的 `blocks` 里，每个页面一个列表。每个页面的 block 在 spec 中是一个枚举，例如 `spec/console/comparison.tsp` 的 `ComparisonBlock`。
-  - 登记表放在 `src/runs/comparisonBlocks.ts`。每个 block 实现两层：第一屏每次运行一格的 `Overview`，展开后的 `Detail`，接口约定见 `src/runs/comparison.ts`。
+  - 登记表放在 `src/runs/comparisonBlocks.ts`，每个 block 是一个组件，接口约定见 `src/runs/comparison.ts` 的 `BlockProps`：每次运行一列，每项一行，先给出规模和判定，点开在原处展开（展开的行写进地址的 `expand`）；轨迹这类长内容在侧栏打开，不在页面里铺开。
 
 ## 仓库约束
 

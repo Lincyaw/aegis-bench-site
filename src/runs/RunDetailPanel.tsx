@@ -143,8 +143,10 @@ export function OutputTab({ run, onStep }: { run: RunDetail; onStep: (step: numb
         <ul className={styles.files}>
           {submission.files.map(file => (
             <li key={file.path}>
-              <details open={file.patch !== undefined}>
+              {/* A file shows its size until opened to its diff, as a pull request lists it. */}
+              <details>
                 <summary>
+                  <svg className={styles.chevron} viewBox="0 0 10 10" width="10" height="10" aria-hidden="true"><path d="m3.5 2 3 3-3 3" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
                   <span className="t-mono">{file.path}</span>
                   <span className="t-micro"><span className="c-ok">+{file.additions}</span> <span className="c-bad">−{file.deletions}</span></span>
                 </summary>

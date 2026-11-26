@@ -1,24 +1,25 @@
 import { clsx } from 'clsx';
-import { useState } from 'react';
+import { Fragment, useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { AnnotationCategory, ComparedRun, StepAnnotation, TrajectoryStep } from '../api/types';
 import { useLocale } from '../i18n/localeContext';
 import { dateTimeOf } from '../i18n/locales';
 import { ToggleChip } from '../ui/controls';
 import { Hint } from '../ui/hint';
-import { detailAnchorOf, mostSevere, segmentsOf, type DetailProps, type OverviewProps } from './comparison';
+import { mostSevere, numeralOfRun, segmentsOf, type BlockProps, type PanelProps } from './comparison';
 import { AtifFields, AtifStepSummary } from './AtifStep';
-import { BlockHead, Cell, ItemRow } from './ComparisonTable';
+import { BlockHead, Cell } from './ComparisonTable';
 import timeline from './RunTimeline.module.css';
 import styles from './AnnotatedTrajectory.module.css';
 
 /*
- * The trajectory block of a comparison. The overview shows each run's steps as a row of marks with the steps annotators
- * labelled flagged beneath; the detail lays the opened runs' steps side by side, a row per submission, every step one
- * line that opens to its record, the labelled ones highlighted with their reasons in hints.
+ * The trajectory block of a comparison. Its row shows each run's steps as a row of marks with the steps annotators
+ * labelled flagged beneath; a run's marks open its trajectory in the side panel, which lays one or two runs' steps side
+ * by side a submission at a time, every step one line that opens to its record, the labelled ones highlighted with
+ * their reasons in hints.
  */
 
-export function TrajectoryOverview({ comparison, onOpen }: OverviewProps) {
+export function Trajectory({ comparison, onTrajectory }: BlockProps) {
   const { t } = useTranslation();
   const { runs, categories } = comparison;
   return (
@@ -28,7 +29,7 @@ export function TrajectoryOverview({ comparison, onOpen }: OverviewProps) {
         return (
           <Cell key={run.id}>
             <Hint content={t('compare.openTrajectory')}>
-              <button type="button" className={styles.strip} aria-label={t('compare.openTrajectory')} onClick={() => onOpen(run.id)}>
+              <button type="button" className={styles.strip} aria-label={t('compare.openTrajectory')} onClick={() => onTrajectory(run.id)}>
                 <span className={timeline.timeline}>{run.timeline.map(step => <span key={step.stepId} className={clsx(timeline.mark, timeline[step.mark])} />)}</span>
                 <span className={clsx(timeline.timeline, styles.flags)}>
                   {run.timeline.map(step => <span key={step.stepId} className={clsx(timeline.mark, styles.flag)} data-severity={mostSevere(categories, byStep.get(step.stepId) ?? [])} />)}
@@ -62,42 +63,46 @@ export function CategoryCard({ category }: { category: AnnotationCategory }) {
   );
 }
 
-/** The opened runs' whole trajectories side by side, a row per submission, filtered to the labels chosen. */
-export function TrajectoryDetail({ comparison, opened, labels, onLabel, useTrajectories }: DetailProps) {
+/** The trajectories the side panel shows, side by side a submission at a time, filtered to the labels chosen. */
+export function PanelTrajectories({ comparison, shown, labels, onLabel, useTrajectories }: PanelProps) {
   const { t } = useTranslation();
   const { categories } = comparison;
-  const trajectories = useTrajectories(opened.map(run => run.id));
-  const segments = opened.map((run, index) => segmentsOf(trajectories[index].steps, run));
+  const trajectories = useTrajectories(shown.map(run => run.id));
+  const segments = shown.map((run, index) => segmentsOf(trajectories[index].steps, run));
   const rows = Math.max(...segments.map(runSegments => runSegments.length));
-  const filter = categories.length > 0 && (
-    <span className={styles.filter} role="group" aria-label={t('compare.labels')}>
-      {categories.map(category => (
-        <ToggleChip key={category.id} pressed={labels.includes(category.id)} onToggle={() => onLabel(category.id)}>
-          <span className={styles.swatch} data-severity={category.severity} />
-          {category.name}
-          <span className="t-numeric">{opened.reduce((sum, run) => sum + run.annotations.filter(annotation => annotation.category === category.id).length, 0)}</span>
-        </ToggleChip>
-      ))}
-    </span>
-  );
   return (
-    <>
-      <BlockHead title={t('compare.blocks.trajectory.title')} hint={t('compare.blocks.trajectory.hint')} aside={filter} id={detailAnchorOf('trajectory')}>
-        {opened.map(run => (
-          <Cell key={run.id}>
-            <span className="t-small c-muted">{t('compare.steps', { count: run.metrics.steps })} · {t('compare.submissions', { count: run.metrics.submissions })}</span>
-          </Cell>
+    <div className={styles.panelBody}>
+      {categories.length > 0 && (
+        <span className={styles.filter} role="group" aria-label={t('compare.labels')}>
+          {categories.map(category => (
+            <ToggleChip key={category.id} pressed={labels.includes(category.id)} onToggle={() => onLabel(category.id)}>
+              <span className={styles.swatch} data-severity={category.severity} />
+              {category.name}
+              <span className="t-numeric">{shown.reduce((sum, run) => sum + run.annotations.filter(annotation => annotation.category === category.id).length, 0)}</span>
+            </ToggleChip>
+          ))}
+        </span>
+      )}
+      <div className={styles.columns} style={{ '--columns': shown.length } as CSSProperties}>
+        {shown.map(run => (
+          <p key={run.id} className={clsx(styles.columnHead, 't-small')}>
+            <span className="t-label">{numeralOfRun(comparison, run.id)}</span>
+            <span>{run.model.name}</span>
+            <span className="c-muted">{run.harness.name} · {t('compare.attempt', { attempt: run.attempt })}</span>
+            <span className="t-micro c-faint">{t('compare.steps', { count: run.metrics.steps })} · {t('compare.submissions', { count: run.metrics.submissions })}</span>
+          </p>
         ))}
-      </BlockHead>
-      {Array.from({ length: rows }, (_, index) => (
-        <ItemRow key={index} label={<span className="t-small">{t('compare.segment', { attempt: index + 1 })}</span>} differs={false}>
-          {opened.map((run, runIndex) => {
-            const steps = segments[runIndex][index];
-            return steps ? <Cell key={run.id}><StepList steps={steps} run={run} categories={categories} labels={labels} /></Cell> : <Cell key={run.id} tone="empty" />;
-          })}
-        </ItemRow>
-      ))}
-    </>
+        {Array.from({ length: rows }, (_, index) => (
+          <Fragment key={index}>
+            <h3 className={clsx(styles.segment, 't-micro c-faint')}>{t('compare.segment', { attempt: index + 1 })}</h3>
+            {shown.map((run, runIndex) => {
+              const steps = segments[runIndex][index];
+              return <div key={run.id}>{steps && <StepList steps={steps} run={run} categories={categories} labels={labels} />}</div>;
+            })}
+          </Fragment>
+        ))}
+      </div>
+    </div>
   );
 }
 

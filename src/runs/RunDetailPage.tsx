@@ -47,7 +47,7 @@ export function RunDetailPage() {
         lead={t('console.run.label', { model: run.model.name, harness: run.harness.name, attempt: run.attempt })}
         actions={(
           <>
-            <ButtonLink to={consoleTaskPath(benchmark.id, run.task.id, { tab: 'compare', runs: [run.id], open: [run.id] })} variant="line">{t('console.run.compare')}</ButtonLink>
+            <ButtonLink to={consoleTaskPath(benchmark.id, run.task.id, { tab: 'compare', runs: [run.id] })} variant="line">{t('console.run.compare')}</ButtonLink>
             <ButtonLink to={consoleTaskPath(benchmark.id, run.task.id)} variant="line">{t('console.run.toTask')}</ButtonLink>
           </>
         )}
