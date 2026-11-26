@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useParams, useSearchParams } from 'react-router-dom';
 import {
   useBenchmark, useCombinationTaskPages, useCombinations, useTaskComparison, useTaskFile, useTaskPages, useTaskRuns, useTrajectories,
-  type BenchmarkDetail, type Combination, type RunRef, type TaskPage,
+  type BenchmarkDetail, type Combination, type RunRef, type TaskPage, type TaskSummary,
 } from '../api/client';
 import { LocaleLink } from '../i18n/LocaleRouting';
 import { VendorBadge } from '../models/ModelBadge';
@@ -124,7 +124,7 @@ export function TaskView({ benchmark, query, level, onQuery, onCompare }: {
         <Suspense fallback={<div className={styles.column}><Loading /></div>}>
           {query.mode === 'compare'
             ? <TaskCompareArea benchmark={benchmark} taskId={taskId} query={query} level={level} onQuery={onQuery} onCompare={onCompare} />
-            : <TaskRunsArea benchmark={benchmark} taskId={taskId} query={query} level={level} onQuery={onQuery} />}
+            : <TaskRunsArea benchmark={benchmark} taskId={taskId} summary={tasks.items.find(task => task.id === taskId)} query={query} level={level} onQuery={onQuery} />}
         </Suspense>
       )}
     </>
@@ -166,11 +166,18 @@ export function TaskModeSwitch({ query, onQuery }: { query: RunRecordsQuery; onQ
   );
 }
 
-/** The chosen task's combinations and, beside them, the chosen run; on a narrow window, whichever level is open. */
-export function TaskRunsArea({ benchmark, taskId, query, level, onQuery }: { benchmark: BenchmarkDetail; taskId: string; query: RunRecordsQuery; level: RunRecordsLevel; onQuery: (query: RunRecordsQuery) => void }) {
+/**
+ * The chosen task's combinations and, beside them, the chosen run; on a narrow window, whichever level is open. The
+ * task's pass rate is the one the task list gives it, the combination kept to's when there is one.
+ */
+export function TaskRunsArea({ benchmark, taskId, summary, query, level, onQuery }: {
+  benchmark: BenchmarkDetail; taskId: string; summary: TaskSummary | undefined; query: RunRecordsQuery; level: RunRecordsLevel; onQuery: (query: RunRecordsQuery) => void;
+}) {
   const { t } = useTranslation();
   const taskRuns = useTaskRuns(benchmark.id, taskId);
   const combinations = taskRuns.combinations.filter(combination => !query.combination || combinationKey(combination.model.id, combination.harness.id) === query.combination);
+  // A task the list has not loaded yet is rated over all its runs until it has.
+  const passRate = (summary ?? taskRuns.task).passRate;
   const runId = query.run ?? (level === 'threePanes' ? defaultRunId(combinations.flatMap(combination => combination.runs), query.outcome) : undefined);
   return (
     <>
@@ -179,7 +186,7 @@ export function TaskRunsArea({ benchmark, taskId, query, level, onQuery }: { ben
           <div className={clsx(styles.columnHead, styles.stacked)}>
             {level === 'runs' && <button type="button" className={clsx(styles.back, 't-micro c-muted')} onClick={() => onQuery(withTask(query, undefined))}>‹ {t('runs.allTasks')}</button>}
             <span className="t-label">{taskRuns.task.id} {taskRuns.task.title}</span>
-            <span className="t-micro c-faint">{t('runs.taskSummary', { combinations: taskRuns.combinations.length, runs: taskRuns.runsPerTask, rate: Math.round(taskRuns.task.passRate * 100) })}</span>
+            <span className="t-micro c-faint">{t('runs.taskSummary', { combinations: combinations.length, runs: taskRuns.runsPerTask, rate: Math.round(passRate * 100) })}</span>
             <LocaleLink className={clsx(controls.textLink, styles.taskFiles, 't-micro')} to={taskFilesPath(benchmark.id, taskRuns.task.id)}>{t('tasks.files')}</LocaleLink>
             <span className={styles.modeSwitch}><TaskModeSwitch query={query} onQuery={onQuery} /></span>
           </div>
