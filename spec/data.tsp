@@ -135,8 +135,15 @@ model BenchmarkBlocks {
 }
 
 model WorldLayerRecord {
-  ...OmitProperties<WorldLayer, "name">;
+  ...OmitProperties<WorldLayer, "name" | "statuses">;
   name: TextByLocale;
+  statuses?: StatusWordsRecord;
+}
+
+model StatusWordsRecord {
+  healthy?: TextByLocale;
+  degraded?: TextByLocale;
+  down?: TextByLocale;
 }
 
 model AnnotationCategoryRecord {

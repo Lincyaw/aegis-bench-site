@@ -67,12 +67,26 @@ export function seenViewOf(touches: Touch[], step: number, steps: TrajectoryStep
   return touch && { touch, output: textOf(result?.content) };
 }
 
-/** A file's text just before and just after a step's own edit of it, when the step edited it. */
+/** A file's or a part's text just before and just after a step's own edit of it, when the step edited it. */
 export function editAt(world: World, footprint: Footprint, node: string, step: number): { before: string; after: string } | undefined {
   const writes = footprint.events.flatMap(({ step: at, change }) => (change.type === 'setNode' && change.node === node && change.content !== undefined ? [{ at, content: change.content }] : []));
   const after = writes.find(write => write.at === step)?.content;
   const before = writes.filter(write => write.at < step).at(-1)?.content ?? world.nodes.find(candidate => candidate.id === node)?.content;
   return after !== undefined && before !== undefined ? { before, after } : undefined;
+}
+
+/**
+ * The line a node's text starts at in its file: 1 for a file, and for a part of one, such as a function, where its text
+ * stands in the text of the nodes above it.
+ */
+export function firstLineOf(node: WorldNode, nodes: WorldNode[]): number {
+  const text = node.content;
+  const above = node.parent === undefined ? undefined : nodes.find(candidate => candidate.id === node.parent);
+  if (text === undefined || !above) {
+    return 1;
+  }
+  const at = above.content?.indexOf(text) ?? -1;
+  return at < 0 ? firstLineOf({ ...above, content: text }, nodes) : firstLineOf(above, nodes) + (above.content?.slice(0, at).split('\n').length ?? 1) - 1;
 }
 
 /** The lines of a file the agent had seen by a step. */
@@ -105,8 +119,11 @@ export interface PanelBlockProps {
   /** The nodes it holds */
   members: WorldNode[];
 
-  /** A file's text just before and just after the seen step changed it, when that step edited it */
-  edit: { before: string; after: string } | undefined;
+  /** Where the node's text starts in its file, so its lines keep the file's numbers */
+  firstLine: number;
+
+  /** A file's or a part's text just before and just after the seen step changed it, when that step edited it, and where it then started in its file */
+  edit: { before: string; after: string; firstLine: number } | undefined;
 
   onStep: (step: number) => void;
   onSelect: (node: string) => void;
@@ -124,17 +141,17 @@ export function aroundRows(rows: ContentRow[], matters: (row: ContentRow) => boo
   return rows.flatMap((row, index) => (near[index] ? [row] : index > 0 && near[index - 1] ? [{ kind: 'gap' as const }] : []));
 }
 
-/** A file's lines, those the agent saw marked; with a range, only the lines around it. */
-export function contentRows(text: string, seen: LineRange[], range: LineRange | undefined): ContentRow[] {
+/** A file's lines, or a part's from the line it starts at, those the agent saw marked; with a range, only the lines around it. */
+export function contentRows(text: string, seen: LineRange[], range: LineRange | undefined, first = 1): ContentRow[] {
   const rows: ContentRow[] = text.replace(/\n$/, '').split('\n').map((line, index) => ({
-    kind: 'line', number: index + 1, text: line, change: 'same', seen: seen.some(lines => lines.from <= index + 1 && index + 1 <= lines.to),
+    kind: 'line', number: first + index, text: line, change: 'same', seen: seen.some(lines => lines.from <= first + index && first + index <= lines.to),
   }));
   return range ? aroundRows(rows, row => row.kind === 'line' && range.from <= row.number && row.number <= range.to) : rows;
 }
 
-/** An edit of a file as the lines it removed and added, numbered in the new text, with the unchanged lines around them. */
-export function diffRows(before: string, after: string): ContentRow[] {
-  let number = 0;
+/** An edit of a file or a part as the lines it removed and added, numbered in the new text from the line it starts at, with the unchanged lines around them. */
+export function diffRows(before: string, after: string, first = 1): ContentRow[] {
+  let number = first - 1;
   const rows = diffLines(before, after).flatMap(part => part.value.replace(/\n$/, '').split('\n').map((line): ContentRow => {
     const change = part.added ? 'add' : part.removed ? 'remove' : 'same';
     number += change === 'remove' ? 0 : 1;

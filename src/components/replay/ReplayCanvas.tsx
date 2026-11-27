@@ -70,7 +70,13 @@ export function ReplayCanvas({ layers, frame, nodes, parents, folded, hidden, to
   const { t } = useTranslation();
   const [scroller, width] = useWidth<HTMLDivElement>();
   const [zoom, setZoom] = useState(1);
-  const statusOf = useCallback((node: WorldNode) => (node.status && node.status !== 'healthy' ? t(`console.replay.status.${node.status}`) : undefined), [t]);
+  // A layer may have its own words for statuses, such as passed and failed for tests.
+  const statusOf = useCallback((node: WorldNode) => {
+    if (!node.status || node.status === 'healthy') {
+      return undefined;
+    }
+    return layers.find(layer => layer.id === node.layer)?.statuses?.[node.status] ?? t(`console.replay.status.${node.status}`);
+  }, [layers, t]);
   const widthOf = useCallback((node: WorldNode) => nodeWidth(node.label, statusOf(node), parents.has(node.id)), [statusOf, parents]);
   const drawing = useMemo(() => layoutBands(layers, nodes, frame.edges, width / zoom, widthOf), [layers, nodes, frame.edges, width, zoom, widthOf]);
   const placed = useMemo(() => drawnNodes(drawing.bands), [drawing]);
@@ -273,7 +279,7 @@ export function WorldNodeBox({ entry, frame, status, parent, folded, hidden, tou
       className={clsx(marks.node, styles.node)} data-mark={frame.marks.get(node.id)} data-current={frame.current.get(node.id)}
       style={{ transform: `translate(${x}px, ${y}px)`, width, height: NODE_HEIGHT }}
     >
-      <Hint content={<NodeCard node={node} touches={touches} hidden={hidden} />}>
+      <Hint content={<NodeCard node={node} status={status} touches={touches} hidden={hidden} />}>
         <button type="button" className={styles.select} aria-pressed={selected} onClick={() => onSelect(node.id)}>
           <span className="t-mono">{node.label}</span>
           {status !== undefined && <span className={marks.status} data-status={node.status}>{status}</span>}

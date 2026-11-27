@@ -118,11 +118,25 @@ export function across(from: Rect, to: Rect): string {
 }
 
 /**
+ * A curve between two boxes of a tree: from the one on the left to the one on the right when they stand in different
+ * columns, or out to the right and back when they share one.
+ */
+export function bow(from: Rect, to: Rect): string {
+  const [left, right] = from.x <= to.x ? [from, to] : [to, from];
+  if (right.x > left.x + left.width) {
+    return sideways(left, right);
+  }
+  const [x1, y1, x2, y2] = [from.x + from.width, from.y + from.height / 2, to.x + to.width, to.y + to.height / 2];
+  const out = Math.max(x1, x2) + TREE_INDENT + Math.abs(y2 - y1) / 4;
+  return `M ${x1} ${y1} C ${out} ${y1} ${out} ${y2} ${x2} ${y2}`;
+}
+
+/**
  * A tree: every root heads a block, its descendants listed beneath it, indented by depth, in columns of a few rows that
  * each hold whole subtrees of the root's children; the blocks run from left to right and wrap at the width. A tree may be
  * as deep as its world, such as directories, files, classes and their methods.
  */
-export function layoutTree(nodes: WorldNode[], _edges: WorldEdge[], width: number, widthOf: (node: WorldNode) => number): Placement {
+export function layoutTree(nodes: WorldNode[], edges: WorldEdge[], width: number, widthOf: (node: WorldNode) => number): Placement {
   const children = childrenOf(nodes);
   const ids = new Set(nodes.map(node => node.id));
   const roots = nodes.filter(node => node.parent === undefined || !ids.has(node.parent));
@@ -172,32 +186,63 @@ export function layoutTree(nodes: WorldNode[], _edges: WorldEdge[], width: numbe
     x += blockWidth + BLOCK_GAP;
     rowHeight = Math.max(rowHeight, ROW_PITCH * Math.max(...columns.map(column => column.length), 0) + NODE_HEIGHT);
   }
-  return { nodes: placed, boxes: [], edges: [], guides, height: top + rowHeight };
+  const byId = new Map(placed.map(entry => [entry.node.id, entry]));
+  const joined = edges.flatMap(edge => {
+    const [from, to] = [byId.get(edge.from), byId.get(edge.to)];
+    return from && to && from.node.id !== to.node.parent && to.node.id !== from.node.parent ? [{ edge, d: bow(from, to) }] : [];
+  });
+  return { nodes: placed, boxes: [], edges: joined, guides, height: top + rowHeight };
 }
 
-/** A directed graph, ranked from sources on the left to sinks on the right. */
+/**
+ * A directed graph, ranked from sources on the left to sinks on the right. A parent is a box round its children, its
+ * label in the box's head; the layout makes room for each head by moving down what lies below the box's top. Edges join
+ * the nodes that are not boxes.
+ */
 export function layoutGraph(nodes: WorldNode[], edges: WorldEdge[], _width: number, widthOf: (node: WorldNode) => number): Placement {
-  const graph = new Graph<GraphLabel, NodeLabel, EdgeLabel>();
+  const ids = new Set(nodes.map(node => node.id));
+  const parents = new Set(nodes.flatMap(node => (node.parent !== undefined && ids.has(node.parent) ? [node.parent] : [])));
+  const graph = new Graph<GraphLabel, NodeLabel, EdgeLabel>({ compound: parents.size > 0 });
   graph.setGraph({ rankdir: 'LR', nodesep: GRAPH_NODE_GAP, ranksep: GRAPH_RANK_GAP, marginx: 0, marginy: 0 });
   graph.setDefaultEdgeLabel(() => ({}));
-  nodes.forEach(node => graph.setNode(node.id, { width: widthOf(node), height: NODE_HEIGHT }));
-  const ids = new Set(nodes.map(node => node.id));
-  const inner = edges.filter(edge => ids.has(edge.from) && ids.has(edge.to));
+  // A box's size is the layout's to find from its children.
+  nodes.forEach(node => graph.setNode(node.id, parents.has(node.id) ? { width: 0, height: 0 } : { width: widthOf(node), height: NODE_HEIGHT }));
+  nodes.forEach(node => node.parent !== undefined && ids.has(node.parent) && graph.setParent(node.id, node.parent));
+  const inner = edges.filter(edge => ids.has(edge.from) && ids.has(edge.to) && !parents.has(edge.from) && !parents.has(edge.to));
   inner.forEach(edge => graph.setEdge(edge.from, edge.to));
   layout(graph);
-  const placed = nodes.map(node => {
-    const { x = 0, y = 0, width } = graph.node(node.id);
-    return { node, x: x - width / 2, y: y - NODE_HEIGHT / 2, width, height: NODE_HEIGHT };
-  });
-  const byId = new Map(placed.map(entry => [entry.node.id, entry]));
+  const rects = new Map(nodes.map(node => {
+    const { x = 0, y = 0, width, height } = graph.node(node.id);
+    return [node.id, { node, x: x - width / 2, y: y - height / 2, width, height }];
+  }));
   const rect = (id: string) => {
-    const entry = byId.get(id);
+    const entry = rects.get(id);
     if (!entry) {
       throw new Error(`the graph lost node ${id}`);
     }
     return entry;
   };
-  return { nodes: placed, boxes: [], edges: inner.map(edge => ({ edge, d: sideways(rect(edge.from), rect(edge.to)) })), guides: [], height: graph.graph().height ?? 0 };
+  // From the top box down, each box gets room for its head: what starts below its top moves down, and what spans its top grows.
+  let height = graph.graph().height ?? 0;
+  for (const box of [...parents].map(rect).toSorted((a, b) => a.y - b.y)) {
+    const inside = nodes.filter(node => node.parent === box.node.id).map(node => rect(node.id).y);
+    const room = BOX_HEAD + BOX_PADDING / 2 - (Math.min(...inside) - box.y);
+    if (room > 0) {
+      const line = box.y + 1;
+      rects.forEach(entry => {
+        if (entry.y > line) {
+          entry.y += room;
+        } else if (entry.y + entry.height > line) {
+          entry.height += room;
+        }
+      });
+      height += room;
+    }
+    box.width = Math.max(box.width, widthOf(box.node) + 2 * BOX_PADDING);
+  }
+  const placed = nodes.filter(node => !parents.has(node.id)).map(node => rect(node.id));
+  const boxes = [...parents].map(rect);
+  return { nodes: placed, boxes, edges: inner.map(edge => ({ edge, d: sideways(rect(edge.from), rect(edge.to)) })), guides: [], height };
 }
 
 /** Groups: every parent a box with its children listed inside, the boxes from left to right, wrapping at the width; nodes in no box follow. */

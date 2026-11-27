@@ -12,7 +12,15 @@ export const CARD_ATTRIBUTES = 4;
  * records for it, how often the run has touched it so far and how it last did, and what a fold holds out of view.
  * Each kind of node shows its own attributes, as the world records them.
  */
-export function NodeCard({ node, touches, hidden }: { node: WorldNode; touches: Touch[]; hidden: number | undefined }) {
+export function NodeCard({ node, status, touches, hidden }: {
+  node: WorldNode;
+
+  /** The word for the node's status in its layer, when the replay marks it */
+  status: string | undefined;
+
+  touches: Touch[];
+  hidden: number | undefined;
+}) {
   const { t } = useTranslation();
   const last = touches.at(-1);
   const attributes = Object.entries(node.attrs ?? {});
@@ -21,7 +29,7 @@ export function NodeCard({ node, touches, hidden }: { node: WorldNode; touches: 
       <p className="t-mono">{node.id}</p>
       <p className={styles.kind}>
         <span className="t-mono c-muted">{node.type}</span>
-        {node.status && node.status !== 'healthy' && <span className={marks.status} data-status={node.status}>{t(`console.replay.status.${node.status}`)}</span>}
+        {status !== undefined && <span className={marks.status} data-status={node.status}>{status}</span>}
       </p>
       {attributes.length > 0 && (
         <dl className={styles.attributes}>

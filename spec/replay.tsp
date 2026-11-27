@@ -9,23 +9,36 @@ namespace AegisBench;
 
 /** How a layer is drawn. The replay keeps one way of drawing per shape, so a new benchmark adds layers, not drawings. */
 enum WorldLayerShape {
-  /** Nodes nest by parent and the layer has no other edges, such as directories, files and the symbols in them */
+  /**
+   * Nodes nested by parent as deep as the world goes, such as directories, files, classes and their methods; the
+   * layer's other edges, such as calls between functions, are drawn between the nodes they join
+   */
   tree,
 
-  /** Nodes with directed edges, laid out from sources to sinks, such as module imports or service calls */
+  /** Nodes with directed edges, laid out from sources to sinks, such as module imports or service calls; a parent is a box round its children, such as a package round its modules */
   graph,
 
-  /** Nodes drawn inside their parent's box, such as pods on hosts */
+  /** Nodes drawn inside their parent's box, such as pods on hosts or test cases in their files */
   groups,
 }
 
-/** A layer of a benchmark's worlds: its name and how it is drawn. */
+/** A layer of a benchmark's worlds: its name, how it is drawn, and what it calls its nodes' statuses. */
 model WorldLayer {
   /** Unique among the benchmark's layers */
   id: string;
 
   name: string;
   shape: WorldLayerShape;
+
+  /** The layer's own words for statuses, where the replay's would not fit, such as passed and failed for tests */
+  statuses?: StatusWords;
+}
+
+/** What a layer calls each status it gives its own word; a status it leaves out keeps the replay's word. */
+model StatusWords {
+  healthy?: string;
+  degraded?: string;
+  down?: string;
 }
 
 /** How healthy a node is, where the world records it; a replay marks every status but healthy. */
@@ -60,7 +73,10 @@ model WorldNode {
   /** Everything else the world records about the node, shown as it is */
   attrs?: Record<unknown>;
 
-  /** A file's text, for a node the world holds as a file */
+  /**
+   * A file's text, or the text of a part of one, such as a function's in its file. A part's lines are numbered as they
+   * stand in the nearest node above it whose text holds them.
+   */
   content?: string;
 }
 
@@ -158,7 +174,7 @@ model SetNode {
   status?: NodeStatus;
   attrs?: Record<unknown>;
 
-  /** A file's new text, which replaces the old */
+  /** A file's or a part's new text, which replaces the old */
   content?: string;
 }
 

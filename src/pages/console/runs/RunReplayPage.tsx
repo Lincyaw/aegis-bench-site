@@ -6,7 +6,7 @@ import type { WorldNode } from '../../../api/types';
 import { eventsByStep, footprintNodes, frameAt, layerTouchesByStep, nodeOfChange, unfoldedNodes } from '../../../components/replay/frame';
 import { childrenOf } from '../../../components/replay/layout';
 import { NodePanel } from '../../../components/replay/NodePanel';
-import { editAt, nodeSignalsOf, seenViewOf, stepClockOf } from '../../../components/replay/panel';
+import { editAt, firstLineOf, nodeSignalsOf, seenViewOf, stepClockOf } from '../../../components/replay/panel';
 import { useWidth } from '../../../components/replay/useWidth';
 import { ReplayCanvas } from '../../../components/replay/ReplayCanvas';
 import { ReplayLegend } from '../../../components/replay/ReplayLegend';
@@ -120,6 +120,10 @@ export function RunReplayPage() {
   const selectedTouches = selected ? footprint.touches.filter(touch => touch.node === selected.id) : [];
   const seen = seenViewOf(selectedTouches, step, trajectory.steps);
   const scope = seen ? view.scope ?? 'seen' : 'whole';
+  // An edit is shown in the file's line numbers as they stood once the edit was made.
+  const edited = selected && seen?.touch.kind === 'write' ? editAt(world, footprint, selected.id, seen.touch.step) : undefined;
+  const editedNodes = edited && seen ? frameAt(world, footprint, seen.touch.step).nodes : [];
+  const editedNode = selected && editedNodes.find(node => node.id === selected.id);
 
   return (
     <div className={styles.page} data-half={benchmark.stage.half} data-fullscreen={fullscreen ? '' : undefined}>
@@ -186,7 +190,7 @@ export function RunReplayPage() {
               events={footprint.events.filter(event => nodeOfChange(event.change) === selected.id)}
               edges={frame.edges.filter(edge => edge.from === selected.id || edge.to === selected.id)}
               members={frame.nodes.filter(node => node.parent === selected.id)}
-              edit={seen && seen.touch.kind === 'write' ? editAt(world, footprint, selected.id, seen.touch.step) : undefined}
+              firstLine={firstLineOf(selected, frame.nodes)} edit={edited && { ...edited, firstLine: editedNode ? firstLineOf(editedNode, editedNodes) : 1 }}
               maximized={maximized} onMaximize={setMaximized} onScope={value => onView({ scope: value })}
               onStep={id => onView({ step: id })} onSelect={id => onView({ node: id, scope: undefined })} onClose={() => onView({ node: undefined, scope: undefined })}
             />

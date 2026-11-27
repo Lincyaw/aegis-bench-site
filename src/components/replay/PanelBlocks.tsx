@@ -32,16 +32,16 @@ export function RecordBlock({ node }: PanelBlockProps) {
   return <PanelSection title={t('console.replay.panel.record')}><AtifFields record={Object.fromEntries(Object.entries(node).filter(([name]) => name !== 'content'))} /></PanelSection>;
 }
 
-/** A file's text: the lines the agent saw or the edit the step made, or the whole file with every line seen so far marked. */
-export function ContentBlock({ node, scope, seen, step, touches, edit }: PanelBlockProps) {
+/** A file's or a part's text, in the file's line numbers: the lines the agent saw or the edit the step made, or all of it with every line seen so far marked. */
+export function ContentBlock({ node, scope, seen, step, touches, firstLine, edit }: PanelBlockProps) {
   const { t } = useTranslation();
   if (node.content === undefined) {
     return null;
   }
   const lines = seen?.touch.view.lines;
-  const rows = scope === 'whole' ? contentRows(node.content, linesSeen(touches, step), undefined)
-    : edit ? diffRows(edit.before, edit.after)
-      : lines ? contentRows(node.content, [lines], lines) : undefined;
+  const rows = scope === 'whole' ? contentRows(node.content, linesSeen(touches, step), undefined, firstLine)
+    : edit ? diffRows(edit.before, edit.after, edit.firstLine)
+      : lines ? contentRows(node.content, [lines], lines, firstLine) : undefined;
   return rows && (
     <PanelSection title={t('console.replay.panel.content')}>
       {rows.length === 0 ? <p className="t-small c-faint">{t('console.replay.panel.unchanged')}</p> : <ContentView rows={rows} />}

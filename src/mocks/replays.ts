@@ -22,5 +22,8 @@ export async function replayOf(runId: string, locale: Locale): Promise<RunReplay
   const [world, footprint, signals] = await Promise.all([
     readWorld(record.id, located.fact.taskId), readFootprint(record, runId), keepsSignals(record) ? readSignals(record, runId) : { series: [], logs: [], spans: [] },
   ]);
-  return { layers: record.worldLayers.map(layer => ({ ...layer, name: layer.name[locale] })), panel, world, footprint, signals };
+  const layers = record.worldLayers.map(({ name, statuses, ...layer }) => ({
+    ...layer, name: name[locale], ...(statuses && { statuses: Object.fromEntries(Object.entries(statuses).map(([status, words]) => [status, words[locale]])) }),
+  }));
+  return { layers, panel, world, footprint, signals };
 }
