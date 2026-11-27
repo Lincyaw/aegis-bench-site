@@ -20,7 +20,7 @@ export async function runDetailOf(runId: string, locale: Locale): Promise<RunDet
     model: modelRef(fact.modelId, locale), harness, attempt: fact.attempt, attemptCount: record.runsPerTask, outcome: fact.outcome,
     metrics: { steps: fact.steps, ...run.metrics, costUsd: fact.costUsd },
     input: { ...run.input, harness: { ...harness, ...run.input.harness } },
-    output: run.output, grading: run.grading, ...(run.failure && { failure: run.failure }),
+    output: run.output, outputBlocks: record.blocks.runOutput, grading: run.grading, ...(run.failure && { failure: run.failure }),
     timeline: timelineOf(trajectory, record.changeTools), ...(huggingFaceUrl && { huggingFaceUrl }),
   };
 }

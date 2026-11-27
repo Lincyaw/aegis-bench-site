@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import { useConsoleBenchmark, useConsoleUser, useCreateReport, useReportDrafts } from '../../../api/consoleClient';
 import { REPORT_SLUG_PATTERN } from '../../../api/constraints';
-import { reportSourceOf, REPORTS } from '../../../articles/library';
+import { reportSourceOf, reportsIn } from '../../../articles/library';
 import { newReportSources } from '../../../articles/newReport';
 import { DraftTable } from '../../../components/report/DraftTable';
 import { ChangeFailure } from '../../../components/change/ChangeFailure';
@@ -30,7 +30,7 @@ export function ReportListPage() {
   const benchmark = useConsoleBenchmark(benchmarkId);
   const drafts = useReportDrafts(benchmark.id);
   const editing = useConsoleUser().can.edit;
-  const published = REPORTS.filter(report => report.locale === locale && report.benchmarks.includes(benchmark.id));
+  const published = reportsIn(locale).filter(report => report.benchmarks.includes(benchmark.id));
   return (
     <div className={styles.page} data-half={benchmark.stage.half}>
       <ConsoleHeader crumbs={[{ label: benchmark.name, to: consoleBenchmarkPath(benchmark.id) }, { label: t('console.reports.title') }]} title={t('console.reports.title')} about={t('console.reports.about')} />

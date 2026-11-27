@@ -1,3 +1,4 @@
+.entrantRuns { --columns: minmax(13rem, 1.6fr) minmax(6rem, .8fr) 4rem 5rem minmax(9rem, 1.1fr) minmax(7rem, .9fr); }
 .entrant { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-3); }
 .runDots { display: flex; gap: var(--space-1); }
 /* Each run's dot opens the run; the hit area is larger than the dot. */
@@ -7,6 +8,8 @@
 .validationAgent { display: grid; gap: var(--space-px); }
 
 @media (max-width: 760px) {
+  .entrantRuns { --columns: minmax(0, 1fr) auto; }
+  .entrantRuns [role="row"] > :is(:nth-child(3), :nth-child(4), :nth-child(5), :nth-child(6)) { display: none; }
   .validation { grid-template-columns: minmax(0, 1fr) auto; }
   .validation > :last-child { grid-column: 1 / -1; }
 }

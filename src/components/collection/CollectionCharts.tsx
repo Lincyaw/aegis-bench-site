@@ -6,7 +6,7 @@ import { useLocale } from '../../i18n/localeContext';
 import { groupedNumber } from '../../i18n/locales';
 import { VendorBadge } from '../model/ModelBadge';
 import { FailureLegend, FailureSegment } from '../result/FailureBar';
-import { FAILURE_KINDS, NO_VALUE, axisSteps, failureCountOf, formatCost, formatRate } from '../result/presentation';
+import { FAILURE_KINDS, NO_VALUE, failureCountOf, formatCost, formatRate } from '../result/presentation';
 import styles from './CollectionCharts.module.css';
 
 /*
@@ -39,11 +39,22 @@ export function RankingChart({ models }: { models: CollectionModelResult[] }) {
 /** The plot's size in its own units; the figure scales it to the page. */
 const PLOT = { width: 640, height: 340, left: 44, right: 132, top: 16, bottom: 44 };
 
+/** The cost axis reaches this far past the largest cost, and has about this many steps. */
+const COST_AXIS_HEADROOM = 1.05;
+const COST_AXIS_STEPS = 4;
+
+/** How a point's name is placed in the plot's units: its gap to the point, its baseline, its line height, and how near another point's name counts as a clash. */
+const LABEL = { gap: 9, baseline: 4, lineHeight: 14, clashWidth: 90 };
+
 /** Mean cost across, pass rate up; the models on the frontier are filled and joined. */
 export function CostFrontierChart({ models }: { models: CollectionModelResult[] }) {
   const { t } = useTranslation();
   const plotted = models.flatMap(entry => (entry.result.passRate !== undefined && entry.result.meanCostUsd !== undefined ? [{ entry, rate: entry.result.passRate, cost: entry.result.meanCostUsd }] : []));
-  const costSteps = axisSteps(Math.max(...plotted.map(point => point.cost)) * 1.05, 4);
+  // The cost axis counts in round steps from 0 that cover the largest cost, a little past it.
+  const roughStep = (Math.max(...plotted.map(point => point.cost)) * COST_AXIS_HEADROOM) / COST_AXIS_STEPS;
+  const magnitude = 10 ** Math.floor(Math.log10(roughStep));
+  const costStep = [1, 2, 2.5, 5, 10].map(factor => factor * magnitude).find(candidate => candidate >= roughStep) ?? 10 * magnitude;
+  const costSteps = Array.from({ length: Math.ceil((roughStep * COST_AXIS_STEPS) / costStep) + 1 }, (_, index) => index * costStep);
   const maxCost = costSteps.at(-1) ?? 1;
   const innerWidth = PLOT.width - PLOT.left - PLOT.right;
   const innerHeight = PLOT.height - PLOT.top - PLOT.bottom;
@@ -53,15 +64,15 @@ export function CostFrontierChart({ models }: { models: CollectionModelResult[] 
   const frontier = points.filter(point => point.entry.onCostFrontier).sort((a, b) => a.x - b.x);
   // Names sit to the right of their points; one that would overlap the name above it moves down.
   const labels = points.toSorted((a, b) => a.y - b.y).reduce<{ id: string; x: number; y: number }[]>((placed, point) => {
-    const clash = placed.findLast(other => Math.abs(other.x - point.x) < 90 && point.y + 4 - other.y < 14);
-    return [...placed, { id: point.entry.model.id, x: point.x + 9, y: clash ? clash.y + 14 : point.y + 4 }];
+    const clash = placed.findLast(other => Math.abs(other.x - point.x) < LABEL.clashWidth && point.y + LABEL.baseline - other.y < LABEL.lineHeight);
+    return [...placed, { id: point.entry.model.id, x: point.x + LABEL.gap, y: clash ? clash.y + LABEL.lineHeight : point.y + LABEL.baseline }];
   }, []);
   return (
     <svg className={styles.plot} viewBox={`0 0 ${PLOT.width} ${PLOT.height}`} role="img" aria-label={t('console.collection.charts.cost')}>
       {[0, 0.25, 0.5, 0.75, 1].map(rate => (
         <g key={rate}>
           <line className={styles.grid} x1={PLOT.left} x2={PLOT.width - PLOT.right} y1={yOf(rate)} y2={yOf(rate)} />
-          <text className={styles.tick} x={PLOT.left - 8} y={yOf(rate) + 4} textAnchor="end">{formatRate(rate).replace('.0', '')}</text>
+          <text className={styles.tick} x={PLOT.left - 8} y={yOf(rate) + 4} textAnchor="end">{`${rate * 100}%`}</text>
         </g>
       ))}
       {costSteps.map(cost => <text key={cost} className={styles.tick} x={xOf(cost)} y={PLOT.height - PLOT.bottom + 18} textAnchor="middle">{formatCost(cost)}</text>)}

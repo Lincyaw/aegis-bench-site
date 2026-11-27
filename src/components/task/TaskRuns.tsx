@@ -1,4 +1,6 @@
+import { clsx } from 'clsx';
 import { useTranslation } from 'react-i18next';
+import { combinationKey } from '../../api/constraints';
 import type { TaskEntrantRuns, ValidationRun } from '../../api/types';
 import { useLocale } from '../../i18n/localeContext';
 import { dateTimeOf } from '../../i18n/locales';
@@ -10,6 +12,24 @@ import { ModelLabel } from '../model/ModelBadge';
 import { PassRate } from '../result/PassRate';
 import { OutcomeBadge, OutcomeDot } from '../run/Outcome';
 import styles from './TaskRuns.module.css';
+
+/** Each combination's runs of a task as dots that open them, with how many passed, failed to execute and were reviewed. */
+export function EntrantRunsTable({ benchmarkId, entrants }: { benchmarkId: string; entrants: TaskEntrantRuns[] }) {
+  const { t } = useTranslation();
+  return (
+    <div className={clsx(table.table, styles.entrantRuns)} role="table" aria-label={t('console.task.runs.view.entrants')}>
+      <div className={clsx(table.row, table.head, 't-micro c-faint')} role="row">
+        <span role="columnheader">{t('console.task.runs.column.entrant')}</span>
+        <span role="columnheader">{t('console.task.runs.column.runs')}</span>
+        <span role="columnheader">{t('console.task.runs.column.passed')}</span>
+        <span role="columnheader">{t('console.task.runs.column.executionFailed')}</span>
+        <span role="columnheader">{t('console.task.runs.column.passRate')}</span>
+        <span role="columnheader">{t('console.task.runs.column.review')}</span>
+      </div>
+      {entrants.map(entrant => <EntrantRunsRow key={combinationKey(entrant.model.id, entrant.harness.id)} benchmarkId={benchmarkId} entrant={entrant} />)}
+    </div>
+  );
+}
 
 export function EntrantRunsRow({ benchmarkId, entrant }: { benchmarkId: string; entrant: TaskEntrantRuns }) {
   const { t } = useTranslation();

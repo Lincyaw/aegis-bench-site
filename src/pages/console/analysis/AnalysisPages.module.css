@@ -5,11 +5,4 @@
 .hunts { display: grid; gap: var(--space-4); }
 
 .filters { display: flex; flex-wrap: wrap; gap: var(--space-3); }
-.trials { --columns: minmax(12rem, 1.5fr) minmax(10rem, 1.2fr) 7rem minmax(10rem, 1.3fr) 4rem 5.5rem; }
 .pager { justify-self: end; }
-
-
-@media (max-width: 760px) {
-  .trials { --columns: minmax(0, 1fr) auto; }
-  .trials [role="row"] > :is(:nth-child(2), :nth-child(4), :nth-child(5), :nth-child(6)) { display: none; }
-}

@@ -8,7 +8,7 @@ import { consoleTaskPath } from '../../routes/consoleTasks';
 import table from '../../ui/table.module.css';
 import { FailureBar } from '../result/FailureBar';
 import { PassRate } from '../result/PassRate';
-import { NO_VALUE, formatCost } from '../result/presentation';
+import { ResultTable } from '../result/ResultTable';
 import { OutcomeDot } from '../run/Outcome';
 import styles from './ModelResults.module.css';
 
@@ -16,28 +16,17 @@ import styles from './ModelResults.module.css';
 export function HarnessTable({ benchmarkId, modelId, query, results }: { benchmarkId: string; modelId: string; query: ModelTaskQuery; results: HarnessResult[] }) {
   const { t } = useTranslation();
   return (
-    <div className={clsx(table.table, styles.harnesses)} role="table" aria-label={t('console.model.byHarness')}>
-      <div className={clsx(table.row, table.head, 't-micro c-faint')} role="row">
-        <span role="columnheader">{t('console.model.harnessLabel')}</span>
-        <span role="columnheader">{t('console.models.column.passRate')}</span>
-        <span role="columnheader">{t('console.models.column.everyTime')}</span>
-        <span role="columnheader">{t('console.models.column.once')}</span>
-        <span role="columnheader">{t('console.models.column.cost')}</span>
-        <span role="columnheader">{t('console.models.column.failures')}</span>
-      </div>
-      {results.map(({ harness, result }) => (
-        <div key={harness.id} className={clsx(table.row, table.link)} role="row" aria-current={harness.id === query.harness ? 'true' : undefined}>
-          <span role="cell" className="t-label">
+    <ResultTable
+      label={t('console.model.byHarness')} heads={[t('console.model.harnessLabel')]} lead="minmax(8rem, 1fr)"
+      rows={results.map(({ harness, result }) => ({
+        id: harness.id, result, current: harness.id === query.harness,
+        cells: [
+          <span key="harness" role="cell" className="t-label">
             <LocaleLink className={table.primary} to={consoleModelPath(benchmarkId, modelId, { ...query, offset: 0, harness: harness.id })} replace preventScrollReset>{harness.name}</LocaleLink>
-          </span>
-          <span role="cell"><PassRate rate={result.passRate} /></span>
-          <span role="cell" className="t-numeric c-muted">{t('console.overview.tasksOf', { solved: result.solvedEveryTime, total: result.tasks })}</span>
-          <span role="cell" className="t-numeric c-muted">{t('console.overview.tasksOf', { solved: result.solvedOnce, total: result.tasks })}</span>
-          <span role="cell" className="t-numeric c-muted">{result.meanCostUsd === undefined ? NO_VALUE : formatCost(result.meanCostUsd)}</span>
-          <span role="cell"><FailureBar result={result} /></span>
-        </div>
-      ))}
-    </div>
+          </span>,
+        ],
+      }))}
+    />
   );
 }
 

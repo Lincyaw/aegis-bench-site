@@ -15,7 +15,8 @@ export const zh = {
     contact: '联系我们',
     contactLead: '联系我们：',
     tagline: '覆盖软件工程全生命周期的智能体评测',
-    footnote: '设计演示：评测基准、模型与数值均为占位内容',
+    demo: '设计演示',
+    footnote: '评测基准、模型与数值均为占位内容。',
     nav: {
       leaderboard: '排行榜',
       benchmarks: '评测基准',
@@ -119,8 +120,8 @@ export const zh = {
     fullLeaderboard: '查看完整排行榜',
     recentRuns: '运行记录',
     allRuns: '查看全部运行记录',
-    replay: '回放',
-    column: { model: '模型', task: '任务', process: '过程', result: '结果', steps: '步数', duration: '用时', replay: '回放' },
+    openTrajectory: '查看轨迹',
+    column: { model: '模型', task: '任务', process: '过程', result: '结果', steps: '步数', duration: '用时', trajectory: '轨迹' },
   },
   leaderboard: {
     title: '排行榜',
@@ -189,7 +190,7 @@ export const zh = {
     noRuns: '没有符合筛选的运行',
     loadMore: '显示 {{shown}} / {{total}} 道 · 继续加载',
     allTasks: '全部任务',
-    records: { label: '查看方式', task: '按题目', model: '按模型' },
+    records: { label: '查看方式', task: '按任务', model: '按模型' },
     mode: { label: '这道任务的运行', runs: '运行', compare: '对照' },
     combinations: '模型 · 框架',
     combinationTasks_one: '{{count}} 道任务',
@@ -202,7 +203,7 @@ export const zh = {
     attempt: '第 {{attempt}} 次',
     attemptOf_one: '第 {{attempt}} 次运行，共 {{count}} 次',
     attemptOf_other: '第 {{attempt}} 次运行，共 {{count}} 次',
-    metrics: { steps: '步数', duration: '用时', submissions: '提交', outputTokens: '输出 tokens', cost: '成本', endReason: '结束原因' },
+    metrics: { steps: '步数', duration: '用时', submissions: '提交', inputTokens: '输入 tokens', outputTokens: '输出 tokens', cost: '成本', endReason: '结束原因' },
     endReason: { submitted: '提交后结束', executionError: '执行环境异常' },
     step: '第 {{step}} 步',
     input: {

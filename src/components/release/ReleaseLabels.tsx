@@ -25,8 +25,8 @@ export function ReleaseChangesText({ changes }: { changes: ReleaseChanges }) {
   const parts = [
     changes.entrantsAdded > 0 && t('console.releases.changes.entrantsAdded', { count: changes.entrantsAdded }),
     changes.entrantsRemoved > 0 && t('console.releases.changes.entrantsRemoved', { count: changes.entrantsRemoved }),
-    changes.replaysAdded > 0 && t('console.releases.changes.replaysAdded', { count: changes.replaysAdded }),
-    changes.replaysRemoved > 0 && t('console.releases.changes.replaysRemoved', { count: changes.replaysRemoved }),
+    changes.exampleRunsAdded > 0 && t('console.releases.changes.exampleRunsAdded', { count: changes.exampleRunsAdded }),
+    changes.exampleRunsRemoved > 0 && t('console.releases.changes.exampleRunsRemoved', { count: changes.exampleRunsRemoved }),
     changes.summaryChanged && t('console.releases.changes.summaryChanged'),
   ].filter(part => part !== false);
   return <span className="t-small c-muted">{parts.length > 0 ? parts.join(' · ') : t('console.releases.changes.none')}</span>;

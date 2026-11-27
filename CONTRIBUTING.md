@@ -18,7 +18,7 @@
 | `src/mocks` | mock 服务端，实现接口声明的全部操作；数据目录的格式与读取在 `records.ts` |
 | `public/data` | mock 服务端读取的评测记录，随站点原样发布 |
 
-只按 props 渲染的函数组件放在 `components`，哪怕只有一个页面用它。各层之间能引用什么，由 `.oxlintrc.json` 的 `no-restricted-imports` 检查。
+只按 props 渲染的函数组件放在 `components`，哪怕只有一个页面用它。组件要在内部按需取数据（例如点开一行才取那一行）时，由页面传入类型名为 `*Source` 的数据源对象，组件只通过 `source.useXxx(...)` 调用，不把 hook 单独作为 prop 传入。各层之间能引用什么，由 `.oxlintrc.json` 的 `no-restricted-imports` 检查。
 
 ## 接口先行
 

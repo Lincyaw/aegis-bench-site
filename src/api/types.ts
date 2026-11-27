@@ -70,6 +70,7 @@ export type AnnotationSeverity = Schemas['AnnotationSeverity'];
 export type AnnotationCategory = Schemas['AnnotationCategory'];
 export type StepAnnotation = Schemas['StepAnnotation'];
 export type ComparisonBlock = Schemas['ComparisonBlock'];
+export type RunOutputBlock = Schemas['RunOutputBlock'];
 export type ComparedRun = Schemas['ComparedRun'];
 export type RunFileChange = Schemas['RunFileChange'];
 export type ComparedFile = Schemas['ComparedFile'];

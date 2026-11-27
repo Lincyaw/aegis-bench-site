@@ -17,7 +17,7 @@ export function RunUsageTab({ run }: { run: ConsoleRunDetail }) {
     <div className={styles.tab}>
       <StatTiles>
         {usage.inputTokens !== undefined && (
-          <StatTile label={t('console.run.usage.inputTokens')} value={groupedNumber(locale, usage.inputTokens)} note={usage.cachedTokens === undefined ? undefined : `${t('console.run.usage.cachedTokens')} ${groupedNumber(locale, usage.cachedTokens)}`} />
+          <StatTile label={t('console.run.usage.inputTokens')} value={groupedNumber(locale, usage.inputTokens)} note={usage.cachedTokens === undefined ? undefined : t('console.run.usage.cachedTokens', { tokens: groupedNumber(locale, usage.cachedTokens) })} />
         )}
         <StatTile label={t('console.run.usage.outputTokens')} value={groupedNumber(locale, metrics.outputTokens)} />
         <StatTile label={t('console.run.usage.cost')} value={formatCost(metrics.costUsd)} />

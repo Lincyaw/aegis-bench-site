@@ -4,7 +4,7 @@ import type { ConsoleTaskDetail } from '../../../api/types';
 import type { ComparisonSource } from '../../../components/comparison/comparison';
 import { RunComparison, TaskInput } from '../../../components/comparison/TaskComparison';
 import { searchOf } from '../../../routes/address';
-import { COMPARISON_NAVIGATE_OPTIONS, type ComparisonView } from '../../../routes/comparison';
+import { COMPARISON_NAVIGATE_OPTIONS, intentsOf } from '../../../routes/comparison';
 import { consoleRunPath } from '../../../routes/consoleRuns';
 import { TASK_PAGE_PARAMS, type TaskPageView } from '../../../routes/consoleTasks';
 import styles from './TaskComparisonTab.module.css';
@@ -17,13 +17,13 @@ import styles from './TaskComparisonTab.module.css';
 export function TaskComparisonTab({ task, view }: { task: ConsoleTaskDetail; view: TaskPageView }) {
   const [, setParams] = useSearchParams();
   const { entrants } = useTaskResults(task.benchmark.id, task.id, view);
-  const onView = (next: ComparisonView) => setParams(searchOf(TASK_PAGE_PARAMS, { ...view, ...next, tab: 'compare' }), COMPARISON_NAVIGATE_OPTIONS);
+  const intents = intentsOf(view, next => setParams(searchOf(TASK_PAGE_PARAMS, { ...next, tab: 'compare' }), COMPARISON_NAVIGATE_OPTIONS));
   const useTaskComparison = (runIds: string[]) => useConsoleTaskComparison(task.benchmark.id, task.id, runIds);
   const source: ComparisonSource = { useComparison: useTaskComparison, useTrajectories: useConsoleTrajectories, runPath: runId => consoleRunPath(task.benchmark.id, runId) };
   return (
     <div className={styles.tab}>
       <TaskInput instruction={task.instruction} reportSchema={task.reportSchema} />
-      <RunComparison entrants={entrants} source={source} view={view} onView={onView} />
+      <RunComparison entrants={entrants} source={source} view={view} intents={intents} />
     </div>
   );
 }

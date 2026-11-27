@@ -132,6 +132,11 @@ model BenchmarkBlocks {
   @uniqueItems
   comparison: ComparisonBlock[];
 
+  /** The output tab of a run, on the console's run page and the public run records alike */
+  @minItems(1)
+  @uniqueItems
+  runOutput: RunOutputBlock[];
+
   /** A node's side panel in a run's replay; a benchmark that declares world layers lists it */
   @minItems(1)
   @uniqueItems

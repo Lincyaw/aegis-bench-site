@@ -1,14 +1,13 @@
+import { stringify } from 'yaml';
 import type { ReportSources } from '../api/types';
+import { I18N } from '../i18n/i18n';
+import { LOCALES } from '../i18n/locales';
 
-/** A document's frontmatter block; each value is written as JSON, which YAML reads as it is. */
-export function frontmatterBlock(fields: Record<string, string | string[]>): string {
-  return `---\n${Object.entries(fields).map(([key, value]) => `${key}: ${JSON.stringify(value)}`).join('\n')}\n---\n`;
-}
-
-/** A new report's documents, naming the benchmark and the day, for the author to fill in. */
+/** A new report's documents, one per language, naming the benchmark and the day, for the author to fill in. */
 export function newReportSources(benchmarkId: string, date: string): ReportSources {
-  return {
-    'zh-CN': `${frontmatterBlock({ title: '新报告', date, summary: '一句话写下这篇报告的结论。', benchmarks: [benchmarkId] })}\n## 现象\n\n<Replay run="" />\n`,
-    en: `${frontmatterBlock({ title: 'New report', date, summary: 'The report’s conclusion in a sentence.', benchmarks: [benchmarkId] })}\n## What happened\n\n<Replay run="" />\n`,
-  };
+  return Object.fromEntries(LOCALES.map(locale => {
+    const { t } = I18N[locale];
+    const frontmatter = stringify({ title: t('console.report.template.title'), date, summary: t('console.report.template.summary'), benchmarks: [benchmarkId] });
+    return [locale, `---\n${frontmatter}---\n\n## ${t('console.report.template.heading')}\n\n<RunCard run="" />\n`];
+  })) as ReportSources;
 }

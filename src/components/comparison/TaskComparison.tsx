@@ -4,9 +4,7 @@ import { Suspense, useDeferredValue, useEffect, useLayoutEffect, useRef, useStat
 import { useTranslation } from 'react-i18next';
 import { MAX_COMPARED_RUNS, combinationKey } from '../../api/constraints';
 import type { CombinationRuns, ComparedRun, TaskComparison } from '../../api/types';
-import {
-  LIST_SEPARATOR, MAX_PANEL_TRAJECTORIES, closePanel, showInPanel, toggleComparedRun, toggleExpanded, toggleLabel, togglePanelRun, type ComparisonView,
-} from '../../routes/comparison';
+import { LIST_SEPARATOR, MAX_PANEL_TRAJECTORIES, type ComparisonIntents, type ComparisonView } from '../../routes/comparison';
 import { Loading } from '../../ui/content';
 import { IconButton, SmallPill, TextLink } from '../../ui/controls';
 import { Hint, InfoHint } from '../../ui/hint';
@@ -52,20 +50,20 @@ export function TaskInput({ instruction, reportSchema }: { instruction: string; 
  * The comparison of a task's runs as a page shows it: a way in to the choice until a run is chosen, then the chosen
  * runs side by side, or, when their records on Hugging Face cannot be read, a note saying so in their place.
  */
-export function RunComparison({ entrants, source, view, onView }: {
-  entrants: CombinationRuns[]; source: ComparisonSource; view: ComparisonView; onView: (view: ComparisonView) => void;
+export function RunComparison({ entrants, source, view, intents }: {
+  entrants: CombinationRuns[]; source: ComparisonSource; view: ComparisonView; intents: ComparisonIntents;
 }) {
   return view.compared.length > 0 ? (
     <HuggingFaceBoundary resetKey={view.compared.join(LIST_SEPARATOR)}>
       <Suspense fallback={<Loading />}>
-        <ComparedRuns entrants={entrants} source={source} view={view} onView={onView} />
+        <ComparedRuns entrants={entrants} source={source} view={view} intents={intents} />
       </Suspense>
     </HuggingFaceBoundary>
-  ) : <RunChoice entrants={entrants} view={view} onView={onView} />;
+  ) : <RunChoice entrants={entrants} view={view} onCompare={intents.onCompare} />;
 }
 
 /** Before any run is chosen, the comparison is a way in to the choice, which opens over the page instead of filling it. */
-export function RunChoice({ entrants, view, onView }: { entrants: CombinationRuns[]; view: ComparisonView; onView: (view: ComparisonView) => void }) {
+export function RunChoice({ entrants, view, onCompare }: { entrants: CombinationRuns[]; view: ComparisonView; onCompare: (runId: string) => void }) {
   const { t } = useTranslation();
   return (
     <section className={styles.choice}>
@@ -73,13 +71,13 @@ export function RunChoice({ entrants, view, onView }: { entrants: CombinationRun
         <h2 className="t-label">{t('compare.pickTitle')}</h2>
         <InfoHint label={t('ui.about', { subject: t('compare.pickTitle') })}>{t('compare.pickHint', { max: MAX_COMPARED_RUNS, open: MAX_PANEL_TRAJECTORIES })}</InfoHint>
       </header>
-      <RunChooser entrants={entrants} view={view} onView={onView} />
+      <RunChooser entrants={entrants} view={view} onCompare={onCompare} />
     </section>
   );
 }
 
 /** A pill that counts the runs chosen and opens every run of the task to choose from. */
-export function RunChooser({ entrants, view, onView }: { entrants: CombinationRuns[]; view: ComparisonView; onView: (view: ComparisonView) => void }) {
+export function RunChooser({ entrants, view, onCompare }: { entrants: CombinationRuns[]; view: ComparisonView; onCompare: (runId: string) => void }) {
   const { t } = useTranslation();
   return (
     <Popover.Root>
@@ -88,7 +86,7 @@ export function RunChooser({ entrants, view, onView }: { entrants: CombinationRu
       </Popover.Trigger>
       <Popover.Portal>
         <Popover.Content className={clsx(hint.popover, styles.chooser)} align="start" sideOffset={8} collisionPadding={12}>
-          <RunPicker entrants={entrants} view={view} onView={onView} />
+          <RunPicker entrants={entrants} view={view} onCompare={onCompare} />
         </Popover.Content>
       </Popover.Portal>
     </Popover.Root>
@@ -96,7 +94,7 @@ export function RunChooser({ entrants, view, onView }: { entrants: CombinationRu
 }
 
 /** Every combination's runs of the task as chips that add a run to the comparison or take it out. */
-export function RunPicker({ entrants, view, onView }: { entrants: CombinationRuns[]; view: ComparisonView; onView: (view: ComparisonView) => void }) {
+export function RunPicker({ entrants, view, onCompare }: { entrants: CombinationRuns[]; view: ComparisonView; onCompare: (runId: string) => void }) {
   const { t } = useTranslation();
   const list = useRef<HTMLUListElement>(null);
   const [widths, setWidths] = useState<{ name: number; runs: number }>();
@@ -126,7 +124,7 @@ export function RunPicker({ entrants, view, onView }: { entrants: CombinationRun
               const chosen = view.compared.includes(run.id);
               return (
                 <SmallPill
-                  key={run.id} pressed={chosen} disabled={!chosen && view.compared.length >= MAX_COMPARED_RUNS} onClick={() => onView(toggleComparedRun(view, run.id))}
+                  key={run.id} pressed={chosen} disabled={!chosen && view.compared.length >= MAX_COMPARED_RUNS} onClick={() => onCompare(run.id)}
                   aria-label={t('compare.runOf', { attempt: run.attempt, outcome: t(`runs.outcome.${run.outcome}`) })}
                 >
                   <OutcomeDot outcome={run.outcome} />{run.attempt}
@@ -144,8 +142,8 @@ export function RunPicker({ entrants, view, onView }: { entrants: CombinationRun
  * The comparison: a column per run, a row per part of each block, each item opening in place; a run's trajectory opens
  * in the side panel.
  */
-export function ComparedRuns({ entrants, source, view, onView }: {
-  entrants: CombinationRuns[]; source: ComparisonSource; view: ComparisonView; onView: (view: ComparisonView) => void;
+export function ComparedRuns({ entrants, source, view, intents }: {
+  entrants: CombinationRuns[]; source: ComparisonSource; view: ComparisonView; intents: ComparisonIntents;
 }) {
   const { t } = useTranslation();
   // The runs shown stay until the newly chosen ones load, while the choices show at once.
@@ -154,11 +152,11 @@ export function ComparedRuns({ entrants, source, view, onView }: {
   return (
     <>
       <ComparisonTable columns={comparison.runs.length} label={t('compare.label')}>
-        <BlockHead title={t('compare.runs')} hint={t('compare.pickHint', { max: MAX_COMPARED_RUNS, open: MAX_PANEL_TRAJECTORIES })} aside={<RunChooser entrants={entrants} view={view} onView={onView} />}>
+        <BlockHead title={t('compare.runs')} hint={t('compare.pickHint', { max: MAX_COMPARED_RUNS, open: MAX_PANEL_TRAJECTORIES })} aside={<RunChooser entrants={entrants} view={view} onCompare={intents.onCompare} />}>
           {comparison.runs.map((run, index) => (
             <Cell key={run.id}>
               <RunHead run={run} numeral={numeralAt(index)}>
-                <RunActions run={run} runPath={source.runPath} view={view} onView={onView} />
+                <RunActions run={run} runPath={source.runPath} onRemove={() => intents.onCompare(run.id)} />
               </RunHead>
             </Cell>
           ))}
@@ -167,13 +165,13 @@ export function ComparedRuns({ entrants, source, view, onView }: {
           const Block = COMPARISON_BLOCKS[block];
           return (
             <Block
-              key={block} comparison={comparison} expanded={view.expand}
-              onExpand={keys => onView(toggleExpanded(view, keys))} onTrajectory={run => onView(showInPanel(view, run))}
+              key={block} comparison={comparison} expanded={view.expand} allChecks={view.allChecks}
+              onExpand={intents.onExpand} onTrajectory={intents.onTrajectory} onAllChecks={intents.onAllChecks}
             />
           );
         })}
       </ComparisonTable>
-      {shown.length > 0 && <TrajectoryPanel comparison={comparison} shown={shown} source={source} view={view} onView={onView} />}
+      {shown.length > 0 && <TrajectoryPanel comparison={comparison} shown={shown} source={source} view={view} intents={intents} />}
     </>
   );
 }
@@ -182,11 +180,11 @@ export function ComparedRuns({ entrants, source, view, onView }: {
  * The side panel the trajectory block opens: one run's trajectory, or two side by side, over the window's right edge
  * while the comparison stays in reach. Its numerals choose the runs; Escape or its close button closes it.
  */
-export function TrajectoryPanel({ comparison, shown, source, view, onView }: {
-  comparison: TaskComparison; shown: ComparedRun[]; source: ComparisonSource; view: ComparisonView; onView: (view: ComparisonView) => void;
+export function TrajectoryPanel({ comparison, shown, source, view, intents }: {
+  comparison: TaskComparison; shown: ComparedRun[]; source: ComparisonSource; view: ComparisonView; intents: ComparisonIntents;
 }) {
   const { t } = useTranslation();
-  const close = () => onView(closePanel(view));
+  const close = intents.onClosePanel;
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -203,7 +201,7 @@ export function TrajectoryPanel({ comparison, shown, source, view, onView }: {
         <span className={styles.panelRuns} role="group" aria-label={t('compare.panel.runs', { max: MAX_PANEL_TRAJECTORIES })}>
           {comparison.runs.map((run, index) => (
             <Hint key={run.id} content={`${combinationName(run.model, run.harness)} · ${t('compare.attempt', { attempt: run.attempt })}`}>
-              <SmallPill pressed={view.panel.includes(run.id)} onClick={() => onView(togglePanelRun(view, run.id))}>{numeralAt(index)}</SmallPill>
+              <SmallPill pressed={view.panel.includes(run.id)} onClick={() => intents.onPanelRun(run.id)}>{numeralAt(index)}</SmallPill>
             </Hint>
           ))}
         </span>
@@ -212,7 +210,7 @@ export function TrajectoryPanel({ comparison, shown, source, view, onView }: {
       <div className={styles.panelScroll}>
         <HuggingFaceBoundary resetKey={view.panel.join(LIST_SEPARATOR)}>
           <Suspense fallback={<Loading />}>
-            <PanelTrajectories comparison={comparison} shown={shown} labels={view.labels} onLabel={label => onView(toggleLabel(view, label))} source={source} />
+            <PanelTrajectories comparison={comparison} shown={shown} labels={view.labels} onLabel={intents.onLabel} source={source} />
           </Suspense>
         </HuggingFaceBoundary>
       </div>
@@ -243,7 +241,7 @@ export function RunHead({ run, numeral, children }: { run: ComparedRun; numeral:
 }
 
 /** Going to a run's own page or its files, and taking it out of the comparison. */
-export function RunActions({ run, runPath, view, onView }: { run: ComparedRun; runPath: (runId: string) => string; view: ComparisonView; onView: (view: ComparisonView) => void }) {
+export function RunActions({ run, runPath, onRemove }: { run: ComparedRun; runPath: (runId: string) => string; onRemove: () => void }) {
   const { t } = useTranslation();
   return (
     <>
@@ -256,7 +254,7 @@ export function RunActions({ run, runPath, view, onView }: { run: ComparedRun; r
         </Hint>
       )}
       <Hint content={t('compare.remove')}>
-        <IconButton label={t('compare.remove')} variant="quiet" size="small" onClick={() => onView(toggleComparedRun(view, run.id))}><CloseIcon /></IconButton>
+        <IconButton label={t('compare.remove')} variant="quiet" size="small" onClick={onRemove}><CloseIcon /></IconButton>
       </Hint>
     </>
   );

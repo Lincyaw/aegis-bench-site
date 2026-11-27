@@ -23,7 +23,7 @@ export function MembersPage() {
   const administering = user.can.administer;
   return (
     <div className={styles.page}>
-      <ConsoleHeader title={t('console.members.title')} about={t('console.members.about')} />
+      <ConsoleHeader title={t('console.members.title')} about={<><p>{t('console.members.about')}</p>{!administering && <p>{t('console.members.readOnly')}</p>}</>} />
       <div className={clsx(table.table, styles.members)} role="table" aria-label={t('console.members.title')}>
         <div className={clsx(table.row, table.head, 't-micro c-faint')} role="row">
           <span role="columnheader">{t('console.members.column.member')}</span>
@@ -34,7 +34,7 @@ export function MembersPage() {
         </div>
         {members.map(member => <MemberRow key={member.account} member={member} self={member.account === user.account} administering={administering} />)}
       </div>
-      {administering ? <InviteForm /> : <p className="t-small c-muted">{t('console.members.readOnly')}</p>}
+      {administering && <InviteForm />}
     </div>
   );
 }

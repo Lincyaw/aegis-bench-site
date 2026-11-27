@@ -1,8 +1,8 @@
-import { consoleBenchmarkPath } from './console';
+import { benchmarkSectionPath } from './console';
 
 /** A benchmark's releases in the console. */
 export function benchmarkReleasesPath(benchmarkId: string): string {
-  return `${consoleBenchmarkPath(benchmarkId)}/releases`;
+  return benchmarkSectionPath(benchmarkId, 'releases');
 }
 
 export function releasePath(benchmarkId: string, releaseId: string): string {

@@ -1,8 +1,8 @@
-import { consoleReviewFilterValues, runOutcomeValues } from '../api/schema';
-import type { ConsoleRunQuery, PendingWork, ReviewFilter, RunOutcome } from '../api/types';
-import { pathWithSearch, searchOf, type AddressTable } from './address';
-import { consoleBenchmarkPath, parseCombinationScope } from './console';
-import { RUN_TABS } from './runRecords';
+import { consoleReviewFilterValues, consoleRunEventKindValues, runOutcomeValues } from '../api/schema';
+import type { ConsoleRunQuery, PendingWork, RunEventQuery } from '../api/types';
+import { parseChoice, parseOffset, parseStep, pathWithSearch, searchOf, type AddressTable } from './address';
+import { benchmarkSectionPath, parseCombinationScope } from './console';
+import { RUN_TABS, type RunView } from './runRecords';
 
 /** Runs per page of the console's run list. */
 export const RUN_LIST_PAGE_SIZE = 25;
@@ -17,21 +17,9 @@ export const RUN_QUERY_PARAMS: AddressTable<ConsoleRunQuery> = {
 
 /** The list's state from its address; a value outside its set fails the page rather than showing nothing. */
 export function parseRunQuery(params: URLSearchParams): ConsoleRunQuery {
-  const outcome = params.get('outcome') ?? undefined;
-  const review = params.get('review') ?? undefined;
-  const offset = Number(params.get('offset') ?? RUN_QUERY_PARAMS.offset);
-  if (outcome !== undefined && !runOutcomeValues.includes(outcome as RunOutcome)) {
-    throw new Error(`no run outcome ${outcome}`);
-  }
-  if (review !== undefined && !consoleReviewFilterValues.includes(review as ReviewFilter)) {
-    throw new Error(`no review filter ${review}`);
-  }
-  if (!Number.isInteger(offset) || offset < 0 || offset % RUN_LIST_PAGE_SIZE !== 0) {
-    throw new Error(`no page of runs starts at ${params.get('offset')}`);
-  }
   return {
-    q: params.get('q') ?? RUN_QUERY_PARAMS.q, task: params.get('task') ?? undefined, ...parseCombinationScope(params), outcome: outcome as RunOutcome | undefined,
-    review: review as ReviewFilter | undefined, offset,
+    q: params.get('q') ?? RUN_QUERY_PARAMS.q, task: params.get('task') ?? undefined, ...parseCombinationScope(params), outcome: parseChoice(params, 'outcome', runOutcomeValues),
+    review: parseChoice(params, 'review', consoleReviewFilterValues), offset: parseOffset(params, RUN_LIST_PAGE_SIZE),
   };
 }
 
@@ -42,7 +30,7 @@ export function isFilteredRunQuery(query: ConsoleRunQuery): boolean {
 
 /** A benchmark's run list, filtered as the query says. */
 export function consoleRunsPath(benchmarkId: string, query: Partial<ConsoleRunQuery> = {}): string {
-  return pathWithSearch(`${consoleBenchmarkPath(benchmarkId)}/runs`, searchOf(RUN_QUERY_PARAMS, query));
+  return pathWithSearch(benchmarkSectionPath(benchmarkId, 'runs'), searchOf(RUN_QUERY_PARAMS, query));
 }
 
 /** The run list of the runs a kind of waiting work concerns, filtered as the work says. */
@@ -57,27 +45,28 @@ export function pendingRunsPath(benchmarkId: string, work: PendingWork): string 
 export const CONSOLE_RUN_TABS = [...RUN_TABS, 'events', 'usage', 'hunts'] as const;
 export type ConsoleRunTab = (typeof CONSOLE_RUN_TABS)[number];
 
-export interface ConsoleRunView {
+/**
+ * A run's page in its address: the tab with the step or check it opens, the raw events' filter and page, which the
+ * events tab keeps while the reader looks at another tab, and the hunt the behaviour review keeps to.
+ */
+export interface ConsoleRunView extends Omit<RunView, 'tab'>, RunEventQuery {
   tab: ConsoleRunTab;
-  step?: number;
-  check?: string;
+
+  /** The hunt whose findings the behaviour review shows; every hunt's when absent */
+  hunt?: string;
 }
 
 /** Every parameter a run's page keeps in its address; the tab a run opens on is the run's own, so the address always names it. */
-export const RUN_VIEW_PARAMS: AddressTable<Partial<ConsoleRunView>> = { tab: undefined, step: undefined, check: undefined };
+export const RUN_VIEW_PARAMS: AddressTable<Partial<ConsoleRunView>> = { tab: undefined, step: undefined, check: undefined, kind: undefined, q: '', offset: 0, hunt: undefined };
 
 export function parseConsoleRunView(params: URLSearchParams, defaultTab: ConsoleRunTab): ConsoleRunView {
-  const tab = params.get('tab') ?? defaultTab;
-  const step = params.get('step') ?? undefined;
-  if (!CONSOLE_RUN_TABS.includes(tab as ConsoleRunTab)) {
-    throw new Error(`a run has no tab ${tab}`);
-  }
-  if (step !== undefined && !Number.isInteger(Number(step))) {
-    throw new Error(`no step ${step}`);
-  }
-  return { tab: tab as ConsoleRunTab, step: step === undefined ? undefined : Number(step), check: params.get('check') ?? undefined };
+  return {
+    tab: parseChoice(params, 'tab', CONSOLE_RUN_TABS) ?? defaultTab, step: parseStep(params), check: params.get('check') ?? undefined,
+    kind: parseChoice(params, 'kind', consoleRunEventKindValues), q: params.get('q') ?? '', offset: parseOffset(params, EVENT_PAGE_SIZE),
+    hunt: params.get('hunt') ?? undefined,
+  };
 }
 
 export function consoleRunPath(benchmarkId: string, runId: string, view: Partial<ConsoleRunView> = {}): string {
-  return pathWithSearch(`${consoleBenchmarkPath(benchmarkId)}/runs/${runId}`, searchOf(RUN_VIEW_PARAMS, view));
+  return pathWithSearch(`${benchmarkSectionPath(benchmarkId, 'runs')}/${runId}`, searchOf(RUN_VIEW_PARAMS, view));
 }

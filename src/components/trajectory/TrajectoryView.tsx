@@ -10,13 +10,17 @@ import { RunScrubber, TimelineLegendRow } from '../run/RunTimeline';
 import { AtifFields, AtifStepSummary } from './AtifStep';
 import styles from './TrajectoryView.module.css';
 
+/** Where the view reads one page of the run's trajectory from: the public site's API or the console's. */
+export interface TrajectorySource {
+  usePage: (offset: number, pageSize: number) => TrajectoryPage;
+}
+
 /**
  * The ATIF trajectory as the run's timeline of marks and a list of its steps a page at a time; selecting either opens
  * that step, every field as the trajectory records it, turning the list to its page.
  */
-export function TrajectoryView({ usePage, timeline, legend, evidence, selected, onSelect }: {
-  /** Reads one page of the run's trajectory, from the public site's API or the console's */
-  usePage: (offset: number, pageSize: number) => TrajectoryPage;
+export function TrajectoryView({ source, timeline, legend, evidence, selected, onSelect }: {
+  source: TrajectorySource;
 
   /** The run's agent steps as the server marked them */
   timeline: TimelineStep[];
@@ -40,7 +44,7 @@ export function TrajectoryView({ usePage, timeline, legend, evidence, selected, 
     }
   }
   // The page in view stays until the next one arrives.
-  const page = usePage(useDeferredValue(pageStart), TRAJECTORY_PAGE_SIZE);
+  const page = source.usePage(useDeferredValue(pageStart), TRAJECTORY_PAGE_SIZE);
   const [fieldsOpen, setFieldsOpen] = useState(false);
   const { items: _items, total: _total, ...trajectoryFields } = page;
   const firstShown = page.items[0]?.step_id;

@@ -23,7 +23,7 @@ export function publishedShowingOf(benchmarkId: string, locale: Locale): Benchma
 }
 
 export function publishedRecentRunsOf(benchmarkId: string, locale: Locale): Promise<RecentRun[]> {
-  return recentRunsOf(currentReleaseOf(benchmarkId).content.replays, locale);
+  return recentRunsOf(currentReleaseOf(benchmarkId).content.exampleRuns, locale);
 }
 
 /** The entrant of the current release that a "<model id>-<harness id>" key names, or nothing when the release publishes none by it. */

@@ -17,10 +17,10 @@ import {
   CombinationColumn, Pane, PaneEmpty, PaneHead, PaneList, PaneMore, PassRateText, RunChips, TaskColumn,
 } from '../../../components/run/RunRecords';
 import { combinationName } from '../../../components/result/presentation';
-import { searchOf } from '../../../routes/address';
-import { COMPARISON_NAVIGATE_OPTIONS, type ComparisonView } from '../../../routes/comparison';
+import { EVERY_CHOICE, searchOf } from '../../../routes/address';
+import { COMPARISON_NAVIGATE_OPTIONS, intentsOf } from '../../../routes/comparison';
 import {
-  EVERY_COMBINATION, EVERY_OUTCOME, OUTCOME_FILTERS, RUN_RECORDS_PARAMS, RUN_RECORD_VIEWS, TASK_MODES, TASK_PAGE_SIZE, defaultRunId, parseRunRecordsQuery,
+  OUTCOME_FILTERS, RUN_RECORDS_PARAMS, RUN_RECORD_VIEWS, TASK_MODES, TASK_PAGE_SIZE, defaultRunId, parseRunRecordsQuery,
   runRecordsLevel, runRecordsPath, withCombination, withDetail, withFilter, withMode, withRecordsView, withRun, withSearch, withTask,
   type RunRecordsLevel, type RunRecordsQuery,
 } from '../../../routes/runRecords';
@@ -85,18 +85,18 @@ export function RunToolbar({ benchmark, query, onQuery }: { benchmark: Benchmark
         <Select
           className={styles.filter} variant="quiet"
           label={t('runs.combinationFilter')}
-          value={query.combination ?? EVERY_COMBINATION}
-          choices={[{ value: EVERY_COMBINATION, label: t('runs.everyCombination') }, ...combinations.map(entry => ({ value: combinationKey(entry.model.id, entry.harness.id), label: combinationName(entry.model, entry.harness) }))]}
-          onChange={value => onQuery(withFilter(query, { combination: value === EVERY_COMBINATION ? undefined : value, outcome: query.outcome }))}
+          value={query.combination ?? EVERY_CHOICE}
+          choices={[{ value: EVERY_CHOICE, label: t('runs.everyCombination') }, ...combinations.map(entry => ({ value: combinationKey(entry.model.id, entry.harness.id), label: combinationName(entry.model, entry.harness) }))]}
+          onChange={value => onQuery(withFilter(query, { combination: value === EVERY_CHOICE ? undefined : value, outcome: query.outcome }))}
         />
       )}
       {query.outcome ? <ScopeChip name={t(`runs.filter.${query.outcome}`)} to={runRecordsPath(benchmark.id, { ...query, outcome: undefined })} /> : (
         <Select
           className={styles.filter} variant="quiet"
           label={t('runs.outcomeFilter')}
-          value={EVERY_OUTCOME}
-          choices={([EVERY_OUTCOME, ...OUTCOME_FILTERS] as const).map(filter => ({ value: filter, label: t(`runs.filter.${filter}`) }))}
-          onChange={outcome => onQuery(withFilter(query, { combination: query.combination, outcome: outcome === EVERY_OUTCOME ? undefined : outcome }))}
+          value={EVERY_CHOICE}
+          choices={([EVERY_CHOICE, ...OUTCOME_FILTERS] as const).map(filter => ({ value: filter, label: t(`runs.filter.${filter}`) }))}
+          onChange={outcome => onQuery(withFilter(query, { combination: query.combination, outcome: outcome === EVERY_CHOICE ? undefined : outcome }))}
         />
       )}
       <span className={clsx(styles.legend, 't-micro c-faint')}>
@@ -211,7 +211,7 @@ export function TaskComparePane({ benchmark, taskId, entrants, query, onCompare 
   benchmark: BenchmarkDetail; taskId: string; entrants: CombinationRuns[]; query: RunRecordsQuery; onCompare: (query: RunRecordsQuery) => void;
 }) {
   const { t } = useTranslation();
-  const onView = (view: ComparisonView) => onCompare({ ...query, ...view });
+  const intents = intentsOf(query, onCompare);
   const useComparison = (runIds: string[]) => useTaskComparison(benchmark.id, taskId, runIds);
   const source: ComparisonSource = {
     useComparison, useTrajectories, runPath: runId => runRecordsPath(benchmark.id, { task: taskId, run: runId, combination: query.combination, outcome: query.outcome }),
@@ -221,7 +221,7 @@ export function TaskComparePane({ benchmark, taskId, entrants, query, onCompare 
       <HuggingFaceBoundary resetKey={taskId}>
         <Suspense fallback={<Loading />}><PublicTaskInput benchmarkId={benchmark.id} taskId={taskId} /></Suspense>
       </HuggingFaceBoundary>
-      <RunComparison entrants={entrants} source={source} view={query} onView={onView} />
+      <RunComparison entrants={entrants} source={source} view={query} intents={intents} />
     </Pane>
   );
 }

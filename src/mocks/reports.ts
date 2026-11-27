@@ -81,6 +81,7 @@ export function reportSummaryOf(report: ReportDraftRecord): ReportDraftSummary {
 export function reportDraftOf(report: ReportDraftRecord, user: ConsoleUser): ReportDraft {
   return {
     ...reportSummaryOf(report), sources: report.sources, checked: report.checked, reviews: report.reviews,
+    canEdit: user.can.edit && report.status === 'draft',
     canReview: user.can.edit && reviewRefusalOf(report, user.account) === undefined,
     reviewed: currentReviewsOf(report).some(review => review.reviewer === user.account),
   };

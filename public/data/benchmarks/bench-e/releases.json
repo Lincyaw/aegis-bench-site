@@ -20,7 +20,7 @@
           "harnessId": "x"
         }
       ],
-      "replays": [
+      "exampleRuns": [
         "bench-e.task-001.jia-x.1",
         "bench-e.task-001.yi-x.1"
       ]

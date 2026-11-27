@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import type { BenchmarkSummary, Stage } from '../../api/types';
 import { LocaleLink } from '../../i18n/LocaleRouting';
 import { BENCHMARKS_PATH, benchmarkPath, leaderboardPath } from '../../routes/site';
-import { Tag } from '../../ui/content';
+import { HintedHeading, Tag } from '../../ui/content';
 import { ButtonLink, CopyButton } from '../../ui/controls';
 import { GoArrowIcon } from '../../ui/icons';
 import { REDUCED_MOTION_QUERY, useMediaQuery } from '../../ui/media';
@@ -142,13 +142,11 @@ export function Closing({ contactEmail, footerLinks }: { contactEmail: string; f
         </div>
         <div className={styles.pair}>
           <div>
-            <h3 className="t-heading">{t('landing.citeTitle')}</h3>
-            <p className="t-small c-muted">{t('landing.citeBody')}</p>
+            <HintedHeading rank="h3" className="t-heading" title={t('landing.citeTitle')} about={t('landing.citeBody')} />
             <Citation><pre>{t('landing.bibtex')}</pre></Citation>
           </div>
           <div>
-            <h3 className="t-heading">{t('site.contact')}</h3>
-            <p className="t-small c-muted">{t('landing.contactBody')}</p>
+            <HintedHeading rank="h3" className="t-heading" title={t('site.contact')} about={t('landing.contactBody')} />
             <span className={styles.email}>{contactEmail}</span>
             <CopyButton label={t('landing.copyEmail')} text={() => contactEmail} />
           </div>

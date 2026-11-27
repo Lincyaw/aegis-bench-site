@@ -1,7 +1,7 @@
 import { createBrowserRouter, type RouteObject } from 'react-router-dom';
 import { LocaleRoot } from './i18n/LocaleRouting';
 import { LOCALES, LOCALE_PREFIX } from './i18n/locales';
-import { ConsoleLayout, type ConsoleRouteHandle } from './pages/console/ConsoleLayout';
+import { ConsoleLayout } from './pages/console/ConsoleLayout';
 import { ConsoleError, ConsoleNotFound } from './pages/console/ConsolePages';
 import { SignInPage } from './pages/console/SignInPage';
 import { AnalysisPage } from './pages/console/analysis/AnalysisPage';
@@ -23,7 +23,7 @@ import { TaskDetailPage } from './pages/console/tasks/TaskDetailPage';
 import { TaskListPage } from './pages/console/tasks/TaskListPage';
 import { ChangelogPage } from './pages/console/workspace/ChangelogPage';
 import { WorkbenchPage } from './pages/console/workspace/WorkbenchPage';
-import { SiteLayout, type RouteHandle } from './pages/site/SiteLayout';
+import { SiteLayout } from './pages/site/SiteLayout';
 import { PageError, PendingPage } from './pages/site/SitePages';
 import { BenchmarkPage } from './pages/site/benchmarks/BenchmarkPage';
 import { BenchmarksPage } from './pages/site/benchmarks/BenchmarksPage';
@@ -32,6 +32,19 @@ import { ModelPage } from './pages/site/models/ModelPage';
 import { ReportPage, ReportsPage } from './pages/site/reports/ReportsPage';
 import { RunRecordsPage } from './pages/site/runs/RunRecordsPage';
 import { TaskFilesPage } from './pages/site/tasks/TaskFilesPage';
+import { nestedRoute, type RouteHandle } from './routes/address';
+import { CONSOLE_PATH, CONSOLE_ROUTES, SIGN_IN_PATH } from './routes/console';
+import { SITE_ROUTES } from './routes/site';
+
+/** A route of the site as the locale roots nest it. */
+function siteRoute(pattern: string): string {
+  return nestedRoute('', pattern);
+}
+
+/** A route of the console as the console's layout nests it. */
+function consoleRoute(pattern: string): string {
+  return nestedRoute(CONSOLE_PATH, pattern);
+}
 
 /** The site's pages, built afresh for each locale's root so that no route object has two parents. */
 export function sitePages(): RouteObject[] {
@@ -47,52 +60,52 @@ export function sitePages(): RouteObject[] {
       children: [{
         errorElement: <PageError />,
         children: [
-          { path: 'benchmarks', element: <BenchmarksPage /> },
-          { path: 'benchmarks/:benchmarkId', element: <BenchmarkPage /> },
-          { path: 'benchmarks/:benchmarkId/runs', element: <RunRecordsPage />, handle: { fillsWindow: true } satisfies RouteHandle },
-          { path: 'benchmarks/:benchmarkId/tasks/:taskId', element: <TaskFilesPage />, handle: { fillsWindow: true } satisfies RouteHandle },
-          { path: 'leaderboard', element: <LeaderboardPage /> },
-          { path: 'models/:modelId', element: <ModelPage /> },
-          { path: 'reports', element: <ReportsPage /> },
-          { path: 'reports/:slug', element: <ReportPage /> },
+          { path: siteRoute(SITE_ROUTES.benchmarks), element: <BenchmarksPage /> },
+          { path: siteRoute(SITE_ROUTES.benchmark), element: <BenchmarkPage /> },
+          { path: siteRoute(SITE_ROUTES.runRecords), element: <RunRecordsPage />, handle: { fillsWindow: true } satisfies RouteHandle },
+          { path: siteRoute(SITE_ROUTES.taskFiles), element: <TaskFilesPage />, handle: { fillsWindow: true } satisfies RouteHandle },
+          { path: siteRoute(SITE_ROUTES.leaderboard), element: <LeaderboardPage /> },
+          { path: siteRoute(SITE_ROUTES.model), element: <ModelPage /> },
+          { path: siteRoute(SITE_ROUTES.reports), element: <ReportsPage /> },
+          { path: siteRoute(SITE_ROUTES.report), element: <ReportPage /> },
           { path: '*', element: <PendingPage /> },
         ],
       }],
     },
-    { path: 'console/sign-in', element: <SignInPage />, errorElement: <PageError /> },
+    { path: siteRoute(SIGN_IN_PATH), element: <SignInPage />, errorElement: <PageError /> },
     {
-      path: 'console',
+      path: siteRoute(CONSOLE_PATH),
       element: <ConsoleLayout />,
       children: [{
         errorElement: <ConsoleError />,
         children: [
           { index: true, element: <WorkbenchPage /> },
-          { path: 'releases', element: <ReleaseLogPage /> },
-          { path: 'changelog', element: <ChangelogPage /> },
-          { path: 'members', element: <MembersPage /> },
-          { path: 'settings', element: <SettingsPage /> },
-          { path: 'benchmarks/:benchmarkId', element: <BenchmarkOverviewPage /> },
-          { path: 'benchmarks/:benchmarkId/tasks', element: <TaskListPage /> },
-          { path: 'benchmarks/:benchmarkId/tasks/:taskId', element: <TaskDetailPage /> },
-          { path: 'benchmarks/:benchmarkId/runs', element: <RunListPage /> },
-          { path: 'benchmarks/:benchmarkId/runs/:runId', element: <RunDetailPage /> },
+          { path: consoleRoute(CONSOLE_ROUTES.releaseLog), element: <ReleaseLogPage /> },
+          { path: consoleRoute(CONSOLE_ROUTES.changelog), element: <ChangelogPage /> },
+          { path: consoleRoute(CONSOLE_ROUTES.members), element: <MembersPage /> },
+          { path: consoleRoute(CONSOLE_ROUTES.settings), element: <SettingsPage /> },
+          { path: consoleRoute(CONSOLE_ROUTES.benchmark), element: <BenchmarkOverviewPage /> },
+          { path: consoleRoute(CONSOLE_ROUTES.tasks), element: <TaskListPage /> },
+          { path: consoleRoute(CONSOLE_ROUTES.task), element: <TaskDetailPage /> },
+          { path: consoleRoute(CONSOLE_ROUTES.runs), element: <RunListPage /> },
+          { path: consoleRoute(CONSOLE_ROUTES.run), element: <RunDetailPage /> },
           // The replay lays out its graphs with dagre, so it loads on its own.
           {
             path: 'benchmarks/:benchmarkId/runs/:runId/replay',
             lazy: async () => ({ Component: (await import('./pages/console/runs/RunReplayPage')).RunReplayPage }),
-            handle: { fillsWindow: true } satisfies ConsoleRouteHandle,
+            handle: { fillsWindow: true } satisfies RouteHandle,
           },
-          { path: 'benchmarks/:benchmarkId/models', element: <ModelListPage /> },
-          { path: 'benchmarks/:benchmarkId/models/:modelId', element: <ModelDetailPage /> },
-          { path: 'benchmarks/:benchmarkId/analysis', element: <AnalysisPage /> },
-          { path: 'benchmarks/:benchmarkId/analysis/:huntId', element: <HuntPage /> },
-          { path: 'benchmarks/:benchmarkId/collections', element: <CollectionListPage /> },
-          { path: 'benchmarks/:benchmarkId/collections/:tag', element: <CollectionPage /> },
-          { path: 'benchmarks/:benchmarkId/reports', element: <ReportListPage /> },
+          { path: consoleRoute(CONSOLE_ROUTES.models), element: <ModelListPage /> },
+          { path: consoleRoute(CONSOLE_ROUTES.model), element: <ModelDetailPage /> },
+          { path: consoleRoute(CONSOLE_ROUTES.analysis), element: <AnalysisPage /> },
+          { path: consoleRoute(CONSOLE_ROUTES.hunt), element: <HuntPage /> },
+          { path: consoleRoute(CONSOLE_ROUTES.collections), element: <CollectionListPage /> },
+          { path: consoleRoute(CONSOLE_ROUTES.collection), element: <CollectionPage /> },
+          { path: consoleRoute(CONSOLE_ROUTES.reports), element: <ReportListPage /> },
           // The editor compiles MDX in the browser, so it loads on its own.
-          { path: 'benchmarks/:benchmarkId/reports/:reportId', lazy: async () => ({ Component: (await import('./pages/console/reports/ReportEditorPage')).ReportEditorPage }) },
-          { path: 'benchmarks/:benchmarkId/releases', element: <BenchmarkReleasesPage /> },
-          { path: 'benchmarks/:benchmarkId/releases/:releaseId', element: <ReleasePage /> },
+          { path: consoleRoute(CONSOLE_ROUTES.report), lazy: async () => ({ Component: (await import('./pages/console/reports/ReportEditorPage')).ReportEditorPage }) },
+          { path: consoleRoute(CONSOLE_ROUTES.releases), element: <BenchmarkReleasesPage /> },
+          { path: consoleRoute(CONSOLE_ROUTES.release), element: <ReleasePage /> },
           { path: '*', element: <ConsoleNotFound /> },
         ],
       }],

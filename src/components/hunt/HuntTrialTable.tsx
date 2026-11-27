@@ -1,3 +1,4 @@
+import { clsx } from 'clsx';
 import { useTranslation } from 'react-i18next';
 import type { Hunt, HuntTrial } from '../../api/types';
 import { LocaleLink } from '../../i18n/LocaleRouting';
@@ -6,7 +7,25 @@ import { Tag } from '../../ui/content';
 import { TextLink } from '../../ui/controls';
 import table from '../../ui/table.module.css';
 import { ModelLabel } from '../model/ModelBadge';
-import styles from './HuntTrials.module.css';
+import styles from './HuntTrialTable.module.css';
+
+/** The trajectories a hunt marked or read, one row each; a row opens its run on this hunt's findings, and its first mark opens the trajectory. */
+export function HuntTrialTable({ benchmarkId, hunt, trials }: { benchmarkId: string; hunt: Hunt; trials: HuntTrial[] }) {
+  const { t } = useTranslation();
+  return (
+    <div className={clsx(table.table, styles.trials)} role="table" aria-label={t('console.analysis.trials')}>
+      <div className={clsx(table.row, table.head, 't-micro c-faint')} role="row">
+        <span role="columnheader">{t('console.analysis.column.run')}</span>
+        <span role="columnheader">{t('console.analysis.column.entrant')}</span>
+        <span role="columnheader">{t('console.analysis.column.verdict')}</span>
+        <span role="columnheader">{t('console.analysis.column.facets')}</span>
+        <span role="columnheader">{t('console.analysis.column.marks')}</span>
+        <span role="columnheader">{t('console.analysis.column.firstStep')}</span>
+      </div>
+      {trials.map(trial => <HuntTrialRow key={trial.run.id} benchmarkId={benchmarkId} hunt={hunt} trial={trial} />)}
+    </div>
+  );
+}
 
 export function HuntTrialRow({ benchmarkId, hunt, trial }: { benchmarkId: string; hunt: Hunt; trial: HuntTrial }) {
   const { t } = useTranslation();
@@ -22,7 +41,7 @@ export function HuntTrialRow({ benchmarkId, hunt, trial }: { benchmarkId: string
   return (
     <div className={table.row} role="row">
       <span role="cell" className={styles.run}>
-        <LocaleLink to={consoleRunPath(benchmarkId, run.id, { tab: 'hunts' })} className="t-label">{run.task.title}</LocaleLink>
+        <LocaleLink to={consoleRunPath(benchmarkId, run.id, { tab: 'hunts', hunt: hunt.id })} className="t-label">{run.task.title}</LocaleLink>
         <span className="t-mono c-faint">{run.task.id} · {t('console.runs.attempt', { attempt: run.attempt })}</span>
       </span>
       <span role="cell" className={styles.entrant}><ModelLabel model={run.model} /><span className="t-small c-muted">{run.harness.name}</span></span>

@@ -2,6 +2,8 @@ import { clsx } from 'clsx';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { RunDetail } from '../../api/types';
+import { useLocale } from '../../i18n/localeContext';
+import { groupedNumber } from '../../i18n/locales';
 import { INSTRUCTION_PATH } from '../../routes/site';
 import { FactList, HintedHeading } from '../../ui/content';
 import content from '../../ui/content.module.css';
@@ -27,16 +29,28 @@ export function RunHeader({ run }: { run: RunDetail }) {
         <OutcomeBadge outcome={run.outcome} />
       </div>
       <p className="t-small c-muted">{run.task.id} {run.task.title} · {t('runs.attemptOf', { attempt: run.attempt, count: run.attemptCount })}</p>
+      <RunMetrics run={run} />
+    </header>
+  );
+}
+
+/** The figures of a run, in one format on the public site and in the console; the console adds what only it reads. */
+export function RunMetrics({ run, inputTokens }: { run: RunDetail; inputTokens?: number }) {
+  const { t } = useTranslation();
+  const locale = useLocale();
+  return (
+    <>
       <FactList layout="inline" facts={[
         { label: t('runs.metrics.steps'), value: run.metrics.steps },
         { label: t('runs.metrics.duration'), value: t('benchmarks.minutes', { count: run.metrics.durationMinutes }) },
         { label: t('runs.metrics.submissions'), value: t('benchmarks.times', { count: run.metrics.submissions }) },
-        { label: t('runs.metrics.outputTokens'), value: `${Math.round(run.metrics.outputTokens / 1000)}K` },
+        ...(inputTokens === undefined ? [] : [{ label: t('runs.metrics.inputTokens'), value: groupedNumber(locale, inputTokens) }]),
+        { label: t('runs.metrics.outputTokens'), value: groupedNumber(locale, run.metrics.outputTokens) },
         { label: t('runs.metrics.cost'), value: formatCost(run.metrics.costUsd) },
         { label: t('runs.metrics.endReason'), value: t(`runs.endReason.${run.metrics.endReason}`) },
       ]} />
       {run.huggingFaceUrl && <HuggingFaceLink about={t('runs.huggingFace')} url={run.huggingFaceUrl} />}
-    </header>
+    </>
   );
 }
 
@@ -75,35 +89,57 @@ export function InputTab({ run, filePath }: { run: RunDetail; filePath: TaskFile
   );
 }
 
+/** The files the last submission changed, each opening in place to its diff, and the patch to download. */
+export function SubmittedFiles({ run }: { run: RunDetail }) {
+  const { t } = useTranslation();
+  const { submission, patchUrl } = run.output;
+  return (
+    <DetailSection title={t('runs.output.submission')} about={t('runs.output.note')} aside={t('runs.output.submissionAside', { attempt: submission.attempt, step: submission.step, count: submission.files.length })}>
+      <ul className={styles.files}>
+        {submission.files.map(file => (
+          <li key={file.path}>
+            {/* A file shows its size until opened to its diff, as a pull request lists it. */}
+            <details>
+              <summary>
+                <span className={styles.chevron}><ArrowIcon direction="right" /></span>
+                <span className="t-mono">{file.path}</span>
+                <ChangeSize additions={file.additions} deletions={file.deletions} />
+              </summary>
+              {file.patch ? <Diff lines={file.patch} /> : <p className="t-micro c-faint">{t('runs.output.fullPatch')}</p>}
+            </details>
+          </li>
+        ))}
+      </ul>
+      <TextLink className="t-micro" href={patchUrl}>{t('runs.output.downloadPatch')}</TextLink>
+    </DetailSection>
+  );
+}
+
+/** The agent's final reply, with the step of the trajectory it was said in. */
+export function FinalReply({ run, onStep }: { run: RunDetail; onStep: (step: number) => void }) {
+  const { t } = useTranslation();
+  const { finalReply } = run.output;
+  return (
+    <DetailSection title={t('runs.output.finalReply')} aside={t('runs.step', { step: finalReply.step })}>
+      <div className={content.panel}><p className="t-body">{finalReply.text}</p></div>
+      <TextLink className="t-micro" onClick={() => onStep(finalReply.step)}>{t('runs.output.inTrajectory')}</TextLink>
+    </DetailSection>
+  );
+}
+
+/** What the model produced: the parts the run's benchmark shows, in its order, then the files the task asks for. */
 export function OutputTab({ run, onStep }: { run: RunDetail; onStep: (step: number) => void }) {
   const { t } = useTranslation();
-  const { submission, finalReply, artifacts, patchUrl } = run.output;
   return (
     <>
-      <DetailSection title={t('runs.output.submission')} about={t('runs.output.note')} aside={t('runs.output.submissionAside', { attempt: submission.attempt, step: submission.step, count: submission.files.length })}>
-        <ul className={styles.files}>
-          {submission.files.map(file => (
-            <li key={file.path}>
-              {/* A file shows its size until opened to its diff, as a pull request lists it. */}
-              <details>
-                <summary>
-                  <span className={styles.chevron}><ArrowIcon direction="right" /></span>
-                  <span className="t-mono">{file.path}</span>
-                  <ChangeSize additions={file.additions} deletions={file.deletions} />
-                </summary>
-                {file.patch ? <Diff lines={file.patch} /> : <p className="t-micro c-faint">{t('runs.output.fullPatch')}</p>}
-              </details>
-            </li>
-          ))}
-        </ul>
-      </DetailSection>
-      <DetailSection title={t('runs.output.finalReply')} aside={t('runs.step', { step: finalReply.step })}>
-        <div className={content.panel}><p className="t-body">{finalReply.text}</p></div>
-      </DetailSection>
+      {run.outputBlocks.map(block => {
+        switch (block) {
+          case 'fileChanges': return <SubmittedFiles key={block} run={run} />;
+          case 'reply': return <FinalReply key={block} run={run} onStep={onStep} />;
+        }
+      })}
       <div className={styles.links}>
-        {artifacts.map(artifact => <TextLink key={artifact.name} className="t-micro" href={artifact.url}>{t('runs.output.artifact', { name: artifact.name })}</TextLink>)}
-        <TextLink className="t-micro" href={patchUrl}>{t('runs.output.downloadPatch')}</TextLink>
-        <TextLink className="t-micro" onClick={() => onStep(finalReply.step)}>{t('runs.output.inTrajectory')}</TextLink>
+        {run.output.artifacts.map(artifact => <TextLink key={artifact.name} className="t-micro" href={artifact.url}>{t('runs.output.artifact', { name: artifact.name })}</TextLink>)}
       </div>
     </>
   );

@@ -1,10 +1,24 @@
+import { generatePath } from 'react-router-dom';
 import type { RunDetail, RunOutcome, RunRef } from '../api/types';
-import { pathWithSearch, searchOf, type AddressTable } from './address';
+import { parseChoice, parseStep, pathWithSearch, searchOf, type AddressTable } from './address';
 import { EMPTY_COMPARISON, parseComparisonView, type ComparisonView } from './comparison';
+import { SITE_ROUTES } from './site';
 
 /** The five views of a run, in the order its tabs show them; each is labelled by runs.tab.<view>. */
 export const RUN_TABS = ['input', 'output', 'grading', 'failure', 'trajectory'] as const;
 export type RunTab = (typeof RUN_TABS)[number];
+
+/** Which view of a run is shown: its tab and, within it, the step or check it opens. */
+export interface RunView {
+  tab: RunTab;
+  step?: number;
+  check?: string;
+}
+
+/** Whether a tab is one of the five views every run has. */
+export function isRunTab(tab: string): tab is RunTab {
+  return RUN_TABS.some(candidate => candidate === tab);
+}
 
 /** A failed run opens on why it failed, an execution failure on its trajectory, a passed run on what it produced. */
 export function defaultRunTab(run: RunDetail): RunTab {
@@ -28,9 +42,6 @@ export function trajectoryPageStartOf(stepId: number): number {
 
 /** How many tasks a task list shows at first and adds each time the reader asks for more. */
 export const TASK_PAGE_SIZE = 14;
-
-/** The outcome filter's choice that shows every run; a select's choices cannot be empty. */
-export const EVERY_OUTCOME = 'all';
 
 /** The outcomes the page keeps its runs to; an execution failure is no model result to look for. */
 export const OUTCOME_FILTERS = ['failed', 'passed'] as const satisfies readonly RunOutcome[];
@@ -71,40 +82,18 @@ export const RUN_RECORDS_PARAMS: AddressTable<RunRecordsQuery> = {
   check: undefined, ...EMPTY_COMPARISON,
 };
 
-/** The combination filter's choice that shows every combination; a select's choices cannot be empty. */
-export const EVERY_COMBINATION = 'all';
-
 /** The page's state from its address; a value outside its set fails the page rather than showing nothing. */
 export function parseRunRecordsQuery(params: URLSearchParams): RunRecordsQuery {
-  const by = params.get('by') ?? RUN_RECORDS_PARAMS.by;
-  const outcome = params.get('outcome') ?? undefined;
-  const mode = params.get('mode') ?? RUN_RECORDS_PARAMS.mode;
-  const tab = params.get('tab') ?? undefined;
-  const step = params.get('step') ?? undefined;
-  if (!RUN_RECORD_VIEWS.some(view => view === by)) {
-    throw new Error(`no run records view ${by}`);
-  }
-  if (outcome !== undefined && !OUTCOME_FILTERS.some(filter => filter === outcome)) {
-    throw new Error(`no outcome filter ${outcome}`);
-  }
-  if (!TASK_MODES.some(candidate => candidate === mode)) {
-    throw new Error(`no task mode ${mode}`);
-  }
-  if (tab !== undefined && !RUN_TABS.some(candidate => candidate === tab)) {
-    throw new Error(`no run tab ${tab}`);
-  }
-  if (step !== undefined && !/^[1-9]\d*$/.test(step)) {
-    throw new Error(`no step ${step}`);
-  }
   return {
-    by: by as RunRecordsView, q: params.get('q') ?? '', combination: params.get('combination') ?? undefined, outcome: outcome as OutcomeFilter | undefined,
-    task: params.get('task') ?? undefined, mode: mode as TaskMode, run: params.get('run') ?? undefined, tab: tab as RunTab | undefined,
-    step: step === undefined ? undefined : Number(step), check: params.get('check') ?? undefined, ...parseComparisonView(params),
+    by: parseChoice(params, 'by', RUN_RECORD_VIEWS) ?? RUN_RECORDS_PARAMS.by, q: params.get('q') ?? '', combination: params.get('combination') ?? undefined,
+    outcome: parseChoice(params, 'outcome', OUTCOME_FILTERS), task: params.get('task') ?? undefined, mode: parseChoice(params, 'mode', TASK_MODES) ?? RUN_RECORDS_PARAMS.mode,
+    run: params.get('run') ?? undefined, tab: parseChoice(params, 'tab', RUN_TABS), step: parseStep(params), check: params.get('check') ?? undefined,
+    ...parseComparisonView(params),
   };
 }
 
 export function runRecordsPath(benchmarkId: string, query: Partial<RunRecordsQuery> = {}): string {
-  return pathWithSearch(`/benchmarks/${benchmarkId}/runs`, searchOf(RUN_RECORDS_PARAMS, query));
+  return pathWithSearch(generatePath(SITE_ROUTES.runRecords, { benchmarkId }), searchOf(RUN_RECORDS_PARAMS, query));
 }
 
 /** Switching the view keeps the chosen task, combination and run, and leaves the comparison. */
@@ -144,7 +133,7 @@ export function withMode(query: RunRecordsQuery, mode: TaskMode, runInView: stri
 }
 
 /** The detail's tab and, within it, the step or check it opens. */
-export function withDetail(query: RunRecordsQuery, view: { tab: RunTab; step?: number; check?: string }): RunRecordsQuery {
+export function withDetail(query: RunRecordsQuery, view: RunView): RunRecordsQuery {
   return { ...query, tab: view.tab, step: view.step, check: view.check };
 }
 

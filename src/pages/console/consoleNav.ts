@@ -1,6 +1,6 @@
 import type { ConsoleBenchmark } from '../../api/types';
 import type { NavIcon } from '../../components/shell/NavIcons';
-import { CHANGELOG_PATH, CONSOLE_PATH, MEMBERS_PATH, RELEASE_LOG_PATH, SETTINGS_PATH } from '../../routes/console';
+import { CHANGELOG_PATH, CONSOLE_PATH, MEMBERS_PATH, RELEASE_LOG_PATH, SETTINGS_PATH, type BenchmarkSectionId } from '../../routes/console';
 import { benchmarkPath } from '../../routes/site';
 
 /** The sidebar's choice for the workspace, beside the benchmarks; no benchmark id is spelt this way. */
@@ -38,7 +38,7 @@ export const WORKSPACE_NAV: { label?: 'console.nav.administration'; sections: Wo
 
 /** A section of a benchmark in the sidebar; the label is a message key, and the count is the benchmark's figure the item shows. */
 export interface BenchmarkSection {
-  section: string;
+  section: BenchmarkSectionId;
   label: 'console.nav.overview' | 'console.nav.tasks' | 'console.nav.runs' | 'console.nav.models' | 'console.nav.analysis' | 'console.nav.collections' | 'console.nav.reports' | 'console.nav.releases';
   icon: NavIcon;
   count?: (benchmark: ConsoleBenchmark) => number;
@@ -48,10 +48,10 @@ export interface BenchmarkSection {
 export const BENCHMARK_NAV: { label?: 'console.nav.publication'; sections: BenchmarkSection[] }[] = [
   {
     sections: [
-      { section: '', label: 'console.nav.overview', icon: 'overview' },
+      { section: 'overview', label: 'console.nav.overview', icon: 'overview' },
       { section: 'tasks', label: 'console.nav.tasks', icon: 'tasks', count: benchmark => benchmark.taskCount },
       { section: 'runs', label: 'console.nav.runs', icon: 'runs', count: benchmark => benchmark.runCount },
-      { section: 'models', label: 'console.nav.models', icon: 'models', count: benchmark => new Set(benchmark.entrants.map(entrant => entrant.model.id)).size },
+      { section: 'models', label: 'console.nav.models', icon: 'models', count: benchmark => benchmark.modelCount },
       { section: 'analysis', label: 'console.nav.analysis', icon: 'analysis' },
     ],
   },

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import { useConsoleBenchmark, useConsoleUser, useDiscardDraft, usePublishRelease, useRelease, useRestoreRelease, useUpdateDraft } from '../../../api/consoleClient';
 import type { ConsoleBenchmark, ReleaseDetail } from '../../../api/types';
-import { EntrantChoice, ReleaseContentView, ReleaseNoteForm, ReplayEditor } from '../../../components/release/ReleaseContent';
+import { EntrantChoice, ExampleRunEditor, ReleaseContentView, ReleaseNoteForm } from '../../../components/release/ReleaseContent';
 import { ReleaseChangesText, ReleaseStatusTag } from '../../../components/release/ReleaseLabels';
 import { ChangeFailure } from '../../../components/change/ChangeFailure';
 import { DiscardAfterConfirm } from '../../../components/change/DiscardAfterConfirm';
@@ -81,7 +81,7 @@ export function DraftEditor({ benchmark, release }: { benchmark: ConsoleBenchmar
         </section>
         <EntrantChoice entrants={benchmark.entrants} chosen={draft.entrants} onChange={entrants => setDraft({ ...draft, entrants })} />
       </form>
-      <ReplayEditor benchmarkId={benchmark.id} replays={draft.replays} onChange={replays => setDraft({ ...draft, replays })} />
+      <ExampleRunEditor benchmarkId={benchmark.id} exampleRuns={draft.exampleRuns} onChange={exampleRuns => setDraft({ ...draft, exampleRuns })} />
       <div className={styles.buttons}>
         <SubmitButton variant="solid" pending={update.isPending} form={formId}>{t('console.release.save')}</SubmitButton>
         {unsaved ? <p className="t-small c-muted">{t('console.release.unsaved')}</p> : update.isSuccess && <p className="t-small c-muted" role="status">{t('console.release.saved')}</p>}

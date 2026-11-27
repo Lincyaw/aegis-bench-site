@@ -1,30 +1,14 @@
 import { clsx } from 'clsx';
 import { Suspense, useDeferredValue, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { TaskEntryKind, TaskFile } from '../../api/types';
+import type { TaskFile } from '../../api/types';
 import { Loading, Tag } from '../../ui/content';
 import content from '../../ui/content.module.css';
 import { ChevronIcon, MoreButton } from '../../ui/controls';
 import { InfoHint } from '../../ui/hint';
 import { HuggingFaceBoundary, HuggingFaceLink } from '../run/HuggingFace';
-import { directoriesHolding, formatSize, nameOf } from './files';
+import { directoriesHolding, formatSize, nameOf, type BrowsedEntry, type DirectoryPages } from './files';
 import styles from './TaskFileBrowser.module.css';
-
-/** An entry as the tree draws it; a mark says what sets the entry apart, and a closed entry cannot be opened. */
-export interface BrowsedEntry {
-  path: string;
-  kind: TaskEntryKind;
-  size?: number;
-  mark?: { label: string; closed: boolean };
-}
-
-/** One directory's entries loaded so far, and how to load the rest. */
-export interface DirectoryPages {
-  entries: BrowsedEntry[];
-  total: number;
-  loadingMore: boolean;
-  loadMore: () => void;
-}
 
 /** Where the browser reads a task's directory from: the public site's or the console's API, each with its own hooks. */
 export interface TaskFileSource {

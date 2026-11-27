@@ -44,6 +44,7 @@
   "passRule": "服务健康检查通过、错误率恢复到基线且根因判定正确，才判为通过。",
   "blocks": {
     "comparison": ["reply", "fileChanges", "checks", "trajectory"],
+    "runOutput": ["reply", "fileChanges"],
     "replayPanel": ["record", "content", "metrics", "logs", "traces", "touches", "events", "edges"]
   },
   "worldLayers": [

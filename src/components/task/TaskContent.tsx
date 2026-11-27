@@ -4,6 +4,7 @@ import type { ConsoleTaskDetail, ReferenceFile, TaskGrading } from '../../api/ty
 import { FactList, HintedHeading, Tag } from '../../ui/content';
 import content from '../../ui/content.module.css';
 import { InfoHint } from '../../ui/hint';
+import { ArrowIcon } from '../../ui/icons';
 import { formatSize } from './files';
 import styles from './TaskContent.module.css';
 
@@ -92,20 +93,24 @@ export function TaskGradingDetail({ grading }: { grading: TaskGrading }) {
 export function TaskReferenceFiles({ files }: { files: ReferenceFile[] }) {
   const { t } = useTranslation();
   return (
-    <div className={styles.section}>
+    <ul className={styles.references}>
       {files.map(({ reason, file }) => (
-        <section key={file.path} className={clsx(content.panel, styles.panel)}>
-          <header className={styles.fileHead}>
-            <span className={styles.reason}>
-              <Tag>{t(`console.task.reference.reason.${reason}`)}</Tag>
-              <InfoHint label={t('ui.about', { subject: t(`console.task.reference.reason.${reason}`) })}>{t(`console.task.reference.note.${reason}`)}</InfoHint>
-            </span>
-            <span className="t-mono">{file.path}</span>
-            <span className="t-micro c-faint">{formatSize(file.size)}</span>
-          </header>
-          {file.text !== undefined && <pre className={styles.code}>{file.text}</pre>}
-        </section>
+        <li key={file.path}>
+          {/* A file is listed by name and size and opens in place to its text. */}
+          <details className={styles.reference}>
+            <summary className={styles.fileHead}>
+              <span className={styles.chevron}><ArrowIcon direction="right" /></span>
+              <span className="t-mono">{file.path}</span>
+              <span className="t-micro c-faint">{formatSize(file.size)}</span>
+              <span className={styles.reason}>
+                <Tag>{t(`console.task.reference.reason.${reason}`)}</Tag>
+                <InfoHint label={t('ui.about', { subject: t(`console.task.reference.reason.${reason}`) })}>{t(`console.task.reference.note.${reason}`)}</InfoHint>
+              </span>
+            </summary>
+            {file.text === undefined ? <p className="t-micro c-faint">{t('tasks.binary')}</p> : <pre className={styles.code}>{file.text}</pre>}
+          </details>
+        </li>
       ))}
-    </div>
+    </ul>
   );
 }

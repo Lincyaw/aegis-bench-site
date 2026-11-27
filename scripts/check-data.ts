@@ -118,7 +118,7 @@ export function checkIndexes(catalog: Catalog, benchmark: BenchmarkIndexes, dire
   for (const release of releases) {
     expect(release.restoresVersion === undefined || versions.includes(release.restoresVersion), at('releases.json'), `version ${release.version} restores version ${release.restoresVersion}, which does not exist`);
     expect(release.content.entrants.every(entrant => runs.some(fact => isSameCombination(fact, entrant) && isCounted(fact))), at('releases.json'), `version ${release.version} ranks a combination with no counted run`);
-    expect(release.content.replays.every(runId => runIds.has(runId)), at('releases.json'), `version ${release.version} shows a run runs.json does not list`);
+    expect(release.content.exampleRuns.every(runId => runIds.has(runId)), at('releases.json'), `version ${release.version} shows a run runs.json does not list`);
   }
 }
 

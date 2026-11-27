@@ -1,6 +1,6 @@
 import { consoleRevisionChangeValues } from '../api/schema';
-import type { ChangelogQuery, RevisionChange } from '../api/types';
-import type { AddressTable } from './address';
+import type { ChangelogQuery } from '../api/types';
+import { parseChoice, parseOffset, type AddressTable } from './address';
 
 /** Task versions per page of the changelog. */
 export const CHANGELOG_PAGE_SIZE = 25;
@@ -10,13 +10,5 @@ export const CHANGELOG_PARAMS: AddressTable<ChangelogQuery> = { benchmark: undef
 
 /** The changelog's state from its address; a value outside its set fails the page rather than showing nothing. */
 export function parseChangelogQuery(params: URLSearchParams): ChangelogQuery {
-  const change = params.get('change') ?? undefined;
-  const offset = Number(params.get('offset') ?? CHANGELOG_PARAMS.offset);
-  if (change !== undefined && !consoleRevisionChangeValues.includes(change as RevisionChange)) {
-    throw new Error(`no change of a task is called ${change}`);
-  }
-  if (!Number.isInteger(offset) || offset < 0 || offset % CHANGELOG_PAGE_SIZE !== 0) {
-    throw new Error(`no page of the changelog starts at ${params.get('offset')}`);
-  }
-  return { benchmark: params.get('benchmark') ?? undefined, change: change as RevisionChange | undefined, offset };
+  return { benchmark: params.get('benchmark') ?? undefined, change: parseChoice(params, 'change', consoleRevisionChangeValues), offset: parseOffset(params, CHANGELOG_PAGE_SIZE) };
 }

@@ -2,20 +2,20 @@ import { useDeferredValue } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { useConsoleBenchmark, useConsoleModel, useModelTaskPage } from '../../../api/consoleClient';
-import { consoleTaskOrderValues, consoleTaskSpreadValues } from '../../../api/schema';
-import type { ModelTaskQuery, TaskOrder, TaskSpread } from '../../../api/types';
+import type { ModelTaskQuery } from '../../../api/types';
 import { VendorBadge } from '../../../components/model/ModelBadge';
 import { HarnessTable, ModelTaskTable } from '../../../components/model/ModelResults';
 import { FailureLegend } from '../../../components/result/FailureBar';
 import { NO_VALUE, formatCost, formatRate } from '../../../components/result/presentation';
 import { ConsoleHeader } from '../../../components/shell/ConsoleHeader';
+import { TaskFilters } from '../../../components/task/TaskTable';
 import { useLocale } from '../../../i18n/localeContext';
 import { groupedNumber } from '../../../i18n/locales';
-import { EVERY_CHOICE, consoleBenchmarkPath } from '../../../routes/console';
-import { searchOf } from '../../../routes/address';
+import { EVERY_CHOICE, searchOf } from '../../../routes/address';
+import { consoleBenchmarkPath } from '../../../routes/console';
 import { MODEL_TASK_PAGE_SIZE, MODEL_TASK_PARAMS, consoleModelPath, consoleModelsPath, parseModelTaskQuery } from '../../../routes/consoleModels';
 import { HintedHeading, StatTile, StatTiles } from '../../../ui/content';
-import { ScopeChip, SearchField, SegmentedControl, Select } from '../../../ui/controls';
+import { ScopeChip, SegmentedControl } from '../../../ui/controls';
 import { Pager } from '../../../ui/navigation';
 import styles from './ModelPages.module.css';
 
@@ -35,8 +35,8 @@ export function ModelDetailPage() {
   const detail = useConsoleModel(benchmark.id, modelId, shown);
   const page = useModelTaskPage(benchmark.id, modelId, shown, MODEL_TASK_PAGE_SIZE);
   const update = (next: Partial<ModelTaskQuery>) => setParams(searchOf(MODEL_TASK_PARAMS, { ...query, offset: 0, ...next }), { replace: true, preventScrollReset: true });
-  const scope = query.harness ? detail.byHarness.find(entry => entry.harness.id === query.harness)?.result : detail.result;
-  if (!scope) {
+  const shownResult = query.harness ? detail.byHarness.find(entry => entry.harness.id === query.harness)?.result : detail.result;
+  if (!shownResult) {
     throw new Error(`${detail.model.name} did not run in harness ${query.harness}`);
   }
   const last = Math.min(query.offset + MODEL_TASK_PAGE_SIZE, page.total);
@@ -56,10 +56,10 @@ export function ModelDetailPage() {
         {query.task && <ScopeChip name={t('console.scope.task', { task: query.task })} to={consoleModelPath(benchmark.id, detail.model.id, { ...query, task: undefined, offset: 0 })} />}
       </div>
       <StatTiles>
-        <StatTile label={t('console.model.stats.passRate')} value={scope.passRate === undefined ? NO_VALUE : formatRate(scope.passRate)} />
-        <StatTile label={t('console.model.stats.everyTime')} value={t('console.overview.tasksOf', { solved: scope.solvedEveryTime, total: scope.tasks })} />
-        <StatTile label={t('console.model.stats.steps')} value={scope.meanSteps === undefined ? NO_VALUE : groupedNumber(locale, Math.round(scope.meanSteps))} />
-        <StatTile label={t('console.model.stats.cost')} value={scope.meanCostUsd === undefined ? NO_VALUE : formatCost(scope.meanCostUsd)} />
+        <StatTile label={t('console.model.stats.passRate')} value={shownResult.passRate === undefined ? NO_VALUE : formatRate(shownResult.passRate)} />
+        <StatTile label={t('console.model.stats.everyTime')} value={t('console.overview.tasksOf', { solved: shownResult.solvedEveryTime, total: shownResult.tasks })} />
+        <StatTile label={t('console.model.stats.steps')} value={shownResult.meanSteps === undefined ? NO_VALUE : groupedNumber(locale, Math.round(shownResult.meanSteps))} />
+        <StatTile label={t('console.model.stats.cost')} value={shownResult.meanCostUsd === undefined ? NO_VALUE : formatCost(shownResult.meanCostUsd)} />
       </StatTiles>
       <section className={styles.section}>
         <h2 className="t-heading">{t('console.model.byHarness')}</h2>
@@ -67,17 +67,7 @@ export function ModelDetailPage() {
       </section>
       <section className={styles.section}>
         <HintedHeading rank="h2" className="t-heading" title={t('console.model.tasks')} about={t('console.model.tasksNote')} />
-        <div className={styles.filters}>
-          <SearchField label={t('console.tasks.search')} value={query.q} onChange={q => update({ q })} className={styles.search} />
-          <Select
-            variant="quiet" label={t('console.tasks.spreadFilter')} value={query.spread ?? EVERY_CHOICE} onChange={spread => update({ spread: spread === EVERY_CHOICE ? undefined : spread as TaskSpread })}
-            choices={[{ value: EVERY_CHOICE, label: t('console.tasks.everySpread') }, ...consoleTaskSpreadValues.map(spread => ({ value: spread, label: t(`console.tasks.spread.${spread}`) }))]}
-          />
-          <Select
-            variant="quiet" label={t('console.tasks.orderFilter')} value={query.order} onChange={order => update({ order: order as TaskOrder })}
-            choices={consoleTaskOrderValues.map(order => ({ value: order, label: t(`console.tasks.order.${order}`) }))}
-          />
-        </div>
+        <TaskFilters query={query} onChange={update} />
         {page.items.length === 0 ? <p className="t-small c-muted">{t('console.tasks.empty')}</p> : <ModelTaskTable benchmarkId={benchmark.id} modelId={detail.model.id} harness={query.harness} rows={page.items} />}
         <footer className={styles.footer}>
           <FailureLegend />

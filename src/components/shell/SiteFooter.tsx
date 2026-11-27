@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { LocaleLink } from '../../i18n/LocaleRouting';
 import type { Messages } from '../../i18n/zh';
+import { InfoHint } from '../../ui/hint';
 import { BrandLink } from './BrandMark';
 import styles from './SiteFooter.module.css';
 
@@ -20,7 +21,7 @@ export function SiteFooter({ links }: { links: readonly FooterLink[] }) {
           <span className="t-micro c-muted">{t('site.tagline')}</span>
         </div>
         <div className={styles.footerBottom}>
-          <span className="t-micro c-faint">{t('site.footnote')}</span>
+          <span className="t-micro c-faint">{t('site.demo')}<InfoHint label={t('ui.about', { subject: t('site.demo') })}>{t('site.footnote')}</InfoHint></span>
           <nav aria-label={t('site.footerNav')} className={styles.footerLinks}>
             {links.map(link => <LocaleLink key={link.to} to={link.to} className="t-micro c-muted">{t(link.label)}</LocaleLink>)}
           </nav>

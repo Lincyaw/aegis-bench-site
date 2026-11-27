@@ -11,6 +11,7 @@ import { NavIconOf } from '../../components/shell/NavIcons';
 import { LocaleLink, LocaleNavigate } from '../../i18n/LocaleRouting';
 import { useLocale, useLocalizedNavigate } from '../../i18n/localeContext';
 import { groupedNumber, sitePath } from '../../i18n/locales';
+import { fillsWindow } from '../../routes/address';
 import { CONSOLE_PATH, benchmarkSectionOf, benchmarkSectionPath, signInPath } from '../../routes/console';
 import { Loading } from '../../ui/content';
 import { Button, ButtonLink, IconButton, Select } from '../../ui/controls';
@@ -19,11 +20,6 @@ import { LinkArrowIcon, MenuIcon, ThemeIcon } from '../../ui/icons';
 import { toggleTheme } from '../../ui/theme';
 import { BENCHMARK_NAV, WORKSPACE_CHOICE, WORKSPACE_NAV, publicSitePathOf } from './consoleNav';
 import styles from './ConsoleLayout.module.css';
-
-/** What a console route tells the layout: a tool page that fills the window takes the sidebar's width too, which then opens from the menu at every width. */
-export interface ConsoleRouteHandle {
-  fillsWindow?: boolean;
-}
 
 /**
  * Every console page but the sign-in page: the bar along the top, the sidebar of the benchmark being read and the page.
@@ -36,12 +32,12 @@ export function ConsoleLayout() {
   const [menuOpen, setMenuOpen] = useState(false);
   const matches = useMatches();
   const benchmarkId = matches.at(-1)?.params.benchmarkId;
-  const fillsWindow = matches.some(match => (match.handle as ConsoleRouteHandle | undefined)?.fillsWindow);
+  const wide = fillsWindow(matches);
   if (!session.user) {
     return <LocaleNavigate replace to={signInPath(`${sitePath(locale, pathname)}${search}`)} />;
   }
   return (
-    <div className={styles.console} data-fills-window={fillsWindow ? '' : undefined}>
+    <div className={styles.console} data-fills-window={wide ? '' : undefined}>
       <ConsoleBar user={session.user} benchmarkId={benchmarkId} menuOpen={menuOpen} onMenu={() => setMenuOpen(!menuOpen)} />
       <ConsoleSidebar benchmarkId={benchmarkId} open={menuOpen} onNavigate={() => setMenuOpen(false)} />
       <main className={styles.main}>
@@ -116,7 +112,7 @@ export function ConsoleSidebar({ benchmarkId, open, onNavigate }: { benchmarkId:
         className={styles.context}
         choices={[{ value: WORKSPACE_CHOICE, label: workspace.name }, ...benchmarks.map(entry => ({ value: entry.id, label: `${entry.name} · ${entry.stage.name}` }))]}
         value={benchmarkId ?? WORKSPACE_CHOICE}
-        onChange={next => { navigate(next === WORKSPACE_CHOICE ? CONSOLE_PATH : benchmarkSectionPath(next, benchmarkId ? current : '')); onNavigate(); }}
+        onChange={next => { navigate(next === WORKSPACE_CHOICE ? CONSOLE_PATH : benchmarkSectionPath(next, current ?? 'overview')); onNavigate(); }}
       />
       {!benchmarkId && WORKSPACE_NAV.map(group => (
         <div key={group.label ?? ''} className={styles.group}>

@@ -12,8 +12,8 @@ import type { ReportDraft } from '../../../api/types';
 import { DocumentBody } from '../../../articles/Document';
 import { evaluateDocument } from '../../../articles/evaluate';
 import { reportFileOf } from '../../../articles/library';
-import { Replay, RunNumber } from '../../../articles/runBlocks';
-import { DocumentEditor, ExportPanel, ReviewHistory } from '../../../components/report/ReportEditor';
+import { RunCard, RunNumber } from '../../../articles/runBlocks';
+import { DocumentEditor, ReportFiles, ReviewHistory } from '../../../components/report/ReportDocument';
 import { ReportStatusTag } from '../../../components/report/ReportLabels';
 import { ChangeFailure } from '../../../components/change/ChangeFailure';
 import { DiscardAfterConfirm } from '../../../components/change/DiscardAfterConfirm';
@@ -23,6 +23,7 @@ import { useLocale, useLocalizedNavigate } from '../../../i18n/localeContext';
 import { dateTimeOf } from '../../../i18n/locales';
 import { consoleBenchmarkPath } from '../../../routes/console';
 import { consoleReportsPath } from '../../../routes/consoleReports';
+import { HintedHeading } from '../../../ui/content';
 import content from '../../../ui/content.module.css';
 import { Button, SubmitButton, TextArea, ToggleChip } from '../../../ui/controls';
 import { InfoHint } from '../../../ui/hint';
@@ -47,9 +48,9 @@ export function ReportEditorPage() {
         <span className="t-mono c-faint">{report.author} · {dateTimeOf(locale, report.updatedAt)}</span>
         {report.status !== 'draft' && <span className="t-small c-muted">{t('console.reports.approvalsOf', { approvals: report.approvals, required: report.approvalsRequired })}</span>}
       </div>
-      <ReportEditor key={report.id} report={report} />
-      {report.status === 'inReview' && <ReviewPanel report={report} />}
-      {report.status === 'approved' && <ExportPanel report={report} fileOf={fileLocale => reportFileOf(report.slug, fileLocale)} />}
+      <ReportDraftEditor key={report.id} report={report} />
+      {report.status === 'inReview' && <ReportReview report={report} />}
+      {report.status === 'approved' && <ReportFiles report={report} fileOf={fileLocale => reportFileOf(report.slug, fileLocale)} />}
       {report.reviews.length > 0 && <ReviewHistory report={report} />}
       {editor && <DiscardReport benchmarkId={benchmark.id} reportId={report.id} />}
     </div>
@@ -57,12 +58,12 @@ export function ReportEditorPage() {
 }
 
 /** The draft's documents and checks as they are being changed, saved whole, and submitted once saved with every check ticked. */
-export function ReportEditor({ report }: { report: ReportDraft }) {
+export function ReportDraftEditor({ report }: { report: ReportDraft }) {
   const { t } = useTranslation();
   const [sources, setSources] = useState(report.sources);
   const [checked, setChecked] = useState(report.checked);
   const checks = useSettings().publication.reportChecks;
-  const editing = useConsoleUser().can.edit && report.status === 'draft';
+  const editing = report.canEdit;
   const update = useUpdateReport(report.id);
   const submit = useSubmitReport(report.id);
   const unsaved = hasUnsavedChange({ sources, checked }, { sources: report.sources, checked: report.checked });
@@ -118,7 +119,7 @@ export function ReportPreview({ source, format }: { source: string; format: 'md'
       ) : <p className="t-small c-bad">{t('console.report.badFrontmatter')}</p>)}
       {preview.data && (
         <ErrorBoundary resetKeys={[typed]} fallbackRender={({ error }) => <p className="t-small c-bad" role="alert">{t('console.report.renderFailed', { message: error instanceof Error ? error.message : String(error) })}</p>}>
-          <DocumentBody Content={preview.data.Content} blocks={{ Replay, RunNumber }} />
+          <DocumentBody Content={preview.data.Content} blocks={{ RunCard, RunNumber }} />
         </ErrorBoundary>
       )}
     </div>
@@ -126,7 +127,7 @@ export function ReportPreview({ source, format }: { source: string; format: 'md'
 }
 
 /** Reviewing a submitted draft: any editor but its author, once per submission, approves it or returns it with a comment. */
-export function ReviewPanel({ report }: { report: ReportDraft }) {
+export function ReportReview({ report }: { report: ReportDraft }) {
   const { t } = useTranslation();
   const user = useConsoleUser();
   const review = useReviewReport(report.id);
@@ -138,8 +139,7 @@ export function ReviewPanel({ report }: { report: ReportDraft }) {
   };
   return (
     <section className={clsx(content.panel, styles.action)}>
-      <h2 className="t-heading">{t('console.report.review.title')}</h2>
-      <p className="t-small c-muted">{t(`console.report.review.note.${role}`)}</p>
+      <HintedHeading rank="h2" className="t-heading" title={t('console.report.review.title')} about={t(`console.report.review.note.${role}`)} />
       {role === 'reviewer' && (
         <>
           <div className={styles.buttons}><Button variant="solid" onClick={() => review.mutate({ verdict: 'approve' })}>{t('console.report.review.approve')}</Button></div>

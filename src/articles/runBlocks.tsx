@@ -17,7 +17,7 @@ import content from '../ui/content.module.css';
 import styles from './runBlocks.module.css';
 
 /*
- * The blocks a report cites its runs with, each reading the run from the public API: a run's replay as a card, and one
+ * The blocks a report cites its runs with, each reading the run from the public API: a run as a card, and one
  * of its figures inside a sentence. A run id that names no run, or a run whose record cannot be read from Hugging Face,
  * is said where the block stands, so the rest of the report still reads.
  */
@@ -25,9 +25,9 @@ import styles from './runBlocks.module.css';
 /** The figures of a run a report can quote. */
 export type RunFigureField = 'steps' | 'durationMinutes' | 'outputTokens' | 'costUsd';
 
-/** A run's model, task, outcome and step timeline, opening the run's record. */
-export function Replay({ run }: { run: string }) {
-  return <RunBlock run={run}>{detail => <ReplayCard detail={detail} />}</RunBlock>;
+/** A run's model, task, outcome and step timeline, opening the run's trajectory. */
+export function RunCard({ run }: { run: string }) {
+  return <RunBlock run={run}>{detail => <RunSummary detail={detail} />}</RunBlock>;
 }
 
 /** One figure of a run, such as its steps, set inside a sentence. */
@@ -63,14 +63,14 @@ export function RunOf({ run, children }: { run: string; children: (detail: RunDe
   return children(useRun(run));
 }
 
-export function ReplayCard({ detail }: { detail: RunDetail }) {
+export function RunSummary({ detail }: { detail: RunDetail }) {
   const { t } = useTranslation();
   const benchmark = useBenchmarks().find(candidate => candidate.id === detail.benchmark.id);
   if (!benchmark) {
     throw new Error(`run ${detail.id} names benchmark ${detail.benchmark.id}, which the site does not list`);
   }
   return (
-    <span className={clsx(content.panel, styles.replay)} data-half={benchmark.stage.half}>
+    <span className={clsx(content.panel, styles.card)} data-half={benchmark.stage.half}>
       <span className={styles.head}>
         <ModelLabel model={detail.model} />
         <span className="t-small c-muted">{detail.harness.name}</span>

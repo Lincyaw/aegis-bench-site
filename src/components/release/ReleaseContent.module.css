@@ -2,10 +2,10 @@
 .chips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 .entrants { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-6); }
 .entrants > li { display: flex; align-items: center; gap: var(--space-2); }
-.replays { display: grid; border-top: var(--rule-hairline); }
-.replays > li { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); min-height: var(--space-12); border-bottom: var(--rule-hairline); }
-.replays a { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.replays a:hover { text-decoration: underline; text-underline-offset: var(--space-1); }
-.addReplay { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--space-3); }
+.exampleRuns { display: grid; border-top: var(--rule-hairline); }
+.exampleRuns > li { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); min-height: var(--space-12); border-bottom: var(--rule-hairline); }
+.exampleRuns a { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.exampleRuns a:hover { text-decoration: underline; text-underline-offset: var(--space-1); }
+.addExampleRun { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--space-3); }
 .action { gap: var(--space-3); padding: var(--space-5); }
 .buttons { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }

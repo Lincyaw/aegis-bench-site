@@ -382,6 +382,15 @@ model Artifact {
   url: url;
 }
 
+/** The parts of a run's output tab; a benchmark's configuration lists the ones its runs show, in order. */
+enum RunOutputBlock {
+  /** The files the last submission changed, with their diffs, and the patch to download */
+  fileChanges,
+
+  /** The agent's final reply */
+  reply,
+}
+
 /** What the model produced: its last submission, its last reply and the files the task asks for. */
 model RunOutput {
   submission: {
@@ -487,6 +496,9 @@ model RunDetail {
   metrics: RunMetrics;
   input: RunInput;
   output: RunOutput;
+
+  /** The parts of the output tab the run's benchmark shows, in order */
+  outputBlocks: RunOutputBlock[];
   grading: RunGrading;
 
   /** One entry per agent step of the run's trajectory, in step order */

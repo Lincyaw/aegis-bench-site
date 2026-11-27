@@ -5,7 +5,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useTaskCheckResults, useTaskResults } from '../../../api/consoleClient';
 import { combinationKey } from '../../../api/constraints';
 import type { CombinationScope, ConsoleTaskDetail } from '../../../api/types';
-import { EntrantRunsRow, ValidationRow } from '../../../components/task/TaskRuns';
+import { EntrantRunsTable, ValidationRow } from '../../../components/task/TaskRuns';
 import { searchOf } from '../../../routes/address';
 import { consoleRunsPath } from '../../../routes/consoleRuns';
 import { TASK_PAGE_PARAMS, TASK_RUN_VIEWS, type TaskPageView } from '../../../routes/consoleTasks';
@@ -42,17 +42,7 @@ export function EntrantRuns({ task, scope }: { task: ConsoleTaskDetail; scope: C
   const results = useTaskResults(task.benchmark.id, task.id, scope);
   return (
     <>
-      <div className={clsx(table.table, styles.entrantRuns)} role="table" aria-label={t('console.task.runs.view.entrants')}>
-        <div className={clsx(table.row, table.head, 't-micro c-faint')} role="row">
-          <span role="columnheader">{t('console.task.runs.column.entrant')}</span>
-          <span role="columnheader">{t('console.task.runs.column.runs')}</span>
-          <span role="columnheader">{t('console.task.runs.column.passed')}</span>
-          <span role="columnheader">{t('console.task.runs.column.executionFailed')}</span>
-          <span role="columnheader">{t('console.task.runs.column.passRate')}</span>
-          <span role="columnheader">{t('console.task.runs.column.review')}</span>
-        </div>
-        {results.entrants.map(entrant => <EntrantRunsRow key={combinationKey(entrant.model.id, entrant.harness.id)} benchmarkId={task.benchmark.id} entrant={entrant} />)}
-      </div>
+      <EntrantRunsTable benchmarkId={task.benchmark.id} entrants={results.entrants} />
       <section className={clsx(content.panel, styles.panel)}>
         <HintedHeading rank="h2" className="t-heading" title={t('console.task.runs.validations')} about={t('console.task.runs.validationsNote')} />
         <ul className={styles.validations}>{results.validations.map(run => <ValidationRow key={run.agent} run={run} />)}</ul>

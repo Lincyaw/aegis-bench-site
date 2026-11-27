@@ -24,7 +24,6 @@ export function SettingsView({ settings }: { settings: Settings }) {
           { label: t('console.settings.publication.checks'), value: <ol className={styles.checkList}>{settings.publication.reportChecks.map(check => <li key={check}>{check}</li>)}</ol> },
         ]} />
       </section>
-      <p className="t-small c-muted">{t('console.settings.readOnly')}</p>
     </>
   );
 }

@@ -6,6 +6,14 @@ const SITE_PATH = /^\/[a-z]/;
 /** Han characters, which only the catalogues and the records may hold. */
 const HAN = /\p{Script=Han}/u;
 
+/** A call of a hook, by the naming rule hooks follow. */
+const HOOK = /^use[A-Z]/;
+
+/** The modules whose hooks a component may call: React, the locale, the design system and the component's own directory. */
+const HOOK_MODULES = /^(react|react-i18next|\.\/.*|(\.\.\/)+(i18n|ui)(\/.*)?)$/;
+
+const HOOK_MESSAGE = 'A component reads data only through a `source` its page passes (`source.useXxx(...)`): a hook taken as a prop or imported from the API makes the component fetch for itself, and the page can no longer see what the component reads.';
+
 export default {
   meta: { name: 'aegis' },
   rules: {
@@ -22,6 +30,48 @@ export default {
           TemplateLiteral(node) {
             if (SITE_PATH.test(node.quasis[0].value.cooked ?? '')) {
               report(node);
+            }
+          },
+        };
+      },
+    },
+    'hooks-from-own-modules': {
+      meta: { type: 'problem', docs: { description: 'A component calls hooks of React, of the design system, of the locale and of its own directory, or of the source its page passes.' } },
+      create(context) {
+        const importedFrom = new Map();
+        const declaredHere = new Set();
+        const bareCalls = [];
+        const isSource = object => (object.type === 'Identifier' && object.name === 'source') || (object.type === 'MemberExpression' && object.property.name === 'source');
+        return {
+          ImportDeclaration(node) {
+            for (const specifier of node.specifiers) {
+              importedFrom.set(specifier.local.name, node.source.value);
+            }
+          },
+          FunctionDeclaration(node) {
+            if (node.id && node.parent.type !== 'FunctionDeclaration') {
+              declaredHere.add(node.id.name);
+            }
+          },
+          CallExpression(node) {
+            const { callee } = node;
+            if (callee.type === 'MemberExpression') {
+              if (HOOK.test(callee.property.name ?? '') && !isSource(callee.object)) {
+                context.report({ node, message: HOOK_MESSAGE });
+              }
+              return;
+            }
+            if (callee.type === 'Identifier' && HOOK.test(callee.name)) {
+              bareCalls.push(node);
+            }
+          },
+          // A hook declared below the component that calls it is only known once the whole file is read.
+          'Program:exit'() {
+            for (const node of bareCalls) {
+              const from = importedFrom.get(node.callee.name);
+              if (from === undefined ? !declaredHere.has(node.callee.name) : !HOOK_MODULES.test(from)) {
+                context.report({ node, message: HOOK_MESSAGE });
+              }
             }
           },
         };

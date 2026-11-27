@@ -44,6 +44,7 @@
   ],
   "passRule": "参考链路的节点全部召回且顺序一致，才判为通过；节点召回率另行计分。",
   "blocks": {
-    "comparison": ["reply", "checks", "fileChanges", "trajectory"]
+    "comparison": ["reply", "checks", "fileChanges", "trajectory"],
+    "runOutput": ["reply", "fileChanges"]
   }
 }

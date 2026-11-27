@@ -1,7 +1,7 @@
 import { consoleTaskOrderValues } from '../api/schema';
 import type { TaskOrder } from '../api/types';
-import { pathWithSearch, searchOf, type AddressTable } from './address';
-import { consoleBenchmarkPath } from './console';
+import { parseChoice, parseOffset, pathWithSearch, searchOf, type AddressTable } from './address';
+import { benchmarkSectionPath } from './console';
 import { TASK_ORDER_DEFAULT } from './consoleTasks';
 
 /** Tasks per page of a collection's matrix. */
@@ -27,27 +27,14 @@ export const COLLECTION_PARAMS: AddressTable<CollectionView> = { tab: 'matrix', 
 
 /** The view an address names; a value outside its set fails the page rather than showing nothing. */
 export function parseCollectionView(params: URLSearchParams): CollectionView {
-  const tab = params.get('tab') ?? COLLECTION_PARAMS.tab;
-  const chart = params.get('chart') ?? COLLECTION_PARAMS.chart;
-  const order = params.get('order') ?? COLLECTION_PARAMS.order;
-  const offset = Number(params.get('offset') ?? COLLECTION_PARAMS.offset);
-  if (!COLLECTION_TABS.includes(tab as CollectionTab)) {
-    throw new Error(`a collection has no tab ${tab}`);
-  }
-  if (!COLLECTION_CHARTS.includes(chart as CollectionChart)) {
-    throw new Error(`a collection has no chart ${chart}`);
-  }
-  if (!consoleTaskOrderValues.includes(order as TaskOrder)) {
-    throw new Error(`no task order ${order}`);
-  }
-  if (!Number.isInteger(offset) || offset < 0 || offset % MATRIX_PAGE_SIZE !== 0) {
-    throw new Error(`no page of tasks starts at ${params.get('offset')}`);
-  }
-  return { tab: tab as CollectionTab, chart: chart as CollectionChart, order: order as TaskOrder, offset };
+  return {
+    tab: parseChoice(params, 'tab', COLLECTION_TABS) ?? COLLECTION_PARAMS.tab, chart: parseChoice(params, 'chart', COLLECTION_CHARTS) ?? COLLECTION_PARAMS.chart,
+    order: parseChoice(params, 'order', consoleTaskOrderValues) ?? COLLECTION_PARAMS.order, offset: parseOffset(params, MATRIX_PAGE_SIZE),
+  };
 }
 
 export function collectionsPath(benchmarkId: string): string {
-  return `${consoleBenchmarkPath(benchmarkId)}/collections`;
+  return benchmarkSectionPath(benchmarkId, 'collections');
 }
 
 export function collectionPath(benchmarkId: string, tag: string, view: Partial<CollectionView> = {}): string {

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
 /** Leaves the browser's full screen, if the page is in it. */
-function leaveBrowserFullscreen() {
+export function leaveBrowserFullscreen() {
   if (document.fullscreenElement) {
     void document.exitFullscreen();
   }

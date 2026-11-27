@@ -23,7 +23,7 @@ export function SettingsPage() {
   const administering = useConsoleUser().can.administer;
   return (
     <div className={styles.page}>
-      <ConsoleHeader title={t('console.settings.title')} about={t('console.settings.about')} />
+      <ConsoleHeader title={t('console.settings.title')} about={<><p>{t('console.settings.about')}</p>{!administering && <p>{t('console.settings.readOnly')}</p>}</>} />
       {administering ? <SettingsForm settings={settings} /> : <SettingsView settings={settings} />}
       <p className="t-micro c-faint">{t('console.settings.updated', { account: settings.updatedBy, at: dateTimeOf(locale, settings.updatedAt) })}</p>
     </div>

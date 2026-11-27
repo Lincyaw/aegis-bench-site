@@ -7,13 +7,10 @@ import { consoleTaskOrderValues } from '../../../api/schema';
 import type { ConsoleBenchmark, TaskOrder } from '../../../api/types';
 import { CostFrontierChart, FailureChart, RankingChart } from '../../../components/collection/CollectionCharts';
 import { VendorBadge } from '../../../components/model/ModelBadge';
-import { FailureBar, FailureLegend } from '../../../components/result/FailureBar';
-import { PassRate } from '../../../components/result/PassRate';
-import { NO_VALUE, formatCost } from '../../../components/result/presentation';
+import { FailureLegend } from '../../../components/result/FailureBar';
+import { ResultTable } from '../../../components/result/ResultTable';
 import { ConsoleHeader } from '../../../components/shell/ConsoleHeader';
 import { LocaleLink } from '../../../i18n/LocaleRouting';
-import { useLocale } from '../../../i18n/localeContext';
-import { groupedNumber } from '../../../i18n/locales';
 import { consoleBenchmarkPath } from '../../../routes/console';
 import { searchOf } from '../../../routes/address';
 import {
@@ -48,7 +45,7 @@ export function CollectionPage() {
       />
       <TabRow current={view.tab} className={styles.tabs} aria-label={t('console.collection.tabList')}>
         {COLLECTION_TABS.map(tab => (
-          <Tab key={tab} id={tab} current={view.tab} to={collectionPath(benchmark.id, tag, { tab })}>{t(`console.collection.tabs.${tab}`)}</Tab>
+          <Tab key={tab} id={tab} current={view.tab} to={collectionPath(benchmark.id, tag, { ...view, tab })}>{t(`console.collection.tabs.${tab}`)}</Tab>
         ))}
       </TabRow>
       <Suspense fallback={<Loading />}>
@@ -115,32 +112,22 @@ export function CollectionMatrix({ benchmark, tag, view, onView }: { benchmark: 
 /** Every model's result on the collection's tasks; a row opens the model on them. */
 export function CollectionModels({ benchmark, tag }: { benchmark: ConsoleBenchmark; tag: string }) {
   const { t } = useTranslation();
-  const locale = useLocale();
   const models = useCollectionModels(benchmark.id, tag);
   return (
     <div className={styles.section}>
-      <div className={clsx(table.table, styles.models)} role="table" aria-label={t('console.collection.tabs.models')}>
-        <div className={clsx(table.row, table.head, 't-micro c-faint')} role="row">
-          <span role="columnheader">{t('console.models.column.model')}</span>
-          <span role="columnheader">{t('console.models.column.passRate')}</span>
-          <span role="columnheader">{t('console.models.column.everyTime')}</span>
-          <span role="columnheader">{t('console.models.column.once')}</span>
-          <span role="columnheader">{t('console.models.column.counted')}</span>
-          <span role="columnheader">{t('console.models.column.cost')}</span>
-          <span role="columnheader">{t('console.models.column.failures')}</span>
-        </div>
-        {models.map(({ model, result, onCostFrontier }) => (
-          <div key={model.id} className={clsx(table.row, table.link)} role="row">
-            <span role="cell" className={styles.model}><VendorBadge model={model} /><LocaleLink className={clsx(table.primary, 't-label')} to={consoleModelPath(benchmark.id, model.id, { tag })}>{model.name}</LocaleLink>{onCostFrontier && <Tag dashed>{t('console.collection.frontier')}</Tag>}</span>
-            <span role="cell"><PassRate rate={result.passRate} /></span>
-            <span role="cell" className="t-numeric c-muted">{t('console.overview.tasksOf', { solved: result.solvedEveryTime, total: result.tasks })}</span>
-            <span role="cell" className="t-numeric c-muted">{t('console.overview.tasksOf', { solved: result.solvedOnce, total: result.tasks })}</span>
-            <span role="cell" className="t-numeric c-muted">{groupedNumber(locale, result.passed + result.failed)}</span>
-            <span role="cell" className="t-numeric c-muted">{result.meanCostUsd === undefined ? NO_VALUE : formatCost(result.meanCostUsd)}</span>
-            <span role="cell"><FailureBar result={result} /></span>
-          </div>
-        ))}
-      </div>
+      <ResultTable
+        label={t('console.collection.tabs.models')} heads={[t('console.models.column.model')]} lead="minmax(14rem, 1.6fr)"
+        rows={models.map(({ model, result, onCostFrontier }) => ({
+          id: model.id, result,
+          cells: [
+            <span key="model" role="cell" className={styles.model}>
+              <VendorBadge model={model} />
+              <LocaleLink className={clsx(table.primary, 't-label')} to={consoleModelPath(benchmark.id, model.id, { tag })}>{model.name}</LocaleLink>
+              {onCostFrontier && <Tag dashed>{t('console.collection.frontier')}</Tag>}
+            </span>,
+          ],
+        }))}
+      />
       <FailureLegend />
     </div>
   );

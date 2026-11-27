@@ -49,6 +49,7 @@
       "reply",
       "trajectory"
     ],
+    "runOutput": ["fileChanges", "reply"],
     "replayPanel": [
       "record",
       "content",

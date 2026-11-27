@@ -8,6 +8,7 @@ import { EntrantDots } from '../../../components/task/EntrantDots';
 import { HuggingFaceBoundary } from '../../../components/run/HuggingFace';
 import { ConsoleHeader } from '../../../components/shell/ConsoleHeader';
 import { TaskContentTab } from '../../../components/task/TaskContent';
+import { directoryPagesOf } from '../../../components/task/files';
 import { TaskFileBrowser, type TaskFileSource } from '../../../components/task/TaskFileBrowser';
 import { searchOf } from '../../../routes/address';
 import { consoleBenchmarkPath } from '../../../routes/console';
@@ -80,19 +81,10 @@ export function TaskFilesTab({ task, view }: { task: ConsoleTaskDetail; view: Ta
   const { t } = useTranslation();
   const [, setParams] = useSearchParams();
   const source: TaskFileSource = {
-    useDirectory: directory => {
-      const pages = useConsoleTaskEntryPages(task.benchmark.id, task.id, directory, ENTRY_PAGE_SIZE);
-      if (pages.isFetchNextPageError) {
-        throw pages.error;
-      }
-      return {
-        entries: pages.data.pages.flatMap(page => page.items).map(entry => ({
-          path: entry.path, kind: entry.kind, size: entry.size,
-          ...(entry.withheldFromPublic && { mark: { label: t('console.task.files.withheld'), closed: false } }),
-        })),
-        total: pages.data.pages[0].total, loadingMore: pages.isFetchingNextPage, loadMore: () => void pages.fetchNextPage(),
-      };
-    },
+    useDirectory: directory => directoryPagesOf(
+      useConsoleTaskEntryPages(task.benchmark.id, task.id, directory, ENTRY_PAGE_SIZE),
+      entry => entry.withheldFromPublic ? { label: t('console.task.files.withheld'), closed: false } : undefined,
+    ),
     useFile: path => useConsoleTaskFile(task.benchmark.id, task.id, path),
   };
   return (

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import { Document } from '../../../articles/Document';
 import { reportOf, reportsIn } from '../../../articles/library';
-import { Replay, RunNumber } from '../../../articles/runBlocks';
+import { RunCard, RunNumber } from '../../../articles/runBlocks';
 import { LocaleLink } from '../../../i18n/LocaleRouting';
 import { useLocale } from '../../../i18n/localeContext';
 import { REPORTS_PATH, reportPath } from '../../../routes/site';
@@ -50,7 +50,7 @@ export function ReportPage() {
           <p className="t-lead c-muted">{report.summary}</p>
           <p className="t-mono c-faint">{report.date}</p>
         </header>
-        <Document path={report.path} blocks={{ Replay, RunNumber }} />
+        <Document path={report.path} blocks={{ RunCard, RunNumber }} />
       </article>
     </div>
   );

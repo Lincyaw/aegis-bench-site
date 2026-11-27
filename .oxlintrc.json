@@ -119,8 +119,12 @@
       }
     },
     {
-      "files": ["src/pages/**", "src/components/**"],
+      "files": ["src/pages/**", "src/components/**", "src/router.tsx"],
       "rules": { "aegis/paths-from-routes": "error" }
+    },
+    {
+      "files": ["src/components/**"],
+      "rules": { "aegis/hooks-from-own-modules": "error" }
     },
     {
       "files": [

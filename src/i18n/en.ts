@@ -15,7 +15,8 @@ export const en: Messages = {
     contact: 'Contact us',
     contactLead: 'Contact us: ',
     tagline: 'Agent evaluation across the whole software engineering lifecycle',
-    footnote: 'Design demo: benchmarks, models and figures are placeholders',
+    demo: 'Design demo',
+    footnote: 'Benchmarks, models and figures are placeholders.',
     nav: {
       leaderboard: 'Leaderboard',
       benchmarks: 'Benchmarks',
@@ -119,8 +120,8 @@ export const en: Messages = {
     fullLeaderboard: 'Full leaderboard',
     recentRuns: 'Run records',
     allRuns: 'All run records',
-    replay: 'Replay',
-    column: { model: 'Model', task: 'Task', process: 'Process', result: 'Result', steps: 'Steps', duration: 'Duration', replay: 'Replay' },
+    openTrajectory: 'Trajectory',
+    column: { model: 'Model', task: 'Task', process: 'Process', result: 'Result', steps: 'Steps', duration: 'Duration', trajectory: 'Trajectory' },
   },
   leaderboard: {
     title: 'Leaderboard',
@@ -202,7 +203,7 @@ export const en: Messages = {
     attempt: 'Attempt {{attempt}}',
     attemptOf_one: 'attempt {{attempt}} of {{count}}',
     attemptOf_other: 'attempt {{attempt}} of {{count}}',
-    metrics: { steps: 'Steps', duration: 'Duration', submissions: 'Submissions', outputTokens: 'Output tokens', cost: 'Cost', endReason: 'End reason' },
+    metrics: { steps: 'Steps', duration: 'Duration', submissions: 'Submissions', inputTokens: 'Input tokens', outputTokens: 'Output tokens', cost: 'Cost', endReason: 'End reason' },
     endReason: { submitted: 'Submitted', executionError: 'Execution error' },
     step: 'Step {{step}}',
     input: {

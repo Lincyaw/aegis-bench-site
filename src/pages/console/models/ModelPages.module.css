@@ -2,7 +2,6 @@
 .page > header { margin-bottom: 0; }
 .section { display: grid; gap: var(--space-3); }
 
-.models { --columns: minmax(12rem, 1.4fr) minmax(8rem, 1fr) minmax(9rem, 1.1fr) 6rem 6rem 5.5rem 5rem minmax(8rem, 1fr); }
 .model { display: flex; align-items: center; gap: var(--space-3); }
 .name { display: grid; }
 .name a:hover { text-decoration: underline; text-underline-offset: var(--space-1); }
@@ -10,12 +9,4 @@
 
 .scope { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
 
-.filters { display: flex; flex-wrap: wrap; gap: var(--space-3); }
-.search { width: 18rem; }
 .footer { display: flex; justify-content: space-between; align-items: center; gap: var(--space-4); flex-wrap: wrap; }
-
-@media (max-width: 760px) {
-  .search { width: 100%; }
-  .models { --columns: minmax(0, 1fr) auto; }
-  .models [role="row"] > :is(:nth-child(2), :nth-child(4), :nth-child(5), :nth-child(6), :nth-child(7), :nth-child(8)) { display: none; }
-}

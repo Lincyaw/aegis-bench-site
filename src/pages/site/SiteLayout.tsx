@@ -8,6 +8,7 @@ import { SiteFooter } from '../../components/shell/SiteFooter';
 import { LocaleLink, LocaleNavLink } from '../../i18n/LocaleRouting';
 import { useLocale } from '../../i18n/localeContext';
 import { sitePath } from '../../i18n/locales';
+import { fillsWindow } from '../../routes/address';
 import { CONSOLE_PATH } from '../../routes/console';
 import { CONTACT_PATH } from '../../routes/site';
 import { Loading } from '../../ui/content';
@@ -19,14 +20,12 @@ import { PageSectionsContext } from './pageSections';
 import { FOOTER_LINKS, NAV_LINKS } from './siteNav';
 import styles from './SiteLayout.module.css';
 
-/** Route handle of a page that fills the window below the nav and scrolls inside its own panes. */
-export interface RouteHandle {
-  fillsWindow?: boolean;
-}
+/** How far the page scrolls, in pixels, before the nav floats over it. */
+const NAV_FLOAT_SCROLL = 8;
 
 /** Every page but the landing page: the nav, the page, and the footer unless the page fills the window. */
 export function SiteLayout() {
-  const fillsWindow = useMatches().some(match => (match.handle as RouteHandle | undefined)?.fillsWindow);
+  const wide = fillsWindow(useMatches());
   const [sections, setSections] = useState<PageSections | null>(null);
   return (
     <PageSectionsContext.Provider value={setSections}>
@@ -34,7 +33,7 @@ export function SiteLayout() {
       <main>
         <Suspense fallback={<div className="page"><Loading /></div>}><Outlet /></Suspense>
       </main>
-      {!fillsWindow && <SiteFooter links={FOOTER_LINKS} />}
+      {!wide && <SiteFooter links={FOOTER_LINKS} />}
     </PageSectionsContext.Provider>
   );
 }
@@ -46,7 +45,7 @@ export function SiteNav({ sections }: { sections: PageSections | null }) {
   const { pathname, search } = useLocation();
   const [floating, setFloating] = useState(false);
   useEffect(() => {
-    const onScroll = () => setFloating(scrollY > 8);
+    const onScroll = () => setFloating(scrollY > NAV_FLOAT_SCROLL);
     onScroll();
     addEventListener('scroll', onScroll, { passive: true });
     return () => removeEventListener('scroll', onScroll);

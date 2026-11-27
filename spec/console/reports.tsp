@@ -76,6 +76,9 @@ model ReportDraft {
   ...ReportDraftSummary;
   sources: ReportSources;
 
+  /** Whether the member may change the draft now: they are an editor and it has not been submitted for review */
+  canEdit: boolean;
+
   /** Whether the member may review the draft now: it is in review, they are an editor other than its author, and they have not reviewed this submission */
   canReview: boolean;
 

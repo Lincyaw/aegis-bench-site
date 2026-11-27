@@ -33,9 +33,9 @@ export function ReleaseContentView({ benchmark, shown }: { benchmark: ConsoleBen
         </ul>
       </section>
       <section className={styles.section}>
-        <HintedHeading rank="h2" className="t-heading" title={t('console.release.replays')} about={t('console.release.replaysNote')} />
-        <ol className={styles.replays}>
-          {shown.replays.map(runId => <li key={runId}><LocaleLink className="t-mono" to={consoleRunPath(benchmark.id, runId)}>{runId}</LocaleLink></li>)}
+        <HintedHeading rank="h2" className="t-heading" title={t('console.release.exampleRuns')} about={t('console.release.exampleRunsNote')} />
+        <ol className={styles.exampleRuns}>
+          {shown.exampleRuns.map(runId => <li key={runId}><LocaleLink className="t-mono" to={consoleRunPath(benchmark.id, runId)}>{runId}</LocaleLink></li>)}
         </ol>
       </section>
     </>
@@ -66,31 +66,31 @@ export function EntrantChoice({ entrants, chosen, onChange }: { entrants: Combin
 }
 
 /** A draft's example runs: each can be dropped, and a run is added by its id; a run already listed stays where it is. */
-export function ReplayEditor({ benchmarkId, replays, onChange }: { benchmarkId: string; replays: string[]; onChange: (replays: string[]) => void }) {
+export function ExampleRunEditor({ benchmarkId, exampleRuns, onChange }: { benchmarkId: string; exampleRuns: string[]; onChange: (exampleRuns: string[]) => void }) {
   const { t } = useTranslation();
   const [runId, setRunId] = useState('');
   const add = (event: FormEvent) => {
     event.preventDefault();
     const added = runId.trim();
     if (added) {
-      onChange(replays.includes(added) ? replays : [...replays, added]);
+      onChange(exampleRuns.includes(added) ? exampleRuns : [...exampleRuns, added]);
       setRunId('');
     }
   };
   return (
     <section className={styles.section}>
-      <HintedHeading rank="h2" className="t-heading" title={t('console.release.replays')} about={t('console.release.replaysNote')} />
-      <ol className={styles.replays}>
-        {replays.map(replay => (
-          <li key={replay}>
-            <LocaleLink className="t-mono" to={consoleRunPath(benchmarkId, replay)}>{replay}</LocaleLink>
-            <Button variant="line" onClick={() => onChange(replays.filter(id => id !== replay))}>{t('console.release.remove')}</Button>
+      <HintedHeading rank="h2" className="t-heading" title={t('console.release.exampleRuns')} about={t('console.release.exampleRunsNote')} />
+      <ol className={styles.exampleRuns}>
+        {exampleRuns.map(exampleRun => (
+          <li key={exampleRun}>
+            <LocaleLink className="t-mono" to={consoleRunPath(benchmarkId, exampleRun)}>{exampleRun}</LocaleLink>
+            <Button variant="line" onClick={() => onChange(exampleRuns.filter(id => id !== exampleRun))}>{t('console.release.remove')}</Button>
           </li>
         ))}
       </ol>
-      <form className={styles.addReplay} onSubmit={add}>
-        <TextField label={t('console.release.replayId')} type="text" autoComplete="off" value={runId} onChange={setRunId} />
-        <SubmitButton variant="line" pending={false}>{t('console.release.addReplay')}</SubmitButton>
+      <form className={styles.addExampleRun} onSubmit={add}>
+        <TextField label={t('console.release.exampleRunId')} type="text" autoComplete="off" value={runId} onChange={setRunId} />
+        <SubmitButton variant="line" pending={false}>{t('console.release.addExampleRun')}</SubmitButton>
       </form>
     </section>
   );

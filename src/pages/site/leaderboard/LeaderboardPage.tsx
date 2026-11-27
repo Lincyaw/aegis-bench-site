@@ -9,18 +9,11 @@ import { HalfDot } from '../../../components/lifecycle/LifecycleMap';
 import { benchmarksAt } from '../../../components/lifecycle/stages';
 import { stageName } from '../../../components/result/presentation';
 import { searchOf } from '../../../routes/address';
-import { LEADERBOARD_PAGE_SIZE, LEADERBOARD_PARAMS, benchmarkPath, leaderboardPath, parseLeaderboardView, type LeaderboardQuery } from '../../../routes/site';
+import { LEADERBOARD_PAGE_SIZE, LEADERBOARD_PARAMS, benchmarkPath, leaderboardPath, parseLeaderboardQuery, type LeaderboardQuery } from '../../../routes/site';
 import { Loading } from '../../../ui/content';
 import { MoreButton, ScopeChip, SegmentedControl, TextLink } from '../../../ui/controls';
 import { InfoHint } from '../../../ui/hint';
 import styles from './LeaderboardPage.module.css';
-
-/** Message keys of the leaderboard's views, in the order the switch shows them. */
-const LEADERBOARD_VIEW_LABELS: Record<LeaderboardView, 'leaderboard.view.combination' | 'leaderboard.view.model' | 'leaderboard.view.harness'> = {
-  combination: 'leaderboard.view.combination',
-  model: 'leaderboard.view.model',
-  harness: 'leaderboard.view.harness',
-};
 
 /** One benchmark at a time: switching the benchmark or the view only changes the table. */
 export function LeaderboardPage() {
@@ -28,14 +21,12 @@ export function LeaderboardPage() {
   const [search, setSearch] = useSearchParams();
   const covered = useStages().filter(stage => stage.benchmarks.length > 0);
   const benchmarks = useBenchmarks();
-  const benchmarkId = search.get('bench') ?? benchmarks[0].id;
-  const benchmark = benchmarks.find(candidate => candidate.id === benchmarkId);
-  if (!benchmark) {
-    throw new Error(t('leaderboard.unknownBenchmark', { id: benchmarkId }));
-  }
-  const view = parseLeaderboardView(search.get('view'));
   // The model a page sent the reader here for is the page's scope: its rows stay marked across benchmarks and views until the reader lets it go.
-  const model = search.get('model') ?? undefined;
+  const { bench = benchmarks[0].id, view, model } = parseLeaderboardQuery(search);
+  const benchmark = benchmarks.find(candidate => candidate.id === bench);
+  if (!benchmark) {
+    throw new Error(t('leaderboard.unknownBenchmark', { id: bench }));
+  }
   const choose = (next: Partial<LeaderboardQuery>) => setSearch(searchOf(LEADERBOARD_PARAMS, { bench: benchmark.id, view, model, ...next }), { replace: true, preventScrollReset: true });
   return (
     <div className={clsx('page', styles.page)}>
@@ -61,7 +52,7 @@ export function LeaderboardPage() {
         </div>
         <div className={styles.tools}>
           {model && <ModelScopeChip modelId={model} to={leaderboardPath({ bench: benchmark.id, view })} />}
-          <SegmentedControl label={t('leaderboard.viewLabel')} choices={leaderboardViewValues.map(value => ({ value, label: t(LEADERBOARD_VIEW_LABELS[value]) }))} value={view} onChange={next => choose({ view: next })} />
+          <SegmentedControl label={t('leaderboard.viewLabel')} choices={leaderboardViewValues.map(value => ({ value, label: t(`leaderboard.view.${value}`) }))} value={view} onChange={next => choose({ view: next })} />
           <TextLink className="t-small" to={benchmarkPath(benchmark.id)}>{t('leaderboard.details')}</TextLink>
         </div>
       </div>

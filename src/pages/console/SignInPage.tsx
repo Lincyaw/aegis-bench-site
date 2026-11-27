@@ -7,6 +7,7 @@ import { ApiError } from '../../api/errors';
 import { BrandMark } from '../../components/shell/BrandMark';
 import { useLocalizedNavigate } from '../../i18n/localeContext';
 import { nextPathOf } from '../../routes/console';
+import { HintedHeading } from '../../ui/content';
 import { SubmitButton, TextField } from '../../ui/controls';
 import styles from './SignInPage.module.css';
 
@@ -33,8 +34,15 @@ export function SignInPage() {
       <form className={styles.card} onSubmit={submit}>
         <span className={styles.brand}><BrandMark /><span className="t-small c-muted">{t('console.name')}</span></span>
         <header className={styles.head}>
-          <h1 className="t-title">{t('console.signIn.title')}</h1>
-          <p className="t-small c-muted">{t('console.signIn.lead')}</p>
+          <HintedHeading
+            rank="h1" className="t-title" title={t('console.signIn.title')}
+            about={(
+              <>
+                <p>{t('console.signIn.lead')}</p>
+                {demo && <p>{t('console.signIn.demo', { password: demo.password, accounts: demo.accounts.map(({ account, role }) => t('console.signIn.demoAccount', { account, role: t(`console.roles.${role}`) })) })}</p>}
+              </>
+            )}
+          />
         </header>
         <TextField
           label={t('console.signIn.account')} type="text" autoComplete="username" value={account} onChange={setAccount}
@@ -43,11 +51,6 @@ export function SignInPage() {
         <TextField label={t('console.signIn.password')} type="password" autoComplete="current-password" value={password} onChange={setPassword} />
         {signIn.error && <p className="t-small c-bad" role="alert">{t('console.signIn.failed')}</p>}
         <SubmitButton variant="solid" pending={signIn.isPending}>{t('console.signIn.submit')}</SubmitButton>
-        {demo && (
-          <p className="t-micro c-faint">
-            {t('console.signIn.demo', { password: demo.password, accounts: demo.accounts.map(({ account, role }) => t('console.signIn.demoAccount', { account, role: t(`console.roles.${role}`) })) })}
-          </p>
-        )}
       </form>
     </main>
   );

@@ -5,4 +5,5 @@
 .panel { display: grid; gap: var(--space-5); max-width: 60rem; padding-top: var(--space-2); }
 
 .tab, .findings { display: grid; gap: var(--space-4); }
+.scope { justify-self: start; }
 .filters { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }

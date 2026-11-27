@@ -8,12 +8,17 @@ import { AtifFields } from '../trajectory/AtifStep';
 import { HuggingFaceBoundary } from './HuggingFace';
 import styles from './RunEvents.module.css';
 
+/** Where the list reads one whole event from. */
+export interface RunEventSource {
+  useEvent: (index: number) => RunEvent;
+}
+
 /**
  * A run's events as the API lists them: each row shows its index, kind, tool and excerpt, and opens in place to the
- * whole event, which `useEvent` reads by its index; every field shows under its own name, and nothing is translated,
+ * whole event, which the source reads by its index; every field shows under its own name, and nothing is translated,
  * renamed or regrouped.
  */
-export function RunEventList({ events, useEvent, onStep }: { events: RunEventRow[]; useEvent: (index: number) => RunEvent; onStep: (step: number) => void }) {
+export function RunEventList({ events, source, onStep }: { events: RunEventRow[]; source: RunEventSource; onStep: (step: number) => void }) {
   const { t } = useTranslation();
   const [opened, setOpened] = useState<number>();
   return (
@@ -32,7 +37,7 @@ export function RunEventList({ events, useEvent, onStep }: { events: RunEventRow
               <div className={styles.record}>
                 <HuggingFaceBoundary resetKey={String(event.index)}>
                   <Suspense fallback={<Loading />}>
-                    <RunEventFields useEvent={useEvent} index={event.index} />
+                    <RunEventFields source={source} index={event.index} />
                   </Suspense>
                 </HuggingFaceBoundary>
                 <TextLink className="t-micro" onClick={() => onStep(event.stepId)}>{t('console.run.events.inTrajectory')}</TextLink>
@@ -46,6 +51,6 @@ export function RunEventList({ events, useEvent, onStep }: { events: RunEventRow
 }
 
 /** One event as the API returns it, its record nested as the trajectory records it. */
-export function RunEventFields({ useEvent, index }: { useEvent: (index: number) => RunEvent; index: number }) {
-  return <AtifFields record={useEvent(index)} />;
+export function RunEventFields({ source, index }: { source: RunEventSource; index: number }) {
+  return <AtifFields record={source.useEvent(index)} />;
 }

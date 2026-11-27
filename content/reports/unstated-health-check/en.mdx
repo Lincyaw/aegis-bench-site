@@ -12,7 +12,7 @@ benchmarks: ["bench-c"]
 
 Model Alpha ran the Bench C task task-044, 缓存雪崩 (cache avalanche), under Harness X. The task text asks the agent to find the cause of the fault and restore the service, and, once the remediation is done, to write a `report.json` in the working directory giving the root cause, the remediation performed and whether the service has recovered.
 
-<Replay run="bench-c.task-044.jia-x.1" />
+<RunCard run="bench-c.task-044.jia-x.1" />
 
 The run took <RunNumber run="bench-c.task-044.jia-x.1" field="steps" /> steps. In steps 2 to 57 the model queried metrics 24 times, logs 8 times and traces 8 times, restarted services 8 times and edited configuration 8 times; it submitted at step 58. The submission changes `pool_size` in `config/payment-callback.yaml` from 8 to 32 and adds `report.json`. The model's final reply reads, in translation: "The callback thread pool was saturated at peak hours, so callbacks queued and timed out. I enlarged the pool to 32 and restarted the service, and the error rate has come down. The conclusion is in report.json."
 

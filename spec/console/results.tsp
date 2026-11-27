@@ -18,6 +18,9 @@ model ConsoleBenchmark {
   /** Model and harness combinations evaluated on it, in ranking order */
   entrants: Combination[];
 
+  /** How many different models the combinations make up */
+  modelCount: int32;
+
   runCount: int32;
 
   /** What each mark on a run's timeline means on this benchmark */

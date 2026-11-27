@@ -1,9 +1,11 @@
+import { generatePath } from 'react-router-dom';
 import type { LeaderboardView } from '../api/types';
 import { leaderboardViewValues } from '../api/schema';
-import { pathWithSearch, searchOf, type AddressTable } from './address';
+import { parseChoice, pathWithSearch, searchOf, type AddressTable } from './address';
 
 export const BENCHMARKS_PATH = '/benchmarks';
 export const LEADERBOARD_PATH = '/leaderboard';
+export const MODELS_PATH = '/models';
 export const REPORTS_PATH = '/reports';
 export const ABOUT_PATH = '/about';
 export const METHODOLOGY_PATH = '/methodology';
@@ -12,8 +14,21 @@ export const SITE_CHANGELOG_PATH = '/changelog';
 export const CONTACT_ANCHOR = 'contact';
 export const CONTACT_PATH = `${ABOUT_PATH}#${CONTACT_ANCHOR}`;
 
+/** The patterns the router matches on the site, each the path its builders write with the ids named. */
+const BENCHMARK_ROUTE = `${BENCHMARKS_PATH}/:benchmarkId`;
+export const SITE_ROUTES = {
+  benchmarks: BENCHMARKS_PATH,
+  benchmark: BENCHMARK_ROUTE,
+  runRecords: `${BENCHMARK_ROUTE}/runs`,
+  taskFiles: `${BENCHMARK_ROUTE}/tasks/:taskId`,
+  leaderboard: LEADERBOARD_PATH,
+  model: `${MODELS_PATH}/:modelId`,
+  reports: REPORTS_PATH,
+  report: `${REPORTS_PATH}/:slug`,
+} as const;
+
 export function benchmarkPath(benchmarkId: string): string {
-  return `${BENCHMARKS_PATH}/${benchmarkId}`;
+  return generatePath(SITE_ROUTES.benchmark, { benchmarkId });
 }
 
 /** The anchor of a stage's group on the benchmarks page. */
@@ -40,24 +55,20 @@ export function leaderboardPath(query: Partial<LeaderboardQuery> = {}): string {
   return pathWithSearch(LEADERBOARD_PATH, searchOf(LEADERBOARD_PARAMS, query));
 }
 
-/** The view a leaderboard address names; an address naming no view shows the combinations. */
-export function parseLeaderboardView(value: string | null): LeaderboardView {
-  const view = value ?? LEADERBOARD_PARAMS.view;
-  if (!leaderboardViewValues.includes(view as LeaderboardView)) {
-    throw new Error(`no leaderboard view ${view}`);
-  }
-  return view as LeaderboardView;
+/** The leaderboard's state from its address; an address naming no view shows the combinations, and a view outside its set fails the page. */
+export function parseLeaderboardQuery(params: URLSearchParams): LeaderboardQuery {
+  return { bench: params.get('bench') ?? undefined, view: parseChoice(params, 'view', leaderboardViewValues) ?? LEADERBOARD_PARAMS.view, model: params.get('model') ?? undefined };
 }
 
 /** Entries the leaderboard shows at first and adds each time the reader asks for more. */
 export const LEADERBOARD_PAGE_SIZE = 20;
 
 export function modelPath(modelId: string): string {
-  return `/models/${modelId}`;
+  return generatePath(SITE_ROUTES.model, { modelId });
 }
 
 export function reportPath(slug: string): string {
-  return `${REPORTS_PATH}/${slug}`;
+  return generatePath(SITE_ROUTES.report, { slug });
 }
 
 /** The file a task's page opens on: the task text the model receives. */
@@ -80,5 +91,5 @@ export const ENTRY_PAGE_SIZE = 50;
 
 /** A task's files, opened on one file when given. */
 export function taskFilesPath(benchmarkId: string, taskId: string, file?: string): string {
-  return pathWithSearch(`${BENCHMARKS_PATH}/${benchmarkId}/tasks/${taskId}`, searchOf(TASK_FILES_PARAMS, { path: file }));
+  return pathWithSearch(generatePath(SITE_ROUTES.taskFiles, { benchmarkId, taskId }), searchOf(TASK_FILES_PARAMS, { path: file }));
 }

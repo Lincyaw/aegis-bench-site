@@ -1,0 +1,9 @@
+/* --lead is the leading columns' tracks, which a table sets for its own cells. */
+.results { --lead: minmax(12rem, 1fr); --columns: var(--lead) minmax(9rem, 1.1fr) 6rem 6rem 5.5rem 5rem minmax(8rem, 1fr); }
+/* :where keeps the mark as weak as a row's own class, so hovering the row replaces it as on any other row. */
+.results > :where([aria-current="true"]) { background: var(--row-chosen); }
+
+@media (max-width: 760px) {
+  .results { --columns: minmax(0, 1fr) auto; }
+  .results [role="row"] > :not(:first-child, .rate) { display: none; }
+}

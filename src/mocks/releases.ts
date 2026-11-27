@@ -30,7 +30,7 @@ export function recordedReleasesOf(benchmarkId: string): ReleaseRecord[] {
   const published = structuredClone(benchmarkOf(benchmarkId).releases).toSorted((a, b) => a.version - b.version);
   return published.map((release, index) => ({
     ...release, id: releaseIdOf(benchmarkId, release.version), benchmarkId,
-    baseline: index === 0 ? { summary: release.content.summary, entrants: [], replays: [] } : published[index - 1].content,
+    baseline: index === 0 ? { summary: release.content.summary, entrants: [], exampleRuns: [] } : published[index - 1].content,
   }));
 }
 
@@ -72,8 +72,8 @@ export function changesOf(release: ReleaseRecord): ReleaseChanges {
   return {
     entrantsAdded: [...entrants].filter(key => !before.has(key)).length,
     entrantsRemoved: [...before].filter(key => !entrants.has(key)).length,
-    replaysAdded: content.replays.filter(runId => !baseline.replays.includes(runId)).length,
-    replaysRemoved: baseline.replays.filter(runId => !content.replays.includes(runId)).length,
+    exampleRunsAdded: content.exampleRuns.filter(runId => !baseline.exampleRuns.includes(runId)).length,
+    exampleRunsRemoved: baseline.exampleRuns.filter(runId => !content.exampleRuns.includes(runId)).length,
     summaryChanged: localeValues.some(locale => content.summary[locale] !== baseline.summary[locale]),
   };
 }
@@ -94,7 +94,7 @@ export function releaseDetailOf(release: ReleaseRecord): ReleaseDetail {
 export function contentProblemOf(benchmarkId: string, content: ReleaseContent): string | undefined {
   const ranking = rankingOf(benchmarkId);
   const unranked = content.entrants.find(entrant => !ranking.some(ranked => isSameCombination(ranked, entrant)));
-  const foreign = content.replays.find(runId => openedIndexes().runs.get(runId)?.benchmarkId !== benchmarkId);
+  const foreign = content.exampleRuns.find(runId => openedIndexes().runs.get(runId)?.benchmarkId !== benchmarkId);
   return unranked ? `${benchmarkId} did not rank ${unranked.modelId} in ${unranked.harnessId}`
     : foreign ? `${foreign} is not a run of ${benchmarkId}` : undefined;
 }

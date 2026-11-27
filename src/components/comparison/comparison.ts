@@ -49,4 +49,8 @@ export interface BlockProps {
 
   /** Shows a run's trajectory in the side panel */
   onTrajectory: (runId: string) => void;
+
+  /** Whether the checks block lists every check rather than only those the runs disagree on */
+  allChecks: boolean;
+  onAllChecks: (all: boolean) => void;
 }

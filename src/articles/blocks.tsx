@@ -8,7 +8,7 @@ import { MinusIcon, PlusIcon } from '../ui/icons';
 import content from '../ui/content.module.css';
 import styles from './blocks.module.css';
 
-/** Blocks an editor writes in a document; each lays out its children the site's way. */
+/* Blocks an editor writes in a document; each lays out its children the site's way. */
 
 /** Numbered steps along a line, such as what an agent receives, how it works and what it submits. */
 export function Flow({ children }: { children: ReactNode }) {

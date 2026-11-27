@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { useBenchmark, useTask, useTaskEntryPages, useTaskFile } from '../../../api/client';
 import { benchmarkCrumbs } from '../../../components/benchmark/crumbs';
+import { directoryPagesOf } from '../../../components/task/files';
 import { TaskFileBrowser, type TaskFileSource } from '../../../components/task/TaskFileBrowser';
 import { searchOf } from '../../../routes/address';
 import { runRecordsPath } from '../../../routes/runRecords';
@@ -17,18 +18,10 @@ export function TaskFilesPage() {
   const benchmark = useBenchmark(benchmarkId);
   const task = useTask(benchmark.id, taskId);
   const source: TaskFileSource = {
-    useDirectory: directory => {
-      const pages = useTaskEntryPages(benchmark.id, task.id, directory, ENTRY_PAGE_SIZE);
-      if (pages.isFetchNextPageError) {
-        throw pages.error;
-      }
-      return {
-        entries: pages.data.pages.flatMap(page => page.items).map(entry => ({
-          path: entry.path, kind: entry.kind, size: entry.size, ...(entry.withheld && { mark: { label: t(`tasks.withheld.${entry.withheld}`), closed: true } }),
-        })),
-        total: pages.data.pages[0].total, loadingMore: pages.isFetchingNextPage, loadMore: () => void pages.fetchNextPage(),
-      };
-    },
+    useDirectory: directory => directoryPagesOf(
+      useTaskEntryPages(benchmark.id, task.id, directory, ENTRY_PAGE_SIZE),
+      entry => entry.withheld && { label: t(`tasks.withheld.${entry.withheld}`), closed: true },
+    ),
     useFile: path => useTaskFile(benchmark.id, task.id, path),
   };
   return (

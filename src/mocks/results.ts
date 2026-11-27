@@ -100,7 +100,7 @@ export function consoleBenchmarkOf(benchmarkId: string, locale: Locale): Console
     ...benchmarkRef(benchmarkId), stage: stageRef(record.stageId, locale), version: record.version, summary: record.summary[locale],
     metric: { ...record.metric, name: record.metric.name[locale] }, taskCount: tasks.length,
     entrants: rankingOf(benchmarkId).map(ranked => ({ model: modelRef(ranked.modelId, locale), harness: harnessRef(ranked.harnessId, locale) })),
-    runCount: runs.length,
+    modelCount: new Set(rankingOf(benchmarkId).map(ranked => ranked.modelId)).size, runCount: runs.length,
     timelineLegend: { action: action[locale], change: change[locale], submitPassed: submitPassed[locale], submitFailed: submitFailed[locale] },
     replayable: record.worldLayers !== undefined,
   };

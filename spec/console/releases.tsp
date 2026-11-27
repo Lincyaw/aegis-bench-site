@@ -40,15 +40,15 @@ model ReleaseContent {
   entrants: EntrantKey[];
 
   /** The runs the benchmark's page shows as examples, in the order shown */
-  replays: string[];
+  exampleRuns: string[];
 }
 
 /** How a release differs from the one that was current when it was drafted, or that it replaced. */
 model ReleaseChanges {
   entrantsAdded: int32;
   entrantsRemoved: int32;
-  replaysAdded: int32;
-  replaysRemoved: int32;
+  exampleRunsAdded: int32;
+  exampleRunsRemoved: int32;
   summaryChanged: boolean;
 }
 

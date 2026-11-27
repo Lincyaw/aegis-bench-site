@@ -48,7 +48,7 @@
           "harnessId": "x"
         }
       ],
-      "replays": [
+      "exampleRuns": [
         "bench-d.task-052.jia-x.1",
         "bench-d.task-019.yi-x.1",
         "bench-d.task-077.bing-y.1"
@@ -96,7 +96,7 @@
           "harnessId": "x"
         }
       ],
-      "replays": [
+      "exampleRuns": [
         "bench-d.task-052.jia-x.1",
         "bench-d.task-019.yi-x.1"
       ]

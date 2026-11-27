@@ -1,5 +1,5 @@
 import { clsx } from 'clsx';
-import { Fragment, useState } from 'react';
+import { Fragment } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ComparedCheck, RunCheckVerdict, RunFileChange, TaskComparison } from '../../api/types';
 import { TextLink, ToggleChip } from '../../ui/controls';
@@ -113,17 +113,16 @@ export function CheckLabel({ check }: { check: ComparedCheck }) {
  * Checks the runs disagree on, or all of them, how many each run passed heading the block; a check opens in place to
  * what each run produced for it, and the failures' reviews follow.
  */
-export function Checks({ comparison, expanded, onExpand }: BlockProps) {
+export function Checks({ comparison, expanded, onExpand, allChecks, onAllChecks }: BlockProps) {
   const { t } = useTranslation();
   const { runs, checks } = comparison;
-  const [onlyDifferent, setOnlyDifferent] = useState(true);
   const differing = checks.filter(check => check.differs);
   const reviewKey = rowKeyOf('review');
   return (
     <>
       <BlockHead
         title={t('compare.blocks.checks.title')} hint={t('compare.blocks.checks.hint')}
-        aside={differing.length > 0 && <ToggleChip pressed={onlyDifferent} onToggle={() => setOnlyDifferent(!onlyDifferent)}>{t('compare.onlyDifferent', { count: differing.length })}</ToggleChip>}
+        aside={differing.length > 0 && <ToggleChip pressed={!allChecks} onToggle={() => onAllChecks(!allChecks)}>{t('compare.onlyDifferent', { count: differing.length })}</ToggleChip>}
       >
         {runs.map(run => (run.outcome === 'executionFailed'
           ? <Cell key={run.id} tone="empty"><span className="t-small">{t('compare.notGraded')}</span></Cell>
@@ -134,7 +133,7 @@ export function Checks({ comparison, expanded, onExpand }: BlockProps) {
           {runs.map(run => <Cell key={run.id} />)}
         </ItemRow>
       )}
-      {(onlyDifferent ? differing : checks).map(check => {
+      {(allChecks ? checks : differing).map(check => {
         const key = rowKeyOf('check', check.id);
         const open = expanded.includes(key);
         // Only a check some run produced something for has anything to open to.

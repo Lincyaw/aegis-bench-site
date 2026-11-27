@@ -17,7 +17,7 @@ import table from '../ui/table.module.css';
 import { useCurrentBenchmark } from './benchmarkContext';
 import styles from './benchmarkBlocks.module.css';
 
-/** Blocks a benchmark page's document places to show the benchmark's data. */
+/* Blocks a benchmark page's document places to show the benchmark's data. */
 
 /** The benchmark's top combinations, at most five, with a link to its full leaderboard. */
 export function LeaderboardBlock({ top = 5 }: { top?: number }) {
@@ -61,7 +61,7 @@ export function RecentRunsTable({ benchmarkId }: { benchmarkId: string }) {
       <div className={clsx(table.row, table.head, 't-micro c-faint')} role="row">
         <span role="columnheader">{t('benchmarks.column.model')}</span><span role="columnheader">{t('benchmarks.column.task')}</span>
         <span role="columnheader">{t('benchmarks.column.process')}</span><span role="columnheader">{t('benchmarks.column.result')}</span>
-        <span role="columnheader">{t('benchmarks.column.steps')}</span><span role="columnheader">{t('benchmarks.column.duration')}</span><span role="columnheader"><span className="visually-hidden">{t('benchmarks.column.replay')}</span></span>
+        <span role="columnheader">{t('benchmarks.column.steps')}</span><span role="columnheader">{t('benchmarks.column.duration')}</span><span role="columnheader"><span className="visually-hidden">{t('benchmarks.column.trajectory')}</span></span>
       </div>
       {recentRuns.map(run => (
         <LocaleLink key={run.runId} role="row" className={clsx(table.row, table.link)} to={runRecordsPath(benchmarkId, { task: run.task.id, run: run.runId, tab: 'trajectory' })}>
@@ -71,7 +71,7 @@ export function RecentRunsTable({ benchmarkId }: { benchmarkId: string }) {
           <span role="cell" className="t-small"><OutcomeText outcome={run.outcome}>{run.resultLabel}</OutcomeText></span>
           <span role="cell" className="t-numeric c-muted">{t('benchmarks.steps', { count: run.stepCount })}</span>
           <span role="cell" className="t-numeric c-muted">{t('benchmarks.minutes', { count: run.durationMinutes })}</span>
-          <span role="cell" className={clsx(table.arrow, 't-small')}>{t('benchmarks.replay')}<GoArrowIcon /></span>
+          <span role="cell" className={clsx(table.arrow, 't-small')}>{t('benchmarks.openTrajectory')}<GoArrowIcon /></span>
         </LocaleLink>
       ))}
     </div>

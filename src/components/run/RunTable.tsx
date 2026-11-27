@@ -7,7 +7,7 @@ import type { ConsoleBenchmark, ConsoleRunQuery, ReviewFilter, RunOutcome, RunRo
 import { LocaleLink } from '../../i18n/LocaleRouting';
 import { useLocale } from '../../i18n/localeContext';
 import { dateTimeOf, groupedNumber } from '../../i18n/locales';
-import { EVERY_CHOICE } from '../../routes/console';
+import { EVERY_CHOICE } from '../../routes/address';
 import { consoleRunPath } from '../../routes/consoleRuns';
 import { SearchField, Select } from '../../ui/controls';
 import table from '../../ui/table.module.css';

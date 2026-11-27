@@ -5,7 +5,7 @@ import type { ConsoleTaskQuery, ConsoleTaskRow, TagCount, TaskOrder, TaskSpread 
 import { LocaleLink } from '../../i18n/LocaleRouting';
 import { useLocale } from '../../i18n/localeContext';
 import { groupedNumber } from '../../i18n/locales';
-import { EVERY_CHOICE } from '../../routes/console';
+import { EVERY_CHOICE } from '../../routes/address';
 import { consoleTaskPath } from '../../routes/consoleTasks';
 import { Tag } from '../../ui/content';
 import { SearchField, Select } from '../../ui/controls';
@@ -15,16 +15,21 @@ import { PassRate } from '../result/PassRate';
 import { EntrantDots } from './EntrantDots';
 import styles from './TaskTable.module.css';
 
-export function TaskFilters({ query, tags, onChange }: { query: ConsoleTaskQuery; tags: TagCount[]; onChange: (next: Partial<ConsoleTaskQuery>) => void }) {
+/** What a list of tasks is filtered by; a page that keeps to a tag in another way, such as a scope chip, gives no `tags` and has no tag filter. */
+export type TaskFilter = Pick<ConsoleTaskQuery, 'q' | 'tag' | 'spread' | 'order'>;
+
+export function TaskFilters({ query, tags, onChange }: { query: TaskFilter; tags?: TagCount[]; onChange: (next: Partial<TaskFilter>) => void }) {
   const { t } = useTranslation();
   const locale = useLocale();
   return (
     <div className={styles.filters} role="search" aria-label={t('console.tasks.filters')}>
       <SearchField label={t('console.tasks.search')} value={query.q} onChange={q => onChange({ q })} className={styles.search} />
-      <Select
-        variant="quiet" label={t('console.tasks.tagFilter')} value={query.tag ?? EVERY_CHOICE} onChange={tag => onChange({ tag: tag === EVERY_CHOICE ? undefined : tag })}
-        choices={[{ value: EVERY_CHOICE, label: t('console.tasks.everyTag') }, ...tags.map(({ tag, tasks }) => ({ value: tag, label: `${tag} · ${groupedNumber(locale, tasks)}` }))]}
-      />
+      {tags && (
+        <Select
+          variant="quiet" label={t('console.tasks.tagFilter')} value={query.tag ?? EVERY_CHOICE} onChange={tag => onChange({ tag: tag === EVERY_CHOICE ? undefined : tag })}
+          choices={[{ value: EVERY_CHOICE, label: t('console.tasks.everyTag') }, ...tags.map(({ tag, tasks }) => ({ value: tag, label: `${tag} · ${groupedNumber(locale, tasks)}` }))]}
+        />
+      )}
       <Select
         variant="quiet" label={t('console.tasks.spreadFilter')} value={query.spread ?? EVERY_CHOICE} onChange={spread => onChange({ spread: spread === EVERY_CHOICE ? undefined : spread as TaskSpread })}
         choices={[{ value: EVERY_CHOICE, label: t('console.tasks.everySpread') }, ...consoleTaskSpreadValues.map(spread => ({ value: spread, label: t(`console.tasks.spread.${spread}`) }))]}

@@ -1,7 +1,7 @@
-import { consoleBenchmarkPath } from './console';
+import { benchmarkSectionPath } from './console';
 
 export function consoleReportsPath(benchmarkId: string): string {
-  return `${consoleBenchmarkPath(benchmarkId)}/reports`;
+  return benchmarkSectionPath(benchmarkId, 'reports');
 }
 
 export function consoleReportPath(benchmarkId: string, reportId: string): string {

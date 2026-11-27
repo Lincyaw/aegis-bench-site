@@ -1,4 +1,3 @@
-import { clsx } from 'clsx';
 import { useDeferredValue } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useSearchParams } from 'react-router-dom';
@@ -6,15 +5,14 @@ import { useConsoleBenchmark, useHuntTrials, useHunts } from '../../../api/conso
 import { consoleHuntVerdictValues } from '../../../api/schema';
 import type { Hunt, HuntTrialQuery, HuntVerdict } from '../../../api/types';
 import { FacetPanel, HuntCoverageTiles } from '../../../components/hunt/Hunt';
-import { HuntTrialRow } from '../../../components/hunt/HuntTrials';
+import { HuntTrialTable } from '../../../components/hunt/HuntTrialTable';
 import { ConsoleHeader } from '../../../components/shell/ConsoleHeader';
-import { searchOf } from '../../../routes/address';
-import { EVERY_CHOICE, consoleBenchmarkPath } from '../../../routes/console';
+import { EVERY_CHOICE, searchOf } from '../../../routes/address';
+import { consoleBenchmarkPath } from '../../../routes/console';
 import { HUNT_TRIAL_PAGE_SIZE, HUNT_TRIAL_PARAMS, analysisPath, parseHuntTrialQuery } from '../../../routes/consoleAnalysis';
 import { HintedHeading } from '../../../ui/content';
 import { Select } from '../../../ui/controls';
 import { Pager } from '../../../ui/navigation';
-import table from '../../../ui/table.module.css';
 import styles from './AnalysisPages.module.css';
 
 /** One hunt: what it covered and may have missed, each kind of behaviour with its probes, and the trajectories it marked or read. */
@@ -40,13 +38,13 @@ export function HuntPage() {
         <HintedHeading rank="h2" className="t-heading" title={t('console.analysis.facets')} about={t('console.analysis.precisionNote')} />
         {hunt.facets.map(facet => <FacetPanel key={facet.id} facet={facet} onTrials={() => update({ facet: facet.id })} />)}
       </section>
-      <HuntTrials benchmarkId={benchmark.id} hunt={hunt} query={query} onChange={update} />
+      <HuntTrialsSection benchmarkId={benchmark.id} hunt={hunt} query={query} onChange={update} />
     </div>
   );
 }
 
 /** The trajectories the hunt marked or read, confirmed ones first; each opens its run's trajectory at the first mark. */
-export function HuntTrials({ benchmarkId, hunt, query, onChange }: { benchmarkId: string; hunt: Hunt; query: HuntTrialQuery; onChange: (next: Partial<HuntTrialQuery>) => void }) {
+export function HuntTrialsSection({ benchmarkId, hunt, query, onChange }: { benchmarkId: string; hunt: Hunt; query: HuntTrialQuery; onChange: (next: Partial<HuntTrialQuery>) => void }) {
   const { t } = useTranslation();
   // The page in view stays until the next one arrives.
   const page = useHuntTrials(benchmarkId, hunt.id, useDeferredValue(query), HUNT_TRIAL_PAGE_SIZE);
@@ -64,19 +62,7 @@ export function HuntTrials({ benchmarkId, hunt, query, onChange }: { benchmarkId
           choices={[{ value: EVERY_CHOICE, label: t('console.analysis.everyVerdict') }, ...consoleHuntVerdictValues.map(verdict => ({ value: verdict, label: t(`console.analysis.verdict.${verdict}`) }))]}
         />
       </div>
-      {page.items.length === 0 ? <p className="t-small c-muted">{t('console.analysis.empty')}</p> : (
-        <div className={clsx(table.table, styles.trials)} role="table" aria-label={t('console.analysis.trials')}>
-          <div className={clsx(table.row, table.head, 't-micro c-faint')} role="row">
-            <span role="columnheader">{t('console.analysis.column.run')}</span>
-            <span role="columnheader">{t('console.analysis.column.entrant')}</span>
-            <span role="columnheader">{t('console.analysis.column.verdict')}</span>
-            <span role="columnheader">{t('console.analysis.column.facets')}</span>
-            <span role="columnheader">{t('console.analysis.column.marks')}</span>
-            <span role="columnheader">{t('console.analysis.column.firstStep')}</span>
-          </div>
-          {page.items.map(trial => <HuntTrialRow key={trial.run.id} benchmarkId={benchmarkId} hunt={hunt} trial={trial} />)}
-        </div>
-      )}
+      {page.items.length === 0 ? <p className="t-small c-muted">{t('console.analysis.empty')}</p> : <HuntTrialTable benchmarkId={benchmarkId} hunt={hunt} trials={page.items} />}
       {page.total > HUNT_TRIAL_PAGE_SIZE && (
         <Pager
           className={styles.pager} label={t('console.analysis.range', { from: query.offset + 1, to: last, total: page.total })} atStart={query.offset === 0} atEnd={last >= page.total}

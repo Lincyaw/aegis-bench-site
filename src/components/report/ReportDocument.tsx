@@ -8,7 +8,7 @@ import { dateTimeOf } from '../../i18n/locales';
 import { HintedHeading, Tag } from '../../ui/content';
 import content from '../../ui/content.module.css';
 import { Button, ButtonLink, SegmentedControl } from '../../ui/controls';
-import styles from './ReportEditor.module.css';
+import styles from './ReportDocument.module.css';
 
 /** How the editor lays out a document: its source beside its preview, or either alone. */
 const EDITOR_VIEWS = ['split', 'source', 'preview'] as const;
@@ -18,7 +18,7 @@ type EditorView = (typeof EDITOR_VIEWS)[number];
 const INSERTS = [
   { label: 'console.report.insert.callout', snippet: '<Callout>\n\n</Callout>' },
   { label: 'console.report.insert.facts', snippet: '<Facts>\n  <Fact label="">\n  </Fact>\n</Facts>' },
-  { label: 'console.report.insert.replay', snippet: '<Replay run="" />' },
+  { label: 'console.report.insert.runCard', snippet: '<RunCard run="" />' },
   { label: 'console.report.insert.number', snippet: '<RunNumber run="" field="steps" />' },
 ] as const;
 
@@ -53,9 +53,9 @@ export function DocumentEditor({ fileOf, sources, editing, onChange, preview }: 
           </div>
         )}
       </div>
-      <div className={styles.panes} data-view={view}>
+      <div className={styles.columns} data-view={view}>
         {view !== 'preview' && (
-          <label className={styles.sourcePane}>
+          <label className={styles.sourceColumn}>
             <span className="t-mono c-faint">{file.slice(1)}</span>
             <textarea ref={source} className={styles.source} spellCheck={false} readOnly={!editing} value={sources[language]} onChange={event => onChange({ ...sources, [language]: event.target.value })} />
           </label>
@@ -67,7 +67,7 @@ export function DocumentEditor({ fileOf, sources, editing, onChange, preview }: 
 }
 
 /** An approved draft's files, each to download and commit at the path it names. */
-export function ExportPanel({ report, fileOf }: { report: ReportDraft; fileOf: (locale: Locale) => string }) {
+export function ReportFiles({ report, fileOf }: { report: ReportDraft; fileOf: (locale: Locale) => string }) {
   const { t } = useTranslation();
   return (
     <section className={clsx(content.panel, styles.action)}>
