@@ -26,14 +26,26 @@
       "toolCallId": "call_2",
       "node": "sym:src/ledger/cli/commands.py::cmd_report",
       "kind": "read",
-      "verb": "read"
+      "verb": "read",
+      "view": {
+        "lines": {
+          "from": 7,
+          "to": 9
+        }
+      }
     },
     {
       "step": 2,
       "toolCallId": "call_2",
       "node": "sym:src/ledger/cli/commands.py::cmd_balance",
       "kind": "read",
-      "verb": "read"
+      "verb": "read",
+      "view": {
+        "lines": {
+          "from": 12,
+          "to": 14
+        }
+      }
     },
     {
       "step": 3,
@@ -60,7 +72,13 @@
       "toolCallId": "call_3",
       "node": "sym:src/ledger/report/table.py::render_table",
       "kind": "read",
-      "verb": "read"
+      "verb": "read",
+      "view": {
+        "lines": {
+          "from": 5,
+          "to": 10
+        }
+      }
     },
     {
       "step": 4,
@@ -87,7 +105,13 @@
       "toolCallId": "call_4",
       "node": "sym:src/ledger/report/table.py::render_table",
       "kind": "write",
-      "verb": "edit"
+      "verb": "edit",
+      "view": {
+        "lines": {
+          "from": 7,
+          "to": 13
+        }
+      }
     },
     {
       "step": 5,
@@ -114,7 +138,13 @@
       "toolCallId": "call_5",
       "node": "sym:src/ledger/cli/main.py::build_parser",
       "kind": "write",
-      "verb": "edit"
+      "verb": "edit",
+      "view": {
+        "lines": {
+          "from": 14,
+          "to": 14
+        }
+      }
     },
     {
       "step": 6,
@@ -161,42 +191,54 @@
       "toolCallId": "call_7",
       "node": "sym:src/ledger/cli/commands.py::cmd_report",
       "kind": "write",
-      "verb": "edit"
+      "verb": "edit",
+      "view": {
+        "lines": {
+          "from": 10,
+          "to": 10
+        }
+      }
     },
     {
       "step": 7,
       "toolCallId": "call_7",
       "node": "sym:src/ledger/cli/commands.py::cmd_balance",
       "kind": "write",
-      "verb": "edit"
+      "verb": "edit",
+      "view": {
+        "lines": {
+          "from": 13,
+          "to": 15
+        }
+      }
     },
     {
       "step": 8,
       "toolCallId": "call_8",
-      "node": "sym:tests/test_reader.py::test_parse_line",
-      "kind": "seen",
-      "verb": "test"
+      "node": "case:tests/test_reader.py::test_parse_line",
+      "kind": "read",
+      "verb": "run"
     },
     {
       "step": 8,
       "toolCallId": "call_8",
-      "node": "sym:tests/test_reader.py::test_parse_line_without_note",
-      "kind": "seen",
-      "verb": "test"
+      "node": "case:tests/test_reader.py::test_parse_line_without_note",
+      "kind": "read",
+      "verb": "run"
     },
     {
       "step": 8,
       "toolCallId": "call_8",
-      "node": "sym:tests/test_report.py::test_summarize",
-      "kind": "seen",
-      "verb": "test"
+      "node": "case:tests/test_report.py::test_summarize",
+      "kind": "read",
+      "verb": "run"
     },
     {
       "step": 8,
       "toolCallId": "call_8",
-      "node": "sym:tests/test_report.py::test_render_table",
-      "kind": "seen",
-      "verb": "test"
+      "node": "case:tests/test_report.py::test_render_table",
+      "kind": "read",
+      "verb": "run"
     },
     {
       "step": 8,
@@ -217,6 +259,19 @@
       "node": "mod:tests",
       "kind": "seen",
       "verb": "traceback"
+    },
+    {
+      "step": 8,
+      "toolCallId": "call_8",
+      "node": "sym:tests/test_report.py::test_render_table",
+      "kind": "seen",
+      "verb": "traceback",
+      "view": {
+        "lines": {
+          "from": 12,
+          "to": 12
+        }
+      }
     },
     {
       "step": 9,
@@ -243,7 +298,13 @@
       "toolCallId": "call_9",
       "node": "sym:tests/test_report.py::test_render_table",
       "kind": "read",
-      "verb": "read"
+      "verb": "read",
+      "view": {
+        "lines": {
+          "from": 11,
+          "to": 11
+        }
+      }
     },
     {
       "step": 10,
@@ -270,35 +331,41 @@
       "toolCallId": "call_10",
       "node": "sym:tests/test_report.py::test_render_table",
       "kind": "write",
-      "verb": "edit"
+      "verb": "edit",
+      "view": {
+        "lines": {
+          "from": 12,
+          "to": 12
+        }
+      }
     },
     {
       "step": 11,
       "toolCallId": "call_11",
-      "node": "sym:tests/test_reader.py::test_parse_line",
-      "kind": "seen",
-      "verb": "test"
+      "node": "case:tests/test_reader.py::test_parse_line",
+      "kind": "read",
+      "verb": "run"
     },
     {
       "step": 11,
       "toolCallId": "call_11",
-      "node": "sym:tests/test_reader.py::test_parse_line_without_note",
-      "kind": "seen",
-      "verb": "test"
+      "node": "case:tests/test_reader.py::test_parse_line_without_note",
+      "kind": "read",
+      "verb": "run"
     },
     {
       "step": 11,
       "toolCallId": "call_11",
-      "node": "sym:tests/test_report.py::test_summarize",
-      "kind": "seen",
-      "verb": "test"
+      "node": "case:tests/test_report.py::test_summarize",
+      "kind": "read",
+      "verb": "run"
     },
     {
       "step": 11,
       "toolCallId": "call_11",
-      "node": "sym:tests/test_report.py::test_render_table",
-      "kind": "seen",
-      "verb": "test"
+      "node": "case:tests/test_report.py::test_render_table",
+      "kind": "read",
+      "verb": "run"
     },
     {
       "step": 12,
@@ -335,7 +402,8 @@
         "node": "sym:src/ledger/report/table.py::render_table",
         "attrs": {
           "signature": "render_table(summary, as_json=False)"
-        }
+        },
+        "content": "def render_table(summary, as_json=False):\n    \"\"\"One row per account, amounts right-aligned, and a total row; or the same as JSON.\"\"\"\n    if as_json:\n        return json.dumps({account: format_amount(cents) for account, cents in summary.items()})\n    width = max([len(account) for account in summary] + [len(\"total\")])\n    rows = [f\"{account:<{width}}  {format_amount(cents):>12}\" for account, cents in summary.items()]\n    rows.append(f\"{'total':<{width}}  {format_amount(sum(summary.values())):>12}\")\n    return \"\\n\".join(rows)\n"
       }
     },
     {
@@ -348,6 +416,15 @@
           "lines": 29
         },
         "content": "\"\"\"The ledger command: parses its options and runs the command they name.\"\"\"\nimport argparse\nimport sys\n\nfrom ledger.cli.commands import cmd_balance, cmd_report\n\n\ndef build_parser():\n    parser = argparse.ArgumentParser(prog=\"ledger\")\n    parser.add_argument(\"file\", help=\"a ledger file, one entry per line\")\n    commands = parser.add_subparsers(dest=\"command\", required=True)\n    report = commands.add_parser(\"report\", help=\"sum the entries by account\")\n    report.add_argument(\"--since\", help=\"only entries on or after this date\")\n    report.add_argument(\"--json\", action=\"store_true\", help=\"print the report as JSON\")\n    report.set_defaults(run=cmd_report)\n    balance = commands.add_parser(\"balance\", help=\"print one account's balance\")\n    balance.add_argument(\"account\")\n    balance.set_defaults(run=cmd_balance)\n    return parser\n\n\ndef main(argv=None):\n    args = build_parser().parse_args(argv)\n    print(args.run(args))\n    return 0\n\n\nif __name__ == \"__main__\":\n    sys.exit(main())\n"
+      }
+    },
+    {
+      "step": 5,
+      "toolCallId": "call_5",
+      "change": {
+        "type": "setNode",
+        "node": "sym:src/ledger/cli/main.py::build_parser",
+        "content": "def build_parser():\n    parser = argparse.ArgumentParser(prog=\"ledger\")\n    parser.add_argument(\"file\", help=\"a ledger file, one entry per line\")\n    commands = parser.add_subparsers(dest=\"command\", required=True)\n    report = commands.add_parser(\"report\", help=\"sum the entries by account\")\n    report.add_argument(\"--since\", help=\"only entries on or after this date\")\n    report.add_argument(\"--json\", action=\"store_true\", help=\"print the report as JSON\")\n    report.set_defaults(run=cmd_report)\n    balance = commands.add_parser(\"balance\", help=\"print one account's balance\")\n    balance.add_argument(\"account\")\n    balance.set_defaults(run=cmd_balance)\n    return parser\n"
       }
     },
     {
@@ -378,9 +455,105 @@
       "step": 7,
       "toolCallId": "call_7",
       "change": {
+        "type": "removeEdge",
+        "edge": {
+          "from": "sym:src/ledger/cli/commands.py::cmd_balance",
+          "to": "sym:src/ledger/report/table.py::render_table",
+          "type": "calls"
+        }
+      }
+    },
+    {
+      "step": 7,
+      "toolCallId": "call_7",
+      "change": {
         "type": "setNode",
         "node": "file:src/ledger/cli/commands.py",
         "content": "\"\"\"What each command of the ledger does with the entries it reads.\"\"\"\nfrom ledger.core.money import format_amount\nfrom ledger.io.reader import read_entries\nfrom ledger.report.summary import summarize\nfrom ledger.report.table import render_table\n\n\ndef cmd_report(args):\n    entries = read_entries(args.file, since=args.since)\n    return render_table(summarize(entries), as_json=args.json)\n\n\ndef cmd_balance(args):\n    summary = summarize(read_entries(args.file))\n    return format_amount(summary.get(args.account, 0))\n"
+      }
+    },
+    {
+      "step": 7,
+      "toolCallId": "call_7",
+      "change": {
+        "type": "setNode",
+        "node": "sym:src/ledger/cli/commands.py::cmd_report",
+        "content": "def cmd_report(args):\n    entries = read_entries(args.file, since=args.since)\n    return render_table(summarize(entries), as_json=args.json)\n"
+      }
+    },
+    {
+      "step": 7,
+      "toolCallId": "call_7",
+      "change": {
+        "type": "setNode",
+        "node": "sym:src/ledger/cli/commands.py::cmd_balance",
+        "content": "def cmd_balance(args):\n    summary = summarize(read_entries(args.file))\n    return format_amount(summary.get(args.account, 0))\n"
+      }
+    },
+    {
+      "step": 7,
+      "toolCallId": "call_7",
+      "change": {
+        "type": "addEdge",
+        "edge": {
+          "from": "sym:src/ledger/cli/commands.py::cmd_balance",
+          "to": "sym:src/ledger/core/money.py::format_amount",
+          "type": "calls"
+        }
+      }
+    },
+    {
+      "step": 8,
+      "toolCallId": "call_8",
+      "change": {
+        "type": "setNode",
+        "node": "suite:tests/test_reader.py",
+        "status": "healthy"
+      }
+    },
+    {
+      "step": 8,
+      "toolCallId": "call_8",
+      "change": {
+        "type": "setNode",
+        "node": "case:tests/test_reader.py::test_parse_line",
+        "status": "healthy"
+      }
+    },
+    {
+      "step": 8,
+      "toolCallId": "call_8",
+      "change": {
+        "type": "setNode",
+        "node": "case:tests/test_reader.py::test_parse_line_without_note",
+        "status": "healthy"
+      }
+    },
+    {
+      "step": 8,
+      "toolCallId": "call_8",
+      "change": {
+        "type": "setNode",
+        "node": "suite:tests/test_report.py",
+        "status": "down"
+      }
+    },
+    {
+      "step": 8,
+      "toolCallId": "call_8",
+      "change": {
+        "type": "setNode",
+        "node": "case:tests/test_report.py::test_summarize",
+        "status": "healthy"
+      }
+    },
+    {
+      "step": 8,
+      "toolCallId": "call_8",
+      "change": {
+        "type": "setNode",
+        "node": "case:tests/test_report.py::test_render_table",
+        "status": "down"
       }
     },
     {
@@ -390,6 +563,33 @@
         "type": "setNode",
         "node": "file:tests/test_report.py",
         "content": "from ledger.io.reader import parse_line\nfrom ledger.report.summary import summarize\nfrom ledger.report.table import render_table\n\n\ndef test_summarize():\n    entries = [parse_line(\"2026-11-02 food -12.50\"), parse_line(\"2026-11-03 food -7.50\"), parse_line(\"2026-11-03 salary 3000\")]\n    assert summarize(entries) == {\"food\": -2000, \"salary\": 300000}\n\n\ndef test_render_table():\n    assert render_table({\"food\": -2000}) == \"food         -20.00\\ntotal        -20.00\"\n"
+      }
+    },
+    {
+      "step": 10,
+      "toolCallId": "call_10",
+      "change": {
+        "type": "setNode",
+        "node": "sym:tests/test_report.py::test_render_table",
+        "content": "def test_render_table():\n    assert render_table({\"food\": -2000}) == \"food         -20.00\\ntotal        -20.00\"\n"
+      }
+    },
+    {
+      "step": 11,
+      "toolCallId": "call_11",
+      "change": {
+        "type": "setNode",
+        "node": "suite:tests/test_report.py",
+        "status": "healthy"
+      }
+    },
+    {
+      "step": 11,
+      "toolCallId": "call_11",
+      "change": {
+        "type": "setNode",
+        "node": "case:tests/test_report.py::test_render_table",
+        "status": "healthy"
       }
     },
     {

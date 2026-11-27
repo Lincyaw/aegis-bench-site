@@ -124,14 +124,26 @@
       "toolCallId": "call_3",
       "node": "sym:src/ledger/cli/main.py::build_parser",
       "kind": "read",
-      "verb": "read"
+      "verb": "read",
+      "view": {
+        "lines": {
+          "from": 8,
+          "to": 18
+        }
+      }
     },
     {
       "step": 3,
       "toolCallId": "call_3",
       "node": "sym:src/ledger/cli/main.py::main",
       "kind": "read",
-      "verb": "read"
+      "verb": "read",
+      "view": {
+        "lines": {
+          "from": 21,
+          "to": 24
+        }
+      }
     },
     {
       "step": 4,
@@ -158,14 +170,26 @@
       "toolCallId": "call_4",
       "node": "sym:src/ledger/cli/commands.py::cmd_report",
       "kind": "read",
-      "verb": "read"
+      "verb": "read",
+      "view": {
+        "lines": {
+          "from": 7,
+          "to": 9
+        }
+      }
     },
     {
       "step": 4,
       "toolCallId": "call_4",
       "node": "sym:src/ledger/cli/commands.py::cmd_balance",
       "kind": "read",
-      "verb": "read"
+      "verb": "read",
+      "view": {
+        "lines": {
+          "from": 12,
+          "to": 14
+        }
+      }
     },
     {
       "step": 5,
@@ -192,14 +216,26 @@
       "toolCallId": "call_5",
       "node": "sym:src/ledger/cli/commands.py::cmd_report",
       "kind": "seen",
-      "verb": "search"
+      "verb": "search",
+      "view": {
+        "lines": {
+          "from": 9,
+          "to": 9
+        }
+      }
     },
     {
       "step": 5,
       "toolCallId": "call_5",
       "node": "sym:src/ledger/cli/commands.py::cmd_balance",
       "kind": "seen",
-      "verb": "search"
+      "verb": "search",
+      "view": {
+        "lines": {
+          "from": 14,
+          "to": 14
+        }
+      }
     },
     {
       "step": 5,
@@ -226,7 +262,13 @@
       "toolCallId": "call_5",
       "node": "sym:src/ledger/report/table.py::render_table",
       "kind": "seen",
-      "verb": "search"
+      "verb": "search",
+      "view": {
+        "lines": {
+          "from": 5,
+          "to": 5
+        }
+      }
     },
     {
       "step": 5,
@@ -253,7 +295,13 @@
       "toolCallId": "call_5",
       "node": "sym:tests/test_report.py::test_render_table",
       "kind": "seen",
-      "verb": "search"
+      "verb": "search",
+      "view": {
+        "lines": {
+          "from": 11,
+          "to": 12
+        }
+      }
     },
     {
       "step": 6,
@@ -280,7 +328,13 @@
       "toolCallId": "call_6",
       "node": "sym:src/ledger/report/table.py::render_table",
       "kind": "read",
-      "verb": "read"
+      "verb": "read",
+      "view": {
+        "lines": {
+          "from": 5,
+          "to": 10
+        }
+      }
     },
     {
       "step": 7,
@@ -307,7 +361,13 @@
       "toolCallId": "call_7",
       "node": "sym:src/ledger/core/money.py::format_amount",
       "kind": "read",
-      "verb": "read"
+      "verb": "read",
+      "view": {
+        "lines": {
+          "from": 11,
+          "to": 14
+        }
+      }
     },
     {
       "step": 8,
@@ -334,7 +394,13 @@
       "toolCallId": "call_8",
       "node": "sym:src/ledger/report/json_output.py::render_json",
       "kind": "write",
-      "verb": "edit"
+      "verb": "edit",
+      "view": {
+        "lines": {
+          "from": 7,
+          "to": 10
+        }
+      }
     },
     {
       "step": 9,
@@ -361,7 +427,13 @@
       "toolCallId": "call_9",
       "node": "sym:src/ledger/cli/main.py::build_parser",
       "kind": "write",
-      "verb": "edit"
+      "verb": "edit",
+      "view": {
+        "lines": {
+          "from": 14,
+          "to": 14
+        }
+      }
     },
     {
       "step": 10,
@@ -388,7 +460,41 @@
       "toolCallId": "call_10",
       "node": "sym:src/ledger/cli/commands.py::cmd_report",
       "kind": "write",
-      "verb": "edit"
+      "verb": "edit",
+      "view": {
+        "lines": {
+          "from": 8,
+          "to": 13
+        }
+      }
+    },
+    {
+      "step": 11,
+      "toolCallId": "call_11",
+      "node": "case:tests/test_reader.py::test_parse_line",
+      "kind": "read",
+      "verb": "run"
+    },
+    {
+      "step": 11,
+      "toolCallId": "call_11",
+      "node": "case:tests/test_reader.py::test_parse_line_without_note",
+      "kind": "read",
+      "verb": "run"
+    },
+    {
+      "step": 11,
+      "toolCallId": "call_11",
+      "node": "case:tests/test_report.py::test_summarize",
+      "kind": "read",
+      "verb": "run"
+    },
+    {
+      "step": 11,
+      "toolCallId": "call_11",
+      "node": "case:tests/test_report.py::test_render_table",
+      "kind": "read",
+      "verb": "run"
     },
     {
       "step": 12,
@@ -435,42 +541,48 @@
       "toolCallId": "call_13",
       "node": "sym:tests/test_report.py::test_render_json",
       "kind": "write",
-      "verb": "edit"
+      "verb": "edit",
+      "view": {
+        "lines": {
+          "from": 18,
+          "to": 19
+        }
+      }
     },
     {
       "step": 14,
       "toolCallId": "call_14",
-      "node": "sym:tests/test_reader.py::test_parse_line",
-      "kind": "seen",
-      "verb": "test"
+      "node": "case:tests/test_reader.py::test_parse_line",
+      "kind": "read",
+      "verb": "run"
     },
     {
       "step": 14,
       "toolCallId": "call_14",
-      "node": "sym:tests/test_reader.py::test_parse_line_without_note",
-      "kind": "seen",
-      "verb": "test"
+      "node": "case:tests/test_reader.py::test_parse_line_without_note",
+      "kind": "read",
+      "verb": "run"
     },
     {
       "step": 14,
       "toolCallId": "call_14",
-      "node": "sym:tests/test_report.py::test_summarize",
-      "kind": "seen",
-      "verb": "test"
+      "node": "case:tests/test_report.py::test_summarize",
+      "kind": "read",
+      "verb": "run"
     },
     {
       "step": 14,
       "toolCallId": "call_14",
-      "node": "sym:tests/test_report.py::test_render_table",
-      "kind": "seen",
-      "verb": "test"
+      "node": "case:tests/test_report.py::test_render_table",
+      "kind": "read",
+      "verb": "run"
     },
     {
       "step": 14,
       "toolCallId": "call_14",
-      "node": "sym:tests/test_report.py::test_render_json",
-      "kind": "seen",
-      "verb": "test"
+      "node": "case:tests/test_report.py::test_render_json",
+      "kind": "read",
+      "verb": "run"
     },
     {
       "step": 15,
@@ -518,7 +630,8 @@
           "parent": "file:src/ledger/report/json_output.py",
           "attrs": {
             "signature": "render_json(summary)"
-          }
+          },
+          "content": "def render_json(summary):\n    \"\"\"Each account's total and the total, as two-decimal amount strings in a JSON object.\"\"\"\n    accounts = {account: format_amount(cents) for account, cents in summary.items()}\n    return json.dumps({\"accounts\": accounts, \"total\": format_amount(sum(summary.values()))}, ensure_ascii=False, indent=2)\n"
         }
       }
     },
@@ -535,6 +648,18 @@
       }
     },
     {
+      "step": 8,
+      "toolCallId": "call_8",
+      "change": {
+        "type": "addEdge",
+        "edge": {
+          "from": "sym:src/ledger/report/json_output.py::render_json",
+          "to": "sym:src/ledger/core/money.py::format_amount",
+          "type": "calls"
+        }
+      }
+    },
+    {
       "step": 9,
       "toolCallId": "call_9",
       "change": {
@@ -547,6 +672,15 @@
       }
     },
     {
+      "step": 9,
+      "toolCallId": "call_9",
+      "change": {
+        "type": "setNode",
+        "node": "sym:src/ledger/cli/main.py::build_parser",
+        "content": "def build_parser():\n    parser = argparse.ArgumentParser(prog=\"ledger\")\n    parser.add_argument(\"file\", help=\"a ledger file, one entry per line\")\n    commands = parser.add_subparsers(dest=\"command\", required=True)\n    report = commands.add_parser(\"report\", help=\"sum the entries by account\")\n    report.add_argument(\"--since\", help=\"only entries on or after this date\")\n    report.add_argument(\"--format\", choices=[\"table\", \"json\"], default=\"table\", help=\"how to print the report\")\n    report.set_defaults(run=cmd_report)\n    balance = commands.add_parser(\"balance\", help=\"print one account's balance\")\n    balance.add_argument(\"account\")\n    balance.set_defaults(run=cmd_balance)\n    return parser\n"
+      }
+    },
+    {
       "step": 10,
       "toolCallId": "call_10",
       "change": {
@@ -556,6 +690,81 @@
           "lines": 18
         },
         "content": "\"\"\"What each command of the ledger does with the entries it reads.\"\"\"\nfrom ledger.io.reader import read_entries\nfrom ledger.report.json_output import render_json\nfrom ledger.report.summary import summarize\nfrom ledger.report.table import render_table\n\n\ndef cmd_report(args):\n    entries = read_entries(args.file, since=args.since)\n    summary = summarize(entries)\n    if args.format == \"json\":\n        return render_json(summary)\n    return render_table(summary)\n\n\ndef cmd_balance(args):\n    summary = summarize(read_entries(args.file))\n    return render_table({args.account: summary.get(args.account, 0)})\n"
+      }
+    },
+    {
+      "step": 10,
+      "toolCallId": "call_10",
+      "change": {
+        "type": "setNode",
+        "node": "sym:src/ledger/cli/commands.py::cmd_report",
+        "content": "def cmd_report(args):\n    entries = read_entries(args.file, since=args.since)\n    summary = summarize(entries)\n    if args.format == \"json\":\n        return render_json(summary)\n    return render_table(summary)\n"
+      }
+    },
+    {
+      "step": 10,
+      "toolCallId": "call_10",
+      "change": {
+        "type": "addEdge",
+        "edge": {
+          "from": "sym:src/ledger/cli/commands.py::cmd_report",
+          "to": "sym:src/ledger/report/json_output.py::render_json",
+          "type": "calls"
+        }
+      }
+    },
+    {
+      "step": 11,
+      "toolCallId": "call_11",
+      "change": {
+        "type": "setNode",
+        "node": "suite:tests/test_reader.py",
+        "status": "healthy"
+      }
+    },
+    {
+      "step": 11,
+      "toolCallId": "call_11",
+      "change": {
+        "type": "setNode",
+        "node": "case:tests/test_reader.py::test_parse_line",
+        "status": "healthy"
+      }
+    },
+    {
+      "step": 11,
+      "toolCallId": "call_11",
+      "change": {
+        "type": "setNode",
+        "node": "case:tests/test_reader.py::test_parse_line_without_note",
+        "status": "healthy"
+      }
+    },
+    {
+      "step": 11,
+      "toolCallId": "call_11",
+      "change": {
+        "type": "setNode",
+        "node": "suite:tests/test_report.py",
+        "status": "healthy"
+      }
+    },
+    {
+      "step": 11,
+      "toolCallId": "call_11",
+      "change": {
+        "type": "setNode",
+        "node": "case:tests/test_report.py::test_summarize",
+        "status": "healthy"
+      }
+    },
+    {
+      "step": 11,
+      "toolCallId": "call_11",
+      "change": {
+        "type": "setNode",
+        "node": "case:tests/test_report.py::test_render_table",
+        "status": "healthy"
       }
     },
     {
@@ -595,8 +804,44 @@
           "parent": "file:tests/test_report.py",
           "attrs": {
             "signature": "test_render_json()"
-          }
+          },
+          "content": "def test_render_json():\n    assert json.loads(render_json({\"food\": -2000})) == {\"accounts\": {\"food\": \"-20.00\"}, \"total\": \"-20.00\"}\n"
         }
+      }
+    },
+    {
+      "step": 13,
+      "toolCallId": "call_13",
+      "change": {
+        "type": "addNode",
+        "node": {
+          "id": "case:tests/test_report.py::test_render_json",
+          "layer": "tests",
+          "type": "test",
+          "label": "test_render_json",
+          "parent": "suite:tests/test_report.py"
+        }
+      }
+    },
+    {
+      "step": 13,
+      "toolCallId": "call_13",
+      "change": {
+        "type": "addEdge",
+        "edge": {
+          "from": "case:tests/test_report.py::test_render_json",
+          "to": "sym:src/ledger/report/json_output.py::render_json",
+          "type": "covers"
+        }
+      }
+    },
+    {
+      "step": 14,
+      "toolCallId": "call_14",
+      "change": {
+        "type": "setNode",
+        "node": "case:tests/test_report.py::test_render_json",
+        "status": "healthy"
       }
     },
     {

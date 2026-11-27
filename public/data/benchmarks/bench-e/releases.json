@@ -7,8 +7,8 @@
     "updatedAt": "2026-11-21T08:00:00Z",
     "content": {
       "summary": {
-        "zh-CN": "在小型 Python 代码库中按需求实现功能，以隐藏测试判定是否通过；回放只有模块与代码两层。",
-        "en": "Implement a feature in a small Python codebase, judged by hidden tests; its replay has only modules and code."
+        "zh-CN": "在小型 Python 代码库中按需求实现功能，以隐藏测试判定是否通过；回放分为模块、代码和测试三层。",
+        "en": "Implement a feature in a small Python codebase, judged by hidden tests; its replay has modules, code and tests."
       },
       "entrants": [
         {

@@ -1,13 +1,23 @@
 {
   "nodes": [
     {
+      "id": "mod:ledger",
+      "layer": "modules",
+      "type": "package",
+      "label": "ledger",
+      "attrs": {
+        "path": "src/ledger"
+      }
+    },
+    {
       "id": "mod:ledger.cli",
       "layer": "modules",
       "type": "package",
       "label": "ledger.cli",
       "attrs": {
         "path": "src/ledger/cli"
-      }
+      },
+      "parent": "mod:ledger"
     },
     {
       "id": "mod:ledger.core",
@@ -16,7 +26,8 @@
       "label": "ledger.core",
       "attrs": {
         "path": "src/ledger/core"
-      }
+      },
+      "parent": "mod:ledger"
     },
     {
       "id": "mod:ledger.io",
@@ -25,7 +36,8 @@
       "label": "ledger.io",
       "attrs": {
         "path": "src/ledger/io"
-      }
+      },
+      "parent": "mod:ledger"
     },
     {
       "id": "mod:ledger.report",
@@ -34,7 +46,8 @@
       "label": "ledger.report",
       "attrs": {
         "path": "src/ledger/report"
-      }
+      },
+      "parent": "mod:ledger"
     },
     {
       "id": "mod:tests",
@@ -94,7 +107,8 @@
       "parent": "file:src/ledger/cli/commands.py",
       "attrs": {
         "signature": "cmd_report(args)"
-      }
+      },
+      "content": "def cmd_report(args):\n    entries = read_entries(args.file, since=args.since)\n    return render_table(summarize(entries))\n"
     },
     {
       "id": "sym:src/ledger/cli/commands.py::cmd_balance",
@@ -104,7 +118,8 @@
       "parent": "file:src/ledger/cli/commands.py",
       "attrs": {
         "signature": "cmd_balance(args)"
-      }
+      },
+      "content": "def cmd_balance(args):\n    summary = summarize(read_entries(args.file))\n    return render_table({args.account: summary.get(args.account, 0)})\n"
     },
     {
       "id": "file:src/ledger/cli/main.py",
@@ -125,7 +140,8 @@
       "parent": "file:src/ledger/cli/main.py",
       "attrs": {
         "signature": "build_parser()"
-      }
+      },
+      "content": "def build_parser():\n    parser = argparse.ArgumentParser(prog=\"ledger\")\n    parser.add_argument(\"file\", help=\"a ledger file, one entry per line\")\n    commands = parser.add_subparsers(dest=\"command\", required=True)\n    report = commands.add_parser(\"report\", help=\"sum the entries by account\")\n    report.add_argument(\"--since\", help=\"only entries on or after this date\")\n    report.set_defaults(run=cmd_report)\n    balance = commands.add_parser(\"balance\", help=\"print one account's balance\")\n    balance.add_argument(\"account\")\n    balance.set_defaults(run=cmd_balance)\n    return parser\n"
     },
     {
       "id": "sym:src/ledger/cli/main.py::main",
@@ -135,7 +151,8 @@
       "parent": "file:src/ledger/cli/main.py",
       "attrs": {
         "signature": "main(argv=None)"
-      }
+      },
+      "content": "def main(argv=None):\n    args = build_parser().parse_args(argv)\n    print(args.run(args))\n    return 0\n"
     },
     {
       "id": "file:src/ledger/core/entry.py",
@@ -156,7 +173,8 @@
       "parent": "file:src/ledger/core/entry.py",
       "attrs": {
         "signature": "class Entry"
-      }
+      },
+      "content": "class Entry:\n    day: date\n    account: str\n    cents: int\n    note: str = \"\"\n\n    def is_credit(self):\n        return self.cents > 0\n"
     },
     {
       "id": "sym:src/ledger/core/entry.py::Entry.is_credit",
@@ -166,7 +184,8 @@
       "parent": "sym:src/ledger/core/entry.py::Entry",
       "attrs": {
         "signature": "is_credit(self)"
-      }
+      },
+      "content": "    def is_credit(self):\n        return self.cents > 0\n"
     },
     {
       "id": "file:src/ledger/core/money.py",
@@ -187,7 +206,8 @@
       "parent": "file:src/ledger/core/money.py",
       "attrs": {
         "signature": "parse_amount(text)"
-      }
+      },
+      "content": "def parse_amount(text):\n    \"\"\"Reads an amount such as -12.50 into cents.\"\"\"\n    sign = -1 if text.startswith(\"-\") else 1\n    whole, _, fraction = text.lstrip(\"+-\").partition(\".\")\n    return sign * (int(whole) * 100 + int(fraction.ljust(2, \"0\")[:2]))\n"
     },
     {
       "id": "sym:src/ledger/core/money.py::format_amount",
@@ -197,7 +217,8 @@
       "parent": "file:src/ledger/core/money.py",
       "attrs": {
         "signature": "format_amount(cents)"
-      }
+      },
+      "content": "def format_amount(cents):\n    \"\"\"Writes cents as an amount with two decimals, such as -12.50.\"\"\"\n    sign = \"-\" if cents < 0 else \"\"\n    return f\"{sign}{abs(cents) // 100}.{abs(cents) % 100:02d}\"\n"
     },
     {
       "id": "file:src/ledger/io/reader.py",
@@ -218,7 +239,8 @@
       "parent": "file:src/ledger/io/reader.py",
       "attrs": {
         "signature": "parse_line(line)"
-      }
+      },
+      "content": "def parse_line(line):\n    \"\"\"Reads a line such as `2026-11-02 food -12.50 lunch` into an entry.\"\"\"\n    day, account, amount, *note = line.split()\n    return Entry(date.fromisoformat(day), account, parse_amount(amount), \" \".join(note))\n"
     },
     {
       "id": "sym:src/ledger/io/reader.py::read_entries",
@@ -228,7 +250,8 @@
       "parent": "file:src/ledger/io/reader.py",
       "attrs": {
         "signature": "read_entries(path, since=None)"
-      }
+      },
+      "content": "def read_entries(path, since=None):\n    entries = []\n    with open(path, encoding=\"utf-8\") as handle:\n        for line in handle:\n            line = line.strip()\n            if not line or line.startswith(\"#\"):\n                continue\n            entry = parse_line(line)\n            if since is None or entry.day >= date.fromisoformat(since):\n                entries.append(entry)\n    return entries\n"
     },
     {
       "id": "file:src/ledger/report/summary.py",
@@ -249,7 +272,8 @@
       "parent": "file:src/ledger/report/summary.py",
       "attrs": {
         "signature": "summarize(entries)"
-      }
+      },
+      "content": "def summarize(entries):\n    \"\"\"Each account's total in cents, accounts in alphabetical order.\"\"\"\n    totals = defaultdict(int)\n    for entry in entries:\n        totals[entry.account] += entry.cents\n    return dict(sorted(totals.items()))\n"
     },
     {
       "id": "file:src/ledger/report/table.py",
@@ -270,7 +294,8 @@
       "parent": "file:src/ledger/report/table.py",
       "attrs": {
         "signature": "render_table(summary)"
-      }
+      },
+      "content": "def render_table(summary):\n    \"\"\"One row per account, amounts right-aligned, and a total row.\"\"\"\n    width = max([len(account) for account in summary] + [len(\"total\")])\n    rows = [f\"{account:<{width}}  {format_amount(cents):>10}\" for account, cents in summary.items()]\n    rows.append(f\"{'total':<{width}}  {format_amount(sum(summary.values())):>10}\")\n    return \"\\n\".join(rows)\n"
     },
     {
       "id": "file:tests/test_reader.py",
@@ -291,7 +316,8 @@
       "parent": "file:tests/test_reader.py",
       "attrs": {
         "signature": "test_parse_line()"
-      }
+      },
+      "content": "def test_parse_line():\n    entry = parse_line(\"2026-11-02 food -12.50 lunch\")\n    assert (entry.day, entry.account, entry.cents, entry.note) == (date(2026, 11, 2), \"food\", -1250, \"lunch\")\n"
     },
     {
       "id": "sym:tests/test_reader.py::test_parse_line_without_note",
@@ -301,7 +327,8 @@
       "parent": "file:tests/test_reader.py",
       "attrs": {
         "signature": "test_parse_line_without_note()"
-      }
+      },
+      "content": "def test_parse_line_without_note():\n    assert parse_line(\"2026-11-03 salary 3000\").note == \"\"\n"
     },
     {
       "id": "file:tests/test_report.py",
@@ -322,7 +349,8 @@
       "parent": "file:tests/test_report.py",
       "attrs": {
         "signature": "test_summarize()"
-      }
+      },
+      "content": "def test_summarize():\n    entries = [parse_line(\"2026-11-02 food -12.50\"), parse_line(\"2026-11-03 food -7.50\"), parse_line(\"2026-11-03 salary 3000\")]\n    assert summarize(entries) == {\"food\": -2000, \"salary\": 300000}\n"
     },
     {
       "id": "sym:tests/test_report.py::test_render_table",
@@ -332,7 +360,8 @@
       "parent": "file:tests/test_report.py",
       "attrs": {
         "signature": "test_render_table()"
-      }
+      },
+      "content": "def test_render_table():\n    assert render_table({\"food\": -2000}) == \"food       -20.00\\ntotal      -20.00\"\n"
     },
     {
       "id": "file:pyproject.toml",
@@ -343,6 +372,46 @@
         "lines": 10
       },
       "content": "[project]\nname = \"ledger\"\nversion = \"0.4.0\"\nrequires-python = \">=3.12\"\n\n[project.scripts]\nledger = \"ledger.cli.main:main\"\n\n[tool.pytest.ini_options]\npythonpath = [\"src\"]\n"
+    },
+    {
+      "id": "suite:tests/test_reader.py",
+      "layer": "tests",
+      "type": "suite",
+      "label": "test_reader.py"
+    },
+    {
+      "id": "case:tests/test_reader.py::test_parse_line",
+      "layer": "tests",
+      "type": "test",
+      "label": "test_parse_line",
+      "parent": "suite:tests/test_reader.py"
+    },
+    {
+      "id": "case:tests/test_reader.py::test_parse_line_without_note",
+      "layer": "tests",
+      "type": "test",
+      "label": "test_parse_line_without_note",
+      "parent": "suite:tests/test_reader.py"
+    },
+    {
+      "id": "suite:tests/test_report.py",
+      "layer": "tests",
+      "type": "suite",
+      "label": "test_report.py"
+    },
+    {
+      "id": "case:tests/test_report.py::test_summarize",
+      "layer": "tests",
+      "type": "test",
+      "label": "test_summarize",
+      "parent": "suite:tests/test_report.py"
+    },
+    {
+      "id": "case:tests/test_report.py::test_render_table",
+      "layer": "tests",
+      "type": "test",
+      "label": "test_render_table",
+      "parent": "suite:tests/test_report.py"
     }
   ],
   "edges": [
@@ -390,6 +459,96 @@
       "from": "file:tests/test_report.py",
       "to": "mod:tests",
       "type": "part of"
+    },
+    {
+      "from": "sym:src/ledger/cli/commands.py::cmd_report",
+      "to": "sym:src/ledger/io/reader.py::read_entries",
+      "type": "calls"
+    },
+    {
+      "from": "sym:src/ledger/cli/commands.py::cmd_report",
+      "to": "sym:src/ledger/report/table.py::render_table",
+      "type": "calls"
+    },
+    {
+      "from": "sym:src/ledger/cli/commands.py::cmd_report",
+      "to": "sym:src/ledger/report/summary.py::summarize",
+      "type": "calls"
+    },
+    {
+      "from": "sym:src/ledger/cli/commands.py::cmd_balance",
+      "to": "sym:src/ledger/report/summary.py::summarize",
+      "type": "calls"
+    },
+    {
+      "from": "sym:src/ledger/cli/commands.py::cmd_balance",
+      "to": "sym:src/ledger/report/table.py::render_table",
+      "type": "calls"
+    },
+    {
+      "from": "sym:src/ledger/cli/commands.py::cmd_balance",
+      "to": "sym:src/ledger/io/reader.py::read_entries",
+      "type": "calls"
+    },
+    {
+      "from": "sym:src/ledger/cli/main.py::main",
+      "to": "sym:src/ledger/cli/main.py::build_parser",
+      "type": "calls"
+    },
+    {
+      "from": "sym:src/ledger/io/reader.py::parse_line",
+      "to": "sym:src/ledger/core/entry.py::Entry",
+      "type": "calls"
+    },
+    {
+      "from": "sym:src/ledger/io/reader.py::parse_line",
+      "to": "sym:src/ledger/core/money.py::parse_amount",
+      "type": "calls"
+    },
+    {
+      "from": "sym:src/ledger/io/reader.py::read_entries",
+      "to": "sym:src/ledger/io/reader.py::parse_line",
+      "type": "calls"
+    },
+    {
+      "from": "sym:src/ledger/report/table.py::render_table",
+      "to": "sym:src/ledger/core/money.py::format_amount",
+      "type": "calls"
+    },
+    {
+      "from": "suite:tests/test_reader.py",
+      "to": "file:tests/test_reader.py",
+      "type": "defined in"
+    },
+    {
+      "from": "case:tests/test_reader.py::test_parse_line",
+      "to": "sym:src/ledger/io/reader.py::parse_line",
+      "type": "covers"
+    },
+    {
+      "from": "case:tests/test_reader.py::test_parse_line_without_note",
+      "to": "sym:src/ledger/io/reader.py::parse_line",
+      "type": "covers"
+    },
+    {
+      "from": "suite:tests/test_report.py",
+      "to": "file:tests/test_report.py",
+      "type": "defined in"
+    },
+    {
+      "from": "case:tests/test_report.py::test_summarize",
+      "to": "sym:src/ledger/io/reader.py::parse_line",
+      "type": "covers"
+    },
+    {
+      "from": "case:tests/test_report.py::test_summarize",
+      "to": "sym:src/ledger/report/summary.py::summarize",
+      "type": "covers"
+    },
+    {
+      "from": "case:tests/test_report.py::test_render_table",
+      "to": "sym:src/ledger/report/table.py::render_table",
+      "type": "covers"
     },
     {
       "from": "mod:ledger.cli",
