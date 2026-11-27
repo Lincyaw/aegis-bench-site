@@ -1,0 +1,425 @@
+{
+  "nodes": [
+    {
+      "id": "mod:ledger.cli",
+      "layer": "modules",
+      "type": "package",
+      "label": "ledger.cli",
+      "attrs": {
+        "path": "src/ledger/cli"
+      }
+    },
+    {
+      "id": "mod:ledger.core",
+      "layer": "modules",
+      "type": "package",
+      "label": "ledger.core",
+      "attrs": {
+        "path": "src/ledger/core"
+      }
+    },
+    {
+      "id": "mod:ledger.io",
+      "layer": "modules",
+      "type": "package",
+      "label": "ledger.io",
+      "attrs": {
+        "path": "src/ledger/io"
+      }
+    },
+    {
+      "id": "mod:ledger.report",
+      "layer": "modules",
+      "type": "package",
+      "label": "ledger.report",
+      "attrs": {
+        "path": "src/ledger/report"
+      }
+    },
+    {
+      "id": "mod:tests",
+      "layer": "modules",
+      "type": "tests",
+      "label": "tests",
+      "attrs": {
+        "path": "tests"
+      }
+    },
+    {
+      "id": "dir:src/ledger/cli",
+      "layer": "code",
+      "type": "dir",
+      "label": "ledger/cli/"
+    },
+    {
+      "id": "dir:src/ledger/core",
+      "layer": "code",
+      "type": "dir",
+      "label": "ledger/core/"
+    },
+    {
+      "id": "dir:src/ledger/io",
+      "layer": "code",
+      "type": "dir",
+      "label": "ledger/io/"
+    },
+    {
+      "id": "dir:src/ledger/report",
+      "layer": "code",
+      "type": "dir",
+      "label": "ledger/report/"
+    },
+    {
+      "id": "dir:tests",
+      "layer": "code",
+      "type": "dir",
+      "label": "tests/"
+    },
+    {
+      "id": "file:src/ledger/cli/commands.py",
+      "layer": "code",
+      "type": "file",
+      "label": "commands.py",
+      "attrs": {
+        "lines": 14
+      },
+      "content": "\"\"\"What each command of the ledger does with the entries it reads.\"\"\"\nfrom ledger.io.reader import read_entries\nfrom ledger.report.summary import summarize\nfrom ledger.report.table import render_table\n\n\ndef cmd_report(args):\n    entries = read_entries(args.file, since=args.since)\n    return render_table(summarize(entries))\n\n\ndef cmd_balance(args):\n    summary = summarize(read_entries(args.file))\n    return render_table({args.account: summary.get(args.account, 0)})\n",
+      "parent": "dir:src/ledger/cli"
+    },
+    {
+      "id": "sym:src/ledger/cli/commands.py::cmd_report",
+      "layer": "code",
+      "type": "function",
+      "label": "cmd_report()",
+      "parent": "file:src/ledger/cli/commands.py",
+      "attrs": {
+        "signature": "cmd_report(args)"
+      }
+    },
+    {
+      "id": "sym:src/ledger/cli/commands.py::cmd_balance",
+      "layer": "code",
+      "type": "function",
+      "label": "cmd_balance()",
+      "parent": "file:src/ledger/cli/commands.py",
+      "attrs": {
+        "signature": "cmd_balance(args)"
+      }
+    },
+    {
+      "id": "file:src/ledger/cli/main.py",
+      "layer": "code",
+      "type": "file",
+      "label": "main.py",
+      "attrs": {
+        "lines": 28
+      },
+      "content": "\"\"\"The ledger command: parses its options and runs the command they name.\"\"\"\nimport argparse\nimport sys\n\nfrom ledger.cli.commands import cmd_balance, cmd_report\n\n\ndef build_parser():\n    parser = argparse.ArgumentParser(prog=\"ledger\")\n    parser.add_argument(\"file\", help=\"a ledger file, one entry per line\")\n    commands = parser.add_subparsers(dest=\"command\", required=True)\n    report = commands.add_parser(\"report\", help=\"sum the entries by account\")\n    report.add_argument(\"--since\", help=\"only entries on or after this date\")\n    report.set_defaults(run=cmd_report)\n    balance = commands.add_parser(\"balance\", help=\"print one account's balance\")\n    balance.add_argument(\"account\")\n    balance.set_defaults(run=cmd_balance)\n    return parser\n\n\ndef main(argv=None):\n    args = build_parser().parse_args(argv)\n    print(args.run(args))\n    return 0\n\n\nif __name__ == \"__main__\":\n    sys.exit(main())\n",
+      "parent": "dir:src/ledger/cli"
+    },
+    {
+      "id": "sym:src/ledger/cli/main.py::build_parser",
+      "layer": "code",
+      "type": "function",
+      "label": "build_parser()",
+      "parent": "file:src/ledger/cli/main.py",
+      "attrs": {
+        "signature": "build_parser()"
+      }
+    },
+    {
+      "id": "sym:src/ledger/cli/main.py::main",
+      "layer": "code",
+      "type": "function",
+      "label": "main()",
+      "parent": "file:src/ledger/cli/main.py",
+      "attrs": {
+        "signature": "main(argv=None)"
+      }
+    },
+    {
+      "id": "file:src/ledger/core/entry.py",
+      "layer": "code",
+      "type": "file",
+      "label": "entry.py",
+      "attrs": {
+        "lines": 14
+      },
+      "content": "\"\"\"One line of a ledger: when, which account, how much.\"\"\"\nfrom dataclasses import dataclass\nfrom datetime import date\n\n\n@dataclass(frozen=True)\nclass Entry:\n    day: date\n    account: str\n    cents: int\n    note: str = \"\"\n\n    def is_credit(self):\n        return self.cents > 0\n",
+      "parent": "dir:src/ledger/core"
+    },
+    {
+      "id": "sym:src/ledger/core/entry.py::Entry",
+      "layer": "code",
+      "type": "class",
+      "label": "Entry",
+      "parent": "file:src/ledger/core/entry.py",
+      "attrs": {
+        "signature": "class Entry"
+      }
+    },
+    {
+      "id": "sym:src/ledger/core/entry.py::Entry.is_credit",
+      "layer": "code",
+      "type": "method",
+      "label": "is_credit()",
+      "parent": "sym:src/ledger/core/entry.py::Entry",
+      "attrs": {
+        "signature": "is_credit(self)"
+      }
+    },
+    {
+      "id": "file:src/ledger/core/money.py",
+      "layer": "code",
+      "type": "file",
+      "label": "money.py",
+      "attrs": {
+        "lines": 14
+      },
+      "content": "\"\"\"Amounts are kept in cents; these turn them to and from text.\"\"\"\n\n\ndef parse_amount(text):\n    \"\"\"Reads an amount such as -12.50 into cents.\"\"\"\n    sign = -1 if text.startswith(\"-\") else 1\n    whole, _, fraction = text.lstrip(\"+-\").partition(\".\")\n    return sign * (int(whole) * 100 + int(fraction.ljust(2, \"0\")[:2]))\n\n\ndef format_amount(cents):\n    \"\"\"Writes cents as an amount with two decimals, such as -12.50.\"\"\"\n    sign = \"-\" if cents < 0 else \"\"\n    return f\"{sign}{abs(cents) // 100}.{abs(cents) % 100:02d}\"\n",
+      "parent": "dir:src/ledger/core"
+    },
+    {
+      "id": "sym:src/ledger/core/money.py::parse_amount",
+      "layer": "code",
+      "type": "function",
+      "label": "parse_amount()",
+      "parent": "file:src/ledger/core/money.py",
+      "attrs": {
+        "signature": "parse_amount(text)"
+      }
+    },
+    {
+      "id": "sym:src/ledger/core/money.py::format_amount",
+      "layer": "code",
+      "type": "function",
+      "label": "format_amount()",
+      "parent": "file:src/ledger/core/money.py",
+      "attrs": {
+        "signature": "format_amount(cents)"
+      }
+    },
+    {
+      "id": "file:src/ledger/io/reader.py",
+      "layer": "code",
+      "type": "file",
+      "label": "reader.py",
+      "attrs": {
+        "lines": 24
+      },
+      "content": "\"\"\"Reads a ledger file: one entry per line, blank lines and # comments skipped.\"\"\"\nfrom datetime import date\n\nfrom ledger.core.entry import Entry\nfrom ledger.core.money import parse_amount\n\n\ndef parse_line(line):\n    \"\"\"Reads a line such as `2026-11-02 food -12.50 lunch` into an entry.\"\"\"\n    day, account, amount, *note = line.split()\n    return Entry(date.fromisoformat(day), account, parse_amount(amount), \" \".join(note))\n\n\ndef read_entries(path, since=None):\n    entries = []\n    with open(path, encoding=\"utf-8\") as handle:\n        for line in handle:\n            line = line.strip()\n            if not line or line.startswith(\"#\"):\n                continue\n            entry = parse_line(line)\n            if since is None or entry.day >= date.fromisoformat(since):\n                entries.append(entry)\n    return entries\n",
+      "parent": "dir:src/ledger/io"
+    },
+    {
+      "id": "sym:src/ledger/io/reader.py::parse_line",
+      "layer": "code",
+      "type": "function",
+      "label": "parse_line()",
+      "parent": "file:src/ledger/io/reader.py",
+      "attrs": {
+        "signature": "parse_line(line)"
+      }
+    },
+    {
+      "id": "sym:src/ledger/io/reader.py::read_entries",
+      "layer": "code",
+      "type": "function",
+      "label": "read_entries()",
+      "parent": "file:src/ledger/io/reader.py",
+      "attrs": {
+        "signature": "read_entries(path, since=None)"
+      }
+    },
+    {
+      "id": "file:src/ledger/report/summary.py",
+      "layer": "code",
+      "type": "file",
+      "label": "summary.py",
+      "attrs": {
+        "lines": 10
+      },
+      "content": "\"\"\"Sums a ledger's entries by account.\"\"\"\nfrom collections import defaultdict\n\n\ndef summarize(entries):\n    \"\"\"Each account's total in cents, accounts in alphabetical order.\"\"\"\n    totals = defaultdict(int)\n    for entry in entries:\n        totals[entry.account] += entry.cents\n    return dict(sorted(totals.items()))\n",
+      "parent": "dir:src/ledger/report"
+    },
+    {
+      "id": "sym:src/ledger/report/summary.py::summarize",
+      "layer": "code",
+      "type": "function",
+      "label": "summarize()",
+      "parent": "file:src/ledger/report/summary.py",
+      "attrs": {
+        "signature": "summarize(entries)"
+      }
+    },
+    {
+      "id": "file:src/ledger/report/table.py",
+      "layer": "code",
+      "type": "file",
+      "label": "table.py",
+      "attrs": {
+        "lines": 10
+      },
+      "content": "\"\"\"Renders a summary as a plain-text table.\"\"\"\nfrom ledger.core.money import format_amount\n\n\ndef render_table(summary):\n    \"\"\"One row per account, amounts right-aligned, and a total row.\"\"\"\n    width = max([len(account) for account in summary] + [len(\"total\")])\n    rows = [f\"{account:<{width}}  {format_amount(cents):>10}\" for account, cents in summary.items()]\n    rows.append(f\"{'total':<{width}}  {format_amount(sum(summary.values())):>10}\")\n    return \"\\n\".join(rows)\n",
+      "parent": "dir:src/ledger/report"
+    },
+    {
+      "id": "sym:src/ledger/report/table.py::render_table",
+      "layer": "code",
+      "type": "function",
+      "label": "render_table()",
+      "parent": "file:src/ledger/report/table.py",
+      "attrs": {
+        "signature": "render_table(summary)"
+      }
+    },
+    {
+      "id": "file:tests/test_reader.py",
+      "layer": "code",
+      "type": "file",
+      "label": "test_reader.py",
+      "attrs": {
+        "lines": 12
+      },
+      "content": "from datetime import date\n\nfrom ledger.io.reader import parse_line\n\n\ndef test_parse_line():\n    entry = parse_line(\"2026-11-02 food -12.50 lunch\")\n    assert (entry.day, entry.account, entry.cents, entry.note) == (date(2026, 11, 2), \"food\", -1250, \"lunch\")\n\n\ndef test_parse_line_without_note():\n    assert parse_line(\"2026-11-03 salary 3000\").note == \"\"\n",
+      "parent": "dir:tests"
+    },
+    {
+      "id": "sym:tests/test_reader.py::test_parse_line",
+      "layer": "code",
+      "type": "function",
+      "label": "test_parse_line()",
+      "parent": "file:tests/test_reader.py",
+      "attrs": {
+        "signature": "test_parse_line()"
+      }
+    },
+    {
+      "id": "sym:tests/test_reader.py::test_parse_line_without_note",
+      "layer": "code",
+      "type": "function",
+      "label": "test_parse_line_without_note()",
+      "parent": "file:tests/test_reader.py",
+      "attrs": {
+        "signature": "test_parse_line_without_note()"
+      }
+    },
+    {
+      "id": "file:tests/test_report.py",
+      "layer": "code",
+      "type": "file",
+      "label": "test_report.py",
+      "attrs": {
+        "lines": 12
+      },
+      "content": "from ledger.io.reader import parse_line\nfrom ledger.report.summary import summarize\nfrom ledger.report.table import render_table\n\n\ndef test_summarize():\n    entries = [parse_line(\"2026-11-02 food -12.50\"), parse_line(\"2026-11-03 food -7.50\"), parse_line(\"2026-11-03 salary 3000\")]\n    assert summarize(entries) == {\"food\": -2000, \"salary\": 300000}\n\n\ndef test_render_table():\n    assert render_table({\"food\": -2000}) == \"food       -20.00\\ntotal      -20.00\"\n",
+      "parent": "dir:tests"
+    },
+    {
+      "id": "sym:tests/test_report.py::test_summarize",
+      "layer": "code",
+      "type": "function",
+      "label": "test_summarize()",
+      "parent": "file:tests/test_report.py",
+      "attrs": {
+        "signature": "test_summarize()"
+      }
+    },
+    {
+      "id": "sym:tests/test_report.py::test_render_table",
+      "layer": "code",
+      "type": "function",
+      "label": "test_render_table()",
+      "parent": "file:tests/test_report.py",
+      "attrs": {
+        "signature": "test_render_table()"
+      }
+    },
+    {
+      "id": "file:pyproject.toml",
+      "layer": "code",
+      "type": "file",
+      "label": "pyproject.toml",
+      "attrs": {
+        "lines": 10
+      },
+      "content": "[project]\nname = \"ledger\"\nversion = \"0.4.0\"\nrequires-python = \">=3.12\"\n\n[project.scripts]\nledger = \"ledger.cli.main:main\"\n\n[tool.pytest.ini_options]\npythonpath = [\"src\"]\n"
+    }
+  ],
+  "edges": [
+    {
+      "from": "file:src/ledger/cli/commands.py",
+      "to": "mod:ledger.cli",
+      "type": "part of"
+    },
+    {
+      "from": "file:src/ledger/cli/main.py",
+      "to": "mod:ledger.cli",
+      "type": "part of"
+    },
+    {
+      "from": "file:src/ledger/core/entry.py",
+      "to": "mod:ledger.core",
+      "type": "part of"
+    },
+    {
+      "from": "file:src/ledger/core/money.py",
+      "to": "mod:ledger.core",
+      "type": "part of"
+    },
+    {
+      "from": "file:src/ledger/io/reader.py",
+      "to": "mod:ledger.io",
+      "type": "part of"
+    },
+    {
+      "from": "file:src/ledger/report/summary.py",
+      "to": "mod:ledger.report",
+      "type": "part of"
+    },
+    {
+      "from": "file:src/ledger/report/table.py",
+      "to": "mod:ledger.report",
+      "type": "part of"
+    },
+    {
+      "from": "file:tests/test_reader.py",
+      "to": "mod:tests",
+      "type": "part of"
+    },
+    {
+      "from": "file:tests/test_report.py",
+      "to": "mod:tests",
+      "type": "part of"
+    },
+    {
+      "from": "mod:ledger.cli",
+      "to": "mod:ledger.io",
+      "type": "imports"
+    },
+    {
+      "from": "mod:ledger.cli",
+      "to": "mod:ledger.report",
+      "type": "imports"
+    },
+    {
+      "from": "mod:ledger.io",
+      "to": "mod:ledger.core",
+      "type": "imports"
+    },
+    {
+      "from": "mod:ledger.report",
+      "to": "mod:ledger.core",
+      "type": "imports"
+    },
+    {
+      "from": "mod:tests",
+      "to": "mod:ledger.io",
+      "type": "imports"
+    },
+    {
+      "from": "mod:tests",
+      "to": "mod:ledger.report",
+      "type": "imports"
+    }
+  ]
+}

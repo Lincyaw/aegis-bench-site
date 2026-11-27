@@ -1,0 +1,214 @@
+[
+  {
+    "id": "task-001",
+    "title": "报告的 JSON 输出",
+    "tags": [
+      "命令行"
+    ],
+    "version": "3f2a9c1",
+    "instruction": "为 ledger 的 report 命令增加 JSON 输出：传入 --format json 时，以 JSON 对象输出各账户的合计与总计，金额保留两位小数并写成字符串；不传或传入 --format table 时，输出保持现在的表格不变。\n\n完成后请运行项目已有的测试，并在仓库根目录写一份 report.json，列出改动的文件和每处改动的理由。report.json 的格式如下：",
+    "reportSchema": "{ \"files\": [ { \"path\": string, \"reason\": string } ], \"tests_run\": boolean }",
+    "environment": [
+      {
+        "label": "代码仓库",
+        "value": "ledger @ 3f2a9c1",
+        "format": "code"
+      },
+      {
+        "label": "语言与依赖",
+        "value": "Python 3.12 · pytest"
+      },
+      {
+        "label": "可用工具",
+        "value": "读取文件、搜索代码、新建文件、修改文件、运行命令、提交"
+      },
+      {
+        "label": "网络",
+        "value": "不可访问外网"
+      },
+      {
+        "label": "轮次上限",
+        "value": "50 轮"
+      },
+      {
+        "label": "提交",
+        "value": "一次，提交后运行结束"
+      }
+    ],
+    "tools": [
+      "read_file",
+      "search_code",
+      "write_file",
+      "edit_file",
+      "run_command",
+      "submit"
+    ],
+    "checks": [
+      {
+        "id": "C01",
+        "title": "已有测试全部通过",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c01.py"
+      },
+      {
+        "id": "C02",
+        "title": "JSON 输出符合需求说明",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c02.py"
+      },
+      {
+        "id": "C03",
+        "title": "表格输出保持不变",
+        "method": "hiddenTest",
+        "path": "tests/hidden/test_c03.py"
+      },
+      {
+        "id": "C04",
+        "title": "没有改动已有测试",
+        "method": "script",
+        "path": "tests/checks/check_c04.py"
+      },
+      {
+        "id": "C05",
+        "title": "改动说明与实际改动一致",
+        "method": "modelReview",
+        "samples": 3,
+        "rubric": "对照最终提交的改动与 report.json：每处改动都有对应说明、说明不描述未发生的改动时记为通过；任一说明与实际改动不符记为未通过。",
+        "path": "tests/review/c05.md"
+      }
+    ],
+    "verifier": [
+      {
+        "label": "入口脚本",
+        "value": "tests/test.sh",
+        "format": "code"
+      },
+      {
+        "label": "超时",
+        "value": "300 秒"
+      },
+      {
+        "label": "资源",
+        "value": "1 核 CPU · 2 GB 内存"
+      },
+      {
+        "label": "日志",
+        "value": "/logs/verifier",
+        "format": "code"
+      }
+    ],
+    "files": [
+      {
+        "path": "instruction.md",
+        "size": 490
+      },
+      {
+        "path": "task.toml",
+        "size": 304
+      },
+      {
+        "path": "environment/Dockerfile",
+        "size": 107
+      },
+      {
+        "path": "environment/repo/pyproject.toml",
+        "size": 170
+      },
+      {
+        "path": "environment/repo/src/ledger/cli/main.py",
+        "size": 905
+      },
+      {
+        "path": "environment/repo/src/ledger/cli/commands.py",
+        "size": 469
+      },
+      {
+        "path": "environment/repo/src/ledger/core/entry.py",
+        "size": 279
+      },
+      {
+        "path": "environment/repo/src/ledger/core/money.py",
+        "size": 518
+      },
+      {
+        "path": "environment/repo/src/ledger/io/reader.py",
+        "size": 830
+      },
+      {
+        "path": "environment/repo/src/ledger/report/summary.py",
+        "size": 318
+      },
+      {
+        "path": "environment/repo/src/ledger/report/table.py",
+        "size": 474
+      },
+      {
+        "path": "environment/repo/tests/test_reader.py",
+        "size": 354
+      },
+      {
+        "path": "environment/repo/tests/test_report.py",
+        "size": 458
+      },
+      {
+        "path": "solution/solve.sh",
+        "size": 88,
+        "withheld": "solution"
+      },
+      {
+        "path": "solution/reference.patch",
+        "size": 2305,
+        "withheld": "solution"
+      },
+      {
+        "path": "tests/test.sh",
+        "size": 170
+      },
+      {
+        "path": "tests/hidden/test_c01.py",
+        "size": 251
+      },
+      {
+        "path": "tests/hidden/test_c02.py",
+        "size": 463
+      },
+      {
+        "path": "tests/hidden/test_c03.py",
+        "size": 468
+      },
+      {
+        "path": "tests/checks/check_c04.py",
+        "size": 452
+      },
+      {
+        "path": "tests/review/c05.md",
+        "size": 260
+      }
+    ],
+    "revisions": [
+      {
+        "version": "3f2a9c1",
+        "change": "created",
+        "note": "首次登记",
+        "author": "lin.fang",
+        "registeredAt": "2026-11-18T08:00:00.000Z"
+      }
+    ],
+    "validations": [
+      {
+        "agent": "oracle",
+        "outcome": "passed",
+        "expected": true,
+        "version": "3f2a9c1",
+        "finishedAt": "2026-11-19T08:00:00.000Z"
+      },
+      {
+        "agent": "nop",
+        "outcome": "failed",
+        "expected": true,
+        "version": "3f2a9c1",
+        "finishedAt": "2026-11-19T08:05:00.000Z"
+      }
+    ]
+  }
+]

@@ -1,0 +1,78 @@
+{
+  "id": "bench-e",
+  "name": "Bench E",
+  "shortName": "E",
+  "version": "v0.1",
+  "stageId": "03",
+  "summary": {
+    "zh-CN": "在小型 Python 代码库中按需求实现功能，以隐藏测试判定是否通过；回放只有模块与代码两层。",
+    "en": "Implement a feature in a small Python codebase, judged by hidden tests; its replay has only modules and code."
+  },
+  "updatedOn": "2026-11-21",
+  "evaluatedIn": "2026-11",
+  "runsPerTask": 1,
+  "metric": {
+    "name": {
+      "zh-CN": "通过率",
+      "en": "Pass rate"
+    },
+    "unit": "percent",
+    "higherIsBetter": true
+  },
+  "timelineLegend": {
+    "action": {
+      "zh-CN": "一步操作",
+      "en": "A step"
+    },
+    "change": {
+      "zh-CN": "修改代码",
+      "en": "Code change"
+    },
+    "submitPassed": {
+      "zh-CN": "通过",
+      "en": "Passed"
+    },
+    "submitFailed": {
+      "zh-CN": "未通过",
+      "en": "Failed"
+    }
+  },
+  "changeTools": [
+    "write_file",
+    "edit_file"
+  ],
+  "passRule": "隐藏测试与检查全部通过，才判为通过。",
+  "blocks": {
+    "comparison": [
+      "fileChanges",
+      "checks",
+      "reply",
+      "trajectory"
+    ],
+    "replayPanel": [
+      "record",
+      "content",
+      "touches",
+      "events",
+      "edges"
+    ]
+  },
+  "worldLayers": [
+    {
+      "id": "modules",
+      "name": {
+        "zh-CN": "模块",
+        "en": "Modules"
+      },
+      "shape": "graph"
+    },
+    {
+      "id": "code",
+      "name": {
+        "zh-CN": "代码",
+        "en": "Code"
+      },
+      "shape": "tree"
+    }
+  ]
+}

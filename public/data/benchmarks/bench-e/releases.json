@@ -1,0 +1,29 @@
+[
+  {
+    "version": 1,
+    "status": "current",
+    "note": "首次发布。",
+    "author": "lin.fang",
+    "updatedAt": "2026-11-21T08:00:00Z",
+    "content": {
+      "summary": {
+        "zh-CN": "在小型 Python 代码库中按需求实现功能，以隐藏测试判定是否通过；回放只有模块与代码两层。",
+        "en": "Implement a feature in a small Python codebase, judged by hidden tests; its replay has only modules and code."
+      },
+      "entrants": [
+        {
+          "modelId": "jia",
+          "harnessId": "x"
+        },
+        {
+          "modelId": "yi",
+          "harnessId": "x"
+        }
+      ],
+      "replays": [
+        "bench-e.task-001.jia-x.1",
+        "bench-e.task-001.yi-x.1"
+      ]
+    }
+  }
+]

@@ -1,0 +1,61 @@
+--- a/src/ledger/cli/commands.py
++++ b/src/ledger/cli/commands.py
+@@ -1,12 +1,16 @@
+ """What each command of the ledger does with the entries it reads."""
+ from ledger.io.reader import read_entries
++from ledger.report.json_output import render_json
+ from ledger.report.summary import summarize
+ from ledger.report.table import render_table
+ 
+ 
+ def cmd_report(args):
+     entries = read_entries(args.file, since=args.since)
+-    return render_table(summarize(entries))
++    summary = summarize(entries)
++    if args.format == "json":
++        return render_json(summary)
++    return render_table(summary)
+ 
+ 
+ def cmd_balance(args):
+--- a/src/ledger/cli/main.py
++++ b/src/ledger/cli/main.py
+@@ -11,6 +11,7 @@
+     commands = parser.add_subparsers(dest="command", required=True)
+     report = commands.add_parser("report", help="sum the entries by account")
+     report.add_argument("--since", help="only entries on or after this date")
++    report.add_argument("--format", choices=["table", "json"], default="table", help="how to print the report")
+     report.set_defaults(run=cmd_report)
+     balance = commands.add_parser("balance", help="print one account's balance")
+     balance.add_argument("account")
+--- a/src/ledger/report/json_output.py
++++ b/src/ledger/report/json_output.py
+@@ -0,0 +1,10 @@
++"""Renders a summary as JSON, for scripts that read the report."""
++import json
++
++from ledger.core.money import format_amount
++
++
++def render_json(summary):
++    """Each account's total and the total, as two-decimal amount strings in a JSON object."""
++    accounts = {account: format_amount(cents) for account, cents in summary.items()}
++    return json.dumps({"accounts": accounts, "total": format_amount(sum(summary.values()))}, ensure_ascii=False, indent=2)
+--- a/tests/test_report.py
++++ b/tests/test_report.py
+@@ -1,4 +1,7 @@
++import json
++
+ from ledger.io.reader import parse_line
++from ledger.report.json_output import render_json
+ from ledger.report.summary import summarize
+ from ledger.report.table import render_table
+ 
+@@ -10,3 +13,7 @@
+ 
+ def test_render_table():
+     assert render_table({"food": -2000}) == "food       -20.00\ntotal      -20.00"
++
++
++def test_render_json():
++    assert json.loads(render_json({"food": -2000})) == {"accounts": {"food": "-20.00"}, "total": "-20.00"}

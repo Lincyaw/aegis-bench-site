@@ -1,0 +1,37 @@
+[
+  {
+    "id": "bench-e.task-001.jia-x.1",
+    "taskId": "task-001",
+    "modelId": "jia",
+    "harnessId": "x",
+    "attempt": 1,
+    "outcome": "passed",
+    "score": 1,
+    "steps": 16,
+    "costUsd": 0.31,
+    "finishedAt": "2026-11-20T02:16:51.000Z",
+    "taskVersion": "3f2a9c1",
+    "batch": "2026-11-jia-x",
+    "failedChecks": []
+  },
+  {
+    "id": "bench-e.task-001.yi-x.1",
+    "taskId": "task-001",
+    "modelId": "yi",
+    "harnessId": "x",
+    "attempt": 1,
+    "outcome": "failed",
+    "score": 0,
+    "steps": 13,
+    "costUsd": 0.23,
+    "finishedAt": "2026-11-20T03:08:32.000Z",
+    "taskVersion": "3f2a9c1",
+    "batch": "2026-11-yi-x",
+    "failedChecks": [
+      "C01",
+      "C02",
+      "C03",
+      "C04"
+    ]
+  }
+]
