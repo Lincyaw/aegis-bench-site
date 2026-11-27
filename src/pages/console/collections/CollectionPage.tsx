@@ -9,7 +9,7 @@ import { CostFrontierChart, FailureChart, RankingChart } from '../../../componen
 import { VendorBadge } from '../../../components/model/ModelBadge';
 import { FailureBar, FailureLegend } from '../../../components/result/FailureBar';
 import { PassRate } from '../../../components/result/PassRate';
-import { formatCost } from '../../../components/result/presentation';
+import { NO_VALUE, formatCost } from '../../../components/result/presentation';
 import { ConsoleHeader } from '../../../components/shell/ConsoleHeader';
 import { LocaleLink } from '../../../i18n/LocaleRouting';
 import { useLocale } from '../../../i18n/localeContext';
@@ -24,8 +24,7 @@ import { consoleTaskPath } from '../../../routes/consoleTasks';
 import { Loading, Tag } from '../../../ui/content';
 import { SegmentedControl, Select } from '../../../ui/controls';
 import { InfoHint } from '../../../ui/hint';
-import { Pager, TabRow } from '../../../ui/navigation';
-import navigation from '../../../ui/navigation.module.css';
+import { Pager, Tab, TabRow } from '../../../ui/navigation';
 import table from '../../../ui/table.module.css';
 import styles from './CollectionPages.module.css';
 
@@ -49,12 +48,7 @@ export function CollectionPage() {
       />
       <TabRow current={view.tab} className={styles.tabs} aria-label={t('console.collection.tabList')}>
         {COLLECTION_TABS.map(tab => (
-          <LocaleLink
-            key={tab} data-tab={tab} className={clsx(navigation.tab, 't-small')} aria-current={tab === view.tab ? 'true' : undefined}
-            to={collectionPath(benchmark.id, tag, { tab })} replace preventScrollReset
-          >
-            {t(`console.collection.tabs.${tab}`)}
-          </LocaleLink>
+          <Tab key={tab} id={tab} current={view.tab} to={collectionPath(benchmark.id, tag, { tab })}>{t(`console.collection.tabs.${tab}`)}</Tab>
         ))}
       </TabRow>
       <Suspense fallback={<Loading />}>
@@ -92,13 +86,13 @@ export function CollectionMatrix({ benchmark, tag, view, onView }: { benchmark: 
           {page.items.map(row => (
             <div key={row.task.id} className={table.row} role="row">
               <span role="rowheader" className={styles.task}><LocaleLink to={consoleTaskPath(benchmark.id, row.task.id)} className="t-small">{row.task.title}</LocaleLink><span className="t-mono c-faint">{row.task.id}</span></span>
-              {row.cells.map(({ passed, counted }, index) => {
+              {row.cells.map(({ passed, counted, passRate }, index) => {
                 const model = page.models[index];
                 const label = t('console.collection.cell', { model: model.name, task: row.task.title, passed, counted });
                 return (
                   <LocaleLink
                     key={model.id} role="cell" className={clsx(styles.cell, 't-micro')} to={consoleModelPath(benchmark.id, model.id, { tag, task: row.task.id })} title={label} aria-label={label}
-                    style={{ '--share': counted === 0 ? 0 : passed / counted } as CSSProperties}
+                    style={{ '--share': passRate } as CSSProperties}
                   >
                     {passed} / {counted}
                   </LocaleLink>
@@ -142,7 +136,7 @@ export function CollectionModels({ benchmark, tag }: { benchmark: ConsoleBenchma
             <span role="cell" className="t-numeric c-muted">{t('console.overview.tasksOf', { solved: result.solvedEveryTime, total: result.tasks })}</span>
             <span role="cell" className="t-numeric c-muted">{t('console.overview.tasksOf', { solved: result.solvedOnce, total: result.tasks })}</span>
             <span role="cell" className="t-numeric c-muted">{groupedNumber(locale, result.passed + result.failed)}</span>
-            <span role="cell" className="t-numeric c-muted">{result.meanCostUsd === undefined ? '—' : formatCost(result.meanCostUsd)}</span>
+            <span role="cell" className="t-numeric c-muted">{result.meanCostUsd === undefined ? NO_VALUE : formatCost(result.meanCostUsd)}</span>
             <span role="cell"><FailureBar result={result} /></span>
           </div>
         ))}

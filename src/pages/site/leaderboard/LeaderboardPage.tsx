@@ -7,12 +7,11 @@ import { leaderboardViewValues } from '../../../api/schema';
 import { LeaderboardTable } from '../../../components/leaderboard/LeaderboardTable';
 import { HalfDot } from '../../../components/lifecycle/LifecycleMap';
 import { benchmarksAt } from '../../../components/lifecycle/stages';
-import { LocaleLink } from '../../../i18n/LocaleRouting';
+import { stageName } from '../../../components/result/presentation';
 import { searchOf } from '../../../routes/address';
 import { LEADERBOARD_PAGE_SIZE, LEADERBOARD_PARAMS, benchmarkPath, leaderboardPath, parseLeaderboardView, type LeaderboardQuery } from '../../../routes/site';
 import { Loading } from '../../../ui/content';
-import { MoreButton, ScopeChip, SegmentedControl } from '../../../ui/controls';
-import controls from '../../../ui/controls.module.css';
+import { MoreButton, ScopeChip, SegmentedControl, TextLink } from '../../../ui/controls';
 import { InfoHint } from '../../../ui/hint';
 import styles from './LeaderboardPage.module.css';
 
@@ -48,7 +47,7 @@ export function LeaderboardPage() {
         <SegmentedControl
           label={t('leaderboard.benchmarkLabel')} value={benchmark.id} onChange={bench => choose({ bench })}
           choices={covered.flatMap(stage => benchmarksAt(stage, benchmarks)).map(candidate => ({ value: candidate.id, label: candidate.name }))}
-          captions={covered.map(stage => ({ label: <><HalfDot half={stage.half} />{stage.id} {stage.name}</>, span: stage.benchmarks.length }))}
+          captions={covered.map(stage => ({ label: <><HalfDot half={stage.half} />{stageName(stage)}</>, span: stage.benchmarks.length }))}
         />
         <span className={styles.otherStages}><InfoHint label={t('ui.about', { subject: t('site.nav.benchmarks') })}>{t('leaderboard.otherStages')}</InfoHint></span>
       </div>
@@ -56,14 +55,14 @@ export function LeaderboardPage() {
         <div className={styles.title}>
           <h2 className="t-bench">{benchmark.name}</h2>
           <span className={clsx(styles.meta, 't-micro c-faint')}>
-            {t('leaderboard.meta', { stage: `${benchmark.stage.id} ${benchmark.stage.name}`, metric: benchmark.metric.name, version: benchmark.version, date: benchmark.updatedOn })}
+            {t('leaderboard.meta', { stage: stageName(benchmark.stage), metric: benchmark.metric.name, version: benchmark.version, date: benchmark.updatedOn })}
             <InfoHint label={t('ui.about', { subject: benchmark.metric.name })}>{t('leaderboard.note', { metric: benchmark.metric.name, count: benchmark.runsPerTask })}</InfoHint>
           </span>
         </div>
         <div className={styles.tools}>
           {model && <ModelScopeChip modelId={model} to={leaderboardPath({ bench: benchmark.id, view })} />}
           <SegmentedControl label={t('leaderboard.viewLabel')} choices={leaderboardViewValues.map(value => ({ value, label: t(LEADERBOARD_VIEW_LABELS[value]) }))} value={view} onChange={next => choose({ view: next })} />
-          <LocaleLink className={clsx(controls.textLink, 't-small')} to={benchmarkPath(benchmark.id)}>{t('leaderboard.details')}</LocaleLink>
+          <TextLink className="t-small" to={benchmarkPath(benchmark.id)}>{t('leaderboard.details')}</TextLink>
         </div>
       </div>
       <Suspense fallback={<Loading />}>

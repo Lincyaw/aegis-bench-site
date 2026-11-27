@@ -1,11 +1,12 @@
-import type { Combination, CombinationRuns, EntrantKey, LeaderboardEntry, Locale, PublicTaskComparison, RecentRun, TaskRecord, TaskSummary } from '../api/types';
+import { combinationKey } from '../api/constraints';
+import type { Combination, CombinationRuns, EntrantKey, LeaderboardEntry, Locale, PublicTaskComparison, RecentRun, RunRef, TaskRecord, TaskSummary } from '../api/types';
 import { benchmarkOf, type BenchmarkShowing } from './benchmarks';
-import { RECORD_LOCALE, combinationKey } from './catalog';
 import { taskComparisonOf } from './comparison';
+import { openedIndexes } from './records';
 import { currentReleaseOf } from './releases';
 import { leaderboardOf } from './results';
 import { recentRunsOf } from './runs';
-import { taskRunsOf, taskSummaryOf } from './tasks';
+import { taskRunRefsOf, taskSummaryOf } from './tasks';
 
 /*
  * What the public site shows of each benchmark: what its current release publishes. The console's releases change it;
@@ -35,16 +36,27 @@ export function publishes(benchmarkId: string, { model, harness }: Combination):
   return publishedEntrantOf(benchmarkId, combinationKey(model.id, harness.id)) !== undefined;
 }
 
+/** Whether a run is one of a combination the current release publishes; a run that does not exist is not. */
+export function publishesRun(runId: string): boolean {
+  const located = openedIndexes().runs.get(runId);
+  return located !== undefined && publishedEntrantOf(located.benchmarkId, combinationKey(located.fact.modelId, located.fact.harnessId)) !== undefined;
+}
+
 /** A task's runs by combination, keeping only the combinations the current release publishes. */
 export function publishedTaskRuns(benchmarkId: string, combinations: CombinationRuns[]): CombinationRuns[] {
   return combinations.filter(combination => publishes(benchmarkId, combination));
 }
 
+/** The runs of a task by the combinations the current release publishes. */
+export function publishedRunRefsOf(benchmarkId: string, taskId: string): RunRef[] {
+  return taskRunRefsOf(benchmarkId, taskId)
+    .filter(combination => publishedEntrantOf(benchmarkId, combinationKey(combination.modelId, combination.harnessId)) !== undefined)
+    .flatMap(combination => combination.runs);
+}
+
 /** Every task of the benchmark, each with its pass rate over the runs of the combinations the current release publishes. */
 export function publishedTaskSummariesOf(benchmarkId: string): TaskSummary[] {
-  return benchmarkOf(benchmarkId).tasks.map(task => taskSummaryOf(
-    benchmarkId, task, publishedTaskRuns(benchmarkId, taskRunsOf(benchmarkId, task.id, RECORD_LOCALE)).flatMap(combination => combination.runs),
-  ));
+  return benchmarkOf(benchmarkId).tasks.map(task => taskSummaryOf(benchmarkId, task, publishedRunRefsOf(benchmarkId, task.id)));
 }
 
 /** A comparison of runs the current release publishes, without the class each failure's review gives it; none when a run is not published. */

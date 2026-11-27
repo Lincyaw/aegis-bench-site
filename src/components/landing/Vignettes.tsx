@@ -1,6 +1,7 @@
 import { clsx } from 'clsx';
 import { useTranslation } from 'react-i18next';
 import type { Stage } from '../../api/types';
+import { GoArrowIcon } from '../../ui/icons';
 import { benchmarkNames } from '../lifecycle/stages';
 import { PART } from './landingMarkup';
 import styles from './Vignettes.module.css';
@@ -173,7 +174,7 @@ export function VignetteCard({ stage, index, name, onOpen }: { stage: Stage; ind
       onClick={covered ? event => onOpen(event.currentTarget) : undefined}
     >
       <Drawing />
-      {covered && <span className={clsx(styles.go, 't-micro')}>{benchmarkNames(stage)} →</span>}
+      {covered && <span className={clsx(styles.go, 't-micro')}>{benchmarkNames(stage)}<GoArrowIcon /></span>}
     </button>
   );
 }

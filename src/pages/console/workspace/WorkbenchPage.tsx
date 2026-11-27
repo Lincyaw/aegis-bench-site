@@ -1,7 +1,6 @@
 import { clsx } from 'clsx';
 import { useTranslation } from 'react-i18next';
 import { useReportDrafts, useWorkbench } from '../../../api/consoleClient';
-import type { WorkbenchRow } from '../../../api/types';
 import { RecentReleases } from '../../../components/release/RecentReleases';
 import { ConsoleHeader } from '../../../components/shell/ConsoleHeader';
 import { WorkbenchTable } from '../../../components/workspace/WorkbenchTable';
@@ -17,16 +16,15 @@ import styles from './WorkspacePages.module.css';
 export function WorkbenchPage() {
   const { t } = useTranslation();
   const locale = useLocale();
-  const { benchmarks, recentReleases } = useWorkbench();
-  const total = (count: (row: WorkbenchRow) => number) => groupedNumber(locale, benchmarks.reduce((sum, row) => sum + count(row), 0));
+  const { benchmarks, totals, recentReleases } = useWorkbench();
   return (
     <div className={styles.page}>
       <ConsoleHeader title={t('console.workbench.title')} about={t('console.workbench.about')} />
       <StatTiles>
         <StatTile label={t('console.workbench.stats.benchmarks')} value={groupedNumber(locale, benchmarks.length)} />
-        <StatTile label={t('console.workbench.stats.drafts')} value={total(row => (row.draft ? 1 : 0))} />
-        <StatTile label={t('console.workbench.stats.unreviewed')} value={total(row => row.unreviewedFailures)} />
-        <StatTile label={t('console.workbench.stats.executionFailures')} value={total(row => row.executionFailures)} />
+        <StatTile label={t('console.workbench.stats.drafts')} value={groupedNumber(locale, totals.drafts)} />
+        <StatTile label={t('console.workbench.stats.unreviewed')} value={groupedNumber(locale, totals.unreviewedFailures)} />
+        <StatTile label={t('console.workbench.stats.executionFailures')} value={groupedNumber(locale, totals.executionFailures)} />
       </StatTiles>
       <WorkbenchTable rows={benchmarks} />
       <div className={styles.columns}>
@@ -41,7 +39,7 @@ export function WorkbenchPage() {
 export function ReportsInReview() {
   const { t } = useTranslation();
   const locale = useLocale();
-  const reports = useReportDrafts('').filter(report => report.status === 'inReview' && report.benchmarkIds.length > 0);
+  const reports = useReportDrafts('', 'inReview').filter(report => report.benchmarkIds.length > 0);
   return (
     <section className={clsx(content.panel, styles.panel)}>
       <h2 className="t-heading">{t('console.workbench.inReview')}</h2>

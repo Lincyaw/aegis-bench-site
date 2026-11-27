@@ -3,6 +3,7 @@ import type { Hunt, HuntTrial } from '../../api/types';
 import { LocaleLink } from '../../i18n/LocaleRouting';
 import { consoleRunPath } from '../../routes/consoleRuns';
 import { Tag } from '../../ui/content';
+import { TextLink } from '../../ui/controls';
 import table from '../../ui/table.module.css';
 import { ModelLabel } from '../model/ModelBadge';
 import styles from './HuntTrials.module.css';
@@ -10,7 +11,13 @@ import styles from './HuntTrials.module.css';
 export function HuntTrialRow({ benchmarkId, hunt, trial }: { benchmarkId: string; hunt: Hunt; trial: HuntTrial }) {
   const { t } = useTranslation();
   const { run } = trial;
-  const nameOf = (facetId: string) => hunt.facets.find(facet => facet.id === facetId)?.name ?? facetId;
+  const nameOf = (facetId: string) => {
+    const facet = hunt.facets.find(candidate => candidate.id === facetId);
+    if (!facet) {
+      throw new Error(`The hunt ${hunt.id} has no facet ${facetId}`);
+    }
+    return facet.name;
+  };
   const markedOnly = trial.markedFacets.filter(facetId => !trial.confirmedFacets.includes(facetId));
   return (
     <div className={table.row} role="row">
@@ -26,7 +33,7 @@ export function HuntTrialRow({ benchmarkId, hunt, trial }: { benchmarkId: string
       </span>
       <span role="cell" className="t-numeric c-muted">{trial.marks}</span>
       <span role="cell">
-        {trial.firstStep !== undefined && <LocaleLink className="t-micro" to={consoleRunPath(benchmarkId, run.id, { tab: 'trajectory', step: trial.firstStep })}>{t('console.analysis.step', { step: trial.firstStep })} →</LocaleLink>}
+        {trial.firstStep !== undefined && <TextLink className="t-micro" to={consoleRunPath(benchmarkId, run.id, { tab: 'trajectory', step: trial.firstStep })}>{t('console.analysis.step', { step: trial.firstStep })}</TextLink>}
       </span>
     </div>
   );

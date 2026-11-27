@@ -2,15 +2,12 @@ import type { CollectionModelResult, CollectionSummary, Locale, MatrixRow, Model
 import { benchmarkOf, hasBenchmark } from './benchmarks';
 import { modelResultsOver } from './consoleModels';
 import { runFactsByTask, sortedTasks, tagCountsOf, taskResultCountsOf } from './consoleTasks';
-import { resultCountsOf } from './results';
+import { isCounted, resultCountsOf } from './results';
 
 /*
  * Collections: the tasks of a benchmark that carry one tag, compared across models. Nothing about a collection is
  * stored; it is read from the tasks' tags and their runs.
  */
-
-/** Tasks per page of a collection's matrix when a request names no limit, as the spec declares. */
-export const DEFAULT_MATRIX_PAGE_SIZE = 20;
 
 export function hasCollection(benchmarkId: string, tag: string): boolean {
   return hasBenchmark(benchmarkId) && benchmarkOf(benchmarkId).tasks.some(task => task.tags.includes(tag));
@@ -51,12 +48,13 @@ export function matrixOf(benchmarkId: string, tag: string, order: TaskOrder, loc
   return {
     models,
     rows: tasks.map(task => {
-      const counted = (facts.get(task.id) ?? []).filter(fact => fact.outcome !== 'executionFailed');
+      const counted = (facts.get(task.id) ?? []).filter(isCounted);
       return {
         task: { id: task.id, title: task.title },
         cells: models.map(model => {
           const runs = counted.filter(fact => fact.modelId === model.id);
-          return { passed: runs.filter(fact => fact.outcome === 'passed').length, counted: runs.length };
+          const passed = runs.filter(fact => fact.outcome === 'passed').length;
+          return { passed, counted: runs.length, ...(runs.length > 0 && { passRate: passed / runs.length }) };
         }),
       };
     }),

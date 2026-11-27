@@ -1,6 +1,7 @@
-import type { ConsoleRunDetail, Locale, ReviewFilter, RunEvent, RunEventRow, RunFact, RunOutcome, RunRow, RunUsage, Trajectory, TrajectoryStep } from '../api/types';
+import type { CombinationScope, ConsoleRunDetail, Locale, ReviewFilter, RunEvent, RunEventRow, RunFact, RunOutcome, RunRow, RunUsage, Trajectory, TrajectoryStep } from '../api/types';
+import { MAX_EXCERPT_LENGTH } from '../api/constraints';
 import { benchmarkOf, matchesTaskSearch, taskRefOf } from './benchmarks';
-import { harnessRef, keepsTo, modelRef, type CombinationScope } from './catalog';
+import { harnessRef, keepsTo, modelRef } from './catalog';
 import { openedIndexes, readRunFile, readTrajectory } from './records';
 import { runDetailOf } from './runs';
 
@@ -8,15 +9,6 @@ import { runDetailOf } from './runs';
  * The console's view of runs: every run of a benchmark with its review, and what each run's trajectory records step by
  * step.
  */
-
-/** Runs per page of the console's run list when a request names no limit, as the spec declares. */
-export const DEFAULT_RUN_PAGE_SIZE = 25;
-
-/** Events per page when a request names no limit, as the spec declares. */
-export const DEFAULT_EVENT_PAGE_SIZE = 50;
-
-/** No event's excerpt is longer than this many characters, as the spec declares. */
-export const MAX_EXCERPT_LENGTH = 200;
 
 /** The function_name of the tool call that submits, which the spec sorts as a submit event. */
 export const SUBMIT_FUNCTION = 'submit';
@@ -68,12 +60,11 @@ export function usageOf(trajectory: Trajectory): RunUsage {
     failed: (step.observation?.results ?? []).some(result => result.source_call_id === call.tool_call_id && isFailedResult(result.extra)),
   })));
   const byTool = Map.groupBy(calls, call => call.tool);
+  const callCounts = agentSteps.flatMap(step => (step.llm_call_count === undefined ? [] : [step.llm_call_count]));
+  const { total_prompt_tokens: inputTokens, total_cached_tokens: cachedTokens } = trajectory.final_metrics ?? {};
   return {
-    inputTokens: trajectory.final_metrics?.total_prompt_tokens ?? 0,
-    cachedTokens: trajectory.final_metrics?.total_cached_tokens ?? 0,
-    outputTokens: trajectory.final_metrics?.total_completion_tokens ?? 0,
-    costUsd: trajectory.final_metrics?.total_cost_usd ?? 0,
-    modelCalls: agentSteps.reduce((sum, step) => sum + (step.llm_call_count ?? 0), 0),
+    ...(inputTokens !== undefined && { inputTokens }), ...(cachedTokens !== undefined && { cachedTokens }),
+    ...(callCounts.length > 0 && { modelCalls: callCounts.reduce((sum, count) => sum + count, 0) }),
     toolCalls: [...byTool].map(([tool, toolCalls]) => ({ tool, calls: toolCalls.length, failures: toolCalls.filter(call => call.failed).length }))
       .sort((a, b) => b.calls - a.calls || a.tool.localeCompare(b.tool)),
   };

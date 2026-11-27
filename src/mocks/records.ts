@@ -1,6 +1,6 @@
 import type {
-  BenchmarkFile, Catalog, FootprintFile, HuntRecord, PublishedRelease, ReplayPanelBlock, RunFact, RunFile, SignalsFile, StepAnnotation, TaskFileRecord, TaskRecord, Trajectory,
-  WorldFile,
+  BenchmarkFile, Catalog, FootprintFile, HuntRecord, Member, PublishedRelease, ReplayPanelBlock, ReportDraftRecord, RunFact, RunFile, Settings, SignalsFile, StepAnnotation,
+  TaskFileRecord, TaskRecord, Trajectory, WorldFile,
 } from '../api/types';
 
 /*
@@ -37,6 +37,11 @@ export interface LocatedRun {
 /** The indexes of the whole directory, and every run by its id. */
 export interface Indexes {
   catalog: Catalog;
+
+  /** What the console opens with: its members, its settings and its report drafts */
+  members: Member[];
+  settings: Settings;
+  reports: ReportDraftRecord[];
   benchmarks: BenchmarkIndexes[];
   runs: Map<string, LocatedRun>;
 }
@@ -86,7 +91,9 @@ export function readJson<Value>(path: string): Promise<Value> {
 /** Reads the catalog and every benchmark's indexes; the server answers no request before this has finished. */
 export async function openRecords(read: DataReader): Promise<void> {
   reader = read;
-  const catalog = await readJson<Catalog>('catalog.json');
+  const [catalog, members, settings, reports] = await Promise.all([
+    readJson<Catalog>('catalog.json'), readJson<Member[]>('members.json'), readJson<Settings>('settings.json'), readJson<ReportDraftRecord[]>('reports.json'),
+  ]);
   const benchmarks = await Promise.all(catalog.benchmarks.map(async id => {
     const [record, tasks, runs, hunts, releases] = await Promise.all([
       readJson<BenchmarkFile>(dataDirectoryPathOf(id, 'benchmark.json')), readJson<TaskRecord[]>(dataDirectoryPathOf(id, 'tasks.json')),
@@ -96,7 +103,7 @@ export async function openRecords(read: DataReader): Promise<void> {
     return { record, tasks, runs, hunts, releases };
   }));
   const runs = new Map(benchmarks.flatMap(benchmark => benchmark.runs.map(fact => [fact.id, { benchmarkId: benchmark.record.id, fact }] as const)));
-  indexes = { catalog, benchmarks, runs };
+  indexes = { catalog, members, settings, reports, benchmarks, runs };
 }
 
 export function openedIndexes(): Indexes {

@@ -7,6 +7,7 @@ import { Replay, RunNumber } from '../../../articles/runBlocks';
 import { LocaleLink } from '../../../i18n/LocaleRouting';
 import { useLocale } from '../../../i18n/localeContext';
 import { REPORTS_PATH, reportPath } from '../../../routes/site';
+import { GoArrowIcon } from '../../../ui/icons';
 import { Breadcrumbs } from '../../../ui/navigation';
 import styles from './ReportsPage.module.css';
 
@@ -26,7 +27,7 @@ export function ReportsPage() {
             <LocaleLink className={styles.item} to={reportPath(report.slug)}>
               <span className="t-mono c-faint">{report.date}</span>
               <div><span className="t-heading">{report.title}</span><span className="t-small c-muted">{report.summary}</span></div>
-              <span className={styles.arrow} aria-hidden="true">→</span>
+              <span className={styles.arrow}><GoArrowIcon /></span>
             </LocaleLink>
           </li>
         ))}

@@ -1,4 +1,3 @@
-import { clsx } from 'clsx';
 import { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
@@ -6,16 +5,16 @@ import { useConsoleBenchmark, useConsoleUser, useDiscardDraft, usePublishRelease
 import type { ConsoleBenchmark, ReleaseDetail } from '../../../api/types';
 import { EntrantChoice, ReleaseContentView, ReleaseNoteForm, ReplayEditor } from '../../../components/release/ReleaseContent';
 import { ReleaseChangesText, ReleaseStatusTag } from '../../../components/release/ReleaseLabels';
-import { ChangeFailure } from '../../../components/shell/ChangeFailure';
+import { ChangeFailure } from '../../../components/change/ChangeFailure';
+import { DiscardAfterConfirm } from '../../../components/change/DiscardAfterConfirm';
+import { hasUnsavedChange } from '../../../components/change/unsavedChange';
 import { ConsoleHeader } from '../../../components/shell/ConsoleHeader';
 import { useLocale, useLocalizedNavigate } from '../../../i18n/localeContext';
-import { dateTimeOf } from '../../../i18n/locales';
+import { LOCALES, LOCALE_NAMES, dateTimeOf } from '../../../i18n/locales';
 import { consoleBenchmarkPath } from '../../../routes/console';
 import { benchmarkReleasesPath, releasePath } from '../../../routes/consoleReleases';
 import { benchmarkPath } from '../../../routes/site';
-import content from '../../../ui/content.module.css';
-import { Button, ButtonLink, SubmitButton, TextArea } from '../../../ui/controls';
-import { mayEdit } from '../roles';
+import { ButtonLink, SubmitButton, TextArea } from '../../../ui/controls';
 import styles from './ReleasePages.module.css';
 
 /** One release: what it puts on the public site, and what can be done with it in its state. */
@@ -27,7 +26,7 @@ export function ReleasePage() {
   const benchmark = useConsoleBenchmark(benchmarkId);
   const release = useRelease(releaseId);
   const restore = useRestoreRelease(release.id);
-  const editing = mayEdit(useConsoleUser().role);
+  const editing = useConsoleUser().can.edit;
   const version = t('console.releases.version', { version: release.version });
   return (
     <div className={styles.page} data-half={benchmark.stage.half}>
@@ -68,15 +67,16 @@ export function DraftEditor({ benchmark, release }: { benchmark: ConsoleBenchmar
   const [draft, setDraft] = useState(release.content);
   const update = useUpdateDraft(release.id);
   const publish = usePublishRelease(release.id);
-  const unsaved = JSON.stringify(draft) !== JSON.stringify(release.content);
+  const unsaved = hasUnsavedChange(draft, release.content);
   return (
     <>
       <form id={formId} className={styles.form} onSubmit={event => { event.preventDefault(); update.mutate(draft); }}>
         <section className={styles.section}>
           <h2 className="t-heading">{t('console.release.summary')}</h2>
           <div className={styles.summaries}>
-            <TextArea label={t('console.release.summaryZh')} rows={3} value={draft.summary['zh-CN']} onChange={text => setDraft({ ...draft, summary: { ...draft.summary, 'zh-CN': text } })} />
-            <TextArea label={t('console.release.summaryEn')} rows={3} value={draft.summary.en} onChange={text => setDraft({ ...draft, summary: { ...draft.summary, en: text } })} />
+            {LOCALES.map(locale => (
+              <TextArea key={locale} label={LOCALE_NAMES[locale]} rows={3} value={draft.summary[locale]} onChange={text => setDraft({ ...draft, summary: { ...draft.summary, [locale]: text } })} />
+            ))}
           </div>
         </section>
         <EntrantChoice entrants={benchmark.entrants} chosen={draft.entrants} onChange={entrants => setDraft({ ...draft, entrants })} />
@@ -103,15 +103,11 @@ export function DiscardDraft({ benchmarkId, releaseId }: { benchmarkId: string; 
   const { t } = useTranslation();
   const navigate = useLocalizedNavigate();
   const discard = useDiscardDraft(releaseId);
-  const [asking, setAsking] = useState(false);
-  return asking ? (
-    <div className={clsx(content.panel, styles.action)}>
-      <p className="t-small c-muted">{t('console.release.discardLead')}</p>
-      <ChangeFailure error={discard.error} reasons={{ 409: t('console.release.changedElsewhere') }} />
-      <div className={styles.buttons}>
-        <Button variant="line" onClick={() => discard.mutate(undefined, { onSuccess: () => navigate(benchmarkReleasesPath(benchmarkId)) })}>{t('console.release.confirmDiscard')}</Button>
-        <Button variant="line" onClick={() => setAsking(false)}>{t('console.release.cancel')}</Button>
-      </div>
-    </div>
-  ) : <div className={styles.buttons}><Button variant="line" onClick={() => setAsking(true)}>{t('console.release.discard')}</Button></div>;
+  return (
+    <DiscardAfterConfirm
+      labels={{ discard: t('console.release.discard'), lead: t('console.release.discardLead'), confirm: t('console.release.confirmDiscard'), cancel: t('console.release.cancel') }}
+      error={discard.error} reasons={{ 409: t('console.release.changedElsewhere') }}
+      onConfirm={() => discard.mutate(undefined, { onSuccess: () => navigate(benchmarkReleasesPath(benchmarkId)) })}
+    />
+  );
 }

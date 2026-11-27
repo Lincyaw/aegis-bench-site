@@ -81,6 +81,9 @@ uv run python -m harbor.utils.trajectory_validator path/to/trajectory.json
 ```
 public/data/
   catalog.json                          环节、模型、框架，以及评测基准的目录名和顺序
+  members.json                          中台打开时的成员；演示中的改动只在内存里，刷新后还原
+  settings.json                         中台打开时的设置
+  reports.json                          中台打开时的报告草稿，其中引用的运行都在 runs.json 里
   benchmarks/<评测基准>/
     benchmark.json                      名称、版本、所属环节、指标、时间线规则、评分规则、各页面的 block 配置、标注类别、世界分层
     tasks.json                          每道任务：说明、检查项、文件清单、版本历史、验证运行

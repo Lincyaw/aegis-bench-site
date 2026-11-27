@@ -1,5 +1,5 @@
 import type { BenchmarkSummary, Half, ModelProfile, Stage } from '../../api/types';
-import { formatScore } from '../result/presentation';
+import { formatScore, stageName } from '../result/presentation';
 
 /** Message keys of the two halves of the loop. */
 export const HALF_LABELS: Record<Half, 'lifecycle.half.dev' | 'lifecycle.half.ops'> = { dev: 'lifecycle.half.dev', ops: 'lifecycle.half.ops' };
@@ -18,7 +18,7 @@ export function benchmarkNames(stage: Stage): string {
 /** On the benchmarks page each covered stage is labelled with its benchmarks' names. */
 export function benchmarkStageLabels(stages: Stage[]): Record<string, StageLabel> {
   return Object.fromEntries(stages.filter(stage => stage.benchmarks.length > 0).map(stage => [
-    stage.id, { primary: benchmarkNames(stage), secondary: `${stage.id} ${stage.name}` },
+    stage.id, { primary: benchmarkNames(stage), secondary: stageName(stage) },
   ]));
 }
 

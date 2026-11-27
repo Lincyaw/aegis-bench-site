@@ -1,4 +1,3 @@
-import { clsx } from 'clsx';
 import { Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useSearchParams } from 'react-router-dom';
@@ -22,8 +21,7 @@ import { consoleTaskPath } from '../../../routes/consoleTasks';
 import { defaultRunTab } from '../../../routes/runRecords';
 import { FactList, Loading } from '../../../ui/content';
 import { ButtonLink } from '../../../ui/controls';
-import { TabRow } from '../../../ui/navigation';
-import navigation from '../../../ui/navigation.module.css';
+import { Tab, TabRow } from '../../../ui/navigation';
 import { RunHuntsTab } from './RunHuntsTab';
 import { RunEventsTab } from './RunRecordTabs';
 import styles from './RunDetailPage.module.css';
@@ -70,7 +68,7 @@ export function RunDetailPage() {
         { label: t('runs.metrics.steps'), value: run.metrics.steps },
         { label: t('runs.metrics.duration'), value: t('benchmarks.minutes', { count: run.metrics.durationMinutes }) },
         { label: t('runs.metrics.submissions'), value: t('benchmarks.times', { count: run.metrics.submissions }) },
-        { label: t('console.run.inputTokens'), value: groupedNumber(locale, run.usage.inputTokens) },
+        ...(run.usage.inputTokens === undefined ? [] : [{ label: t('console.run.inputTokens'), value: groupedNumber(locale, run.usage.inputTokens) }]),
         { label: t('runs.metrics.outputTokens'), value: groupedNumber(locale, run.metrics.outputTokens) },
         { label: t('runs.metrics.cost'), value: formatCost(run.metrics.costUsd) },
         { label: t('runs.metrics.endReason'), value: t(`runs.endReason.${run.metrics.endReason}`) },
@@ -78,10 +76,9 @@ export function RunDetailPage() {
       {run.huggingFaceUrl && <HuggingFaceLink about={t('runs.huggingFace')} url={run.huggingFaceUrl} />}
       <TabRow current={view.tab} className={styles.tabs} role="tablist" aria-label={t('console.run.tabList')}>
         {CONSOLE_RUN_TABS.map(tab => (
-          <button key={tab} type="button" role="tab" data-tab={tab} aria-selected={tab === view.tab} className={clsx(navigation.tab, 't-small')} onClick={() => onView({ tab })}>
+          <Tab key={tab} id={tab} current={view.tab} count={counts[tab]} onSelect={() => onView({ tab })}>
             {tab === 'events' || tab === 'usage' ? t(`console.run.tabs.${tab}`) : tab === 'hunts' ? t('console.analysis.runTab') : t(`runs.tab.${tab}`)}
-            {counts[tab] !== undefined && <span className={styles.count}>{counts[tab]}</span>}
-          </button>
+          </Tab>
         ))}
       </TabRow>
       <div className={styles.panel} role="tabpanel">

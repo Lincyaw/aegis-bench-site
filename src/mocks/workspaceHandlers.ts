@@ -3,9 +3,9 @@ import { hasBenchmark } from './benchmarks';
 import { changeRole, inviteMember, leavesNoAdministrator, mayAdminister, memberOf, membersInOrder, recordSignIn, refusalFor, removeMember } from './members';
 import { http, localeOf, pageOf, writtenIn } from './protocol';
 import { openedIndexes } from './records';
-import { DEMO_ACCOUNT, DEMO_PASSWORD, SIGN_IN_REQUIRED, consoleUserOf, sessionUserOf, signedInCookie, signedOut, signedOutCookie } from './session';
+import { DEMO_ACCOUNT, DEMO_PASSWORD, SIGN_IN_REQUIRED, consoleUserOf, demoHint, sessionUserOf, signedInCookie, signedOut, signedOutCookie } from './session';
 import { currentSettings, updateSettings } from './settings';
-import { DEFAULT_CHANGELOG_PAGE_SIZE, changelogOf, workbenchOf } from './workspace';
+import { changelogOf, workbenchOf } from './workspace';
 
 /**
  * The console's operations that belong to no benchmark: the session, the members and the settings, the workbench and
@@ -15,17 +15,14 @@ export const workspaceHandlers = [
   http.get('/console/session', ({ cookies, response }) => {
     const user = sessionUserOf(cookies);
     if (user) {
-      return response(200).json({ user });
-    }
-    if (signedOut(cookies)) {
-      return response(200).json({});
+      return response(200).json({ user, demo: demoHint() });
     }
     const member = memberOf(DEMO_ACCOUNT);
-    if (!member) {
-      throw new Error(`the demo account ${DEMO_ACCOUNT} is no longer a member`);
+    if (signedOut(cookies) || !member) {
+      return response(200).json({ demo: demoHint() });
     }
     recordSignIn(member);
-    return response(200).json({ user: consoleUserOf(member) }, { headers: { 'Set-Cookie': signedInCookie(member.account) } });
+    return response(200).json({ user: consoleUserOf(member), demo: demoHint() }, { headers: { 'Set-Cookie': signedInCookie(member.account) } });
   }),
 
   http.post('/console/session', async ({ request, response }) => {
@@ -36,10 +33,10 @@ export const workspaceHandlers = [
       return response(401).json({ message: 'the account is not a member, or the password does not match' });
     }
     recordSignIn(member);
-    return response(200).json({ user: consoleUserOf(member) }, { headers: { 'Set-Cookie': signedInCookie(account) } });
+    return response(200).json({ user: consoleUserOf(member), demo: demoHint() }, { headers: { 'Set-Cookie': signedInCookie(account) } });
   }),
 
-  http.delete('/console/session', ({ response }) => response(200).json({}, { headers: { 'Set-Cookie': signedOutCookie() } })),
+  http.delete('/console/session', ({ response }) => response(200).json({ demo: demoHint() }, { headers: { 'Set-Cookie': signedOutCookie() } })),
 
   http.get('/console/members', async ({ cookies, response }) => {
     if (!sessionUserOf(cookies)) {
@@ -141,6 +138,6 @@ export const workspaceHandlers = [
     }
     const entries = changelogOf(benchmarkId ? [benchmarkId] : openedIndexes().catalog.benchmarks, query.get('change') ?? undefined);
     await delay(100);
-    return response(200).json(pageOf(entries, query, DEFAULT_CHANGELOG_PAGE_SIZE));
+    return response(200).json(pageOf(entries, query, '/console/changelog'));
   }),
 ];

@@ -1,10 +1,11 @@
 import { useTranslation } from 'react-i18next';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { useBenchmark, useTask, useTaskEntryPages, useTaskFile } from '../../../api/client';
+import { benchmarkCrumbs } from '../../../components/benchmark/crumbs';
 import { TaskFileBrowser, type TaskFileSource } from '../../../components/task/TaskFileBrowser';
 import { searchOf } from '../../../routes/address';
 import { runRecordsPath } from '../../../routes/runRecords';
-import { BENCHMARKS_PATH, ENTRY_PAGE_SIZE, TASK_FILES_PARAMS, benchmarkPath, parseTaskFilesView, stagePath } from '../../../routes/site';
+import { ENTRY_PAGE_SIZE, TASK_FILES_PARAMS, parseTaskFilesView } from '../../../routes/site';
 import { Breadcrumbs } from '../../../ui/navigation';
 import styles from './TaskFilesPage.module.css';
 
@@ -34,11 +35,7 @@ export function TaskFilesPage() {
     <div className={styles.workspace} data-half={benchmark.stage.half}>
       <header className={styles.toolbar}>
         <h1 className="visually-hidden">{t('tasks.pageTitle', { task: `${task.id} ${task.title}` })}</h1>
-        <Breadcrumbs crumbs={[
-          { label: t('site.nav.benchmarks'), to: BENCHMARKS_PATH }, { label: `${benchmark.stage.id} ${benchmark.stage.name}`, to: stagePath(benchmark.stage.id) },
-          { label: benchmark.name, to: benchmarkPath(benchmark.id) }, { label: t('benchmarks.runRecords'), to: runRecordsPath(benchmark.id, { task: task.id }) },
-          { label: `${task.id} ${task.title}` },
-        ]} />
+        <Breadcrumbs crumbs={benchmarkCrumbs(t, benchmark, [{ label: t('benchmarks.runRecords'), to: runRecordsPath(benchmark.id, { task: task.id }) }, { label: `${task.id} ${task.title}` }])} />
       </header>
       <TaskFileBrowser
         className={styles.browser} source={source} about={t('tasks.harbor')} huggingFaceUrl={task.huggingFaceUrl}

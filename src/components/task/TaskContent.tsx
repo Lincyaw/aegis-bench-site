@@ -35,7 +35,7 @@ export function TaskContentTab({ task }: { task: ConsoleTaskDetail }) {
       <aside className={styles.aside}>
         <section className={clsx(content.panel, styles.panel)}>
           <h2 className="t-heading">{t('console.task.content.environment')}</h2>
-          <FactList layout="stacked" facts={task.environment.map(fact => ({ label: fact.label, value: fact.value, format: fact.format }))} />
+          <FactList layout="stacked" facts={task.environment} />
         </section>
         <section className={clsx(content.panel, styles.panel)}>
           <HintedHeading rank="h2" className="t-heading" title={t('console.task.content.acceptance')} about={t('console.task.content.acceptanceNote')} />
@@ -82,7 +82,7 @@ export function TaskGradingDetail({ grading }: { grading: TaskGrading }) {
       <aside className={styles.aside}>
         <section className={clsx(content.panel, styles.panel)}>
           <h2 className="t-heading">{t('console.task.grading.verifier')}</h2>
-          <FactList layout="stacked" facts={grading.verifier.map(fact => ({ label: fact.label, value: fact.value, format: fact.format }))} />
+          <FactList layout="stacked" facts={grading.verifier} />
         </section>
       </aside>
     </div>

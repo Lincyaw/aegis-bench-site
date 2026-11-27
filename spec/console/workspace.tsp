@@ -11,15 +11,25 @@ namespace AegisBench.Console;
 /** One benchmark on the workbench: its size, the work waiting in it and where its releases stand. */
 model WorkbenchRow {
   benchmark: ConsoleBenchmark;
-  unreviewedFailures: int32;
-  executionFailures: int32;
+  unreviewedFailures: PendingWork;
+  executionFailures: PendingWork;
   current: ReleaseSummary;
   draft?: ReleaseSummary;
+}
+
+/** What waits across every benchmark. */
+model WorkbenchTotals {
+  /** Benchmarks with a draft release */
+  drafts: int32;
+
+  unreviewedFailures: int32;
+  executionFailures: int32;
 }
 
 /** Every benchmark at a glance, and the latest publications. */
 model Workbench {
   benchmarks: WorkbenchRow[];
+  totals: WorkbenchTotals;
   recentReleases: ReleaseSummary[];
 }
 

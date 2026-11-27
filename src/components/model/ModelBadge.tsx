@@ -3,6 +3,7 @@ import type { Combination, CombinationScope, HarnessRef, ModelRef } from '../../
 import { LocaleLink } from '../../i18n/LocaleRouting';
 import { modelPath } from '../../routes/site';
 import { ScopeChip } from '../../ui/controls';
+import { combinationName } from '../result/presentation';
 import styles from './ModelBadge.module.css';
 
 /** The vendor's slot letter on the slot's colour. */
@@ -30,7 +31,7 @@ export function CombinationScopeChip({ entrants, scope, to }: { entrants: Combin
   if (!model || (scope.harness !== undefined && !harness)) {
     throw new Error(`no entrant runs ${scope.model} ${scope.harness ?? ''}`);
   }
-  return <ScopeChip name={harness ? `${model.name} · ${harness.name}` : model.name} to={to} />;
+  return <ScopeChip name={harness ? combinationName(model, harness) : model.name} to={to} />;
 }
 
 /** A model's badge and name, linking to the model's page. */

@@ -4,6 +4,7 @@ import type {
 import { benchmarkOf } from './benchmarks';
 import { harnessRef, modelRef } from './catalog';
 import { huggingFacePageOf, openedIndexes, readAnnotations, readRunFile, readTrajectory, runDirectoryOf } from './records';
+import { isCounted } from './results';
 import { timelineOf } from './trajectories';
 
 /*
@@ -38,6 +39,7 @@ export function comparedRunOf(record: BenchmarkFile, { fact, run, trajectory, an
     },
     finalReply: run.output.finalReply,
     timeline: timelineOf(trajectory, record.changeTools), annotations,
+    annotationCounts: (record.annotationCategories ?? []).map(category => annotations.filter(annotation => annotation.category === category.id).length),
     ...(fact.failureClass && { failureClass: fact.failureClass }), ...(run.failure?.review && { review: run.failure.review }),
     ...(huggingFaceUrl && { huggingFaceUrl }),
   };
@@ -53,21 +55,24 @@ export function comparedFilesOf(records: RunRecords[]): ComparedFile[] {
     const changes = records.flatMap(({ fact, run }) => run.output.submission.files.filter(file => file.path === path).map(({ additions, deletions, patch }) => ({
       runId: fact.id, additions, deletions, ...(patch && { patch }),
     })));
-    const contentOf = (change: (typeof changes)[number]) => JSON.stringify([change.additions, change.deletions, change.patch ?? []]);
+    const patchOf = (change: (typeof changes)[number]) => change.patch && JSON.stringify(change.patch);
+    const countsOf = (change: (typeof changes)[number]) => `${change.additions} ${change.deletions}`;
+    const patches = changes.map(patchOf);
+    const differs = changes.length < records.length || new Set(changes.map(countsOf)).size > 1 || new Set(patches.filter(patch => patch !== undefined)).size > 1;
     return {
       path,
       changes: changes.map((change, index) => {
-        const same = changes.slice(0, index).find(earlier => contentOf(earlier) === contentOf(change));
+        const same = changes.slice(0, index).find(earlier => patchOf(earlier) !== undefined && patchOf(earlier) === patchOf(change) && countsOf(earlier) === countsOf(change));
         return { ...change, ...(same && { sameAs: same.runId }) };
       }),
-      differs: changes.length < records.length || new Set(changes.map(contentOf)).size > 1,
+      ...((differs || patches.every(patch => patch !== undefined)) && { differs }),
     };
   });
 }
 
 /** Every check of the task with each graded run's verdict, what the run produced for it and why it failed. */
 export function comparedChecksOf(task: TaskRecord, records: RunRecords[]): ComparedCheck[] {
-  const graded = records.filter(({ fact }) => fact.outcome !== 'executionFailed');
+  const graded = records.filter(({ fact }) => isCounted(fact));
   return task.checks.map(check => {
     const verdicts = graded.map(({ fact, run }) => {
       const verdict = run.grading.checks.find(candidate => candidate.id === check.id);

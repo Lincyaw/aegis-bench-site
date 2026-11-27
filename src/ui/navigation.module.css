@@ -6,6 +6,7 @@
 /* A tab row's user may set --tab-gap and --tab-padding to fit the space it sits in. */
 .tabs { position: relative; display: flex; gap: var(--tab-gap, var(--space-8)); overflow-x: auto; scrollbar-width: none; }
 .tab { flex: none; padding: var(--tab-padding, var(--space-2) 0); color: var(--text-muted); white-space: nowrap; transition: color var(--duration-base); }
+.count { margin-left: var(--space-1); color: var(--text-faint); font-variant-numeric: tabular-nums; }
 .tab:hover, .tab:is([aria-current="true"], [aria-selected="true"]) { color: var(--text-main); }
 .indicator {
   position: absolute;

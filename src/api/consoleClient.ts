@@ -3,13 +3,22 @@ import { useLocale } from '../i18n/localeContext';
 import { SITE_QUERY, api, languageHeader, nextPageOffset, responseBody } from './client';
 import type {
   ChangelogQuery, CombinationScope, ConsoleRunQuery, ConsoleTaskQuery, HuntTrialQuery, Invitation, ModelTaskQuery, NewReport, ReleaseContent, ReportDraft,
-  ReportEdit, ReviewRequest, Role, RunEventQuery, SessionState, SettingsChange, SignInRequest, TaskOrder,
+  ReportEdit, ReportStatus, ReviewRequest, Role, RunEventQuery, SessionState, SettingsChange, SignInRequest, TaskOrder,
 } from './types';
 
 /** Every console query key starts with this, so signing in or out can drop what the previous session read. */
 export const CONSOLE_QUERY = 'console';
 
 export const SESSION_QUERY_KEY = [CONSOLE_QUERY, 'session'];
+
+/** The second part of the query keys that mutations refresh or drop, written once so each refresh finds what it means to. */
+const MEMBERS_QUERY = 'members';
+const SETTINGS_QUERY = 'settings';
+const WORKBENCH_QUERY = 'workbench';
+const RELEASES_QUERY = 'releases';
+const RELEASE_QUERY = 'release';
+const REPORTS_QUERY = 'reports';
+const REPORT_QUERY = 'report';
 
 /**
  * Drops everything the previous session read and records the new session. The session's own query stays in the cache,
@@ -56,14 +65,14 @@ export function useConsoleUser() {
 
 export function useMembers() {
   return useSuspenseQuery({
-    queryKey: [CONSOLE_QUERY, 'members'],
+    queryKey: [CONSOLE_QUERY, MEMBERS_QUERY],
     queryFn: () => responseBody(api.GET('/console/members')),
   }).data;
 }
 
 /** After the members change, the list is read again, and so is the session, whose own role or membership may have changed. */
 export function refreshAfterMembers(queryClient: QueryClient) {
-  void queryClient.invalidateQueries({ queryKey: [CONSOLE_QUERY, 'members'] });
+  void queryClient.invalidateQueries({ queryKey: [CONSOLE_QUERY, MEMBERS_QUERY] });
   void queryClient.invalidateQueries({ queryKey: SESSION_QUERY_KEY });
 }
 
@@ -93,7 +102,7 @@ export function useRemoveMember(account: string) {
 
 export function useSettings() {
   return useSuspenseQuery({
-    queryKey: [CONSOLE_QUERY, 'settings'],
+    queryKey: [CONSOLE_QUERY, SETTINGS_QUERY],
     queryFn: () => responseBody(api.GET('/console/settings')),
   }).data;
 }
@@ -104,7 +113,7 @@ export function useUpdateSettings() {
   return useMutation({
     mutationFn: (change: SettingsChange) => responseBody(api.PUT('/console/settings', { body: change })),
     onSuccess: settings => {
-      queryClient.setQueryData([CONSOLE_QUERY, 'settings'], settings);
+      queryClient.setQueryData([CONSOLE_QUERY, SETTINGS_QUERY], settings);
       void queryClient.invalidateQueries({ queryKey: [SITE_QUERY] });
     },
   });
@@ -118,13 +127,13 @@ export function useConsoleBenchmarks() {
   }).data;
 }
 
-/** One benchmark of the console's list; an id the list lacks fails the page. */
+/** One benchmark; an id the console lacks fails the page. */
 export function useConsoleBenchmark(benchmarkId: string) {
-  const benchmark = useConsoleBenchmarks().find(candidate => candidate.id === benchmarkId);
-  if (!benchmark) {
-    throw new Error(`no benchmark ${benchmarkId}`);
-  }
-  return benchmark;
+  const locale = useLocale();
+  return useSuspenseQuery({
+    queryKey: [CONSOLE_QUERY, 'benchmark', benchmarkId, locale],
+    queryFn: () => responseBody(api.GET('/console/benchmarks/{benchmarkId}', { params: { path: { benchmarkId }, header: languageHeader(locale) } })),
+  }).data;
 }
 
 /** One page of a benchmark's tasks; the page stays the same in every language, but its combination names do not. */
@@ -364,7 +373,7 @@ export function useRunHunts(runId: string) {
 export function useWorkbench() {
   const locale = useLocale();
   return useSuspenseQuery({
-    queryKey: [CONSOLE_QUERY, 'workbench', locale],
+    queryKey: [CONSOLE_QUERY, WORKBENCH_QUERY, locale],
     queryFn: () => responseBody(api.GET('/console/workbench', { params: { header: languageHeader(locale) } })),
   }).data;
 }
@@ -379,21 +388,21 @@ export function useChangelog(query: ChangelogQuery, pageSize: number) {
 
 export function useReleaseOverview() {
   return useSuspenseQuery({
-    queryKey: [CONSOLE_QUERY, 'releases'],
+    queryKey: [CONSOLE_QUERY, RELEASES_QUERY],
     queryFn: () => responseBody(api.GET('/console/releases')),
   }).data;
 }
 
 export function useBenchmarkReleases(benchmarkId: string) {
   return useSuspenseQuery({
-    queryKey: [CONSOLE_QUERY, 'releases', benchmarkId],
+    queryKey: [CONSOLE_QUERY, RELEASES_QUERY, benchmarkId],
     queryFn: () => responseBody(api.GET('/console/benchmarks/{benchmarkId}/releases', { params: { path: { benchmarkId } } })),
   }).data;
 }
 
 export function useRelease(releaseId: string) {
   return useSuspenseQuery({
-    queryKey: [CONSOLE_QUERY, 'release', releaseId],
+    queryKey: [CONSOLE_QUERY, RELEASE_QUERY, releaseId],
     queryFn: () => responseBody(api.GET('/console/releases/{releaseId}', { params: { path: { releaseId } } })),
   }).data;
 }
@@ -403,7 +412,7 @@ export function useRelease(releaseId: string) {
  * current releases.
  */
 export function refreshAfterRelease(queryClient: QueryClient) {
-  void queryClient.invalidateQueries({ predicate: query => query.queryKey[0] !== CONSOLE_QUERY || ['releases', 'release', 'workbench'].includes(String(query.queryKey[1])) });
+  void queryClient.invalidateQueries({ predicate: query => query.queryKey[0] !== CONSOLE_QUERY || [RELEASES_QUERY, RELEASE_QUERY, WORKBENCH_QUERY].includes(String(query.queryKey[1])) });
 }
 
 export function useCreateDraft(benchmarkId: string) {
@@ -444,31 +453,31 @@ export function useDiscardDraft(releaseId: string) {
   return useMutation({
     mutationFn: () => responseBody(api.DELETE('/console/releases/{releaseId}', { params: { path: { releaseId } } })),
     onSuccess: () => {
-      queryClient.removeQueries({ queryKey: [CONSOLE_QUERY, 'release', releaseId], exact: true });
+      queryClient.removeQueries({ queryKey: [CONSOLE_QUERY, RELEASE_QUERY, releaseId], exact: true });
       refreshAfterRelease(queryClient);
     },
   });
 }
 
-/** The report drafts that name a benchmark, newest first. */
-export function useReportDrafts(benchmarkId: string) {
+/** The report drafts that name a benchmark, newest first; those in one status when it is given. */
+export function useReportDrafts(benchmarkId: string, status?: ReportStatus) {
   return useSuspenseQuery({
-    queryKey: [CONSOLE_QUERY, 'reports', benchmarkId],
-    queryFn: () => responseBody(api.GET('/console/reports', { params: { query: { benchmarkId } } })),
+    queryKey: [CONSOLE_QUERY, REPORTS_QUERY, benchmarkId, status],
+    queryFn: () => responseBody(api.GET('/console/reports', { params: { query: { benchmarkId, status } } })),
   }).data;
 }
 
 export function useReportDraft(reportId: string) {
   return useSuspenseQuery({
-    queryKey: [CONSOLE_QUERY, 'report', reportId],
+    queryKey: [CONSOLE_QUERY, REPORT_QUERY, reportId],
     queryFn: () => responseBody(api.GET('/console/reports/{reportId}', { params: { path: { reportId } } })),
   }).data;
 }
 
 /** After a draft changes, the lists are read again and the draft's own answer is kept as it is. */
 export function refreshAfterReport(queryClient: QueryClient, draft: ReportDraft) {
-  queryClient.setQueryData([CONSOLE_QUERY, 'report', draft.id], draft);
-  void queryClient.invalidateQueries({ queryKey: [CONSOLE_QUERY, 'reports'] });
+  queryClient.setQueryData([CONSOLE_QUERY, REPORT_QUERY, draft.id], draft);
+  void queryClient.invalidateQueries({ queryKey: [CONSOLE_QUERY, REPORTS_QUERY] });
 }
 
 export function useCreateReport() {
@@ -509,8 +518,8 @@ export function useDiscardReport(reportId: string) {
   return useMutation({
     mutationFn: () => responseBody(api.DELETE('/console/reports/{reportId}', { params: { path: { reportId } } })),
     onSuccess: () => {
-      queryClient.removeQueries({ queryKey: [CONSOLE_QUERY, 'report', reportId], exact: true });
-      void queryClient.invalidateQueries({ queryKey: [CONSOLE_QUERY, 'reports'] });
+      queryClient.removeQueries({ queryKey: [CONSOLE_QUERY, REPORT_QUERY, reportId], exact: true });
+      void queryClient.invalidateQueries({ queryKey: [CONSOLE_QUERY, REPORTS_QUERY] });
     },
   });
 }

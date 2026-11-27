@@ -81,8 +81,7 @@ export const en: Messages = {
   },
   lifecycle: {
     half: { dev: 'Development', ops: 'Operations' },
-    listSeparator: ', ',
-    stageWith: '{{stage}}: {{benchmarks}}',
+    stageWith: '{{stage}}: {{benchmarks, list}}',
     stageBuilding: '{{stage}} · benchmarks under construction',
     benchmarksAt_one: '{{stage}} · {{count}} benchmark',
     benchmarksAt_other: '{{stage}} · {{count}} benchmarks',
@@ -120,7 +119,7 @@ export const en: Messages = {
     fullLeaderboard: 'Full leaderboard',
     recentRuns: 'Run records',
     allRuns: 'All run records',
-    replay: 'Replay →',
+    replay: 'Replay',
     column: { model: 'Model', task: 'Task', process: 'Process', result: 'Result', steps: 'Steps', duration: 'Duration', replay: 'Replay' },
   },
   leaderboard: {
@@ -152,7 +151,7 @@ export const en: Messages = {
       best: 'Best harness',
       rank: 'Rank',
       score: 'Score',
-      open: 'Leaderboard →',
+      open: 'Leaderboard',
       leaderboard: 'Leaderboard',
     },
     harnesses: {
@@ -184,7 +183,7 @@ export const en: Messages = {
     huggingFace: "This run's record and trajectory are kept on Hugging Face, where the original files can be viewed and downloaded.",
     tasks: 'Tasks',
     runs: 'Runs',
-    passRate: 'Pass rate {{rate}}%',
+    passRate: 'Pass rate {{rate}}',
     noCountedRun: 'No counted runs',
     noTasks: 'No matching tasks',
     noRuns: 'No runs match the filters',
@@ -269,8 +268,6 @@ export const en: Messages = {
     stepCount_other: '{{count}} steps',
     stepOf_one: 'Step {{step}} of {{count}}',
     stepOf_other: 'Step {{step}} of {{count}}',
-    trajectoryFacts_one: 'ATIF {{version}} · {{agent}} · {{model}} · {{count}} step · ${{cost}}',
-    trajectoryFacts_other: 'ATIF {{version}} · {{agent}} · {{model}} · {{count}} steps · ${{cost}}',
     trajectoryNote: 'The trajectory is published in ATIF as it was recorded. Steps a failure review cites carry a red line.',
   },
   compare: {

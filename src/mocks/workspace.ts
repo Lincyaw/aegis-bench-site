@@ -2,16 +2,13 @@ import type { ChangelogEntry, Locale, ReleaseOverview, RevisionChange, Workbench
 import { benchmarkOf, benchmarkRef } from './benchmarks';
 import { revisionsOf } from './consoleTasks';
 import { openedIndexes } from './records';
-import { consoleBenchmarkOf, resultCountsOf } from './results';
+import { consoleBenchmarkOf, pendingWorkOf, resultCountsOf } from './results';
 import { currentReleaseOf, draftOf, releaseSummaryOf, releasesOf } from './releases';
 
 /* The console's workspace: every benchmark at a glance, every release, and every task's versions. */
 
 /** Publications the overview and the workbench list, newest first. */
 export const RECENT_RELEASE_COUNT = 6;
-
-/** Task versions per page of the changelog when a request names no limit, as the spec declares. */
-export const DEFAULT_CHANGELOG_PAGE_SIZE = 25;
 
 export function recentReleases() {
   return openedIndexes().catalog.benchmarks.flatMap(benchmarkId => releasesOf(benchmarkId)).filter(release => release.status !== 'draft')
@@ -29,15 +26,21 @@ export function releaseOverview(): ReleaseOverview {
 }
 
 export function workbenchOf(locale: Locale): Workbench {
+  const benchmarks = openedIndexes().catalog.benchmarks.map(benchmarkId => {
+    const totals = resultCountsOf(benchmarkOf(benchmarkId).runs);
+    const draft = draftOf(benchmarkId);
+    return {
+      benchmark: consoleBenchmarkOf(benchmarkId, locale), unreviewedFailures: pendingWorkOf('unreviewedFailures', totals),
+      executionFailures: pendingWorkOf('executionFailures', totals), current: releaseSummaryOf(currentReleaseOf(benchmarkId)), ...(draft && { draft: releaseSummaryOf(draft) }),
+    };
+  });
   return {
-    benchmarks: openedIndexes().catalog.benchmarks.map(benchmarkId => {
-      const totals = resultCountsOf(benchmarkOf(benchmarkId).runs);
-      const draft = draftOf(benchmarkId);
-      return {
-        benchmark: consoleBenchmarkOf(benchmarkId, locale), unreviewedFailures: totals.unreviewed, executionFailures: totals.executionFailed,
-        current: releaseSummaryOf(currentReleaseOf(benchmarkId)), ...(draft && { draft: releaseSummaryOf(draft) }),
-      };
-    }),
+    benchmarks,
+    totals: {
+      drafts: benchmarks.filter(row => row.draft).length,
+      unreviewedFailures: benchmarks.reduce((sum, row) => sum + row.unreviewedFailures.count, 0),
+      executionFailures: benchmarks.reduce((sum, row) => sum + row.executionFailures.count, 0),
+    },
     recentReleases: recentReleases(),
   };
 }

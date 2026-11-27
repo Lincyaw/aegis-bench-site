@@ -46,7 +46,7 @@ model ModelTaskRun {
 model ModelTaskRow {
   task: TaskRef;
 
-  /** By harness, then attempt */
+  /** By harness id, then attempt */
   runs: ModelTaskRun[];
 
   result: ResultCounts;

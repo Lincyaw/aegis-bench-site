@@ -30,8 +30,9 @@
 .benchmark:hover { background: var(--bg-muted); }
 .benchmark + .benchmark { margin-top: var(--space-5); }
 .benchmarkHead { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-3); margin-bottom: var(--space-2); }
-.benchmarkHead h3::after { content: " →"; color: var(--text-faint); font: var(--type-heading); transition: color var(--duration-base) var(--ease-out); }
-.benchmark:hover .benchmarkHead h3::after { color: var(--text-main); }
+.benchmarkHead h3 { display: inline-flex; align-items: center; gap: var(--space-2); }
+.benchmarkHead h3 svg { color: var(--text-faint); transition: color var(--duration-base) var(--ease-out); }
+.benchmark:hover .benchmarkHead h3 svg { color: var(--text-main); }
 
 /* The story raises --reveal from 0 to 1 as the stage arrives, drawing out each bar to its --share; both rest at their final value. */
 .leaders li { display: grid; grid-template-columns: var(--space-4) var(--space-5) minmax(0, 1fr) minmax(3.75rem, 8rem) 5.75rem; align-items: center; gap: var(--space-3); padding: var(--space-2) 0; border-top: var(--rule-hairline); font: var(--type-label); font-weight: 400; }

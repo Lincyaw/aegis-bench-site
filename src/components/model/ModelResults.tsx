@@ -8,7 +8,7 @@ import { consoleTaskPath } from '../../routes/consoleTasks';
 import table from '../../ui/table.module.css';
 import { FailureBar } from '../result/FailureBar';
 import { PassRate } from '../result/PassRate';
-import { formatCost } from '../result/presentation';
+import { NO_VALUE, formatCost } from '../result/presentation';
 import { OutcomeDot } from '../run/Outcome';
 import styles from './ModelResults.module.css';
 
@@ -33,7 +33,7 @@ export function HarnessTable({ benchmarkId, modelId, query, results }: { benchma
           <span role="cell"><PassRate rate={result.passRate} /></span>
           <span role="cell" className="t-numeric c-muted">{t('console.overview.tasksOf', { solved: result.solvedEveryTime, total: result.tasks })}</span>
           <span role="cell" className="t-numeric c-muted">{t('console.overview.tasksOf', { solved: result.solvedOnce, total: result.tasks })}</span>
-          <span role="cell" className="t-numeric c-muted">{result.meanCostUsd === undefined ? '—' : formatCost(result.meanCostUsd)}</span>
+          <span role="cell" className="t-numeric c-muted">{result.meanCostUsd === undefined ? NO_VALUE : formatCost(result.meanCostUsd)}</span>
           <span role="cell"><FailureBar result={result} /></span>
         </div>
       ))}

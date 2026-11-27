@@ -13,7 +13,8 @@
 }
 .covered { cursor: pointer; transition: border-color var(--duration-base) var(--ease-out); }
 .covered:hover { border-color: var(--half-color); }
-.go { position: absolute; right: var(--space-3); bottom: var(--space-2); color: var(--text-faint); }
+.go { position: absolute; right: var(--space-3); bottom: var(--space-2); display: inline-flex; align-items: center; gap: var(--space-1); color: var(--text-faint); }
+.go svg { width: var(--icon-small); height: var(--icon-small); }
 
 .drawing { display: block; width: 100%; height: auto; fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.5; }
 .drawing :global(.c) { stroke: var(--half-color); }

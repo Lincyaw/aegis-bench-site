@@ -1,7 +1,8 @@
 import type { Toc } from '@stefanprobst/rehype-extract-toc';
 import type { MDXContent } from 'mdx/types';
 import { lazy, type LazyExoticComponent } from 'react';
-import { z } from 'zod';
+import type { z } from 'zod';
+import { ReportFrontmatter } from '../api/reportFrontmatter';
 import { isLocale, type Locale } from '../i18n/locales';
 import type { PageSection } from '../ui/navigation';
 
@@ -18,20 +19,6 @@ const REPORT_PATH = /^\/content\/reports\/([^/]+)\/([^/]+)\.mdx?$/;
 export const DOCUMENTS: Record<string, LazyExoticComponent<MDXContent>> = Object.fromEntries(
   Object.entries(DOCUMENT_LOADERS).map(([path, load]) => [path, lazy(async () => ({ default: await load() }))]),
 );
-
-/** The anchor of a document's citation block, which a page's head can link to. */
-export const CITATION_ANCHOR = 'cite';
-
-/** What a report's frontmatter declares; the site checks it once, when it loads, and the console as a draft changes. */
-export const ReportFrontmatter = z.object({
-  title: z.string(),
-  date: z.iso.date(),
-  summary: z.string(),
-
-  /** Ids of the models and benchmarks the report is about; their pages link to it */
-  models: z.array(z.string()).default([]),
-  benchmarks: z.array(z.string()).default([]),
-});
 
 export type ReportEntry = z.infer<typeof ReportFrontmatter> & { slug: string; locale: Locale; path: string };
 

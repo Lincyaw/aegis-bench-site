@@ -6,7 +6,7 @@ import { useLocale } from '../../i18n/localeContext';
 import { dateTimeOf, groupedNumber } from '../../i18n/locales';
 import { consoleBenchmarkPath } from '../../routes/console';
 import { releasePath } from '../../routes/consoleReleases';
-import { PENDING_RUNS, consoleRunsPath } from '../../routes/consoleRuns';
+import { pendingRunsPath } from '../../routes/consoleRuns';
 import table from '../../ui/table.module.css';
 import { ReleaseVersion } from '../release/ReleaseLabels';
 import styles from './WorkbenchTable.module.css';
@@ -45,7 +45,7 @@ export function WorkbenchTable({ rows }: { rows: WorkbenchRow[] }) {
             <span role="cell" className="t-numeric c-muted">{groupedNumber(locale, benchmark.taskCount)}</span>
             <span role="cell" className="t-numeric c-muted">{groupedNumber(locale, benchmark.runCount)}</span>
             <span role="cell" className="t-numeric">
-              <LocaleLink to={consoleRunsPath(benchmark.id, PENDING_RUNS.unreviewedFailures)}>{groupedNumber(locale, unreviewedFailures)}</LocaleLink>
+              <LocaleLink to={pendingRunsPath(benchmark.id, unreviewedFailures)}>{groupedNumber(locale, unreviewedFailures.count)}</LocaleLink>
             </span>
           </div>
         );

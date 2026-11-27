@@ -13,7 +13,9 @@
   transition: background var(--duration-base);
 }
 .strip:hover { background: var(--bg-muted); }
-.strip .flags .flag { height: var(--space-1); background: var(--severity-ink, transparent); opacity: 1; }
+/* A flag takes the width of the timeline's mark above it, so each stays under its step. */
+.flags { display: flex; align-items: center; gap: var(--space-px); min-height: var(--space-1); min-width: 0; overflow: hidden; }
+.flag { flex: 0 1 calc(var(--space-px) + var(--size-hairline)); min-width: var(--size-hairline); height: var(--space-1); border-radius: var(--size-hairline); background: var(--severity-ink, transparent); }
 
 .counts { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin-top: var(--space-2); }
 

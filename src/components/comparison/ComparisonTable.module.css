@@ -33,7 +33,7 @@
 /* A row that opens in place answers the pointer anywhere on it, as a table's link row does; its chevron turns as it opens. */
 .expandable { transition: background-color var(--duration-base); }
 .toggle { display: flex; align-items: flex-start; gap: var(--space-2); text-align: left; }
-.chevron { flex: none; margin-top: var(--space-1); color: var(--text-faint); transition: transform var(--duration-base) var(--ease-out); }
+.chevron { display: grid; flex: none; margin-top: var(--space-1); color: var(--text-faint); transition: transform var(--duration-base) var(--ease-out); }
 .toggle[aria-expanded="true"] .chevron { transform: rotate(90deg); }
 .expansion { background: var(--bg-panel); animation: expansion-in var(--duration-base) var(--ease-out); }
 

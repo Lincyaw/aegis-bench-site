@@ -20,12 +20,15 @@
 .medium { height: var(--control-medium); padding: 0 var(--space-4); font: var(--type-small); line-height: 1; }
 .small { height: var(--control-small); padding: 0 var(--space-2); gap: var(--space-1); font: var(--type-micro); line-height: 1; color: var(--text-muted); }
 .small:hover, .small[aria-current="true"] { color: var(--text-main); }
+/* A small control draws its icons smaller, the stroke scaling with them. */
+.small svg, .copied svg, .chipCheck svg, .scope svg { width: var(--icon-small); height: var(--icon-small); }
 
 .solid { border-color: transparent; background: var(--bg-inverted); color: var(--text-on-inverted); }
 .solid:hover { background: var(--bg-inverted); box-shadow: var(--shadow-glow); }
 .solid:disabled { box-shadow: none; opacity: .5; cursor: progress; }
-.solid::after { content: "→"; transition: transform var(--duration-slow) var(--ease-out); }
-.solid:hover::after { transform: translateX(var(--space-1)); }
+/* The arrow that ends a link or a solid button moves ahead as the pointer arrives. */
+.solid svg, .textLink svg { transition: transform var(--duration-slow) var(--ease-out); }
+.solid:hover svg, .textLink:hover svg { transform: translateX(var(--space-1)); }
 
 .copy { display: inline-flex; align-items: center; gap: var(--space-3); }
 .copied { display: inline-flex; align-items: center; gap: var(--space-1); }
@@ -54,6 +57,10 @@
 /* Positioned after the thumb in source order, the choices paint above it. */
 .segment { position: relative; height: var(--control-small); padding: 0 var(--space-4); border-radius: var(--radius-full); color: var(--text-muted); font: var(--type-micro); line-height: 1; white-space: nowrap; transition: color var(--duration-base); }
 .segment:hover, .segment[aria-pressed="true"] { color: var(--text-main); }
+/* A long run of choices, such as a captioned one, must fit the narrow window. */
+@media (max-width: 760px) {
+  .segment { padding: 0 var(--space-3); }
+}
 
 /*
  * Captions sit over runs of choices: the track takes its columns from the captions' grid, so a run of choices widens
@@ -94,9 +101,13 @@
   background: var(--loop-gradient) left bottom / 0 var(--size-hairline) no-repeat;
   transition: color var(--duration-base), background-size var(--duration-slow) var(--ease-out);
 }
-.textLink::after { content: "→"; transition: transform var(--duration-slow) var(--ease-out); }
+.textLink svg { width: var(--icon-small); height: var(--icon-small); }
 .textLink:hover { background-size: 100% var(--size-hairline); }
-.textLink:hover::after { transform: translateX(var(--space-1)); }
+
+/* A button back to the level above stays quiet until pointed at. */
+.back { display: inline-flex; align-items: center; gap: var(--space-1); color: var(--text-muted); transition: color var(--duration-base); }
+.back:hover { color: var(--text-main); }
+.back svg { width: var(--icon-small); height: var(--icon-small); }
 
 /* A list's next page stays quiet until pointed at, and fades while it loads. */
 .more { color: var(--text-muted); transition: color var(--duration-base); }
@@ -110,23 +121,14 @@
 /* Without an outline to fill, a quiet select is as wide as its value and its chevron. */
 .trigger.quiet { min-width: 0; gap: var(--space-2); }
 
-/* The panel's corners stay concentric with the pill options inside its padding. */
+/* The panel is a popover whose corners stay concentric with the pill options inside its padding. */
 .menu {
+  --popover-radius: var(--radius-2xl);
   z-index: 50;
   min-width: var(--radix-select-trigger-width);
   max-height: min(22.5rem, var(--radix-select-content-available-height));
   padding: var(--space-2);
-  border: var(--size-hairline) solid var(--border-glass);
-  border-radius: var(--radius-2xl);
-  background: var(--bg-glass-strong);
-  backdrop-filter: blur(var(--blur-glass));
-  box-shadow: var(--shadow-float);
   overflow: hidden;
-  animation: menu-in var(--duration-base) var(--ease-out);
-}
-/* A popover approaches from its trigger's side and never zooms. */
-@keyframes menu-in {
-  from { opacity: 0; transform: translateY(calc(-1 * var(--space-1))); }
 }
 .options { display: grid; gap: var(--space-px); }
 .option {

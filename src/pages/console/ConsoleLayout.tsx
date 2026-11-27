@@ -13,8 +13,9 @@ import { useLocale, useLocalizedNavigate } from '../../i18n/localeContext';
 import { groupedNumber, sitePath } from '../../i18n/locales';
 import { CONSOLE_PATH, benchmarkSectionOf, benchmarkSectionPath, signInPath } from '../../routes/console';
 import { Loading } from '../../ui/content';
-import { Button, IconButton, LinkArrowIcon, MenuIcon, Select, ThemeIcon } from '../../ui/controls';
-import controls from '../../ui/controls.module.css';
+import { Button, ButtonLink, IconButton, Select } from '../../ui/controls';
+import hint from '../../ui/hint.module.css';
+import { LinkArrowIcon, MenuIcon, ThemeIcon } from '../../ui/icons';
 import { toggleTheme } from '../../ui/theme';
 import { BENCHMARK_NAV, WORKSPACE_CHOICE, WORKSPACE_NAV, publicSitePathOf } from './consoleNav';
 import styles from './ConsoleLayout.module.css';
@@ -62,7 +63,7 @@ export function ConsoleBar({ user, benchmarkId, menuOpen, onMenu }: { user: Cons
         <span className="t-small c-muted">{t('console.name')}</span>
       </LocaleLink>
       <div className={styles.end}>
-        <LocaleLink className={clsx(controls.pill, controls.medium, controls.quiet, styles.publicSite)} to={publicSitePathOf(benchmarkId)}>{t('console.publicSite')}</LocaleLink>
+        <ButtonLink variant="quiet" size="medium" className={styles.publicSite} to={publicSitePathOf(benchmarkId)}>{t('console.publicSite')}</ButtonLink>
         <LanguageSwitch path={sitePath(locale, pathname)} search={search} />
         <IconButton label={t('site.toggleTheme')} onClick={toggleTheme} variant="quiet"><ThemeIcon /></IconButton>
         <AccountMenu user={user} />
@@ -77,11 +78,13 @@ export function AccountMenu({ user }: { user: ConsoleUser }) {
   const signOut = useSignOut();
   return (
     <Popover.Root>
-      <Popover.Trigger className={clsx(controls.pill, controls.icon, styles.avatar, 'loop-edge')} aria-label={t('console.account.menu', { account: user.account })}>
-        <span className="t-label">{user.initials}</span>
+      <Popover.Trigger asChild>
+        <IconButton label={t('console.account.menu', { account: user.account })} className={styles.avatar}>
+          <span className="t-label">{user.initials}</span>
+        </IconButton>
       </Popover.Trigger>
       <Popover.Portal>
-        <Popover.Content className={styles.accountMenu} align="end" sideOffset={8} collisionPadding={12}>
+        <Popover.Content className={clsx(hint.popover, styles.accountMenu)} align="end" sideOffset={8} collisionPadding={12}>
           <span className="t-micro c-faint">{t('console.account.signedInAs')}</span>
           <span className="t-label">{user.name}</span>
           <span className="t-mono c-muted">{user.account} · {t(`console.roles.${user.role}`)}</span>

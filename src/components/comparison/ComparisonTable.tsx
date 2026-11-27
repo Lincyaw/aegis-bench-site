@@ -2,6 +2,7 @@ import { clsx } from 'clsx';
 import type { CSSProperties, ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { InfoHint } from '../../ui/hint';
+import { ArrowIcon } from '../../ui/icons';
 import table from '../../ui/table.module.css';
 import styles from './ComparisonTable.module.css';
 
@@ -42,7 +43,7 @@ export function ItemRow({ label, differs, expanded, onToggle, children }: { labe
       <div className={clsx(styles.label, differs && styles.differs)} role="rowheader">
         {onToggle ? (
           <button type="button" className={clsx(styles.toggle, table.primary)} aria-expanded={expanded} onClick={onToggle}>
-            <svg className={styles.chevron} viewBox="0 0 10 10" width="10" height="10" aria-hidden="true"><path d="m3.5 2 3 3-3 3" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            <span className={styles.chevron}><ArrowIcon direction="right" /></span>
             {label}
           </button>
         ) : label}

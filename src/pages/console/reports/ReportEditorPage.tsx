@@ -7,14 +7,17 @@ import { useParams } from 'react-router-dom';
 import {
   useConsoleBenchmark, useConsoleUser, useDiscardReport, useReportDraft, useReviewReport, useSettings, useSubmitReport, useUpdateReport,
 } from '../../../api/consoleClient';
+import { ReportFrontmatter } from '../../../api/reportFrontmatter';
 import type { ReportDraft } from '../../../api/types';
 import { DocumentBody } from '../../../articles/Document';
 import { evaluateDocument } from '../../../articles/evaluate';
-import { ReportFrontmatter } from '../../../articles/library';
+import { reportFileOf } from '../../../articles/library';
 import { Replay, RunNumber } from '../../../articles/runBlocks';
 import { DocumentEditor, ExportPanel, ReviewHistory } from '../../../components/report/ReportEditor';
 import { ReportStatusTag } from '../../../components/report/ReportLabels';
-import { ChangeFailure } from '../../../components/shell/ChangeFailure';
+import { ChangeFailure } from '../../../components/change/ChangeFailure';
+import { DiscardAfterConfirm } from '../../../components/change/DiscardAfterConfirm';
+import { hasUnsavedChange } from '../../../components/change/unsavedChange';
 import { ConsoleHeader } from '../../../components/shell/ConsoleHeader';
 import { useLocale, useLocalizedNavigate } from '../../../i18n/localeContext';
 import { dateTimeOf } from '../../../i18n/locales';
@@ -23,7 +26,6 @@ import { consoleReportsPath } from '../../../routes/consoleReports';
 import content from '../../../ui/content.module.css';
 import { Button, SubmitButton, TextArea, ToggleChip } from '../../../ui/controls';
 import { InfoHint } from '../../../ui/hint';
-import { mayEdit } from '../roles';
 import styles from './ReportPages.module.css';
 
 /** A report draft: its documents in each language beside their preview, the checks before review, its reviews and its files. */
@@ -33,7 +35,7 @@ export function ReportEditorPage() {
   const { benchmarkId = '', reportId = '' } = useParams();
   const benchmark = useConsoleBenchmark(benchmarkId);
   const report = useReportDraft(reportId);
-  const editor = mayEdit(useConsoleUser().role);
+  const editor = useConsoleUser().can.edit;
   return (
     <div className={styles.page} data-half={benchmark.stage.half}>
       <ConsoleHeader
@@ -47,7 +49,7 @@ export function ReportEditorPage() {
       </div>
       <ReportEditor key={report.id} report={report} />
       {report.status === 'inReview' && <ReviewPanel report={report} />}
-      {report.status === 'approved' && <ExportPanel report={report} />}
+      {report.status === 'approved' && <ExportPanel report={report} fileOf={fileLocale => reportFileOf(report.slug, fileLocale)} />}
       {report.reviews.length > 0 && <ReviewHistory report={report} />}
       {editor && <DiscardReport benchmarkId={benchmark.id} reportId={report.id} />}
     </div>
@@ -60,14 +62,14 @@ export function ReportEditor({ report }: { report: ReportDraft }) {
   const [sources, setSources] = useState(report.sources);
   const [checked, setChecked] = useState(report.checked);
   const checks = useSettings().publication.reportChecks;
-  const editing = mayEdit(useConsoleUser().role) && report.status === 'draft';
+  const editing = useConsoleUser().can.edit && report.status === 'draft';
   const update = useUpdateReport(report.id);
   const submit = useSubmitReport(report.id);
-  const unsaved = JSON.stringify({ sources, checked }) !== JSON.stringify({ sources: report.sources, checked: report.checked });
+  const unsaved = hasUnsavedChange({ sources, checked }, { sources: report.sources, checked: report.checked });
   const ready = !unsaved && checks.every(check => checked.includes(check));
   return (
     <>
-      <DocumentEditor slug={report.slug} sources={sources} editing={editing} onChange={setSources} preview={(source, format) => <ReportPreview source={source} format={format} />} />
+      <DocumentEditor fileOf={locale => reportFileOf(report.slug, locale)} sources={sources} editing={editing} onChange={setSources} preview={(source, format) => <ReportPreview source={source} format={format} />} />
       <section className={clsx(content.panel, styles.checks)}>
         <div className={styles.checksHead}>
           <h2 className="t-heading">{t('console.report.checks')}</h2>
@@ -129,8 +131,7 @@ export function ReviewPanel({ report }: { report: ReportDraft }) {
   const user = useConsoleUser();
   const review = useReviewReport(report.id);
   const [comment, setComment] = useState('');
-  const reviewed = report.reviews.some(entry => entry.reviewer === user.account && report.submittedAt !== undefined && entry.at >= report.submittedAt);
-  const role = !mayEdit(user.role) ? 'viewer' : report.author === user.account ? 'author' : reviewed ? 'done' : 'reviewer';
+  const role = report.canReview ? 'reviewer' : report.reviewed ? 'done' : user.can.edit ? 'author' : 'viewer';
   const requestChanges = (event: FormEvent) => {
     event.preventDefault();
     review.mutate({ verdict: 'requestChanges', comment });
@@ -158,15 +159,11 @@ export function DiscardReport({ benchmarkId, reportId }: { benchmarkId: string; 
   const { t } = useTranslation();
   const navigate = useLocalizedNavigate();
   const discard = useDiscardReport(reportId);
-  const [asking, setAsking] = useState(false);
-  return asking ? (
-    <div className={clsx(content.panel, styles.action)}>
-      <p className="t-small c-muted">{t('console.report.discardLead')}</p>
-      <ChangeFailure error={discard.error} />
-      <div className={styles.buttons}>
-        <Button variant="line" onClick={() => discard.mutate(undefined, { onSuccess: () => navigate(consoleReportsPath(benchmarkId)) })}>{t('console.report.confirmDiscard')}</Button>
-        <Button variant="line" onClick={() => setAsking(false)}>{t('console.report.cancel')}</Button>
-      </div>
-    </div>
-  ) : <div className={styles.buttons}><Button variant="line" onClick={() => setAsking(true)}>{t('console.report.discard')}</Button></div>;
+  return (
+    <DiscardAfterConfirm
+      labels={{ discard: t('console.report.discard'), lead: t('console.report.discardLead'), confirm: t('console.report.confirmDiscard'), cancel: t('console.report.cancel') }}
+      error={discard.error}
+      onConfirm={() => discard.mutate(undefined, { onSuccess: () => navigate(consoleReportsPath(benchmarkId)) })}
+    />
+  );
 }

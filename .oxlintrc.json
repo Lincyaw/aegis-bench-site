@@ -43,7 +43,7 @@
     {
       "files": ["src/mocks/**"],
       "rules": {
-        "no-restricted-imports": ["error", { "patterns": [{ "group": ["../**", "!../api/**"], "message": "The mock server implements the API: it imports only the API's types and its own modules." }] }],
+        "no-restricted-imports": ["error", { "patterns": [{ "group": ["../**", "!../api/**", "../api/client", "../api/consoleClient"], "message": "The mock server implements the API: it imports only the API's types and its own modules." }] }],
         "no-restricted-globals": "off"
       }
     },
@@ -73,23 +73,9 @@
           "patterns": [
             { "group": ["**/mocks/*"], "message": "The site reaches data only through the API client; the mock server answers its requests." },
             { "group": ["**/api/client", "**/api/consoleClient"], "message": "A component renders what its props give it: the page reads the data and passes it down." },
-            { "group": ["**/pages/**"], "message": "A component knows no page: pages compose components." }
-          ]
-        }]
-      }
-    },
-    {
-      "files": ["src/components/shell/LanguageSwitch.tsx"],
-      "rules": {
-        "no-restricted-imports": ["error", {
-          "paths": [
-            { "name": "react-router-dom", "importNames": ["useLocation", "useMatches", "useParams", "useSearchParams"], "message": "A component does not read the address: the page reads it and passes down what the component shows." },
-            { "name": "react-router-dom", "importNames": ["NavLink", "Navigate", "useNavigate"], "message": "The language switch alone links across locales with a plain Link; everything else keeps the reader's language." }
-          ],
-          "patterns": [
-            { "group": ["**/mocks/*"], "message": "The site reaches data only through the API client; the mock server answers its requests." },
-            { "group": ["**/api/client", "**/api/consoleClient"], "message": "A component renders what its props give it: the page reads the data and passes it down." },
-            { "group": ["**/pages/**"], "message": "A component knows no page: pages compose components." }
+            { "group": ["**/pages/**"], "message": "A component knows no page: pages compose components." },
+            { "group": ["**/articles/**"], "message": "Documents compose components, not the other way round: the page hands a component what it needs from the documents." },
+            { "group": ["../*/*.css"], "message": "A component's stylesheet is its own: another component's look is reached through that component, so changing one does not break the other." }
           ]
         }]
       }
@@ -135,6 +121,17 @@
     {
       "files": ["src/pages/**", "src/components/**"],
       "rules": { "aegis/paths-from-routes": "error" }
+    },
+    {
+      "files": [
+        "src/ui/**", "src/articles/**", "src/pages/**",
+        "src/components/{benchmark,change,citation,collection,comparison,hunt,landing,leaderboard,lifecycle,model,release,report,result,run,settings,shell,task,trajectory,workspace}/**"
+      ],
+      "rules": { "aegis/no-typed-symbols": ["error", { "symbols": "→←‹›×−⋯↗" }] }
+    },
+    {
+      "files": ["src/i18n/**"],
+      "rules": { "aegis/no-typed-symbols": ["error", { "symbols": "→←‹›↗" }] }
     }
   ]
 }

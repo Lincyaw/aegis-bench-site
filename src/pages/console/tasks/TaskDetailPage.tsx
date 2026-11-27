@@ -1,23 +1,20 @@
-import { clsx } from 'clsx';
 import { Suspense, useDeferredValue } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { useConsoleBenchmark, useConsoleTask, useConsoleTaskEntryPages, useConsoleTaskFile } from '../../../api/consoleClient';
 import type { ConsoleTaskDetail } from '../../../api/types';
 import { CombinationScopeChip } from '../../../components/model/ModelBadge';
-import { EntrantDots } from '../../../components/result/PassRate';
+import { EntrantDots } from '../../../components/task/EntrantDots';
 import { HuggingFaceBoundary } from '../../../components/run/HuggingFace';
 import { ConsoleHeader } from '../../../components/shell/ConsoleHeader';
 import { TaskContentTab } from '../../../components/task/TaskContent';
 import { TaskFileBrowser, type TaskFileSource } from '../../../components/task/TaskFileBrowser';
-import { LocaleLink } from '../../../i18n/LocaleRouting';
 import { searchOf } from '../../../routes/address';
 import { consoleBenchmarkPath } from '../../../routes/console';
 import { TASK_PAGE_PARAMS, TASK_TABS, consoleTaskPath, consoleTasksPath, parseTaskPageView, type TaskPageView, type TaskTab } from '../../../routes/consoleTasks';
 import { ENTRY_PAGE_SIZE, INSTRUCTION_PATH } from '../../../routes/site';
 import { Loading, Tag } from '../../../ui/content';
-import { TabRow } from '../../../ui/navigation';
-import navigation from '../../../ui/navigation.module.css';
+import { Tab, TabRow } from '../../../ui/navigation';
 import { TaskComparisonTab } from './TaskComparisonTab';
 import { TaskGradingTab, TaskReferenceTab } from './TaskDefinitionTabs';
 import { TaskRevisionsTab } from './TaskRevisionsTab';
@@ -47,19 +44,14 @@ export function TaskDetailPage() {
         <span className="t-mono c-faint">{t('console.task.version', { version: task.version })}</span>
         {task.spread && <Tag dashed>{t(`console.tasks.spread.${task.spread}`)}</Tag>}
         <EntrantDots entrants={task.entrants} />
-        <span className="t-micro c-muted">{t('console.task.solvedBy', { solved: task.entrants.filter(entrant => entrant.solved).length, entrants: task.entrants.length })}</span>
+        <span className="t-micro c-muted">{t('console.task.solvedBy', { solved: task.solvedEntrants, entrants: task.entrants.length })}</span>
         {view.model && (
           <CombinationScopeChip entrants={benchmark.entrants} scope={view} to={consoleTaskPath(benchmark.id, task.id, { ...view, model: undefined, harness: undefined })} />
         )}
       </div>
       <TabRow current={view.tab} className={styles.tabs} aria-label={t('console.task.tabList')}>
         {TASK_TABS.map(tab => (
-          <LocaleLink
-            key={tab} data-tab={tab} className={clsx(navigation.tab, 't-small')} aria-current={tab === view.tab ? 'true' : undefined}
-            to={consoleTaskPath(benchmark.id, task.id, { ...view, tab })} replace preventScrollReset
-          >
-            {t(`console.task.tabs.${tab}`)}{counts[tab] !== undefined && <span className={styles.count}>{counts[tab]}</span>}
-          </LocaleLink>
+          <Tab key={tab} id={tab} current={view.tab} count={counts[tab]} to={consoleTaskPath(benchmark.id, task.id, { ...view, tab })}>{t(`console.task.tabs.${tab}`)}</Tab>
         ))}
       </TabRow>
       <HuggingFaceBoundary resetKey={view.tab}>

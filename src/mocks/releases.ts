@@ -1,6 +1,8 @@
+import { combinationKey } from '../api/constraints';
+import { localeValues } from '../api/schema';
 import type { EntrantKey, PublishedRelease, ReleaseChanges, ReleaseContent, ReleaseDetail, ReleaseStatus, ReleaseSummary } from '../api/types';
 import { benchmarkOf, benchmarkRef } from './benchmarks';
-import { combinationKey } from './catalog';
+import { isSameCombination } from './catalog';
 import { openedIndexes } from './records';
 import { rankingOf } from './results';
 
@@ -72,7 +74,7 @@ export function changesOf(release: ReleaseRecord): ReleaseChanges {
     entrantsRemoved: [...before].filter(key => !entrants.has(key)).length,
     replaysAdded: content.replays.filter(runId => !baseline.replays.includes(runId)).length,
     replaysRemoved: baseline.replays.filter(runId => !content.replays.includes(runId)).length,
-    summaryChanged: content.summary['zh-CN'] !== baseline.summary['zh-CN'] || content.summary.en !== baseline.summary.en,
+    summaryChanged: localeValues.some(locale => content.summary[locale] !== baseline.summary[locale]),
   };
 }
 
@@ -91,7 +93,7 @@ export function releaseDetailOf(release: ReleaseRecord): ReleaseDetail {
 /** Why a content cannot be published for a benchmark, or nothing when it can. */
 export function contentProblemOf(benchmarkId: string, content: ReleaseContent): string | undefined {
   const ranking = rankingOf(benchmarkId);
-  const unranked = content.entrants.find(entrant => !ranking.some(ranked => ranked.modelId === entrant.modelId && ranked.harnessId === entrant.harnessId));
+  const unranked = content.entrants.find(entrant => !ranking.some(ranked => isSameCombination(ranked, entrant)));
   const foreign = content.replays.find(runId => openedIndexes().runs.get(runId)?.benchmarkId !== benchmarkId);
   return unranked ? `${benchmarkId} did not rank ${unranked.modelId} in ${unranked.harnessId}`
     : foreign ? `${foreign} is not a run of ${benchmarkId}` : undefined;

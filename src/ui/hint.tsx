@@ -1,6 +1,7 @@
 import * as Tooltip from '@radix-ui/react-tooltip';
 import { clsx } from 'clsx';
 import type { ReactElement, ReactNode } from 'react';
+import { InfoIcon } from './icons';
 import styles from './hint.module.css';
 
 /*
@@ -34,10 +35,7 @@ export function InfoHint({ label, children }: { label: string; children: ReactNo
   return (
     <Hint content={children}>
       <button type="button" className={styles.info} aria-label={label}>
-        <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true">
-          <circle cx="6" cy="6" r="5" fill="none" stroke="currentColor" strokeWidth="1.2" />
-          <path d="M6 5.3v3.2M6 3.4v.1" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-        </svg>
+        <InfoIcon />
       </button>
     </Hint>
   );

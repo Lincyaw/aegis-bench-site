@@ -12,6 +12,9 @@ using AegisBench.Console;
  * The layout, relative to the data directory:
  *
  *   catalog.json                              Catalog
+ *   members.json                              MemberListFile
+ *   settings.json                             SettingsFile
+ *   reports.json                              ReportDraftListFile
  *   benchmarks/<benchmark>/benchmark.json     BenchmarkFile
  *   benchmarks/<benchmark>/tasks.json         TaskListFile
  *   benchmarks/<benchmark>/tasks/<task>/…     the task's Harbor directory, files as they are
@@ -59,6 +62,7 @@ model ModelRecord {
   slot: VendorSlot;
   name: TextByLocale;
   vendor: TextByLocale;
+  summary: TextByLocale;
 }
 
 model HarnessRecord {
@@ -390,6 +394,33 @@ model MarkRecord {
   facetId: string;
   step: int32;
   probes: string[];
+}
+
+/** members.json: the members the demo's console opens with, administrators first; the console changes them in memory only. */
+model MemberListFile is Member[];
+
+/** settings.json: the settings the demo's console opens with. */
+model SettingsFile is Settings;
+
+/** reports.json: the report drafts the demo's console opens with, each naming runs that runs.json files list. */
+model ReportDraftListFile is ReportDraftRecord[];
+
+model ReportDraftRecord {
+  id: string;
+  slug: ReportSlug;
+  sources: ReportSources;
+  status: ReportStatus;
+  author: AccountName;
+  updatedAt: utcDateTime;
+
+  /** When the draft was last submitted; absent for one never submitted */
+  submittedAt?: utcDateTime;
+
+  /** Approvals required when the draft was last submitted */
+  approvalsRequired: int32;
+
+  checked: ReportCheck[];
+  reviews: ReportReview[];
 }
 
 /** benchmarks/<benchmark>/releases.json: the versions the benchmark published, exactly one of them current. */

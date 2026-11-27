@@ -107,6 +107,9 @@ model ComparedRun {
   /** In step order; none when the benchmark's trajectories are not annotated */
   annotations: StepAnnotation[];
 
+  /** How many steps each category labels, in the order of TaskComparison.categories; none when the benchmark's trajectories are not annotated */
+  annotationCounts: int32[];
+
   /** The class the review gives a failed run; absent while the failure is unreviewed */
   failureClass?: FailureClass;
 
@@ -121,7 +124,7 @@ model RunFileChange {
   runId: string;
   ...OmitProperties<FileChange, "path">;
 
-  /** An earlier run of the comparison that changed the file in exactly the same way */
+  /** An earlier run of the comparison that changed the file in exactly the same way; both runs' patches are recorded and equal */
   sameAs?: string;
 }
 
@@ -132,8 +135,11 @@ model ComparedFile {
   /** One per run that changed the file, in the comparison's order */
   changes: RunFileChange[];
 
-  /** Whether the runs differ on the file: some left it unchanged, or their changes are not all the same */
-  differs: boolean;
+  /**
+   * Whether the runs differ on the file: some left it unchanged, or their changes are not all the same. Absent when it
+   * cannot be told: every run changed the file by the same line counts and some run's patch is not recorded.
+   */
+  differs?: boolean;
 }
 
 /** A check's verdict in one run. */

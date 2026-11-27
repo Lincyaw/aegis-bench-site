@@ -1,12 +1,16 @@
 import { createContext, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { DEFAULT_LOCALE, localizedPath, type Locale } from './locales';
+import { localizedPath, type Locale } from './locales';
 
 /** The locale of the route being shown; the locale roots of the router provide it. */
-export const LocaleContext = createContext<Locale>(DEFAULT_LOCALE);
+export const LocaleContext = createContext<Locale | null>(null);
 
 export function useLocale(): Locale {
-  return useContext(LocaleContext);
+  const locale = useContext(LocaleContext);
+  if (!locale) {
+    throw new Error('A locale is read inside a locale root, which provides it');
+  }
+  return locale;
 }
 
 /** Navigates to a site path in the current locale. */

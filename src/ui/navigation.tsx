@@ -3,7 +3,8 @@ import { useLayoutEffect, useRef, type HTMLAttributes, type ReactNode } from 're
 import { useTranslation } from 'react-i18next';
 import { LocaleLink } from '../i18n/LocaleRouting';
 import { useReturnPath } from '../i18n/trail';
-import { ArrowIcon, IconButton } from './controls';
+import { IconButton } from './controls';
+import { ArrowIcon } from './icons';
 import styles from './navigation.module.css';
 
 export interface Crumb {
@@ -62,6 +63,17 @@ export function TabRow({ current, className, children, ...attributes }: { curren
   );
 }
 
+/**
+ * A tab of a TabRow, the `current` one marked. A tab that is a link to its own address replaces the current entry of
+ * the history; one that is a button belongs to a row with `role="tablist"`. `count` is the size of what it holds.
+ */
+export function Tab({ id, current, count, children, ...target }: { id: string; current: string; count?: number; children: ReactNode } & ({ to: string } | { onSelect: () => void })) {
+  const content = <>{children}{count !== undefined && <span className={styles.count}>{count}</span>}</>;
+  return 'to' in target
+    ? <LocaleLink to={target.to} replace preventScrollReset data-tab={id} className={clsx(styles.tab, 't-small')} aria-current={id === current ? 'true' : undefined}>{content}</LocaleLink>
+    : <button type="button" role="tab" data-tab={id} className={clsx(styles.tab, 't-small')} aria-selected={id === current} onClick={target.onSelect}>{content}</button>;
+}
+
 /** Turns a list a page back or forth, saying which items are in view; an end it has reached cannot be passed. */
 export function Pager({ label, atStart, atEnd, onPrevious, onNext, className }: { label: string; atStart: boolean; atEnd: boolean; onPrevious: () => void; onNext: () => void; className?: string }) {
   const { t } = useTranslation();
@@ -77,6 +89,12 @@ export function Pager({ label, atStart, atEnd, onPrevious, onNext, className }: 
 export interface PageSection {
   id: string;
   label: string;
+}
+
+/** The section links of the page being read and the one in view. */
+export interface PageSections {
+  sections: PageSection[];
+  current: string;
 }
 
 /** Links to the sections of the page being read, with the one in view marked. */

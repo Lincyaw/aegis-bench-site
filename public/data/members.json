@@ -1,0 +1,29 @@
+[
+  {
+    "account": "lin.fang",
+    "name": "林芳",
+    "role": "admin",
+    "joinedAt": "2026-06-02T09:00:00Z",
+    "lastSignedInAt": "2026-11-24T08:40:00Z"
+  },
+  {
+    "account": "zhou.yu",
+    "name": "周宇",
+    "role": "editor",
+    "joinedAt": "2026-06-02T09:00:00Z",
+    "lastSignedInAt": "2026-11-23T10:12:00Z"
+  },
+  {
+    "account": "chen.qi",
+    "name": "陈琦",
+    "role": "editor",
+    "joinedAt": "2026-07-14T09:00:00Z",
+    "lastSignedInAt": "2026-11-21T15:30:00Z"
+  },
+  {
+    "account": "he.ming",
+    "name": "何明",
+    "role": "viewer",
+    "joinedAt": "2026-09-01T09:00:00Z"
+  }
+]

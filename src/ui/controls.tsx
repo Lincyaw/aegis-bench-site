@@ -1,10 +1,16 @@
 import * as RadixSelect from '@radix-ui/react-select';
 import { clsx } from 'clsx';
-import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { useLayoutEffect, useRef, useState, type ComponentProps, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import type { Locale } from '../i18n/locales';
 import { LocaleLink } from '../i18n/LocaleRouting';
 import styles from './controls.module.css';
 import { Hint } from './hint';
+import hint from './hint.module.css';
+import { ArrowIcon, CheckIcon, ChevronIcon, CloseIcon, CopyIcon, GoArrowIcon, SearchIcon } from './icons';
+
+// The icons the replay's controls take from here.
+export { ArrowIcon, ChevronIcon, FitIcon, FullscreenIcon, ZoomIcon } from './icons';
 
 /**
  * How a control stands in its bar: outlined with the ∞ edge, or quiet, its outline left out, so that the one outlined
@@ -15,12 +21,31 @@ export type ControlVariant = 'line' | 'quiet';
 /** A solid button leads the page forward and carries an arrow; a line or quiet button is any other action. */
 type ButtonVariant = 'solid' | ControlVariant;
 
-export function ButtonLink({ to, variant, children }: { to: string; variant: ButtonVariant; children: ReactNode }) {
-  return <LocaleLink className={clsx(styles.pill, styles.large, variant === 'solid' && styles.solid, variant === 'quiet' ? styles.quiet : 'loop-edge')} to={to}>{children}</LocaleLink>;
+/** Large buttons stand in the page; medium ones in a bar of the page. */
+type ButtonSize = 'large' | 'medium';
+
+function buttonClass(variant: ButtonVariant, size: ButtonSize, className?: string) {
+  return clsx(styles.pill, styles[size], variant === 'solid' && styles.solid, variant === 'quiet' ? styles.quiet : 'loop-edge', className);
+}
+
+function ButtonContent({ variant, children }: { variant: ButtonVariant; children: ReactNode }) {
+  return <>{children}{variant === 'solid' && <GoArrowIcon />}</>;
+}
+
+/**
+ * A button that is a link: to a page of the site, in the current language or in the one `locale` names, or to an
+ * address that is not a page, such as a file the page makes for download.
+ */
+export function ButtonLink({ variant, size = 'large', className, children, ...target }: {
+  variant: ButtonVariant; size?: ButtonSize; className?: string; children: ReactNode;
+} & ({ to: string; locale?: Locale } & Pick<ComponentProps<typeof LocaleLink>, 'hrefLang' | 'lang'> | { href: string; download: string })) {
+  return 'to' in target
+    ? <LocaleLink {...target} className={buttonClass(variant, size, className)}><ButtonContent variant={variant}>{children}</ButtonContent></LocaleLink>
+    : <a {...target} className={buttonClass(variant, size, className)}><ButtonContent variant={variant}>{children}</ButtonContent></a>;
 }
 
 export function Button({ variant, onClick, children }: { variant: ButtonVariant; onClick: () => void; children: ReactNode }) {
-  return <button type="button" className={clsx(styles.pill, styles.large, variant === 'solid' && styles.solid, variant === 'quiet' ? styles.quiet : 'loop-edge')} onClick={onClick}>{children}</button>;
+  return <button type="button" className={buttonClass(variant, 'large')} onClick={onClick}><ButtonContent variant={variant}>{children}</ButtonContent></button>;
 }
 
 /**
@@ -29,10 +54,42 @@ export function Button({ variant, onClick, children }: { variant: ButtonVariant;
  */
 export function SubmitButton({ variant, pending, form, children }: { variant: ButtonVariant; pending: boolean; form?: string; children: ReactNode }) {
   return (
-    <button type="submit" form={form} className={clsx(styles.pill, styles.large, variant === 'solid' && styles.solid, variant === 'quiet' ? styles.quiet : 'loop-edge')} disabled={pending} aria-busy={pending}>
-      {children}
+    <button type="submit" form={form} className={buttonClass(variant, 'large')} disabled={pending} aria-busy={pending}>
+      <ButtonContent variant={variant}>{children}</ButtonContent>
     </button>
   );
+}
+
+/**
+ * A link set in the text of the page, which underlines in the ∞ gradient and sends its arrow ahead as the pointer
+ * arrives: to a page of the site, to an address elsewhere (`external` opens it in a new tab), or an action that
+ * leads to another part of the page. `className` sets the text style.
+ */
+export function TextLink({ className, expanded, children, ...target }: {
+  className?: string; expanded?: boolean; children: ReactNode;
+} & ({ to: string } | { href: string; external?: boolean } | { onClick: () => void })) {
+  const content = <>{children}<GoArrowIcon /></>;
+  if ('to' in target) {
+    return <LocaleLink className={clsx(styles.textLink, className)} to={target.to}>{content}</LocaleLink>;
+  }
+  if ('href' in target) {
+    return <a className={clsx(styles.textLink, className)} href={target.href} target={target.external ? '_blank' : undefined} rel={target.external ? 'noreferrer' : undefined}>{content}</a>;
+  }
+  return <button type="button" className={clsx(styles.textLink, className)} aria-expanded={expanded} onClick={target.onClick}>{content}</button>;
+}
+
+/** A quiet text button that leads back one level of a page, such as from a task's runs to all the tasks. */
+export function BackButton({ className, onClick, children }: { className?: string; onClick: () => void; children: ReactNode }) {
+  return <button type="button" className={clsx(styles.back, 't-micro', className)} onClick={onClick}><ArrowIcon direction="left" />{children}</button>;
+}
+
+/**
+ * A small pill that is a button: it marks the choice it stands for as `pressed`, or as the `current` one of a row, and
+ * takes the attributes a trigger of a popover hands it. It stands for one of a few things, such as a run among a
+ * task's runs.
+ */
+export function SmallPill({ pressed, current, className, ...button }: ComponentProps<'button'> & { pressed?: boolean; current?: boolean }) {
+  return <button type="button" className={clsx(styles.pill, styles.small, 'loop-edge', className)} aria-pressed={pressed} aria-current={current ? 'true' : undefined} {...button} />;
 }
 
 /**
@@ -69,7 +126,7 @@ export function ToggleChip({ pressed, onToggle, disabled = false, children }: { 
   return (
     <button type="button" className={clsx(styles.pill, styles.medium, styles.chip, 'loop-edge')} aria-pressed={pressed} disabled={disabled} onClick={onToggle}>
       <span className={styles.chipCheck} aria-hidden="true">
-        <svg viewBox="0 0 12 12" width="12" height="12"><path d="M2.5 6.2 5 8.5 9.5 3.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+        <CheckIcon />
       </span>
       {children}
     </button>
@@ -83,12 +140,12 @@ export function CopyButton({ label, text }: { label: string; text: () => string 
   return (
     <span className={styles.copy}>
       <Button variant="line" onClick={() => void navigator.clipboard.writeText(text()).then(() => setCopied(true))}>
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2" /><path d="M5 15V6a2 2 0 0 1 2-2h8" /></svg>
+        <CopyIcon />
         {label}
       </Button>
       {copied && (
         <span className={clsx(styles.copied, 't-micro c-ok')} role="status">
-          <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M2.5 6.2 5 8.5 9.5 3.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" pathLength="1" /></svg>
+          <CheckIcon />
           {t('ui.copied')}
         </span>
       )}
@@ -101,13 +158,13 @@ export type IconButtonSize = 'regular' | 'small';
 
 /**
  * A round control whose icon turns when hovered; a disabled one stays still and faint. It runs an action, opens a page
- * of the site, or opens an address elsewhere in a new tab.
+ * of the site, or opens an address elsewhere in a new tab; the trigger of a popover leaves the action to the popover.
  */
-export function IconButton({ label, expanded, disabled, variant = 'line', size = 'regular', children, ...action }: {
-  label: string; expanded?: boolean; disabled?: boolean; variant?: ControlVariant; size?: IconButtonSize; children: ReactNode;
-} & ({ onClick: () => void } | { to: string } | { href: string })) {
+export function IconButton({ label, expanded, disabled, variant = 'line', size = 'regular', className: extraClass, children, ...action }: {
+  label: string; expanded?: boolean; disabled?: boolean; variant?: ControlVariant; size?: IconButtonSize; className?: string; children: ReactNode;
+} & ({ onClick?: () => void } | { to: string } | { href: string })) {
   const quiet = variant === 'quiet';
-  const className = clsx(styles.pill, styles.icon, size === 'small' && styles.small, quiet && styles.quiet, !disabled && !quiet && 'loop-edge');
+  const className = clsx(styles.pill, styles.icon, size === 'small' && styles.small, quiet && styles.quiet, !disabled && !quiet && 'loop-edge', extraClass);
   // A hint makes the control its trigger by handing it handlers and a ref as props, which the spread passes on.
   if ('to' in action) {
     return <LocaleLink {...action} className={className} aria-label={label}>{children}</LocaleLink>;
@@ -177,67 +234,9 @@ export function SegmentedControl<T extends string>({ label, choices, value, onCh
 export function SearchField({ label, value, onChange, className }: { label: string; value: string; onChange: (value: string) => void; className?: string }) {
   return (
     <label className={clsx(styles.pill, styles.medium, styles.field, className)}>
-      <svg viewBox="0 0 14 14" width="13" height="13" aria-hidden="true"><circle cx="6" cy="6" r="4.5" fill="none" stroke="currentColor" strokeWidth="1.4" /><path d="m9.5 9.5 3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /></svg>
+      <SearchIcon />
       <input type="search" placeholder={label} aria-label={label} value={value} onChange={event => onChange(event.target.value)} />
     </label>
-  );
-}
-
-/** An arrow for stepping back or forth; in an icon button it nudges its way on hover instead of turning. */
-export function ArrowIcon({ direction }: { direction: 'left' | 'right' }) {
-  return <svg viewBox="0 0 12 12" width="12" height="12" data-direction={direction} aria-hidden="true"><path d={direction === 'left' ? 'M7.5 3 4.5 6l3 3' : 'M4.5 3l3 3-3 3'} fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>;
-}
-
-export function ChevronIcon() {
-  return <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M3 4.5 6 7.5 9 4.5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>;
-}
-
-export function ThemeIcon() {
-  return (
-    <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
-      <circle cx="8" cy="8" r="6.25" fill="none" stroke="currentColor" strokeWidth="1.5" />
-      <path d="M8 1.75a6.25 6.25 0 0 1 0 12.5z" fill="currentColor" />
-    </svg>
-  );
-}
-
-export function MenuIcon() {
-  return <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M2 4.5h12M2 8h12M2 11.5h12" stroke="currentColor" strokeWidth="1.5" /></svg>;
-}
-
-/** A cross, for closing or taking something out. */
-export function CloseIcon() {
-  return <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="m3 3 6 6M9 3 3 9" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /></svg>;
-}
-
-/** An arrow up and out, for a link to another page; in an icon button it nudges its way on hover. */
-export function LinkArrowIcon() {
-  return <svg viewBox="0 0 12 12" width="12" height="12" data-direction="up-right" aria-hidden="true"><path d="M4 2.5h5.5V8M9.5 2.5 2.5 9.5" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" /></svg>;
-}
-
-/** A page with a folded corner, for a record's files; in an icon button it keeps upright on hover. */
-export function FileIcon() {
-  return <svg viewBox="0 0 12 12" width="12" height="12" data-upright aria-hidden="true"><path d="M3 1.5h4l2.5 2.5v6.5H3zM7 1.5V4h2.5" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" /></svg>;
-}
-
-/** Four corners pointing out, to fill the screen, or in, to leave it; in an icon button they keep upright on hover. */
-export function FullscreenIcon({ leave }: { leave: boolean }) {
-  const corners = leave ? 'M4.5 1.5v3h-3M7.5 1.5v3h3M4.5 10.5v-3h-3M7.5 10.5v-3h3' : 'M1.5 4.5v-3h3M10.5 4.5v-3h-3M1.5 7.5v3h3M10.5 7.5v3h-3';
-  return <svg viewBox="0 0 12 12" width="12" height="12" data-upright aria-hidden="true"><path d={corners} fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" /></svg>;
-}
-
-/** A plus or a minus, for making something larger or smaller; in an icon button it keeps upright on hover. */
-export function ZoomIcon({ direction }: { direction: 'in' | 'out' }) {
-  return <svg viewBox="0 0 12 12" width="12" height="12" data-upright aria-hidden="true"><path d={direction === 'in' ? 'M6 2.5v7M2.5 6h7' : 'M2.5 6h7'} stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /></svg>;
-}
-
-/** A square inside four corners, for fitting a drawing to the room it has; in an icon button it keeps upright on hover. */
-export function FitIcon() {
-  return (
-    <svg viewBox="0 0 12 12" width="12" height="12" data-upright aria-hidden="true">
-      <path d="M1.5 4V1.5H4M8 1.5h2.5V4M10.5 8v2.5H8M4 10.5H1.5V8" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-      <rect x="4.25" y="4.25" width="3.5" height="3.5" rx=".5" fill="none" stroke="currentColor" strokeWidth="1.2" />
-    </svg>
   );
 }
 
@@ -255,14 +254,14 @@ export function Select<T extends string>({ label, choices, value, onChange, vari
         <RadixSelect.Icon className={styles.chevron}><ChevronIcon /></RadixSelect.Icon>
       </RadixSelect.Trigger>
       <RadixSelect.Portal>
-        <RadixSelect.Content className={styles.menu} position="popper" sideOffset={6} collisionPadding={12}>
+        <RadixSelect.Content className={clsx(hint.popover, styles.menu)} position="popper" sideOffset={6} collisionPadding={12}>
           <RadixSelect.ScrollUpButton className={styles.scroll}><span className={styles.up}><ChevronIcon /></span></RadixSelect.ScrollUpButton>
           <RadixSelect.Viewport className={styles.options}>
             {choices.map(choice => (
               <RadixSelect.Item key={choice.value} value={choice.value} className={clsx(styles.option, 't-small')}>
                 <RadixSelect.ItemText>{choice.label}</RadixSelect.ItemText>
                 <RadixSelect.ItemIndicator className={styles.check}>
-                  <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M2.5 6.2 5 8.5 9.5 3.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                  <CheckIcon />
                 </RadixSelect.ItemIndicator>
               </RadixSelect.Item>
             ))}
@@ -275,7 +274,7 @@ export function Select<T extends string>({ label, choices, value, onChange, vari
 }
 
 /**
- * The scope a page keeps to, such as the model the reader came from, named in a small pill whose × leads back to
+ * The scope a page keeps to, such as the model the reader came from, named in a small pill whose cross leads back to
  * everything: `to` is the page's address without the scope, and it replaces the current entry in the history.
  */
 export function ScopeChip({ name, to }: { name: string; to: string }) {
@@ -284,7 +283,7 @@ export function ScopeChip({ name, to }: { name: string; to: string }) {
   return (
     <Hint content={clear}>
       <LocaleLink className={clsx(styles.pill, styles.small, styles.scope, 'loop-edge')} aria-label={clear} to={to} replace preventScrollReset>
-        {name}<span aria-hidden="true">×</span>
+        {name}<CloseIcon />
       </LocaleLink>
     </Hint>
   );

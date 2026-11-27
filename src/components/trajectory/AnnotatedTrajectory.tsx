@@ -1,14 +1,14 @@
 import { clsx } from 'clsx';
 import { Fragment, useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { AnnotationCategory, ComparedRun, StepAnnotation, TaskComparison, TrajectoryStep } from '../../api/types';
+import type { AnnotationCategory, ComparedRun, StepAnnotation, TaskComparison, TimelineMark, TrajectoryStep } from '../../api/types';
 import { useLocale } from '../../i18n/localeContext';
 import { dateTimeOf } from '../../i18n/locales';
 import { ToggleChip } from '../../ui/controls';
 import { Hint } from '../../ui/hint';
 import { numeralOf, type BlockProps, type ComparisonSource } from '../comparison/comparison';
 import { BlockHead, Cell } from '../comparison/ComparisonTable';
-import timeline from '../run/RunTimeline.module.css';
+import { RunTimeline } from '../run/RunTimeline';
 import { AtifFields, AtifStepSummary } from './AtifStep';
 import styles from './AnnotatedTrajectory.module.css';
 import { mostSevere, segmentsOf } from './steps';
@@ -31,16 +31,16 @@ export function TrajectoryBlock({ comparison, onTrajectory }: BlockProps) {
           <Cell key={run.id}>
             <Hint content={t('compare.openTrajectory')}>
               <button type="button" className={styles.strip} aria-label={t('compare.openTrajectory')} onClick={() => onTrajectory(run.id)}>
-                <span className={timeline.timeline}>{run.timeline.map(step => <span key={step.stepId} className={clsx(timeline.mark, timeline[step.mark])} />)}</span>
-                <span className={clsx(timeline.timeline, styles.flags)}>
-                  {run.timeline.map(step => <span key={step.stepId} className={clsx(timeline.mark, styles.flag)} data-severity={mostSevere(categories, byStep.get(step.stepId) ?? [])} />)}
+                <RunTimeline timeline={run.timeline} />
+                <span className={styles.flags}>
+                  {run.timeline.map(step => <span key={step.stepId} className={styles.flag} data-severity={mostSevere(categories, byStep.get(step.stepId) ?? [])} />)}
                 </span>
               </button>
             </Hint>
             <span className={styles.counts}>
               <span className="t-small c-muted">{t('compare.steps', { count: run.metrics.steps })}</span>
-              {categories.map(category => {
-                const count = run.annotations.filter(annotation => annotation.category === category.id).length;
+              {categories.map((category, index) => {
+                const count = run.annotationCounts[index];
                 return count > 0 && (
                   <Hint key={category.id} content={<CategoryCard category={category} />}>
                     <button type="button" className={styles.tag} data-severity={category.severity}>{category.name} <span className="t-numeric">{count}</span></button>
@@ -80,11 +80,11 @@ export function PanelTrajectories({ comparison, shown, labels, onLabel, source }
     <div className={styles.panelBody}>
       {categories.length > 0 && (
         <span className={styles.filter} role="group" aria-label={t('compare.labels')}>
-          {categories.map(category => (
+          {categories.map((category, index) => (
             <ToggleChip key={category.id} pressed={labels.includes(category.id)} onToggle={() => onLabel(category.id)}>
               <span className={styles.swatch} data-severity={category.severity} />
               {category.name}
-              <span className="t-numeric">{shown.reduce((sum, run) => sum + run.annotations.filter(annotation => annotation.category === category.id).length, 0)}</span>
+              <span className="t-numeric">{shown.reduce((sum, run) => sum + run.annotationCounts[index], 0)}</span>
             </ToggleChip>
           ))}
         </span>
@@ -125,21 +125,21 @@ export function StepList({ steps, run, categories, labels }: { steps: Trajectory
   return (
     <ol className={styles.steps}>
       {items.map((item, index) => ('step' in item
-        ? <StepRow key={item.step.step_id} step={item.step} annotations={byStep.get(item.step.step_id) ?? []} categories={categories} evidence={evidence.has(item.step.step_id)} />
+        ? <StepRow key={item.step.step_id} step={item.step} annotations={byStep.get(item.step.step_id) ?? []} categories={categories} evidence={evidence.has(item.step.step_id)} mark={run.timeline.find(entry => entry.stepId === item.step.step_id)?.mark} />
         : <li key={`hidden-${index}`} className={clsx(styles.hidden, 't-micro c-faint')}>{t('compare.hiddenSteps', { count: item.hidden })}</li>))}
     </ol>
   );
 }
 
 /** One step on a line by its own fields; it opens to the step's whole record. */
-export function StepRow({ step, annotations, categories, evidence }: { step: TrajectoryStep; annotations: StepAnnotation[]; categories: AnnotationCategory[]; evidence: boolean }) {
+export function StepRow({ step, annotations, categories, evidence, mark }: { step: TrajectoryStep; annotations: StepAnnotation[]; categories: AnnotationCategory[]; evidence: boolean; mark: TimelineMark | undefined }) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   return (
     <li className={styles.step} data-severity={mostSevere(categories, annotations)}>
       <div className={styles.stepHead}>
         <button type="button" className={styles.toggle} aria-expanded={open} onClick={() => setOpen(!open)}>
-          <AtifStepSummary step={step} />
+          <AtifStepSummary step={step} mark={mark} />
         </button>
         {evidence && <span className={styles.evidence}>{t('compare.evidence')}</span>}
         {categories.filter(category => annotations.some(annotation => annotation.category === category.id)).map(category => {

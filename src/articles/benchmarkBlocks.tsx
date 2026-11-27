@@ -11,7 +11,8 @@ import { RunTimeline, TimelineLegendRow } from '../components/run/RunTimeline';
 import { runRecordsPath } from '../routes/runRecords';
 import { leaderboardPath } from '../routes/site';
 import { Loading } from '../ui/content';
-import controls from '../ui/controls.module.css';
+import { TextLink } from '../ui/controls';
+import { GoArrowIcon } from '../ui/icons';
 import table from '../ui/table.module.css';
 import { useCurrentBenchmark } from './benchmarkContext';
 import styles from './benchmarkBlocks.module.css';
@@ -25,7 +26,7 @@ export function LeaderboardBlock({ top = 5 }: { top?: number }) {
   return (
     <div className={styles.block}>
       <LeaderboardTable benchmarkId={benchmark.id} entries={benchmark.topFive.slice(0, top)} metric={benchmark.metric} />
-      <LocaleLink className={clsx(controls.textLink, 't-small')} to={leaderboardPath({ bench: benchmark.id })}>{t('benchmarks.fullLeaderboard')}</LocaleLink>
+      <TextLink className="t-small" to={leaderboardPath({ bench: benchmark.id })}>{t('benchmarks.fullLeaderboard')}</TextLink>
     </div>
   );
 }
@@ -46,7 +47,7 @@ export function RecentRunsBlock() {
       </HuggingFaceBoundary>
       <div className={styles.foot}>
         <TimelineLegendRow legend={benchmark.timelineLegend} />
-        <LocaleLink className={clsx(controls.textLink, 't-small')} to={runRecordsPath(benchmark.id)}>{t('benchmarks.allRuns')}</LocaleLink>
+        <TextLink className="t-small" to={runRecordsPath(benchmark.id)}>{t('benchmarks.allRuns')}</TextLink>
       </div>
     </div>
   );
@@ -70,7 +71,7 @@ export function RecentRunsTable({ benchmarkId }: { benchmarkId: string }) {
           <span role="cell" className="t-small"><OutcomeText outcome={run.outcome}>{run.resultLabel}</OutcomeText></span>
           <span role="cell" className="t-numeric c-muted">{t('benchmarks.steps', { count: run.stepCount })}</span>
           <span role="cell" className="t-numeric c-muted">{t('benchmarks.minutes', { count: run.durationMinutes })}</span>
-          <span role="cell" className={clsx(table.arrow, 't-small')}>{t('benchmarks.replay')}</span>
+          <span role="cell" className={clsx(table.arrow, 't-small')}>{t('benchmarks.replay')}<GoArrowIcon /></span>
         </LocaleLink>
       ))}
     </div>

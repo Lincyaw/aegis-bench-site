@@ -35,6 +35,9 @@ model CollectionModelResult {
 model MatrixCell {
   passed: int32;
   counted: int32;
+
+  /** Absent when no run counts */
+  passRate?: float64;
 }
 
 model MatrixRow {

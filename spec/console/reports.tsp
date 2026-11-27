@@ -19,8 +19,9 @@ namespace AegisBench.Console;
 scalar ReportSlug extends string;
 
 /**
- * A report's document in each language, as its file holds it: MDX whose frontmatter declares at least the title, the
- * date (YYYY-MM-DD) and the summary, and may list the ids of the benchmarks and models it is about.
+ * A report's document in each language, as its file holds it: MDX whose frontmatter declares a title and a summary that
+ * are not empty, the date (YYYY-MM-DD), and may list the ids of the benchmarks and models it is about. The site's
+ * ReportFrontmatter in src/api/reportFrontmatter.ts checks it, for the public site and the console alike.
  */
 model ReportSources {
   `zh-CN`: string;
@@ -70,9 +71,16 @@ model ReportDraftSummary {
   approvalsRequired: int32;
 }
 
+/** A draft as the signed-in member reads it: what they may do with it depends on who they are. */
 model ReportDraft {
   ...ReportDraftSummary;
   sources: ReportSources;
+
+  /** Whether the member may review the draft now: it is in review, they are an editor other than its author, and they have not reviewed this submission */
+  canReview: boolean;
+
+  /** Whether the member has reviewed the draft's current submission */
+  reviewed: boolean;
 
   /** The settings' checks the author has ticked off */
   checked: ReportCheck[];
@@ -119,8 +127,11 @@ model InvalidReportError {
 @route("/console/reports")
 @useAuth(SessionCookie)
 interface ConsoleReports {
-  /** The drafts, newest first; only those whose frontmatter names the benchmark, when one is given */
-  @get list(@query(#{ explode: true }) benchmarkId?: string = ""): ReportDraftSummary[] | SignInRequiredError;
+  /** The drafts, newest first; only those whose frontmatter names the benchmark, and only those in the status, when given */
+  @get list(
+    @query(#{ explode: true }) benchmarkId?: string = "",
+    @query(#{ explode: true }) status?: ReportStatus,
+  ): ReportDraftSummary[] | SignInRequiredError;
 
   /** Starts a draft, new or revising a published report under the same slug */
   @post create(@body report: NewReport): ReportDraft | SignInRequiredError | ForbiddenError | ReportConflictError | InvalidReportError;

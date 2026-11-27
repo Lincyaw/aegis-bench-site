@@ -1,14 +1,13 @@
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
-import { useSignIn } from '../../api/consoleClient';
+import { useConsoleSession, useSignIn } from '../../api/consoleClient';
 import { ACCOUNT_PATTERN } from '../../api/constraints';
 import { ApiError } from '../../api/errors';
 import { BrandMark } from '../../components/shell/BrandMark';
 import { useLocalizedNavigate } from '../../i18n/localeContext';
 import { nextPathOf } from '../../routes/console';
 import { SubmitButton, TextField } from '../../ui/controls';
-import { DEMO_ACCOUNTS, DEMO_PASSWORD } from './demoAccounts';
 import styles from './SignInPage.module.css';
 
 /** The console's door: an account and its password, then back to the page the reader was opening. */
@@ -18,6 +17,7 @@ export function SignInPage() {
   const next = nextPathOf(search);
   const navigate = useLocalizedNavigate();
   const signIn = useSignIn();
+  const { demo } = useConsoleSession();
   const [account, setAccount] = useState('');
   const [password, setPassword] = useState('');
   // A wrong password is the one failure the form answers itself; any other is the page's error.
@@ -43,9 +43,11 @@ export function SignInPage() {
         <TextField label={t('console.signIn.password')} type="password" autoComplete="current-password" value={password} onChange={setPassword} />
         {signIn.error && <p className="t-small c-bad" role="alert">{t('console.signIn.failed')}</p>}
         <SubmitButton variant="solid" pending={signIn.isPending}>{t('console.signIn.submit')}</SubmitButton>
-        <p className="t-micro c-faint">
-          {t('console.signIn.demo', { password: DEMO_PASSWORD, accounts: DEMO_ACCOUNTS.map(({ account, role }) => t('console.signIn.demoAccount', { account, role: t(`console.roles.${role}`) })) })}
-        </p>
+        {demo && (
+          <p className="t-micro c-faint">
+            {t('console.signIn.demo', { password: demo.password, accounts: demo.accounts.map(({ account, role }) => t('console.signIn.demoAccount', { account, role: t(`console.roles.${role}`) })) })}
+          </p>
+        )}
       </form>
     </main>
   );

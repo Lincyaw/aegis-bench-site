@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import type { ResultCounts } from '../../api/types';
 import { useLocale } from '../../i18n/localeContext';
 import { groupedNumber } from '../../i18n/locales';
-import { FAILURE_KINDS, failureCountOf } from './presentation';
+import { FAILURE_KINDS, failureCountOf, type FailureKind } from './presentation';
 import styles from './FailureBar.module.css';
 
 /** A set of runs' failures stacked by kind, with the number of failures beside; the label spells every count out. */
@@ -20,6 +20,11 @@ export function FailureBar({ result }: { result: ResultCounts }) {
       <span className="t-numeric c-muted">{groupedNumber(locale, result.failed)}</span>
     </span>
   );
+}
+
+/** A stretch of a bar that stacks failures: one kind in its colour, as wide as its `count` among its neighbours. */
+export function FailureSegment({ kind, count, label, className }: { kind: FailureKind; count: number; label: string; className?: string }) {
+  return <span className={clsx(styles.kind, className)} data-kind={kind} style={{ flexGrow: count }} title={label} aria-label={label} />;
 }
 
 /** What each colour of a failure bar stands for. */

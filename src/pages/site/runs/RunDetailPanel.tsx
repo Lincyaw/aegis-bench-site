@@ -1,4 +1,3 @@
-import { clsx } from 'clsx';
 import { Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRun, useTrajectoryPage, type TimelineLegend } from '../../../api/client';
@@ -8,8 +7,7 @@ import { TrajectoryView } from '../../../components/trajectory/TrajectoryView';
 import { RUN_TABS, defaultRunTab, type RunTab } from '../../../routes/runRecords';
 import { taskFilesPath } from '../../../routes/site';
 import { Loading } from '../../../ui/content';
-import navigation from '../../../ui/navigation.module.css';
-import { TabRow } from '../../../ui/navigation';
+import { Tab, TabRow } from '../../../ui/navigation';
 import styles from './RunDetailPanel.module.css';
 
 /** Which view of a run is shown: its tab and, within it, the step or check it opens. */
@@ -34,11 +32,7 @@ export function RunDetailPanel({ runId, legend, view, onView }: { runId: string;
     <div className={styles.root}>
       <RunHeader run={run} />
       <TabRow current={tab} className={styles.tabs} role="tablist" aria-label={t('runs.detailLabel')}>
-        {RUN_TABS.map(item => (
-          <button key={item} type="button" role="tab" data-tab={item} aria-selected={item === tab} className={clsx(navigation.tab, 't-small')} onClick={() => onView({ tab: item })}>
-            {t(`runs.tab.${item}`)}{counts[item] !== undefined && <span className="t-micro c-faint"> {counts[item]}</span>}
-          </button>
-        ))}
+        {RUN_TABS.map(item => <Tab key={item} id={item} current={tab} count={counts[item]} onSelect={() => onView({ tab: item })}>{t(`runs.tab.${item}`)}</Tab>)}
       </TabRow>
       <div className={styles.content} role="tabpanel">
         {tab === 'input' && <InputTab run={run} filePath={filePath} />}

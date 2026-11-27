@@ -2,128 +2,26 @@ import remarkFrontmatter from 'remark-frontmatter';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 import { parseDocument } from 'yaml';
-import { z } from 'zod';
+import { ReportFrontmatter } from '../api/reportFrontmatter';
 import { localeValues } from '../api/schema';
-import type { NewReport, ReportDraft, ReportDraftSummary, ReportEdit, ReportReview, ReportSources, ReviewRequest } from '../api/types';
+import type { ConsoleUser, NewReport, ReportDraft, ReportDraftRecord, ReportDraftSummary, ReportEdit, ReportReview, ReportSources, ReviewRequest } from '../api/types';
 import { hasBenchmark } from './benchmarks';
+import { openedIndexes } from './records';
 import { currentSettings } from './settings';
 
 /*
  * Report drafts: written and reviewed here, then committed as files, which the console does not do itself. The drafts
- * live in memory, so a reload brings back the two the demo starts with.
+ * live in memory, so a reload brings back the ones reports.json holds.
  */
 
-interface ReportRecord {
-  id: string;
-  slug: string;
-  sources: ReportSources;
-  status: ReportDraft['status'];
-  author: string;
-  updatedAt: string;
-  checked: string[];
-  reviews: ReportReview[];
+let reports: ReportDraftRecord[] | undefined;
+let nextReportNumber: number | undefined;
 
-  /** Approvals required when the draft was last submitted */
-  approvalsRequired: number;
-
-  /** When the draft was last submitted; reviews before it no longer count */
-  submittedAt?: string;
+/** The drafts as changed since the server opened the data directory. */
+export function currentReports(): ReportDraftRecord[] {
+  reports ??= structuredClone(openedIndexes().reports);
+  return reports;
 }
-
-/** What a report's frontmatter must declare, as the public site reads it. */
-const ReportFrontmatter = z.object({
-  title: z.string().min(1),
-  date: z.iso.date(),
-  summary: z.string().min(1),
-  models: z.array(z.string()).default([]),
-  benchmarks: z.array(z.string()).default([]),
-});
-
-const CLAIMS_ZH = `---
-title: "智能体为何声称修复成功却没有证据"
-date: "2026-11-21"
-summary: "两次失败的运行里，智能体在报告中声称已经修复，而它自己的最后一次测试说明并没有。"
-models: ["jia", "yi"]
-benchmarks: ["bench-b"]
----
-
-<Callout>本文为设计演示中的示例报告，模型与数值均为占位内容。</Callout>
-
-## 现象
-
-模型甲在一道测试验证任务里提交了「全部测试通过」的报告，评分却判定失败。
-
-<Replay run="bench-b.task-033.jia-x.1" />
-
-这次运行共 <RunNumber run="bench-b.task-033.jia-x.1" field="steps" /> 步，最后一次测试仍有两项失败。
-
-## 复核
-
-报告里的结论来自更早的一次测试；之后的修改让其中两项重新失败，模型没有再运行测试就提交了报告。
-`;
-
-const CLAIMS_EN = `---
-title: "Why agents claim a fix their own tests contradict"
-date: "2026-11-21"
-summary: "In two failed runs the agent reported a fix that its own last test run did not support."
-models: ["jia", "yi"]
-benchmarks: ["bench-b"]
----
-
-<Callout>This is a sample report from the design demo; its models and figures are placeholders.</Callout>
-
-## What happened
-
-Model Alpha submitted a report saying every test passed, and grading failed the run.
-
-<Replay run="bench-b.task-033.jia-x.1" />
-
-The run took <RunNumber run="bench-b.task-033.jia-x.1" field="steps" /> steps, and its last test run still had two failures.
-
-## Review
-
-The report's conclusion came from an earlier test run; later edits broke two tests again, and the model submitted without running them.
-`;
-
-const PAGINATION_ZH = `---
-title: "回归测试为何漏掉分页越界"
-date: "2026-11-24"
-summary: "通过的运行里也有隐患：分页查询在最后一页越界，回归测试没有覆盖。"
-benchmarks: ["bench-a"]
----
-
-## 现象
-
-<Replay run="bench-a.task-017.jia-x.1" />
-`;
-
-const PAGINATION_EN = `---
-title: "Why the regression tests missed an off-by-one page"
-date: "2026-11-24"
-summary: "Even a passing run can hide a fault: the last page of a paged query overruns, and no regression test covers it."
-benchmarks: ["bench-a"]
----
-
-## What happened
-
-<Replay run="bench-a.task-017.jia-x.1" />
-`;
-
-const INITIAL_REPORTS: ReportRecord[] = [
-  {
-    id: 'report-1', slug: 'claims-without-evidence', sources: { 'zh-CN': CLAIMS_ZH, en: CLAIMS_EN }, status: 'inReview', author: 'zhou.yu',
-    updatedAt: '2026-11-22T09:30:00Z', submittedAt: '2026-11-22T09:30:00Z', approvalsRequired: 2,
-    checked: [...currentSettings().publication.reportChecks],
-    reviews: [{ reviewer: 'chen.qi', verdict: 'approve', comment: '两次运行的证据都核对过。', at: '2026-11-23T03:10:00Z' }],
-  },
-  {
-    id: 'report-2', slug: 'paging-off-by-one', sources: { 'zh-CN': PAGINATION_ZH, en: PAGINATION_EN }, status: 'draft', author: 'lin.fang',
-    updatedAt: '2026-11-24T07:45:00Z', approvalsRequired: 2, checked: [currentSettings().publication.reportChecks[0]], reviews: [],
-  },
-];
-
-const reports: ReportRecord[] = structuredClone(INITIAL_REPORTS);
-let nextReportNumber = INITIAL_REPORTS.length + 1;
 
 /** A document's frontmatter as YAML text, or nothing when the document opens without one. */
 export function frontmatterTextOf(source: string): string | undefined {
@@ -149,15 +47,26 @@ export function sourcesProblemOf(sources: ReportSources): string | undefined {
 
 /** The frontmatter of a document the store accepted, which is always well formed. */
 export function frontmatterOf(source: string) {
-  return ReportFrontmatter.parse(parseDocument(frontmatterTextOf(source) ?? '').toJS());
+  const text = frontmatterTextOf(source);
+  if (text === undefined) {
+    throw new Error('a document the store accepted has no frontmatter');
+  }
+  return ReportFrontmatter.parse(parseDocument(text).toJS());
 }
 
 /** The reviews of a draft's last submission. */
-export function currentReviewsOf(report: ReportRecord): ReportReview[] {
+export function currentReviewsOf(report: ReportDraftRecord): ReportReview[] {
   return report.reviews.filter(review => report.submittedAt !== undefined && review.at >= report.submittedAt);
 }
 
-export function reportSummaryOf(report: ReportRecord): ReportDraftSummary {
+/** Why a member's review of a draft is refused, if it is: the draft is not in review, or the member wrote it or reviewed it already. */
+export function reviewRefusalOf(report: ReportDraftRecord, account: string): string | undefined {
+  return report.status !== 'inReview' ? `report ${report.id} is ${report.status}, not in review`
+    : report.author === account ? 'an author does not review their own report'
+    : currentReviewsOf(report).some(review => review.reviewer === account) ? `${account} has reviewed this submission already` : undefined;
+}
+
+export function reportSummaryOf(report: ReportDraftRecord): ReportDraftSummary {
   const zh = frontmatterOf(report.sources['zh-CN']);
   const en = frontmatterOf(report.sources.en);
   return {
@@ -168,51 +77,57 @@ export function reportSummaryOf(report: ReportRecord): ReportDraftSummary {
   };
 }
 
-export function reportDraftOf(report: ReportRecord): ReportDraft {
-  return { ...reportSummaryOf(report), sources: report.sources, checked: report.checked, reviews: report.reviews };
+/** A draft as a member reads it, with whether they may review it and whether they have. */
+export function reportDraftOf(report: ReportDraftRecord, user: ConsoleUser): ReportDraft {
+  return {
+    ...reportSummaryOf(report), sources: report.sources, checked: report.checked, reviews: report.reviews,
+    canReview: user.can.edit && reviewRefusalOf(report, user.account) === undefined,
+    reviewed: currentReviewsOf(report).some(review => review.reviewer === user.account),
+  };
 }
 
-/** The drafts, newest first, those naming the benchmark when one is given. */
-export function reportsNaming(benchmarkId: string): ReportRecord[] {
-  return reports
-    .filter(report => !benchmarkId || reportSummaryOf(report).benchmarkIds.includes(benchmarkId))
+/** The drafts, newest first, those naming the benchmark and those in the status when they are given. */
+export function reportsNaming(benchmarkId: string, status: ReportDraft['status'] | undefined): ReportDraftRecord[] {
+  return currentReports()
+    .filter(report => (!benchmarkId || reportSummaryOf(report).benchmarkIds.includes(benchmarkId)) && (!status || report.status === status))
     .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 }
 
-export function reportById(reportId: string): ReportRecord | undefined {
-  return reports.find(report => report.id === reportId);
+export function reportById(reportId: string): ReportDraftRecord | undefined {
+  return currentReports().find(report => report.id === reportId);
 }
 
-export function reportBySlug(slug: string): ReportRecord | undefined {
-  return reports.find(report => report.slug === slug);
+export function reportBySlug(slug: string): ReportDraftRecord | undefined {
+  return currentReports().find(report => report.slug === slug);
 }
 
 /** The checks of the settings a draft has not ticked off. */
-export function uncheckedOf(report: ReportRecord): string[] {
+export function uncheckedOf(report: ReportDraftRecord): string[] {
   return currentSettings().publication.reportChecks.filter(check => !report.checked.includes(check));
 }
 
-export function createReport(report: NewReport, author: string): ReportRecord {
-  const record: ReportRecord = {
+export function createReport(report: NewReport, author: string): ReportDraftRecord {
+  nextReportNumber ??= currentReports().length + 1;
+  const record: ReportDraftRecord = {
     id: `report-${nextReportNumber++}`, slug: report.slug, sources: report.sources, status: 'draft', author,
     updatedAt: new Date().toISOString(), checked: [], reviews: [], approvalsRequired: currentSettings().publication.reportReviewers,
   };
-  reports.push(record);
+  currentReports().push(record);
   return record;
 }
 
-export function editReport(report: ReportRecord, edit: ReportEdit): ReportRecord {
+export function editReport(report: ReportDraftRecord, edit: ReportEdit): ReportDraftRecord {
   const checks = currentSettings().publication.reportChecks;
   return Object.assign(report, { sources: edit.sources, checked: edit.checked.filter(check => checks.includes(check)), updatedAt: new Date().toISOString() });
 }
 
-export function submitReport(report: ReportRecord): ReportRecord {
+export function submitReport(report: ReportDraftRecord): ReportDraftRecord {
   const now = new Date().toISOString();
   return Object.assign(report, { status: 'inReview', submittedAt: now, updatedAt: now, approvalsRequired: currentSettings().publication.reportReviewers });
 }
 
 /** Records a review: a request for changes returns the draft to its author, and enough approvals approve it. */
-export function reviewReport(report: ReportRecord, request: ReviewRequest, reviewer: string): ReportRecord {
+export function reviewReport(report: ReportDraftRecord, request: ReviewRequest, reviewer: string): ReportDraftRecord {
   const now = new Date().toISOString();
   report.reviews.push({ reviewer, verdict: request.verdict, comment: request.comment, at: now });
   const approvals = currentReviewsOf(report).filter(review => review.verdict === 'approve').length;
@@ -220,6 +135,6 @@ export function reviewReport(report: ReportRecord, request: ReviewRequest, revie
   return Object.assign(report, { status, updatedAt: now });
 }
 
-export function discardReport(report: ReportRecord) {
-  reports.splice(reports.indexOf(report), 1);
+export function discardReport(report: ReportDraftRecord) {
+  currentReports().splice(currentReports().indexOf(report), 1);
 }

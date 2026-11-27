@@ -4,7 +4,7 @@
  */
 .popover {
   border: var(--size-hairline) solid var(--border-glass);
-  border-radius: var(--radius-lg);
+  border-radius: var(--popover-radius, var(--radius-lg));
   background: var(--bg-glass-strong);
   backdrop-filter: blur(var(--blur-glass)) saturate(var(--saturate-glass));
   box-shadow: var(--shadow-float);
@@ -43,6 +43,8 @@
   vertical-align: middle;
   transition: color var(--duration-base), background-color var(--duration-base);
 }
+
+.info svg { width: var(--icon-small); height: var(--icon-small); }
 
 .info:hover,
 .info:focus-visible,

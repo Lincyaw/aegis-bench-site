@@ -41,6 +41,8 @@ export function TrajectoryView({ usePage, timeline, legend, evidence, selected, 
   }
   // The page in view stays until the next one arrives.
   const page = usePage(useDeferredValue(pageStart), TRAJECTORY_PAGE_SIZE);
+  const [fieldsOpen, setFieldsOpen] = useState(false);
+  const { items: _items, total: _total, ...trajectoryFields } = page;
   const firstShown = page.items[0]?.step_id;
   const lastShown = page.items.at(-1)?.step_id;
   const selectedRow = useRef<HTMLLIElement>(null);
@@ -71,7 +73,7 @@ export function TrajectoryView({ usePage, timeline, legend, evidence, selected, 
           return (
             <li key={step.step_id} ref={open ? selectedRow : undefined} className={clsx(styles.step, evidence.includes(step.step_id) && styles.evidence)}>
               <button type="button" className={styles.stepHead} onClick={() => onSelect(open ? undefined : step.step_id)} aria-expanded={open}>
-                <AtifStepSummary step={step} />
+                <AtifStepSummary step={step} mark={timeline.find(entry => entry.stepId === step.step_id)?.mark} />
               </button>
               {open && <div className={styles.detail}><AtifFields record={step} /></div>}
             </li>
@@ -85,10 +87,11 @@ export function TrajectoryView({ usePage, timeline, legend, evidence, selected, 
           onPrevious={() => turnTo(pageStart - TRAJECTORY_PAGE_SIZE)} onNext={() => turnTo(pageStart + TRAJECTORY_PAGE_SIZE)}
         />
       )}
-      <p className={clsx(styles.facts, 't-micro c-faint')}>
-        {t('runs.trajectoryFacts', { version: page.schema_version, agent: `${page.agent.name} ${page.agent.version}`, model: page.agent.model_name, count: page.final_metrics?.total_steps, cost: page.final_metrics?.total_cost_usd?.toFixed(2) })}
+      <div className={styles.facts}>
+        <button type="button" className={clsx(styles.factsHead, 't-mono c-faint')} aria-expanded={fieldsOpen} onClick={() => setFieldsOpen(!fieldsOpen)}>{page.schema_version}</button>
         <InfoHint label={t('ui.about', { subject: t('runs.tab.trajectory') })}>{t('runs.trajectoryNote')}</InfoHint>
-      </p>
+      </div>
+      {fieldsOpen && <AtifFields record={trajectoryFields} />}
     </div>
   );
 }

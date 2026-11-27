@@ -2,15 +2,12 @@ import type { ConsoleModelDetail, ConsoleModelResult, Locale, ModelTaskRow, Resu
 import { benchmarkOf, benchmarkRef, matchesTaskSearch, taskRefOf } from './benchmarks';
 import { harnessRef, modelRef } from './catalog';
 import { sortedTasks, spreadOf } from './consoleTasks';
-import { rankingOf, resultCountsOf } from './results';
+import { byPassRate, rankingOf, resultCountsOf } from './results';
 
 /*
  * The console's view of the models that ran on a benchmark: each over every harness it ran in, with each harness, and
  * task by task.
  */
-
-/** Tasks per page of a model's task list when a request names no limit, as the spec declares. */
-export const DEFAULT_MODEL_TASK_PAGE_SIZE = 20;
 
 /** Whether a model ran on a benchmark. */
 export function ranOn(benchmarkId: string, modelId: string): boolean {
@@ -27,7 +24,7 @@ export function modelResultsOver(benchmarkId: string, facts: readonly RunFact[],
   const byModel = Map.groupBy(facts, fact => fact.modelId);
   return [...byModel].map(([modelId, facts]) => ({
     model: modelRef(modelId, locale), harnesses: harnessIdsOf(benchmarkId, modelId).map(harnessId => harnessRef(harnessId, locale)), result: resultCountsOf(facts),
-  })).sort((a, b) => (b.result.passRate ?? -1) - (a.result.passRate ?? -1));
+  })).sort((a, b) => byPassRate(a.result, b.result));
 }
 
 /** The tasks a model's page keeps to, as the page it was opened from did: one collection's, one task, or every task. */
@@ -53,7 +50,7 @@ export function modelDetailOf(benchmarkId: string, modelId: string, scope: Model
     model: modelRef(modelId, locale), benchmark: benchmarkRef(benchmarkId), result: resultCountsOf(facts),
     byHarness: harnessIdsOf(benchmarkId, modelId)
       .map(harnessId => ({ harness: harnessRef(harnessId, locale), result: resultCountsOf(facts.filter(fact => fact.harnessId === harnessId)) }))
-      .sort((a, b) => (b.result.passRate ?? -1) - (a.result.passRate ?? -1)),
+      .sort((a, b) => byPassRate(a.result, b.result)),
   };
 }
 
@@ -75,7 +72,7 @@ export function modelTasksOf(benchmarkId: string, modelId: string, filter: Model
     const spread = spreadOf(result);
     return {
       task: taskRefOf(benchmarkId, runs[0].taskId), result, ...(spread && { spread }),
-      runs: runs.map(fact => ({ id: fact.id, harness: harnessRef(fact.harnessId, locale), attempt: fact.attempt, outcome: fact.outcome, ...(fact.failureClass && { failureClass: fact.failureClass }) })),
+      runs: runs.toSorted((a, b) => a.harnessId.localeCompare(b.harnessId) || a.attempt - b.attempt).map(fact => ({ id: fact.id, harness: harnessRef(fact.harnessId, locale), attempt: fact.attempt, outcome: fact.outcome, ...(fact.failureClass && { failureClass: fact.failureClass }) })),
     };
   });
   const matching = rows.filter(row => !filter.spread || row.spread === filter.spread);

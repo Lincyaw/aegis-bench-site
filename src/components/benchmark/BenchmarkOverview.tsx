@@ -6,13 +6,13 @@ import { LocaleLink } from '../../i18n/LocaleRouting';
 import { useLocale } from '../../i18n/localeContext';
 import { dateTimeOf, groupedNumber } from '../../i18n/locales';
 import { consoleModelPath } from '../../routes/consoleModels';
-import { PENDING_RUNS, consoleRunPath, consoleRunsPath } from '../../routes/consoleRuns';
+import { consoleRunPath, pendingRunsPath } from '../../routes/consoleRuns';
 import { InfoHint } from '../../ui/hint';
 import table from '../../ui/table.module.css';
 import { ModelLabel } from '../model/ModelBadge';
 import { FailureClassTag } from '../result/FailureClassTag';
 import { PassRate } from '../result/PassRate';
-import { formatCost } from '../result/presentation';
+import { NO_VALUE, formatCost } from '../result/presentation';
 import styles from './BenchmarkOverview.module.css';
 
 /** Each combination's pass rate, how many tasks it always or ever solved, and what a run of it costs; a row opens the model in that harness. */
@@ -38,8 +38,8 @@ export function EntrantTable({ benchmarkId, entrants }: { benchmarkId: string; e
           <span role="cell"><PassRate rate={result.passRate} /></span>
           <span role="cell" className="t-numeric c-muted">{t('console.overview.tasksOf', { solved: result.solvedEveryTime, total: result.tasks })}</span>
           <span role="cell" className="t-numeric c-muted">{t('console.overview.tasksOf', { solved: result.solvedOnce, total: result.tasks })}</span>
-          <span role="cell" className="t-numeric c-muted">{result.meanCostUsd === undefined ? '—' : formatCost(result.meanCostUsd)}</span>
-          <span role="cell" className="t-numeric c-muted">{result.meanSteps === undefined ? '—' : groupedNumber(locale, Math.round(result.meanSteps))}</span>
+          <span role="cell" className="t-numeric c-muted">{result.meanCostUsd === undefined ? NO_VALUE : formatCost(result.meanCostUsd)}</span>
+          <span role="cell" className="t-numeric c-muted">{result.meanSteps === undefined ? NO_VALUE : groupedNumber(locale, Math.round(result.meanSteps))}</span>
         </div>
       ))}
     </div>
@@ -65,7 +65,7 @@ export function PendingItem({ benchmarkId, work }: { benchmarkId: string; work: 
   const title = t(`console.overview.pendingKind.${work.kind}.title`, { count: work.count });
   return (
     <li className={styles.pending}>
-      <LocaleLink className="t-label" to={consoleRunsPath(benchmarkId, PENDING_RUNS[work.kind])}>{title}</LocaleLink>
+      <LocaleLink className="t-label" to={pendingRunsPath(benchmarkId, work)}>{title}</LocaleLink>
       <InfoHint label={t('ui.about', { subject: title })}>{t(`console.overview.pendingKind.${work.kind}.body`)}</InfoHint>
     </li>
   );

@@ -24,18 +24,8 @@
   gap: var(--space-1);
   min-width: 13rem;
   padding: var(--space-4);
-  border: var(--size-hairline) solid var(--border-glass);
-  border-radius: var(--radius-lg);
-  background: var(--bg-glass-strong);
-  backdrop-filter: blur(var(--blur-glass));
-  box-shadow: var(--shadow-float);
-  animation: menu-in var(--duration-base) var(--ease-out);
 }
 .accountMenu > :last-child { margin-top: var(--space-3); }
-/* A popover approaches from its trigger's side and never zooms. */
-@keyframes menu-in {
-  from { opacity: 0; transform: translateY(calc(-1 * var(--space-1))); }
-}
 
 .sidebar {
   position: sticky;

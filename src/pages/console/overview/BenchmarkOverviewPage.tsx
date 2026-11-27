@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import { useBenchmarkOverview } from '../../../api/consoleClient';
 import { EntrantTable, PendingItem, RecentFailure } from '../../../components/benchmark/BenchmarkOverview';
-import { formatRate } from '../../../components/result/presentation';
+import { NO_VALUE, formatRate } from '../../../components/result/presentation';
 import { ConsoleHeader } from '../../../components/shell/ConsoleHeader';
 import { useLocale } from '../../../i18n/localeContext';
 import { groupedNumber } from '../../../i18n/locales';
@@ -27,7 +27,7 @@ export function BenchmarkOverviewPage() {
           value={groupedNumber(locale, totals.passed + totals.failed)}
           note={totals.executionFailed > 0 ? t('console.overview.stats.countedNote', { count: totals.executionFailed }) : undefined}
         />
-        <StatTile label={t('console.overview.stats.passRate')} value={totals.passRate === undefined ? '—' : formatRate(totals.passRate)} about={t('console.overview.stats.passRateNote')} />
+        <StatTile label={t('console.overview.stats.passRate')} value={totals.passRate === undefined ? NO_VALUE : formatRate(totals.passRate)} about={t('console.overview.stats.passRateNote')} />
         <StatTile label={t('console.overview.stats.unreviewed')} value={groupedNumber(locale, totals.unreviewed)} about={t('console.overview.stats.unreviewedNote')} />
       </StatTiles>
       <section className={styles.section}>

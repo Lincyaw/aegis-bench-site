@@ -12,14 +12,16 @@ import styles from './RunUsage.module.css';
 export function RunUsageTab({ run }: { run: ConsoleRunDetail }) {
   const { t } = useTranslation();
   const locale = useLocale();
-  const { usage } = run;
+  const { usage, metrics } = run;
   return (
     <div className={styles.tab}>
       <StatTiles>
-        <StatTile label={t('console.run.usage.inputTokens')} value={groupedNumber(locale, usage.inputTokens)} note={`${t('console.run.usage.cachedTokens')} ${groupedNumber(locale, usage.cachedTokens)}`} />
-        <StatTile label={t('console.run.usage.outputTokens')} value={groupedNumber(locale, usage.outputTokens)} />
-        <StatTile label={t('console.run.usage.cost')} value={formatCost(usage.costUsd)} />
-        <StatTile label={t('console.run.usage.modelCalls')} value={groupedNumber(locale, usage.modelCalls)} />
+        {usage.inputTokens !== undefined && (
+          <StatTile label={t('console.run.usage.inputTokens')} value={groupedNumber(locale, usage.inputTokens)} note={usage.cachedTokens === undefined ? undefined : `${t('console.run.usage.cachedTokens')} ${groupedNumber(locale, usage.cachedTokens)}`} />
+        )}
+        <StatTile label={t('console.run.usage.outputTokens')} value={groupedNumber(locale, metrics.outputTokens)} />
+        <StatTile label={t('console.run.usage.cost')} value={formatCost(metrics.costUsd)} />
+        {usage.modelCalls !== undefined && <StatTile label={t('console.run.usage.modelCalls')} value={groupedNumber(locale, usage.modelCalls)} />}
       </StatTiles>
       <section className={styles.tab}>
         <HintedHeading rank="h2" className="t-heading" title={t('console.run.usage.tools')} about={t('console.run.usage.note')} />

@@ -1,0 +1,2 @@
+.asking { gap: var(--space-3); padding: var(--space-5); }
+.buttons { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }

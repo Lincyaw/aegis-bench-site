@@ -1,19 +1,17 @@
 import { getResponse, http as plainHttp, HttpResponse, type RequestHandler } from 'msw';
 import Negotiator from 'negotiator';
 import { createOpenApiHttp } from 'openapi-msw';
+import { HUGGING_FACE_UNREACHABLE_STATUS } from '../api/errors';
+import { defaultPageSizeOf, queryDefaultOf } from '../api/constraints';
 import { localeValues, type paths } from '../api/schema';
 import { API_ROOT } from '../api/server';
-import type { HuggingFaceUnreachableAnswer, Locale } from '../api/types';
-import type { CombinationScope } from './catalog';
+import type { CombinationScope, HuggingFaceUnreachableAnswer, Locale } from '../api/types';
 import { HuggingFaceReadError } from './records';
 
 /*
  * The conventions the operations of the spec share: handlers typed by its paths, the reader's language, the
  * combinations a request keeps to, the pages of a list, and the answer when records kept on Hugging Face cannot be read.
  */
-
-/** The status the spec's HuggingFaceUnreachableError answers with. */
-export const HUGGING_FACE_UNREACHABLE_STATUS = 502;
 
 /**
  * The operations, answering the spec's HuggingFaceUnreachableError when one of them needs records a benchmark keeps on
@@ -52,12 +50,12 @@ export function writtenIn(locale: Locale) {
 
 /** The combinations a request keeps to with the spec's CombinationScopeQuery parameters. */
 export function combinationScopeOf(query: { get(name: 'model' | 'harness'): string | null }): CombinationScope {
-  return { model: query.get('model') ?? '', harness: query.get('harness') ?? '' };
+  return { model: query.get('model') ?? undefined, harness: query.get('harness') ?? undefined };
 }
 
-/** The page of a list a request asks for with the spec's PageQuery parameters, and the length of the whole list. */
-export function pageOf<Item>(list: readonly Item[], query: { get(name: 'offset' | 'limit'): string | null }, defaultSize: number) {
-  const offset = Number(query.get('offset') ?? 0);
-  const limit = Number(query.get('limit') ?? defaultSize);
+/** The page of a list a request asks for with the spec's PageQuery parameters, which the operation at the path declares, and the length of the whole list. */
+export function pageOf<Item>(list: readonly Item[], query: { get(name: 'offset' | 'limit'): string | null }, path: keyof paths) {
+  const offset = Number(query.get('offset') ?? queryDefaultOf<number>(path, 'offset'));
+  const limit = Number(query.get('limit') ?? defaultPageSizeOf(path));
   return { items: list.slice(offset, offset + limit), total: list.length };
 }

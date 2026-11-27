@@ -7,7 +7,7 @@ import { REPORT_SLUG_PATTERN } from '../../../api/constraints';
 import { reportSourceOf, REPORTS } from '../../../articles/library';
 import { newReportSources } from '../../../articles/newReport';
 import { DraftTable } from '../../../components/report/DraftTable';
-import { ChangeFailure } from '../../../components/shell/ChangeFailure';
+import { ChangeFailure } from '../../../components/change/ChangeFailure';
 import { ConsoleHeader } from '../../../components/shell/ConsoleHeader';
 import { LocaleLink } from '../../../i18n/LocaleRouting';
 import { useLocale, useLocalizedNavigate } from '../../../i18n/localeContext';
@@ -17,7 +17,6 @@ import { reportPath } from '../../../routes/site';
 import { HintedHeading } from '../../../ui/content';
 import content from '../../../ui/content.module.css';
 import { Button, SubmitButton, TextField } from '../../../ui/controls';
-import { mayEdit } from '../roles';
 import styles from './ReportPages.module.css';
 
 /**
@@ -30,7 +29,7 @@ export function ReportListPage() {
   const { benchmarkId = '' } = useParams();
   const benchmark = useConsoleBenchmark(benchmarkId);
   const drafts = useReportDrafts(benchmark.id);
-  const editing = mayEdit(useConsoleUser().role);
+  const editing = useConsoleUser().can.edit;
   const published = REPORTS.filter(report => report.locale === locale && report.benchmarks.includes(benchmark.id));
   return (
     <div className={styles.page} data-half={benchmark.stage.half}>

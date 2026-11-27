@@ -14,7 +14,6 @@
 .summaries { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); }
 
 .buttons { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
-.action { gap: var(--space-3); padding: var(--space-5); }
 
 @media (max-width: 760px) {
   .summaries { grid-template-columns: minmax(0, 1fr); }

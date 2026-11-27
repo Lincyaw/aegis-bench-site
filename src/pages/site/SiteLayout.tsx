@@ -2,7 +2,6 @@ import { clsx } from 'clsx';
 import { Suspense, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Outlet, useLocation, useMatches } from 'react-router-dom';
-import type { PageSections } from '../../components/benchmark/SectionBar';
 import { BrandLink } from '../../components/shell/BrandMark';
 import { LanguageSwitch } from '../../components/shell/LanguageSwitch';
 import { SiteFooter } from '../../components/shell/SiteFooter';
@@ -12,9 +11,9 @@ import { sitePath } from '../../i18n/locales';
 import { CONSOLE_PATH } from '../../routes/console';
 import { CONTACT_PATH } from '../../routes/site';
 import { Loading } from '../../ui/content';
-import { IconButton, MenuIcon, ThemeIcon } from '../../ui/controls';
-import controls from '../../ui/controls.module.css';
-import { SectionLinks } from '../../ui/navigation';
+import { ButtonLink, IconButton } from '../../ui/controls';
+import { MenuIcon, ThemeIcon } from '../../ui/icons';
+import { SectionLinks, type PageSections } from '../../ui/navigation';
 import { toggleTheme } from '../../ui/theme';
 import { PageSectionsContext } from './pageSections';
 import { FOOTER_LINKS, NAV_LINKS } from './siteNav';
@@ -73,8 +72,8 @@ export function SiteNav({ sections }: { sections: PageSections | null }) {
         <div className={styles.end}>
           <LanguageSwitch path={sitePath(locale, pathname)} search={search} />
           <IconButton label={t('site.toggleTheme')} onClick={toggleTheme} variant="quiet"><ThemeIcon /></IconButton>
-          <LocaleLink className={clsx(controls.pill, controls.medium, controls.quiet)} to={CONSOLE_PATH}>{t('site.signIn')}</LocaleLink>
-          <LocaleLink className={clsx(controls.pill, controls.medium, styles.contact, 'loop-edge')} to={CONTACT_PATH}>{t('site.contact')}</LocaleLink>
+          <ButtonLink variant="quiet" size="medium" to={CONSOLE_PATH}>{t('site.signIn')}</ButtonLink>
+          <ButtonLink variant="line" size="medium" className={styles.contact} to={CONTACT_PATH}>{t('site.contact')}</ButtonLink>
           <span className={styles.menuButton}>
             <IconButton label={t('site.openMenu')} expanded={open} onClick={() => { setOpen(!open); setOpenedAt(pathname); }}><MenuIcon /></IconButton>
           </span>

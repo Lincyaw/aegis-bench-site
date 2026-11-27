@@ -5,14 +5,14 @@ import { useConsoleUser, useSettings, useUpdateSettings } from '../../../api/con
 import { EMAIL_PATTERN, MAX_REPORT_CHECKS, REPORT_REVIEWER_CHOICES } from '../../../api/constraints';
 import type { Settings, SettingsChange } from '../../../api/types';
 import { SettingsView } from '../../../components/settings/SettingsView';
-import { ChangeFailure } from '../../../components/shell/ChangeFailure';
+import { ChangeFailure } from '../../../components/change/ChangeFailure';
+import { hasUnsavedChange } from '../../../components/change/unsavedChange';
 import { ConsoleHeader } from '../../../components/shell/ConsoleHeader';
 import { useLocale } from '../../../i18n/localeContext';
 import { dateTimeOf } from '../../../i18n/locales';
 import content from '../../../ui/content.module.css';
 import { Button, Select, SubmitButton, TextField } from '../../../ui/controls';
 import { InfoHint } from '../../../ui/hint';
-import { mayAdminister } from '../roles';
 import styles from './SettingsPage.module.css';
 
 /** The workspace's name and public contact, and the rules a report passes before it is committed; administrators change them. */
@@ -20,7 +20,7 @@ export function SettingsPage() {
   const { t } = useTranslation();
   const locale = useLocale();
   const settings = useSettings();
-  const administering = mayAdminister(useConsoleUser().role);
+  const administering = useConsoleUser().can.administer;
   return (
     <div className={styles.page}>
       <ConsoleHeader title={t('console.settings.title')} about={t('console.settings.about')} />
@@ -39,7 +39,7 @@ export function SettingsForm({ settings }: { settings: Settings }) {
   const setWorkspace = (next: Partial<SettingsChange['workspace']>) => setChange({ ...change, workspace: { ...workspace, ...next } });
   const setPublication = (next: Partial<SettingsChange['publication']>) => setChange({ ...change, publication: { ...publication, ...next } });
   const setCheck = (index: number, text: string) => setPublication({ reportChecks: publication.reportChecks.map((check, at) => (at === index ? text : check)) });
-  const unsaved = JSON.stringify(change) !== JSON.stringify({ workspace: settings.workspace, publication: settings.publication });
+  const unsaved = hasUnsavedChange(change, { workspace: settings.workspace, publication: settings.publication });
   const save = (event: FormEvent) => {
     event.preventDefault();
     update.mutate(change);

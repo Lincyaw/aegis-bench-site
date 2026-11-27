@@ -1,3 +1,4 @@
+import { MAX_FILE_TEXT_LENGTH } from '../api/constraints';
 import type { TaskEntry, TaskFile, TaskFileRecord, WithheldReason } from '../api/types';
 import { benchmarkOf } from './benchmarks';
 import { readTaskFile } from './records';
@@ -7,23 +8,19 @@ import { readTaskFile } from './records';
  * withholds them, the console shows them whole.
  */
 
-/** Entries per page of a directory when a request names no limit, as the spec declares. */
-export const DEFAULT_ENTRY_PAGE_SIZE = 50;
-
-/** No response carries more of a file's text than this, as the spec declares. */
-export const MAX_FILE_TEXT_BYTES = 256 * 1024;
-
 const MEDIA_TYPES: Record<string, string> = {
   md: 'text/markdown', toml: 'application/toml', sh: 'application/x-sh', py: 'text/x-python', yaml: 'application/yaml',
   json: 'application/json', txt: 'text/plain', patch: 'text/x-diff',
 };
 
+/** The media type a file's name gives it, or nothing when its extension has none. */
+export function findMediaType(path: string): string | undefined {
+  const name = path.slice(path.lastIndexOf('/') + 1);
+  return name === 'Dockerfile' ? 'text/plain' : MEDIA_TYPES[name.slice(name.lastIndexOf('.') + 1)];
+}
+
 export function mediaTypeOf(path: string): string {
-  const name = path.split('/').at(-1) ?? path;
-  if (name === 'Dockerfile') {
-    return 'text/plain';
-  }
-  const mediaType = MEDIA_TYPES[name.split('.').at(-1) ?? ''];
+  const mediaType = findMediaType(path);
   if (!mediaType) {
     throw new Error(`no media type for ${path}`);
   }
@@ -59,9 +56,9 @@ export function directoryEntriesOf(files: TaskFileRecord[], directory: string): 
 export async function taskFileOf(benchmarkId: string, taskId: string, file: TaskFileRecord): Promise<TaskFile> {
   const text = await readTaskFile(benchmarkOf(benchmarkId).record, taskId, file);
   const bytes = new TextEncoder().encode(text);
-  const truncated = bytes.length > MAX_FILE_TEXT_BYTES;
+  const truncated = bytes.length > MAX_FILE_TEXT_LENGTH;
   return {
     path: file.path, size: bytes.length, mediaType: mediaTypeOf(file.path),
-    text: truncated ? new TextDecoder().decode(bytes.slice(0, MAX_FILE_TEXT_BYTES)) : text, truncated,
+    text: truncated ? new TextDecoder().decode(bytes.slice(0, MAX_FILE_TEXT_LENGTH)) : text, truncated,
   };
 }

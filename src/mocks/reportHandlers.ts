@@ -2,8 +2,8 @@ import { delay } from 'msw';
 import { mayEdit, refusalFor } from './members';
 import { http } from './protocol';
 import {
-  createReport, currentReviewsOf, discardReport, editReport, reportById, reportBySlug, reportDraftOf, reportSummaryOf, reportsNaming,
-  reviewReport, sourcesProblemOf, submitReport, uncheckedOf,
+  createReport, discardReport, editReport, reportById, reportBySlug, reportDraftOf, reportSummaryOf, reportsNaming, reviewReport, reviewRefusalOf,
+  sourcesProblemOf, submitReport, uncheckedOf,
 } from './reports';
 import { SIGN_IN_REQUIRED, sessionUserOf } from './session';
 
@@ -14,7 +14,7 @@ export const reportHandlers = [
       return response(401).json(SIGN_IN_REQUIRED);
     }
     await delay(80);
-    return response(200).json(reportsNaming(query.get('benchmarkId') ?? '').map(reportSummaryOf));
+    return response(200).json(reportsNaming(query.get('benchmarkId') ?? '', query.get('status') ?? undefined).map(reportSummaryOf));
   }),
 
   http.post('/console/reports', async ({ cookies, request, response }) => {
@@ -34,15 +34,16 @@ export const reportHandlers = [
       return response(422).json({ message: problem });
     }
     await delay(160);
-    return response(200).json(reportDraftOf(createReport(report, user.account)));
+    return response(200).json(reportDraftOf(createReport(report, user.account), user));
   }),
 
   http.get('/console/reports/{reportId}', ({ cookies, params, response }) => {
-    if (!sessionUserOf(cookies)) {
+    const user = sessionUserOf(cookies);
+    if (!user) {
       return response(401).json(SIGN_IN_REQUIRED);
     }
     const report = reportById(params.reportId);
-    return report ? response(200).json(reportDraftOf(report)) : response(404).json({ message: `no report ${params.reportId}` });
+    return report ? response(200).json(reportDraftOf(report, user)) : response(404).json({ message: `no report ${params.reportId}` });
   }),
 
   http.put('/console/reports/{reportId}', async ({ cookies, params, request, response }) => {
@@ -66,7 +67,7 @@ export const reportHandlers = [
       return response(422).json({ message: problem });
     }
     await delay(140);
-    return response(200).json(reportDraftOf(editReport(report, edit)));
+    return response(200).json(reportDraftOf(editReport(report, edit), user));
   }),
 
   http.post('/console/reports/{reportId}/submit', async ({ cookies, params, response }) => {
@@ -86,7 +87,7 @@ export const reportHandlers = [
       return response(409).json({ message: report.status !== 'draft' ? `report ${report.id} is ${report.status}` : `${unchecked.length} checks are not ticked off` });
     }
     await delay(160);
-    return response(200).json(reportDraftOf(submitReport(report)));
+    return response(200).json(reportDraftOf(submitReport(report), user));
   }),
 
   http.post('/console/reports/{reportId}/reviews', async ({ cookies, params, request, response }) => {
@@ -101,15 +102,13 @@ export const reportHandlers = [
     if (!report) {
       return response(404).json({ message: `no report ${params.reportId}` });
     }
-    const conflict = report.status !== 'inReview' ? `report ${report.id} is ${report.status}, not in review`
-      : report.author === user.account ? 'an author does not review their own report'
-      : currentReviewsOf(report).some(review => review.reviewer === user.account) ? `${user.account} has reviewed this submission already` : undefined;
+    const conflict = reviewRefusalOf(report, user.account);
     if (conflict) {
       return response(409).json({ message: conflict });
     }
     const review = await request.json();
     await delay(160);
-    return response(200).json(reportDraftOf(reviewReport(report, review, user.account)));
+    return response(200).json(reportDraftOf(reviewReport(report, review, user.account), user));
   }),
 
   http.delete('/console/reports/{reportId}', async ({ cookies, params, response }) => {
@@ -126,6 +125,6 @@ export const reportHandlers = [
     }
     discardReport(report);
     await delay(120);
-    return response(200).json(reportsNaming('').map(reportSummaryOf));
+    return response(200).json(reportsNaming('', undefined).map(reportSummaryOf));
   }),
 ];

@@ -7,6 +7,7 @@ import {
   type BenchmarkDetail, type Combination, type CombinationRuns, type TaskPage,
 } from '../../../api/client';
 import { combinationKey } from '../../../api/constraints';
+import { benchmarkCrumbs } from '../../../components/benchmark/crumbs';
 import type { ComparisonSource } from '../../../components/comparison/comparison';
 import { RunComparison, TaskInput } from '../../../components/comparison/TaskComparison';
 import { CombinationLabel, VendorBadge } from '../../../components/model/ModelBadge';
@@ -15,7 +16,7 @@ import { OutcomeDot } from '../../../components/run/Outcome';
 import {
   CombinationColumn, Pane, PaneEmpty, PaneHead, PaneList, PaneMore, PassRateText, RunChips, TaskColumn,
 } from '../../../components/run/RunRecords';
-import { LocaleLink } from '../../../i18n/LocaleRouting';
+import { combinationName } from '../../../components/result/presentation';
 import { searchOf } from '../../../routes/address';
 import { COMPARISON_NAVIGATE_OPTIONS, type ComparisonView } from '../../../routes/comparison';
 import {
@@ -23,10 +24,9 @@ import {
   runRecordsLevel, runRecordsPath, withCombination, withDetail, withFilter, withMode, withRecordsView, withRun, withSearch, withTask,
   type RunRecordsLevel, type RunRecordsQuery,
 } from '../../../routes/runRecords';
-import { BENCHMARKS_PATH, INSTRUCTION_PATH, benchmarkPath, stagePath, taskFilesPath } from '../../../routes/site';
+import { INSTRUCTION_PATH, taskFilesPath } from '../../../routes/site';
 import { Loading } from '../../../ui/content';
-import { ScopeChip, SearchField, SegmentedControl, Select } from '../../../ui/controls';
-import controls from '../../../ui/controls.module.css';
+import { BackButton, ScopeChip, SearchField, SegmentedControl, Select, TextLink } from '../../../ui/controls';
 import { InfoHint } from '../../../ui/hint';
 import { NARROW_QUERY, useMediaQuery } from '../../../ui/media';
 import { Breadcrumbs } from '../../../ui/navigation';
@@ -74,10 +74,7 @@ export function RunToolbar({ benchmark, query, onQuery }: { benchmark: Benchmark
   return (
     <header className={styles.toolbar}>
       <h1 className="visually-hidden">{t('runs.pageTitle', { benchmark: benchmark.name })}</h1>
-      <Breadcrumbs className={styles.crumbs} crumbs={[
-        { label: t('site.nav.benchmarks'), to: BENCHMARKS_PATH }, { label: `${benchmark.stage.id} ${benchmark.stage.name}`, to: stagePath(benchmark.stage.id) },
-        { label: benchmark.name, to: benchmarkPath(benchmark.id) }, { label: t('benchmarks.runRecords') },
-      ]} />
+      <Breadcrumbs className={styles.crumbs} crumbs={benchmarkCrumbs(t, benchmark, [{ label: t('benchmarks.runRecords') }])} />
       <SegmentedControl
         label={t('runs.records.label')} value={query.by}
         choices={RUN_RECORD_VIEWS.map(view => ({ value: view, label: t(`runs.records.${view}`) }))}
@@ -89,7 +86,7 @@ export function RunToolbar({ benchmark, query, onQuery }: { benchmark: Benchmark
           className={styles.filter} variant="quiet"
           label={t('runs.combinationFilter')}
           value={query.combination ?? EVERY_COMBINATION}
-          choices={[{ value: EVERY_COMBINATION, label: t('runs.everyCombination') }, ...combinations.map(entry => ({ value: combinationKey(entry.model.id, entry.harness.id), label: `${entry.model.name} · ${entry.harness.name}` }))]}
+          choices={[{ value: EVERY_COMBINATION, label: t('runs.everyCombination') }, ...combinations.map(entry => ({ value: combinationKey(entry.model.id, entry.harness.id), label: combinationName(entry.model, entry.harness) }))]}
           onChange={value => onQuery(withFilter(query, { combination: value === EVERY_COMBINATION ? undefined : value, outcome: query.outcome }))}
         />
       )}
@@ -156,10 +153,10 @@ export function TaskArea({ benchmark, taskId, query, level, onQuery, onCompare }
     <div className={styles.taskArea}>
       {level !== 'detail' && (
         <div className={styles.taskHead}>
-          {level === 'runs' && <button type="button" className={clsx(styles.back, 't-micro c-muted')} onClick={() => onQuery(withTask(query, undefined))}>‹ {t('runs.allTasks')}</button>}
+          {level === 'runs' && <BackButton className={styles.back} onClick={() => onQuery(withTask(query, undefined))}>{t('runs.allTasks')}</BackButton>}
           <span className="t-label">{task.id} {task.title}</span>
           <span className="t-micro c-faint">{t('runs.taskSummary', { combinations: combinations.length, runs: runsPerTask })} · <PassRateText rate={task.passRate} /></span>
-          <LocaleLink className={clsx(controls.textLink, 't-micro')} to={taskFilesPath(benchmark.id, task.id)}>{t('tasks.files')}</LocaleLink>
+          <TextLink className="t-micro" to={taskFilesPath(benchmark.id, task.id)}>{t('tasks.files')}</TextLink>
           <SegmentedControl
             label={t('runs.mode.label')} value={query.mode}
             choices={TASK_MODES.map(mode => ({ value: mode, label: t(`runs.mode.${mode}`) }))}
@@ -199,7 +196,7 @@ export function RunDetailColumn({ benchmark, runId, query, back, onQuery }: { be
   const { t } = useTranslation();
   return (
     <Pane label={t('runs.detailLabel')} className={styles.detail}>
-      {back && <button type="button" className={clsx(styles.detailBack, 't-micro c-muted')} onClick={() => onQuery(withRun(query, undefined))}>‹ {back}</button>}
+      {back && <BackButton className={styles.detailBack} onClick={() => onQuery(withRun(query, undefined))}>{back}</BackButton>}
       <HuggingFaceBoundary resetKey={runId}>
         <Suspense fallback={<Loading />}>
           <RunDetailPanel runId={runId} legend={benchmark.timelineLegend} view={{ tab: query.tab, step: query.step, check: query.check }} onView={view => onQuery(withDetail(query, view))} />
@@ -290,7 +287,7 @@ export function CombinationRunsArea({ benchmark, entry, query, level, onQuery }:
       {(level === 'threePanes' || level === 'runs') && (
         <Pane label={t('runs.runs')}>
           <PaneHead className={styles.stacked}>
-            {level === 'runs' && <button type="button" className={clsx(styles.back, 't-micro c-muted')} onClick={() => onQuery(withCombination(query, undefined))}>‹ {t('runs.combinations')}</button>}
+            {level === 'runs' && <BackButton className={styles.back} onClick={() => onQuery(withCombination(query, undefined))}>{t('runs.combinations')}</BackButton>}
             <span className={styles.comboName}><VendorBadge model={model} /><span className="t-label">{model.name}</span><span className="t-micro c-faint">{harness.name}</span></span>
             <span className="t-micro c-faint">{t('runs.combinationTasks', { count: total })}</span>
           </PaneHead>
@@ -312,7 +309,7 @@ export function CombinationRunsArea({ benchmark, entry, query, level, onQuery }:
         </Pane>
       )}
       {runId && level !== 'runs' && (
-        <RunDetailColumn benchmark={benchmark} runId={runId} query={query} back={level === 'detail' ? `${model.name} · ${harness.name}` : undefined} onQuery={onQuery} />
+        <RunDetailColumn benchmark={benchmark} runId={runId} query={query} back={level === 'detail' ? combinationName(model, harness) : undefined} onQuery={onQuery} />
       )}
     </>
   );

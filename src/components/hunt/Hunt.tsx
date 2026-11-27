@@ -7,10 +7,10 @@ import { dateTimeOf, groupedNumber } from '../../i18n/locales';
 import { huntPath } from '../../routes/consoleAnalysis';
 import { StatTile, StatTiles, Tag } from '../../ui/content';
 import content from '../../ui/content.module.css';
-import controls from '../../ui/controls.module.css';
+import { TextLink } from '../../ui/controls';
 import { InfoHint } from '../../ui/hint';
 import table from '../../ui/table.module.css';
-import { formatRate } from '../result/presentation';
+import { NO_VALUE, formatRate } from '../result/presentation';
 import styles from './Hunt.module.css';
 
 export function HuntCard({ benchmarkId, hunt }: { benchmarkId: string; hunt: Hunt }) {
@@ -45,7 +45,7 @@ export function HuntCoverageTiles({ hunt }: { hunt: Hunt }) {
         <StatTile label={t('console.analysis.stats.read')} value={groupedNumber(locale, coverage.read)} note={t('console.analysis.stats.readNote', { trajectories: coverage.trajectories })} />
         <StatTile label={t('console.analysis.stats.marked')} value={groupedNumber(locale, coverage.marked)} />
         <StatTile
-          label={t('console.analysis.stats.missUpper')} value={coverage.missShareUpper === undefined ? '—' : formatRate(coverage.missShareUpper)}
+          label={t('console.analysis.stats.missUpper')} value={coverage.missShareUpper === undefined ? NO_VALUE : formatRate(coverage.missShareUpper)}
           note={t('console.analysis.stats.missNote', { reads: coverage.randomReads, finds: coverage.randomFinds })}
         />
       </StatTiles>
@@ -67,7 +67,7 @@ export function FacetPanel({ facet, onTrials }: { facet: HuntFacet; onTrials: ()
       <header className={styles.facetHead}>
         <span className="t-label">{facet.name}</span>
         {facet.edge && <Tag>{t(`console.analysis.edge.${facet.edge}`)}</Tag>}
-        <button type="button" className={clsx(styles.facetCounts, 't-micro')} onClick={onTrials}>{t('console.analysis.facetCounts', { found: facet.found, marked: facet.marked })} →</button>
+        <TextLink className={clsx(styles.facetCounts, 't-micro c-muted')} onClick={onTrials}>{t('console.analysis.facetCounts', { found: facet.found, marked: facet.marked })}</TextLink>
       </header>
       <p className="t-small">{facet.definition}</p>
       <p className="t-micro c-faint">{t('console.analysis.excludes', { excludes: facet.excludes })}</p>
@@ -89,7 +89,7 @@ export function FacetPanel({ facet, onTrials }: { facet: HuntFacet; onTrials: ()
             <span role="cell" className="t-numeric c-muted">{probe.read}</span>
             <span role="cell" className="t-numeric c-muted">{probe.found}</span>
             <span role="cell" className="t-numeric">
-              {probe.precision === undefined || !probe.precisionInterval ? '—' : t('console.analysis.precision', {
+              {probe.precision === undefined || !probe.precisionInterval ? NO_VALUE : t('console.analysis.precision', {
                 value: formatRate(probe.precision), lower: formatRate(probe.precisionInterval[0]), upper: formatRate(probe.precisionInterval[1]),
               })}
             </span>
@@ -120,11 +120,11 @@ export function HuntFinding({ finding, onStep }: { finding: RunHuntFinding; onSt
             <ol className={styles.marks} aria-label={t('console.analysis.marks')}>
               {facet.marks.map(mark => (
                 <li key={mark.step} className={styles.mark}>
-                  <button type="button" className={clsx(controls.textLink, 't-micro')} onClick={() => onStep(mark.step)}>{t('console.analysis.step', { step: mark.step })}</button>
-                  <Tag>{t(`console.run.events.kind.${mark.kind}`)}</Tag>
+                  <TextLink className="t-micro" onClick={() => onStep(mark.step)}>{t('console.analysis.step', { step: mark.step })}</TextLink>
+                  <Tag>{mark.kind}</Tag>
                   <span className={clsx(styles.excerpt, 't-small')}>{mark.tool && <span className="t-mono c-muted">{mark.tool} · </span>}{mark.excerpt}</span>
-                  <span className="t-mono c-faint">{dateTimeOf(locale, mark.at)}</span>
-                  <span className={clsx(styles.markProbes, 't-micro c-faint')}>{t('console.analysis.probes', { probes: mark.probes.join('、') })}</span>
+                  {mark.at && <span className="t-mono c-faint">{dateTimeOf(locale, mark.at)}</span>}
+                  <span className={clsx(styles.markProbes, 't-micro c-faint')}>{t('console.analysis.probes', { probes: mark.probes })}</span>
                 </li>
               ))}
             </ol>

@@ -1,21 +1,19 @@
+import { combinationKey } from '../api/constraints';
 import type {
-  ConsoleTaskDetail, ConsoleTaskEntry, ConsoleTaskRow, EntrantMark, Locale, ReferenceFile, ResultCounts, RunFact, TagCount, TaskCheckResults, TaskGrading,
+  CombinationScope, ConsoleTaskDetail, ConsoleTaskEntry, ConsoleTaskRow, EntrantMark, Locale, ReferenceFile, ResultCounts, RunFact, TagCount, TaskCheckResults, TaskGrading,
   TaskOrder, TaskRecord, TaskResults, TaskRevision, TaskSpread,
 } from '../api/types';
 import { benchmarkOf, benchmarkRef, hasBenchmark, matchesTaskSearch, taskOf } from './benchmarks';
-import { combinationKey, harnessRef, keepsTo, modelRef, type CombinationScope } from './catalog';
+import { harnessRef, isSameCombination, keepsTo, modelRef } from './catalog';
 import { runRowOf } from './consoleRuns';
 import { huggingFacePageOf, readTaskFile, taskDirectoryOf } from './records';
-import { rankingIn, resultCountsOf } from './results';
+import { byPassRate, isCounted, rankingIn, resultCountsOf } from './results';
 import { directoryEntriesOf, taskFileOf } from './taskFiles';
 
 /*
  * The console's view of a benchmark's tasks: every run that answered them, how their grading decides, the files the
  * public site withholds, and the versions each task went through.
  */
-
-/** Tasks per page of the console's task list when a request names no limit, as the spec declares. */
-export const DEFAULT_CONSOLE_TASK_PAGE_SIZE = 20;
 
 /** The task a request names, or nothing when the benchmark or the task does not exist. */
 export function namedTaskOf(benchmarkId: string, taskId: string): TaskRecord | undefined {
@@ -40,7 +38,7 @@ export function taskResultCountsOf(benchmarkId: string, taskId: string): ResultC
 }
 
 /** The scope that keeps to every combination. */
-export const ALL_COMBINATIONS: CombinationScope = { model: '', harness: '' };
+export const ALL_COMBINATIONS: CombinationScope = {};
 
 /** A task's runs by the combinations a scope keeps to. */
 export function taskFactsIn(benchmarkId: string, taskId: string, scope: CombinationScope): RunFact[] {
@@ -61,7 +59,7 @@ export function entrantMarksOf(benchmarkId: string, taskId: string, scope: Combi
   const facts = taskFactsIn(benchmarkId, taskId, scope);
   return rankingIn(benchmarkId, scope).map(({ modelId, harnessId }) => ({
     model: modelRef(modelId, locale), harness: harnessRef(harnessId, locale),
-    solved: facts.some(fact => fact.modelId === modelId && fact.harnessId === harnessId && fact.outcome === 'passed'),
+    solved: facts.some(fact => isSameCombination(fact, { modelId, harnessId }) && fact.outcome === 'passed'),
   }));
 }
 
@@ -99,11 +97,9 @@ export function sortedTasks<Item>(items: Item[], order: TaskOrder, idOf: (item: 
 /** The tasks a filter selects, in its order. */
 export function filteredTasksOf(benchmarkId: string, filter: TaskFilter): TaskRecord[] {
   const { tasks } = benchmarkOf(benchmarkId);
-  const results = new Map(tasks.map(task => [task.id, taskResultCountsOf(benchmarkId, task.id)]));
-  const matching = tasks.filter(task => matchesTaskSearch(task, filter.q)
-    && (!filter.tag || task.tags.includes(filter.tag))
-    && (!filter.spread || spreadOf(results.get(task.id) ?? resultCountsOf([])) === filter.spread));
-  return sortedTasks(matching, filter.order, task => task.id, task => results.get(task.id)?.passRate);
+  const matching = tasks.map(task => ({ task, result: taskResultCountsOf(benchmarkId, task.id) }))
+    .filter(({ task, result }) => matchesTaskSearch(task, filter.q) && (!filter.tag || task.tags.includes(filter.tag)) && (!filter.spread || spreadOf(result) === filter.spread));
+  return sortedTasks(matching, filter.order, row => row.task.id, row => row.result.passRate).map(row => row.task);
 }
 
 /** A task as the console shows it, with what the runs of the combinations a scope keeps to come to. */
@@ -111,11 +107,12 @@ export function consoleTaskOf(benchmarkId: string, task: TaskRecord, scope: Comb
   const result = resultCountsOf(taskFactsIn(benchmarkId, task.id, scope));
   const spread = spreadOf(result);
   const huggingFaceUrl = huggingFacePageOf(benchmarkOf(benchmarkId).record, taskDirectoryOf(task.id));
+  const entrants = entrantMarksOf(benchmarkId, task.id, scope, locale);
   return {
     id: task.id, title: task.title, benchmark: benchmarkRef(benchmarkId), tags: task.tags, version: task.version,
     instruction: task.instruction, reportSchema: task.reportSchema, environment: task.environment, tools: task.tools,
     acceptance: task.checks.map(check => ({ checkId: check.id, requirement: check.title })), result, ...(spread && { spread }),
-    entrants: entrantMarksOf(benchmarkId, task.id, scope, locale),
+    entrants, solvedEntrants: entrants.filter(entrant => entrant.solved).length,
     sizes: { checks: task.checks.length, files: task.files.length, revisions: task.revisions.length },
     ...(huggingFaceUrl && { huggingFaceUrl }),
   };
@@ -151,22 +148,23 @@ export function taskEntrantRunsOf(benchmarkId: string, task: TaskRecord, scope: 
   const byEntrant = Map.groupBy(taskFactsIn(benchmarkId, task.id, scope), fact => combinationKey(fact.modelId, fact.harnessId));
   const entrants = [...byEntrant.values()].map(facts => ({
     model: modelRef(facts[0].modelId, locale), harness: harnessRef(facts[0].harnessId, locale),
-    runs: facts.map(fact => runRowOf(benchmarkId, fact, locale)), result: resultCountsOf(facts),
+    runs: facts.toSorted((a, b) => a.attempt - b.attempt).map(fact => runRowOf(benchmarkId, fact, locale)), result: resultCountsOf(facts),
   }));
-  return { entrants: entrants.sort((a, b) => (b.result.passRate ?? -1) - (a.result.passRate ?? -1)), validations: task.validations };
+  return { entrants: entrants.sort((a, b) => byPassRate(a.result, b.result)), validations: task.validations };
 }
 
 /** Each check against each combination a scope keeps to: of a combination's counted runs, how many passed the check. */
 export function checkResultsOf(benchmarkId: string, task: TaskRecord, scope: CombinationScope, locale: Locale): TaskCheckResults {
   const ranking = rankingIn(benchmarkId, scope);
-  const facts = taskFactsIn(benchmarkId, task.id, scope).filter(fact => fact.outcome !== 'executionFailed');
+  const facts = taskFactsIn(benchmarkId, task.id, scope).filter(isCounted);
   return {
     entrants: ranking.map(({ modelId, harnessId }) => ({ model: modelRef(modelId, locale), harness: harnessRef(harnessId, locale) })),
     checks: task.checks.map(check => ({
       id: check.id, title: check.title, method: check.method,
       byEntrant: ranking.map(({ modelId, harnessId }) => {
-        const runs = facts.filter(fact => fact.modelId === modelId && fact.harnessId === harnessId);
-        return { passed: runs.filter(fact => !fact.failedChecks.includes(check.id)).length, counted: runs.length };
+        const runs = facts.filter(fact => isSameCombination(fact, { modelId, harnessId }));
+        const passed = runs.filter(fact => !fact.failedChecks.includes(check.id)).length;
+        return { passed, counted: runs.length, ...(runs.length > 0 && { passRate: passed / runs.length }) };
       }),
     })),
   };
@@ -179,7 +177,7 @@ export function revisionsOf(benchmarkId: string, task: TaskRecord): TaskRevision
     const answered = facts.filter(fact => fact.taskVersion === revision.version);
     return {
       ...revision, current: revision.version === task.version,
-      runs: answered.length, counted: answered.filter(fact => fact.outcome !== 'executionFailed').length,
+      runs: answered.length, counted: answered.filter(isCounted).length,
     };
   });
 }

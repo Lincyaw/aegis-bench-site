@@ -1,21 +1,22 @@
 import { delay } from 'msw';
+import { combinationKey, queryDefaultOf } from '../api/constraints';
+import type { LeaderboardView } from '../api/types';
 import {
-  DEFAULT_LEADERBOARD_PAGE_SIZE, benchmarkDetail, benchmarkOf, benchmarkSummary, hasBenchmark, leaderboardView, matchesTaskSearch, stagesWithBenchmarks, taskOf,
+  benchmarkDetail, benchmarkOf, benchmarkSummary, hasBenchmark, leaderboardView, matchesTaskSearch, stagesWithBenchmarks, taskOf,
 } from './benchmarks';
-import { RECORD_LOCALE, combinationKey } from './catalog';
 import { consoleHandlers } from './consoleHandlers';
-import { hasModel, modelProfile } from './models';
+import { modelProfile } from './models';
 import { answeringUnreachableRecords, http, localeOf, pageOf, writtenIn } from './protocol';
 import {
-  publishedEntrantOf, publishedEntriesOf, publishedRecentRunsOf, publishedShowingOf, publishedTaskComparisonOf, publishedTaskRuns, publishedTaskSummariesOf,
+  publishedEntrantOf, publishedEntriesOf, publishedRecentRunsOf, publishedRunRefsOf, publishedShowingOf, publishedTaskComparisonOf, publishedTaskRuns, publishedTaskSummariesOf, publishesRun,
 } from './published';
 import { openedIndexes } from './records';
 import { reportHandlers } from './reportHandlers';
 import { runDetailOf } from './runs';
 import { currentSettings } from './settings';
-import { DEFAULT_ENTRY_PAGE_SIZE, directoryEntriesOf, taskFileOf, withheldUnder } from './taskFiles';
-import { DEFAULT_TASK_PAGE_SIZE, combinationTasksOf, keepingOutcome, taskRunsOf, taskSummaryOf } from './tasks';
-import { DEFAULT_TRAJECTORY_PAGE_SIZE, trajectoryOf } from './trajectories';
+import { directoryEntriesOf, taskFileOf, withheldUnder } from './taskFiles';
+import { combinationTasksOf, keepingOutcome, taskRunsOf, taskSummaryOf } from './tasks';
+import { trajectoryOf } from './trajectories';
 import { workspaceHandlers } from './workspaceHandlers';
 
 /*
@@ -62,8 +63,8 @@ export const publicHandlers = [
       return response(404).json({ message: `no benchmark ${params.benchmarkId}` });
     }
     const locale = localeOf(request);
-    const entries = leaderboardView(publishedEntriesOf(params.benchmarkId, locale), query.get('view') ?? 'combination');
-    return response(200).json(pageOf(entries, query, DEFAULT_LEADERBOARD_PAGE_SIZE), writtenIn(locale));
+    const entries = leaderboardView(publishedEntriesOf(params.benchmarkId, locale), query.get('view') ?? queryDefaultOf<LeaderboardView>('/benchmarks/{benchmarkId}/leaderboard', 'view'));
+    return response(200).json(pageOf(entries, query, '/benchmarks/{benchmarkId}/leaderboard'), writtenIn(locale));
   }),
 
   http.get('/benchmarks/{benchmarkId}/combinations', ({ params, request, response }) => {
@@ -82,7 +83,7 @@ export const publicHandlers = [
     const q = (query.get('q') ?? '').trim();
     const matching = keepingOutcome(combinationTasksOf(params.benchmarkId, entrant.modelId, entrant.harnessId).filter(({ task }) => matchesTaskSearch(task, q)), query.get('outcome'));
     await delay(80);
-    return response(200).json(pageOf(matching, query, DEFAULT_TASK_PAGE_SIZE));
+    return response(200).json(pageOf(matching, query, '/benchmarks/{benchmarkId}/combinations/{combination}/tasks'));
   }),
 
   http.get('/benchmarks/{benchmarkId}/tasks', async ({ params, query, response }) => {
@@ -92,9 +93,9 @@ export const publicHandlers = [
     const q = (query.get('q') ?? '').trim();
     const outcome = query.get('outcome');
     const matching = publishedTaskSummariesOf(params.benchmarkId).filter(task => matchesTaskSearch(task, q)
-      && keepingOutcome(publishedTaskRuns(params.benchmarkId, taskRunsOf(params.benchmarkId, task.id, RECORD_LOCALE)), outcome).length > 0);
+      && (outcome === null || publishedRunRefsOf(params.benchmarkId, task.id).some(run => run.outcome === outcome)));
     await delay(80);
-    return response(200).json(pageOf(matching, query, DEFAULT_TASK_PAGE_SIZE));
+    return response(200).json(pageOf(matching, query, '/benchmarks/{benchmarkId}/tasks'));
   }),
 
   http.get('/benchmarks/{benchmarkId}/tasks/{taskId}', ({ params, response }) => {
@@ -114,7 +115,7 @@ export const publicHandlers = [
       return response(403).json({ message: `${directory} is not published`, reason: withheld });
     }
     await delay(60);
-    return response(200).json(pageOf(entries, query, DEFAULT_ENTRY_PAGE_SIZE));
+    return response(200).json(pageOf(entries, query, '/benchmarks/{benchmarkId}/tasks/{taskId}/files'));
   }),
 
   http.get('/benchmarks/{benchmarkId}/tasks/{taskId}/file', async ({ params, query, response }) => {
@@ -162,33 +163,31 @@ export const publicHandlers = [
 
   http.get('/runs/{runId}', async ({ params, request, response }) => {
     const locale = localeOf(request);
-    const detail = await runDetailOf(params.runId, locale);
+    const detail = publishesRun(params.runId) ? await runDetailOf(params.runId, locale) : undefined;
     await delay(100);
-    return detail ? response(200).json(detail, writtenIn(locale)) : response(404).json({ message: `no run ${params.runId}` });
+    return detail ? response(200).json(detail, writtenIn(locale)) : response(404).json({ message: `no published run ${params.runId}` });
   }),
 
   http.get('/runs/{runId}/trajectory', async ({ params, response }) => {
-    const trajectory = await trajectoryOf(params.runId);
+    const trajectory = publishesRun(params.runId) ? await trajectoryOf(params.runId) : undefined;
     await delay(140);
-    return trajectory ? response(200).json(trajectory) : response(404).json({ message: `no run ${params.runId}` });
+    return trajectory ? response(200).json(trajectory) : response(404).json({ message: `no published run ${params.runId}` });
   }),
 
   http.get('/runs/{runId}/trajectory/steps', async ({ params, query, response }) => {
-    const trajectory = await trajectoryOf(params.runId);
+    const trajectory = publishesRun(params.runId) ? await trajectoryOf(params.runId) : undefined;
     if (!trajectory) {
-      return response(404).json({ message: `no run ${params.runId}` });
+      return response(404).json({ message: `no published run ${params.runId}` });
     }
     const { steps, ...header } = trajectory;
     await delay(80);
-    return response(200).json({ ...header, ...pageOf(steps, query, DEFAULT_TRAJECTORY_PAGE_SIZE) });
+    return response(200).json({ ...header, ...pageOf(steps, query, '/runs/{runId}/trajectory/steps') });
   }),
 
   http.get('/models/{modelId}', ({ params, request, response }) => {
-    if (!hasModel(params.modelId)) {
-      return response(404).json({ message: `no model ${params.modelId}` });
-    }
     const locale = localeOf(request);
-    return response(200).json(modelProfile(params.modelId, locale), writtenIn(locale));
+    const profile = modelProfile(params.modelId, locale);
+    return profile ? response(200).json(profile, writtenIn(locale)) : response(404).json({ message: `no published model ${params.modelId}` });
   }),
 ];
 

@@ -1,5 +1,6 @@
 import type { MDXComponents, MDXContent } from 'mdx/types';
-import { About, Callout, Citation, DocumentLink, Fact, Facts, Faq, Flow, Question, Sample, Step, Version, Versions } from './blocks';
+import { Citation } from '../components/citation/Citation';
+import { About, Callout, DocumentLink, Fact, Facts, Faq, Flow, Question, Sample, Step, Version, Versions } from './blocks';
 import { DOCUMENTS } from './library';
 import styles from './blocks.module.css';
 

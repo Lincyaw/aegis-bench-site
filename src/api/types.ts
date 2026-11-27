@@ -45,7 +45,9 @@ export type Trajectory = Schemas['ATIF.Trajectory'];
 export type TrajectoryStep = Schemas['ATIF.Step'];
 export type TrajectoryPage = Schemas['TrajectoryPage'];
 
+export type Abilities = Schemas['Console.Abilities'];
 export type ConsoleUser = Schemas['Console.ConsoleUser'];
+export type DemoHint = Schemas['Console.DemoHint'];
 export type SessionState = Schemas['Console.SessionState'];
 export type SignInRequest = Schemas['Console.SignInRequest'];
 export type ConsoleBenchmark = Schemas['Console.ConsoleBenchmark'];
@@ -257,3 +259,4 @@ export type RunFile = Schemas['Data.RunFile'];
 export type HuntRecord = Schemas['Data.HuntRecord'];
 export type TrialRecord = Schemas['Data.TrialRecord'];
 export type PublishedRelease = Schemas['Data.PublishedRelease'];
+export type ReportDraftRecord = Schemas['Data.ReportDraftRecord'];

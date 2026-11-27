@@ -6,14 +6,12 @@ import { useTaskCheckResults, useTaskResults } from '../../../api/consoleClient'
 import { combinationKey } from '../../../api/constraints';
 import type { CombinationScope, ConsoleTaskDetail } from '../../../api/types';
 import { EntrantRunsRow, ValidationRow } from '../../../components/task/TaskRuns';
-import { LocaleLink } from '../../../i18n/LocaleRouting';
 import { searchOf } from '../../../routes/address';
 import { consoleRunsPath } from '../../../routes/consoleRuns';
 import { TASK_PAGE_PARAMS, TASK_RUN_VIEWS, type TaskPageView } from '../../../routes/consoleTasks';
 import { HintedHeading } from '../../../ui/content';
 import content from '../../../ui/content.module.css';
-import { SegmentedControl } from '../../../ui/controls';
-import controls from '../../../ui/controls.module.css';
+import { SegmentedControl, TextLink } from '../../../ui/controls';
 import { InfoHint } from '../../../ui/hint';
 import table from '../../../ui/table.module.css';
 import styles from './TaskDetailPage.module.css';
@@ -32,9 +30,9 @@ export function TaskRunsTab({ task, view }: { task: ConsoleTaskDetail; view: Tas
         />
       </div>
       {view.view === 'entrants' ? <EntrantRuns task={task} scope={view} /> : <CheckMatrix task={task} scope={view} />}
-      <LocaleLink className={clsx(controls.textLink, 't-small')} to={consoleRunsPath(task.benchmark.id, { task: task.id, model: view.model, harness: view.harness })}>
+      <TextLink className="t-small" to={consoleRunsPath(task.benchmark.id, { task: task.id, model: view.model, harness: view.harness })}>
         {t('console.task.allRuns')}
-      </LocaleLink>
+      </TextLink>
     </div>
   );
 }
@@ -87,9 +85,9 @@ export function CheckMatrix({ task, scope }: { task: ConsoleTaskDetail; scope: C
             <span role="rowheader" className={styles.matrixCheck}><span className="t-mono c-faint">{check.id}</span><span className="t-small">{check.title}</span></span>
             {results.entrants.map(({ model, harness }, index) => {
               // A check's counts follow the entrants' order, as the API lists them.
-              const { passed, counted } = check.byEntrant[index];
+              const { passed, counted, passRate } = check.byEntrant[index];
               return (
-                <span key={combinationKey(model.id, harness.id)} role="cell" className={clsx(styles.cell, 't-micro')} style={{ '--share': counted === 0 ? 0 : (counted - passed) / counted } as CSSProperties}>
+                <span key={combinationKey(model.id, harness.id)} role="cell" className={clsx(styles.cell, 't-micro')} style={{ '--pass-rate': passRate } as CSSProperties}>
                   {passed} / {counted}
                 </span>
               );

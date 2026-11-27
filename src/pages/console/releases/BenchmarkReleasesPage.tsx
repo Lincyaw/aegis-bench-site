@@ -3,7 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import { useBenchmarkReleases, useConsoleBenchmark, useConsoleUser, useCreateDraft } from '../../../api/consoleClient';
 import { ReleaseChangesText, ReleaseStatusTag, ReleaseVersion } from '../../../components/release/ReleaseLabels';
-import { ChangeFailure } from '../../../components/shell/ChangeFailure';
+import { NO_VALUE } from '../../../components/result/presentation';
+import { ChangeFailure } from '../../../components/change/ChangeFailure';
 import { ConsoleHeader } from '../../../components/shell/ConsoleHeader';
 import { LocaleLink } from '../../../i18n/LocaleRouting';
 import { useLocale, useLocalizedNavigate } from '../../../i18n/localeContext';
@@ -12,7 +13,6 @@ import { consoleBenchmarkPath } from '../../../routes/console';
 import { releasePath } from '../../../routes/consoleReleases';
 import { Button, ButtonLink } from '../../../ui/controls';
 import table from '../../../ui/table.module.css';
-import { mayEdit } from '../roles';
 import styles from './ReleasePages.module.css';
 
 /** A benchmark's releases, its draft first, with the way to start or continue the next one. */
@@ -24,7 +24,7 @@ export function BenchmarkReleasesPage() {
   const benchmark = useConsoleBenchmark(benchmarkId);
   const releases = useBenchmarkReleases(benchmark.id);
   const createDraft = useCreateDraft(benchmark.id);
-  const editing = mayEdit(useConsoleUser().role);
+  const editing = useConsoleUser().can.edit;
   const draft = releases.find(release => release.status === 'draft');
   return (
     <div className={styles.page} data-half={benchmark.stage.half}>
@@ -51,7 +51,7 @@ export function BenchmarkReleasesPage() {
             <div key={release.id} className={clsx(table.row, table.link)} role="row">
               <span role="cell"><LocaleLink className={table.primary} to={to}><ReleaseVersion release={release} /></LocaleLink></span>
               <span role="cell"><ReleaseStatusTag status={release.status} /></span>
-              <span role="cell" className="t-small">{release.note ?? '—'}</span>
+              <span role="cell" className="t-small">{release.note ?? NO_VALUE}</span>
               <span role="cell"><ReleaseChangesText changes={release.changes} /></span>
               <span role="cell" className="t-mono c-muted">{release.author}</span>
               <span role="cell" className="t-mono c-faint">{dateTimeOf(locale, release.updatedAt)}</span>

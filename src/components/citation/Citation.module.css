@@ -1,0 +1,2 @@
+.citation { display: grid; gap: var(--space-4); justify-items: start; margin-bottom: var(--space-10); }
+.citation pre { width: 100%; margin: 0; padding: var(--space-5); border: var(--rule-hairline); border-radius: var(--radius-md); background: var(--bg-panel); overflow-x: auto; font: var(--type-code); color: var(--text-muted); }

@@ -8,20 +8,19 @@ import {
   LIST_SEPARATOR, MAX_PANEL_TRAJECTORIES, closePanel, showInPanel, toggleComparedRun, toggleExpanded, toggleLabel, togglePanelRun, type ComparisonView,
 } from '../../routes/comparison';
 import { Loading } from '../../ui/content';
-import { CloseIcon, FileIcon, IconButton, LinkArrowIcon } from '../../ui/controls';
-import controls from '../../ui/controls.module.css';
+import { IconButton, SmallPill, TextLink } from '../../ui/controls';
 import { Hint, InfoHint } from '../../ui/hint';
 import hint from '../../ui/hint.module.css';
+import { CloseIcon, FileIcon, LinkArrowIcon } from '../../ui/icons';
 import { CombinationLabel, VendorBadge } from '../model/ModelBadge';
 import { FailureClassTag } from '../result/FailureClassTag';
-import { formatCost } from '../result/presentation';
+import { combinationName, formatCost } from '../result/presentation';
 import { HuggingFaceBoundary } from '../run/HuggingFace';
 import { OutcomeBadge, OutcomeDot } from '../run/Outcome';
 import { PanelTrajectories } from '../trajectory/AnnotatedTrajectory';
 import { COMPARISON_BLOCKS } from './blocks';
 import { numeralAt, type ComparisonSource } from './comparison';
 import { BlockHead, Cell, ComparisonTable } from './ComparisonTable';
-import results from './ResultBlocks.module.css';
 import styles from './TaskComparison.module.css';
 
 /*
@@ -39,11 +38,11 @@ export function TaskInput({ instruction, reportSchema }: { instruction: string; 
       <header className={styles.head}>
         <h2 className="t-label">{t('compare.input')}</h2>
         <InfoHint label={t('ui.about', { subject: t('compare.input') })}>{t('compare.inputHint')}</InfoHint>
-        <button type="button" className={clsx(controls.textLink, styles.whole, 't-micro')} aria-expanded={whole} onClick={() => setWhole(!whole)}>
+        <TextLink className={clsx(styles.whole, 't-micro')} expanded={whole} onClick={() => setWhole(!whole)}>
           {whole ? t('compare.collapseInput') : t('compare.expandInput')}
-        </button>
+        </TextLink>
       </header>
-      <p className={clsx(styles.instruction, !whole && results.clamped)}>{instruction}</p>
+      <p className={clsx(styles.instruction, !whole && styles.clamped)}>{instruction}</p>
       {whole && reportSchema && <pre className={styles.schema}>{reportSchema}</pre>}
     </section>
   );
@@ -84,8 +83,8 @@ export function RunChooser({ entrants, view, onView }: { entrants: CombinationRu
   const { t } = useTranslation();
   return (
     <Popover.Root>
-      <Popover.Trigger className={clsx(controls.pill, controls.small, styles.choose, 'loop-edge')}>
-        {t('compare.pick')}<span className="t-numeric c-muted">{view.compared.length} / {MAX_COMPARED_RUNS}</span>
+      <Popover.Trigger asChild>
+        <SmallPill className={styles.choose}>{t('compare.pick')}<span className="t-numeric c-muted">{view.compared.length} / {MAX_COMPARED_RUNS}</span></SmallPill>
       </Popover.Trigger>
       <Popover.Portal>
         <Popover.Content className={clsx(hint.popover, styles.chooser)} align="start" sideOffset={8} collisionPadding={12}>
@@ -126,13 +125,12 @@ export function RunPicker({ entrants, view, onView }: { entrants: CombinationRun
             {runs.map(run => {
               const chosen = view.compared.includes(run.id);
               return (
-                <button
-                  key={run.id} type="button" className={clsx(controls.pill, controls.small, 'loop-edge')} aria-pressed={chosen}
-                  disabled={!chosen && view.compared.length >= MAX_COMPARED_RUNS} onClick={() => onView(toggleComparedRun(view, run.id))}
+                <SmallPill
+                  key={run.id} pressed={chosen} disabled={!chosen && view.compared.length >= MAX_COMPARED_RUNS} onClick={() => onView(toggleComparedRun(view, run.id))}
                   aria-label={t('compare.runOf', { attempt: run.attempt, outcome: t(`runs.outcome.${run.outcome}`) })}
                 >
                   <OutcomeDot outcome={run.outcome} />{run.attempt}
-                </button>
+                </SmallPill>
               );
             })}
           </span>
@@ -204,10 +202,8 @@ export function TrajectoryPanel({ comparison, shown, source, view, onView }: {
         <h2 className="t-label">{t('compare.blocks.trajectory.title')}</h2>
         <span className={styles.panelRuns} role="group" aria-label={t('compare.panel.runs', { max: MAX_PANEL_TRAJECTORIES })}>
           {comparison.runs.map((run, index) => (
-            <Hint key={run.id} content={`${run.model.name} · ${run.harness.name} · ${t('compare.attempt', { attempt: run.attempt })}`}>
-              <button type="button" className={clsx(controls.pill, controls.small, 'loop-edge')} aria-pressed={view.panel.includes(run.id)} onClick={() => onView(togglePanelRun(view, run.id))}>
-                {numeralAt(index)}
-              </button>
+            <Hint key={run.id} content={`${combinationName(run.model, run.harness)} · ${t('compare.attempt', { attempt: run.attempt })}`}>
+              <SmallPill pressed={view.panel.includes(run.id)} onClick={() => onView(togglePanelRun(view, run.id))}>{numeralAt(index)}</SmallPill>
             </Hint>
           ))}
         </span>

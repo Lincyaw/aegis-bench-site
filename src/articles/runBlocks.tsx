@@ -3,7 +3,7 @@ import { Suspense, type ReactNode } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { useTranslation } from 'react-i18next';
 import { useBenchmarks, useRun } from '../api/client';
-import { HuggingFaceUnreachableError } from '../api/errors';
+import { ApiError, HuggingFaceUnreachableError } from '../api/errors';
 import type { RunDetail } from '../api/types';
 import { ModelLabel } from '../components/model/ModelBadge';
 import { formatCost } from '../components/result/presentation';
@@ -44,9 +44,15 @@ export function RunBlock({ run, children }: { run: string; children: (detail: Ru
     : (
       <ErrorBoundary
         resetKeys={[run]}
-        fallbackRender={({ error }) => (error instanceof HuggingFaceUnreachableError
-          ? <span className="t-small c-faint">{t('reports.run.unreachable')} <a className="c-main" href={error.huggingFaceUrl} target="_blank" rel="noreferrer">{t('ui.openOnHuggingFace')}</a></span>
-          : <span className="t-small c-bad">{t('reports.run.missing', { run })}</span>)}
+        fallbackRender={({ error }) => {
+          if (error instanceof HuggingFaceUnreachableError) {
+            return <span className="t-small c-faint">{t('reports.run.unreachable')} <a className="c-main" href={error.huggingFaceUrl} target="_blank" rel="noreferrer">{t('ui.openOnHuggingFace')}</a></span>;
+          }
+          if (error instanceof ApiError && error.status === 404) {
+            return <span className="t-small c-bad">{t('reports.run.missing', { run })}</span>;
+          }
+          throw error;
+        }}
       >
         <Suspense fallback={<span className="t-small c-faint">{t('reports.run.loading')}</span>}><RunOf run={run}>{children}</RunOf></Suspense>
       </ErrorBoundary>

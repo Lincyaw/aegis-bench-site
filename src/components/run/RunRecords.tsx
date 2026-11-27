@@ -3,9 +3,9 @@ import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { combinationKey } from '../../api/constraints';
 import type { Combination, RunRef, TaskPage } from '../../api/types';
-import { MoreButton } from '../../ui/controls';
-import controls from '../../ui/controls.module.css';
+import { MoreButton, SmallPill } from '../../ui/controls';
 import { CombinationLabel } from '../model/ModelBadge';
+import { formatRate } from '../result/presentation';
 import { OutcomeDot } from './Outcome';
 import styles from './RunRecords.module.css';
 
@@ -33,7 +33,7 @@ export function PaneMore({ label, loading, onClick }: { label: string; loading: 
 /** A pass rate as the run records write it, or that no run counts when there is none. */
 export function PassRateText({ rate }: { rate: number | undefined }) {
   const { t } = useTranslation();
-  return rate === undefined ? t('runs.noCountedRun') : t('runs.passRate', { rate: Math.round(rate * 100) });
+  return rate === undefined ? t('runs.noCountedRun') : t('runs.passRate', { rate: formatRate(rate) });
 }
 
 export function TaskColumn({ tasks, currentTask, onTask, loadingMore, onMore }: { tasks: TaskPage; currentTask: string | undefined; onTask: (task: string) => void; loadingMore: boolean; onMore: () => void }) {
@@ -64,16 +64,9 @@ export function RunChips({ runs, runId, labelOf, onRun }: { runs: RunRef[]; runI
   return (
     <span className={styles.chips}>
       {runs.map(run => (
-        <button
-          key={run.id}
-          type="button"
-          className={clsx(controls.pill, controls.small, styles.chip, 'loop-edge')}
-          onClick={() => onRun(run.id)}
-          aria-label={labelOf(run)}
-          aria-current={run.id === runId ? 'true' : undefined}
-        >
+        <SmallPill key={run.id} className={styles.chip} onClick={() => onRun(run.id)} aria-label={labelOf(run)} current={run.id === runId}>
           <OutcomeDot outcome={run.outcome} />{run.attempt}
-        </button>
+        </SmallPill>
       ))}
     </span>
   );

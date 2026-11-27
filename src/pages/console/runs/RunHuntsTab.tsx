@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { useRunHunts } from '../../../api/consoleClient';
 import { HuntFinding } from '../../../components/hunt/Hunt';
-import styles from '../analysis/AnalysisPages.module.css';
+import styles from './RunDetailPage.module.css';
 
 /** What every hunt found in one run: the reader's verdict and reason, and the steps the probes marked, which open in the trajectory. */
 export function RunHuntsTab({ runId, onStep }: { runId: string; onStep: (step: number) => void }) {

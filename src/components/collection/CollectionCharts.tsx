@@ -5,9 +5,8 @@ import type { CollectionModelResult } from '../../api/types';
 import { useLocale } from '../../i18n/localeContext';
 import { groupedNumber } from '../../i18n/locales';
 import { VendorBadge } from '../model/ModelBadge';
-import { FailureLegend } from '../result/FailureBar';
-import failureStyles from '../result/FailureBar.module.css';
-import { FAILURE_KINDS, axisSteps, failureCountOf, formatCost, formatRate } from '../result/presentation';
+import { FailureLegend, FailureSegment } from '../result/FailureBar';
+import { FAILURE_KINDS, NO_VALUE, axisSteps, failureCountOf, formatCost, formatRate } from '../result/presentation';
 import styles from './CollectionCharts.module.css';
 
 /*
@@ -22,13 +21,14 @@ export function RankingChart({ models }: { models: CollectionModelResult[] }) {
   return (
     <ol className={styles.rows}>
       {models.map(({ model, result }) => {
-        const rate = result.passRate ?? 0;
-        const label = t('console.collection.rankingBar', { model: model.name, rate: formatRate(rate), counted: groupedNumber(locale, result.passed + result.failed) });
+        // A model none of whose runs counted has no rate, and so no bar.
+        const { passRate } = result;
+        const label = passRate === undefined ? model.name : t('console.collection.rankingBar', { model: model.name, rate: formatRate(passRate), counted: groupedNumber(locale, result.passed + result.failed) });
         return (
           <li key={model.id} className={styles.row} title={label} aria-label={label}>
             <span className={styles.name}><VendorBadge model={model} /><span className="t-small">{model.name}</span></span>
-            <span className={styles.track}><span className={styles.bar} style={{ '--share': rate } as CSSProperties} /></span>
-            <span className="t-numeric">{formatRate(rate)}</span>
+            <span className={styles.track}>{passRate !== undefined && <span className={styles.bar} style={{ '--share': passRate } as CSSProperties} />}</span>
+            <span className="t-numeric">{passRate === undefined ? NO_VALUE : formatRate(passRate)}</span>
           </li>
         );
       })}
@@ -42,14 +42,14 @@ const PLOT = { width: 640, height: 340, left: 44, right: 132, top: 16, bottom: 4
 /** Mean cost across, pass rate up; the models on the frontier are filled and joined. */
 export function CostFrontierChart({ models }: { models: CollectionModelResult[] }) {
   const { t } = useTranslation();
-  const plotted = models.filter(entry => entry.result.passRate !== undefined && entry.result.meanCostUsd !== undefined);
-  const costSteps = axisSteps(Math.max(...plotted.map(entry => entry.result.meanCostUsd ?? 0)) * 1.05, 4);
+  const plotted = models.flatMap(entry => (entry.result.passRate !== undefined && entry.result.meanCostUsd !== undefined ? [{ entry, rate: entry.result.passRate, cost: entry.result.meanCostUsd }] : []));
+  const costSteps = axisSteps(Math.max(...plotted.map(point => point.cost)) * 1.05, 4);
   const maxCost = costSteps.at(-1) ?? 1;
   const innerWidth = PLOT.width - PLOT.left - PLOT.right;
   const innerHeight = PLOT.height - PLOT.top - PLOT.bottom;
   const xOf = (cost: number) => PLOT.left + (cost / maxCost) * innerWidth;
   const yOf = (rate: number) => PLOT.top + (1 - rate) * innerHeight;
-  const points = plotted.map(entry => ({ entry, x: xOf(entry.result.meanCostUsd ?? 0), y: yOf(entry.result.passRate ?? 0) }));
+  const points = plotted.map(({ entry, rate, cost }) => ({ entry, rate, cost, x: xOf(cost), y: yOf(rate) }));
   const frontier = points.filter(point => point.entry.onCostFrontier).sort((a, b) => a.x - b.x);
   // Names sit to the right of their points; one that would overlap the name above it moves down.
   const labels = points.toSorted((a, b) => a.y - b.y).reduce<{ id: string; x: number; y: number }[]>((placed, point) => {
@@ -67,14 +67,14 @@ export function CostFrontierChart({ models }: { models: CollectionModelResult[] 
       {costSteps.map(cost => <text key={cost} className={styles.tick} x={xOf(cost)} y={PLOT.height - PLOT.bottom + 18} textAnchor="middle">{formatCost(cost)}</text>)}
       <text className={styles.axis} x={PLOT.left + innerWidth / 2} y={PLOT.height - 6} textAnchor="middle">{t('console.collection.axisCost')}</text>
       <polyline className={styles.frontier} points={frontier.map(point => `${point.x},${point.y}`).join(' ')} />
-      {points.map(({ entry, x, y }) => (
+      {points.map(({ entry, rate, cost, x, y }) => (
         <g key={entry.model.id}>
-          <title>{t('console.collection.costPoint', { model: entry.model.name, cost: formatCost(entry.result.meanCostUsd ?? 0), rate: formatRate(entry.result.passRate ?? 0) })}</title>
+          <title>{t('console.collection.costPoint', { model: entry.model.name, cost: formatCost(cost), rate: formatRate(rate) })}</title>
           <circle className={styles.hit} cx={x} cy={y} r={12} />
           <circle className={clsx(styles.point, entry.onCostFrontier && styles.onFrontier)} cx={x} cy={y} r={5} />
         </g>
       ))}
-      {labels.map(label => <text key={label.id} className={styles.label} x={label.x} y={label.y}>{plotted.find(entry => entry.model.id === label.id)?.model.name}</text>)}
+      {labels.map(label => <text key={label.id} className={styles.label} x={label.x} y={label.y}>{points.find(point => point.entry.model.id === label.id)?.entry.model.name}</text>)}
     </svg>
   );
 }
@@ -94,7 +94,7 @@ export function FailureChart({ models }: { models: CollectionModelResult[] }) {
               <span className={styles.stack} style={{ '--share': result.failed / most } as CSSProperties}>
                 {FAILURE_KINDS.filter(kind => failureCountOf(result, kind) > 0).map(kind => {
                   const label = `${model.name} · ${t(`console.failureClass.${kind}`)} ${groupedNumber(locale, failureCountOf(result, kind))}`;
-                  return <span key={kind} className={clsx(failureStyles.kind, styles.segment)} data-kind={kind} style={{ flexGrow: failureCountOf(result, kind) }} title={label} aria-label={label} />;
+                  return <FailureSegment key={kind} kind={kind} count={failureCountOf(result, kind)} label={label} className={styles.segment} />;
                 })}
               </span>
             </span>

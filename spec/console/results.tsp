@@ -81,6 +81,11 @@ enum PendingKind {
 model PendingWork {
   kind: PendingKind;
   count: int32;
+
+  /** The run list's filters that list these runs: the outcome and the review they are kept to, when one is */
+  outcome?: RunOutcome;
+
+  review?: ReviewFilter;
 }
 
 /** A benchmark's records at a glance. */
@@ -102,6 +107,10 @@ model BenchmarkOverview {
 @useAuth(SessionCookie)
 interface ConsoleBenchmarks {
   @get list(...LanguageHeader): Localized<ConsoleBenchmark[]> | SignInRequiredError;
+
+  @get
+  @route("/{benchmarkId}")
+  read(@path benchmarkId: string, ...LanguageHeader): Localized<ConsoleBenchmark> | SignInRequiredError | NotFoundError;
 
   @get
   @route("/{benchmarkId}/overview")

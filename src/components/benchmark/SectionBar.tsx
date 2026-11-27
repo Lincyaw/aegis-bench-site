@@ -1,14 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { navHeight, readingLine } from '../../ui/media';
-import { SectionLinks, type PageSection } from '../../ui/navigation';
+import { SectionLinks, type PageSection, type PageSections } from '../../ui/navigation';
 import styles from './SectionBar.module.css';
-
-/** The section links of the page being read and the one in view. */
-export interface PageSections {
-  sections: PageSection[];
-  current: string;
-}
 
 /**
  * The document's sections under the head, with the one being read marked. Once the bar scrolls under the nav, the

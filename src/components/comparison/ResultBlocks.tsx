@@ -2,10 +2,9 @@ import { clsx } from 'clsx';
 import { Fragment, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ComparedCheck, RunCheckVerdict, RunFileChange, TaskComparison } from '../../api/types';
-import { ToggleChip } from '../../ui/controls';
-import controls from '../../ui/controls.module.css';
+import { TextLink, ToggleChip } from '../../ui/controls';
+import { ChangeSize, Diff } from '../run/Diff';
 import { OutcomeText } from '../run/Outcome';
-import { Diff } from '../run/RunDetail';
 import { numeralOf, rowKeyOf, type BlockProps } from './comparison';
 import { BlockHead, Cell, ExpansionRow, ItemRow } from './ComparisonTable';
 import styles from './ResultBlocks.module.css';
@@ -15,10 +14,6 @@ import styles from './ResultBlocks.module.css';
  * check, and its final reply. Each shows its sizes and verdicts first and opens in place to the rest.
  */
 
-export function ChangeSize({ additions, deletions }: { additions: number; deletions: number }) {
-  return <span className="t-numeric"><span className="c-ok">+{additions}</span> <span className="c-bad">−{deletions}</span></span>;
-}
-
 /** The files the runs changed, as a pull request lists them: each file's size by run, opening in place to every run's diff. */
 export function FileChanges({ comparison, expanded, onExpand }: BlockProps) {
   const { t } = useTranslation();
@@ -26,9 +21,9 @@ export function FileChanges({ comparison, expanded, onExpand }: BlockProps) {
   const keys = files.map(file => rowKeyOf('file', file.path));
   const allOpen = keys.length > 0 && keys.every(key => expanded.includes(key));
   const toggleAll = files.length > 1 && (
-    <button type="button" className={clsx(controls.textLink, 't-micro')} aria-expanded={allOpen} onClick={() => onExpand(keys)}>
+    <TextLink className="t-micro" expanded={allOpen} onClick={() => onExpand(keys)}>
       {allOpen ? t('compare.collapseAll') : t('compare.expandAll')}
-    </button>
+    </TextLink>
   );
   return (
     <>
@@ -47,7 +42,7 @@ export function FileChanges({ comparison, expanded, onExpand }: BlockProps) {
         const open = expanded.includes(key);
         return (
           <Fragment key={file.path}>
-            <ItemRow label={<span className={styles.path}>{file.path}</span>} differs={file.differs} expanded={open} onToggle={() => onExpand([key])}>
+            <ItemRow label={<span className={styles.path}>{file.path}</span>} differs={file.differs === true} expanded={open} onToggle={() => onExpand([key])}>
               {runs.map(run => {
                 const change = file.changes.find(candidate => candidate.runId === run.id);
                 return change ? (
@@ -176,9 +171,9 @@ export function Reply({ comparison, expanded, onExpand }: BlockProps) {
   const key = rowKeyOf('reply');
   const open = expanded.includes(key);
   const toggle = (
-    <button type="button" className={clsx(controls.textLink, 't-micro')} aria-expanded={open} onClick={() => onExpand([key])}>
+    <TextLink className="t-micro" expanded={open} onClick={() => onExpand([key])}>
       {open ? t('compare.collapseReply') : t('compare.expandReply')}
-    </button>
+    </TextLink>
   );
   return (
     <BlockHead title={t('compare.blocks.reply.title')} hint={t('compare.blocks.reply.hint')} aside={toggle}>

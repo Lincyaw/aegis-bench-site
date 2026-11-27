@@ -33,9 +33,10 @@ export function LocaleRoot({ locale }: { locale: Locale }) {
   );
 }
 
-/** A link to a site path, such as /benchmarks, in the current locale. */
-export function LocaleLink({ to, ...props }: Omit<ComponentProps<typeof Link>, 'to'> & { to: string }) {
-  return <Link to={localizedPath(useLocale(), to)} {...props} />;
+/** A link to a site path, such as /benchmarks, in the current locale, or in the one `locale` names. */
+export function LocaleLink({ to, locale, ...props }: Omit<ComponentProps<typeof Link>, 'to'> & { to: string; locale?: Locale }) {
+  const current = useLocale();
+  return <Link to={localizedPath(locale ?? current, to)} {...props} />;
 }
 
 export function LocaleNavLink({ to, ...props }: Omit<ComponentProps<typeof NavLink>, 'to'> & { to: string }) {

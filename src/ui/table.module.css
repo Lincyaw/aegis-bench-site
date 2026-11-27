@@ -28,7 +28,7 @@
 .primary::after { content: ""; position: absolute; inset: 0; z-index: 1; }
 /* A mark that explains itself on hover stays above the stretch too, so its title still shows. */
 .link :is(a, button):not(.primary), .link [title] { position: relative; z-index: 2; }
-.arrow { display: inline-block; color: var(--text-faint); transition: transform var(--duration-base), color var(--duration-base); }
+.arrow { display: inline-flex; align-items: center; gap: var(--space-1); color: var(--text-faint); transition: transform var(--duration-base), color var(--duration-base); }
 .link:hover .arrow { color: var(--text-main); transform: translateX(var(--space-1)); }
 
 @media (max-width: 760px) {

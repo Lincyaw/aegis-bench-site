@@ -3,13 +3,11 @@ import { useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { localeValues } from '../../api/schema';
 import type { Locale, ReportDraft, ReportSources } from '../../api/types';
-import { reportFileOf } from '../../articles/library';
 import { useLocale } from '../../i18n/localeContext';
 import { dateTimeOf } from '../../i18n/locales';
 import { HintedHeading, Tag } from '../../ui/content';
 import content from '../../ui/content.module.css';
-import { Button, SegmentedControl } from '../../ui/controls';
-import controls from '../../ui/controls.module.css';
+import { Button, ButtonLink, SegmentedControl } from '../../ui/controls';
 import styles from './ReportEditor.module.css';
 
 /** How the editor lays out a document: its source beside its preview, or either alone. */
@@ -28,14 +26,14 @@ const INSERTS = [
  * A document in one language at a time, its source beside its preview or either alone, with blocks to insert while it
  * is editable. The page renders the preview of the language and format shown.
  */
-export function DocumentEditor({ slug, sources, editing, onChange, preview }: {
-  slug: string; sources: ReportSources; editing: boolean; onChange: (sources: ReportSources) => void; preview: (source: string, format: 'md' | 'mdx') => ReactNode;
+export function DocumentEditor({ fileOf, sources, editing, onChange, preview }: {
+  fileOf: (locale: Locale) => string; sources: ReportSources; editing: boolean; onChange: (sources: ReportSources) => void; preview: (source: string, format: 'md' | 'mdx') => ReactNode;
 }) {
   const { t } = useTranslation();
   const [language, setLanguage] = useState<Locale>(useLocale());
   const [view, setView] = useState<EditorView>('split');
   const source = useRef<HTMLTextAreaElement>(null);
-  const file = reportFileOf(slug, language);
+  const file = fileOf(language);
   const insert = (snippet: string) => {
     const area = source.current;
     if (!area) {
@@ -69,18 +67,18 @@ export function DocumentEditor({ slug, sources, editing, onChange, preview }: {
 }
 
 /** An approved draft's files, each to download and commit at the path it names. */
-export function ExportPanel({ report }: { report: ReportDraft }) {
+export function ExportPanel({ report, fileOf }: { report: ReportDraft; fileOf: (locale: Locale) => string }) {
   const { t } = useTranslation();
   return (
     <section className={clsx(content.panel, styles.action)}>
       <HintedHeading rank="h2" className="t-heading" title={t('console.report.export.title')} about={t('console.report.export.note')} />
       <ul className={styles.files}>
         {localeValues.map(locale => {
-          const file = reportFileOf(report.slug, locale).slice(1);
+          const file = fileOf(locale).slice(1);
           return (
             <li key={locale}>
               <span className="t-mono">{file}</span>
-              <a className={clsx(controls.pill, controls.medium, 'loop-edge')} href={`data:text/markdown;charset=utf-8,${encodeURIComponent(report.sources[locale])}`} download={file.split('/').at(-1)}>{t('console.report.export.download')}</a>
+              <ButtonLink variant="line" size="medium" href={`data:text/markdown;charset=utf-8,${encodeURIComponent(report.sources[locale])}`} download={file.split('/').at(-1) ?? file}>{t('console.report.export.download')}</ButtonLink>
             </li>
           );
         })}

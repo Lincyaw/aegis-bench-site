@@ -27,6 +27,35 @@ export default {
         };
       },
     },
+    'no-typed-symbols': {
+      meta: {
+        type: 'problem',
+        docs: { description: 'Arrows, crosses and the like are icons from src/ui/icons.tsx, never typed characters.' },
+        schema: [{ type: 'object', properties: { symbols: { type: 'string' } }, required: ['symbols'], additionalProperties: false }],
+      },
+      create(context) {
+        const [{ symbols }] = context.options;
+        const typed = new RegExp(`[${symbols}]`, 'u');
+        const report = node => context.report({ node, message: 'Draw arrows, crosses and the like with an icon from src/ui/icons.tsx: a typed character takes the font\'s shape and weight, not the site\'s 16px line icons, and moves with neither the text colour nor the hover.' });
+        return {
+          JSXText(node) {
+            if (typed.test(node.value)) {
+              report(node);
+            }
+          },
+          Literal(node) {
+            if (typeof node.value === 'string' && typed.test(node.value)) {
+              report(node);
+            }
+          },
+          TemplateElement(node) {
+            if (typed.test(node.value.cooked ?? '')) {
+              report(node);
+            }
+          },
+        };
+      },
+    },
     'english-comments': {
       meta: { type: 'suggestion', docs: { description: 'Comments are written in English; the texts readers see live in the catalogues.' } },
       create(context) {

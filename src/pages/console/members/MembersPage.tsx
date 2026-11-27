@@ -1,11 +1,11 @@
 import { clsx } from 'clsx';
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useChangeRole, useConsoleUser, useInviteMember, useMembers, useRemoveMember } from '../../../api/consoleClient';
+import { useChangeRole, useConsoleSession, useConsoleUser, useInviteMember, useMembers, useRemoveMember } from '../../../api/consoleClient';
 import { ACCOUNT_PATTERN } from '../../../api/constraints';
 import { consoleRoleValues } from '../../../api/schema';
 import type { Member, Role } from '../../../api/types';
-import { ChangeFailure } from '../../../components/shell/ChangeFailure';
+import { ChangeFailure } from '../../../components/change/ChangeFailure';
 import { ConsoleHeader } from '../../../components/shell/ConsoleHeader';
 import { useLocale } from '../../../i18n/localeContext';
 import { dateTimeOf } from '../../../i18n/locales';
@@ -13,8 +13,6 @@ import { HintedHeading } from '../../../ui/content';
 import content from '../../../ui/content.module.css';
 import { Button, Select, SubmitButton, TextField } from '../../../ui/controls';
 import table from '../../../ui/table.module.css';
-import { DEMO_PASSWORD } from '../demoAccounts';
-import { mayAdminister } from '../roles';
 import styles from './MembersPage.module.css';
 
 /** Who may sign in to the console and what each may change; administrators add members, change roles and remove them. */
@@ -22,7 +20,7 @@ export function MembersPage() {
   const { t } = useTranslation();
   const members = useMembers();
   const user = useConsoleUser();
-  const administering = mayAdminister(user.role);
+  const administering = user.can.administer;
   return (
     <div className={styles.page}>
       <ConsoleHeader title={t('console.members.title')} about={t('console.members.about')} />
@@ -79,6 +77,7 @@ export function MemberRow({ member, self, administering }: { member: Member; sel
 export function InviteForm() {
   const { t } = useTranslation();
   const invite = useInviteMember();
+  const { demo } = useConsoleSession();
   const [account, setAccount] = useState('');
   const [name, setName] = useState('');
   const [role, setRole] = useState<Role>('editor');
@@ -88,7 +87,7 @@ export function InviteForm() {
   };
   return (
     <form className={clsx(content.panel, styles.invite)} onSubmit={submit}>
-      <HintedHeading rank="h2" className="t-heading" title={t('console.members.invite.title')} about={t('console.members.invite.note', { password: DEMO_PASSWORD })} />
+      <HintedHeading rank="h2" className="t-heading" title={t('console.members.invite.title')} about={<><p>{t('console.members.invite.note')}</p>{demo && <p>{t('console.members.invite.demoNote', { password: demo.password })}</p>}</>} />
       <div className={styles.fields}>
         <TextField label={t('console.members.invite.account')} type="text" autoComplete="off" value={account} onChange={setAccount} pattern={{ regex: ACCOUNT_PATTERN, hint: t('console.signIn.accountHint') }} />
         <TextField label={t('console.members.invite.name')} type="text" autoComplete="off" value={name} onChange={setName} />

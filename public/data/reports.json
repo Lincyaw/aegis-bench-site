@@ -1,0 +1,44 @@
+[
+  {
+    "id": "report-1",
+    "slug": "claims-without-evidence",
+    "sources": {
+      "zh-CN": "---\ntitle: \"智能体为何声称修复成功却没有证据\"\ndate: \"2026-11-21\"\nsummary: \"两次失败的运行里，智能体在报告中声称已经修复，而它自己的最后一次测试说明并没有。\"\nmodels: [\"jia\", \"yi\"]\nbenchmarks: [\"bench-b\"]\n---\n\n<Callout>本文为设计演示中的示例报告，模型与数值均为占位内容。</Callout>\n\n## 现象\n\n模型甲在一道测试验证任务里提交了「全部测试通过」的报告，评分却判定失败。\n\n<Replay run=\"bench-b.task-033.jia-x.1\" />\n\n这次运行共 <RunNumber run=\"bench-b.task-033.jia-x.1\" field=\"steps\" /> 步，最后一次测试仍有两项失败。\n\n## 复核\n\n报告里的结论来自更早的一次测试；之后的修改让其中两项重新失败，模型没有再运行测试就提交了报告。\n",
+      "en": "---\ntitle: \"Why agents claim a fix their own tests contradict\"\ndate: \"2026-11-21\"\nsummary: \"In two failed runs the agent reported a fix that its own last test run did not support.\"\nmodels: [\"jia\", \"yi\"]\nbenchmarks: [\"bench-b\"]\n---\n\n<Callout>This is a sample report from the design demo; its models and figures are placeholders.</Callout>\n\n## What happened\n\nModel Alpha submitted a report saying every test passed, and grading failed the run.\n\n<Replay run=\"bench-b.task-033.jia-x.1\" />\n\nThe run took <RunNumber run=\"bench-b.task-033.jia-x.1\" field=\"steps\" /> steps, and its last test run still had two failures.\n\n## Review\n\nThe report's conclusion came from an earlier test run; later edits broke two tests again, and the model submitted without running them.\n"
+    },
+    "status": "inReview",
+    "author": "zhou.yu",
+    "updatedAt": "2026-11-22T09:30:00Z",
+    "submittedAt": "2026-11-22T09:30:00Z",
+    "approvalsRequired": 2,
+    "checked": [
+      "正文中的数字都能从运行复算",
+      "引用的运行都在当前发布的版本里",
+      "对外页面在桌面和手机上都预览过"
+    ],
+    "reviews": [
+      {
+        "reviewer": "chen.qi",
+        "verdict": "approve",
+        "comment": "两次运行的证据都核对过。",
+        "at": "2026-11-23T03:10:00Z"
+      }
+    ]
+  },
+  {
+    "id": "report-2",
+    "slug": "paging-off-by-one",
+    "sources": {
+      "zh-CN": "---\ntitle: \"回归测试为何漏掉分页越界\"\ndate: \"2026-11-24\"\nsummary: \"通过的运行里也有隐患：分页查询在最后一页越界，回归测试没有覆盖。\"\nbenchmarks: [\"bench-a\"]\n---\n\n## 现象\n\n<Replay run=\"bench-a.task-017.jia-x.1\" />\n",
+      "en": "---\ntitle: \"Why the regression tests missed an off-by-one page\"\ndate: \"2026-11-24\"\nsummary: \"Even a passing run can hide a fault: the last page of a paged query overruns, and no regression test covers it.\"\nbenchmarks: [\"bench-a\"]\n---\n\n## What happened\n\n<Replay run=\"bench-a.task-017.jia-x.1\" />\n"
+    },
+    "status": "draft",
+    "author": "lin.fang",
+    "updatedAt": "2026-11-24T07:45:00Z",
+    "approvalsRequired": 2,
+    "checked": [
+      "正文中的数字都能从运行复算"
+    ],
+    "reviews": []
+  }
+]

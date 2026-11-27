@@ -3,6 +3,7 @@ import type { BenchmarkSummary } from '../../api/types';
 import { LocaleLink } from '../../i18n/LocaleRouting';
 import { benchmarkPath } from '../../routes/site';
 import { Tag } from '../../ui/content';
+import { GoArrowIcon } from '../../ui/icons';
 import { ModelLabel } from '../model/ModelBadge';
 import { formatScore } from '../result/presentation';
 import styles from './BenchmarkList.module.css';
@@ -28,7 +29,7 @@ export function BenchmarkRow({ benchmark }: { benchmark: BenchmarkSummary }) {
           ))}
         </ol>
       </div>
-      <span className={styles.arrow} aria-hidden="true">→</span>
+      <span className={styles.arrow}><GoArrowIcon /></span>
     </LocaleLink>
   );
 }

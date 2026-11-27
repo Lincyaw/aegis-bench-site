@@ -1,11 +1,10 @@
 import { clsx } from 'clsx';
-import { useRef, type ComponentProps, type ReactNode } from 'react';
+import type { ComponentProps, ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LocaleLink } from '../i18n/LocaleRouting';
-import { CopyButton } from '../ui/controls';
 import { Tag } from '../ui/content';
 import { InfoHint } from '../ui/hint';
-import { CITATION_ANCHOR } from './library';
+import { MinusIcon, PlusIcon } from '../ui/icons';
 import content from '../ui/content.module.css';
 import styles from './blocks.module.css';
 
@@ -60,25 +59,7 @@ export function Faq({ children }: { children: ReactNode }) {
 }
 
 export function Question({ title, open = false, children }: { title: string; open?: boolean; children: ReactNode }) {
-  return <details open={open}><summary>{title}</summary><div>{children}</div></details>;
-}
-
-/** A citation the reader can copy; its child is the BibTeX code block. */
-export function Citation({ children }: { children: ReactNode }) {
-  const { t } = useTranslation();
-  const entry = useRef<HTMLDivElement>(null);
-  const entryText = () => {
-    if (!entry.current) {
-      throw new Error('The citation is not rendered');
-    }
-    return entry.current.textContent;
-  };
-  return (
-    <div className={styles.citation} id={CITATION_ANCHOR}>
-      <div ref={entry}>{children}</div>
-      <CopyButton label={t('ui.copyBibtex')} text={entryText} />
-    </div>
-  );
+  return <details open={open}><summary>{title}<PlusIcon /><MinusIcon /></summary><div>{children}</div></details>;
 }
 
 /**

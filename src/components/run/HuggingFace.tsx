@@ -1,9 +1,8 @@
-import { clsx } from 'clsx';
 import type { ReactNode } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { useTranslation } from 'react-i18next';
 import { HuggingFaceUnreachableError } from '../../api/errors';
-import controls from '../../ui/controls.module.css';
+import { TextLink } from '../../ui/controls';
 import { InfoHint } from '../../ui/hint';
 import styles from './HuggingFace.module.css';
 
@@ -12,7 +11,7 @@ export function HuggingFaceLink({ about, url }: { about: string; url: string }) 
   const { t } = useTranslation();
   return (
     <p className={styles.link}>
-      <a className={clsx(controls.textLink, 't-micro')} href={url} target="_blank" rel="noreferrer">{t('ui.openOnHuggingFace')}</a>
+      <TextLink className="t-micro" href={url} external>{t('ui.openOnHuggingFace')}</TextLink>
       <InfoHint label={t('ui.about', { subject: t('ui.openOnHuggingFace') })}>{about}</InfoHint>
     </p>
   );

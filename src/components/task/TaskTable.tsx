@@ -11,7 +11,8 @@ import { Tag } from '../../ui/content';
 import { SearchField, Select } from '../../ui/controls';
 import { InfoHint } from '../../ui/hint';
 import table from '../../ui/table.module.css';
-import { EntrantDots, PassRate } from '../result/PassRate';
+import { PassRate } from '../result/PassRate';
+import { EntrantDots } from './EntrantDots';
 import styles from './TaskTable.module.css';
 
 export function TaskFilters({ query, tags, onChange }: { query: ConsoleTaskQuery; tags: TagCount[]; onChange: (next: Partial<ConsoleTaskQuery>) => void }) {

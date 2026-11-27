@@ -47,6 +47,15 @@ enum Role {
   viewer,
 }
 
+/** What the signed-in member may change, as their role allows; the pages offer only these. */
+model Abilities {
+  /** Draft, publish and restore releases, and draft, submit, review and discard reports */
+  edit: boolean;
+
+  /** Manage the members and the settings */
+  administer: boolean;
+}
+
 model ConsoleUser {
   account: AccountName;
 
@@ -57,11 +66,27 @@ model ConsoleUser {
   initials: string;
 
   role: Role;
+  can: Abilities;
+}
+
+/** An account the demo suggests signing in with. */
+model DemoAccount {
+  account: AccountName;
+  role: Role;
+}
+
+/** What a demo server tells whoever opens the console: the password every member signs in with, and an account of each role. */
+model DemoHint {
+  password: string;
+  accounts: DemoAccount[];
 }
 
 /** Who is signed in on this browser; no user when nobody is. */
 model SessionState {
   user?: ConsoleUser;
+
+  /** Only a demo server gives it, whoever is signed in */
+  demo?: DemoHint;
 }
 
 model SignInRequest {
@@ -72,8 +97,8 @@ model SignInRequest {
 @route("/console/session")
 interface ConsoleSession {
   /**
-   * Who is signed in. A demo server may sign a browser that has neither signed in nor out in as its demo member; the
-   * response then sets the session cookie.
+   * Who is signed in. A demo server may sign a browser that has neither signed in nor out in as its demo member, when
+   * that account is still a member; the response then sets the session cookie.
    */
   @get read(): SessionState;
 

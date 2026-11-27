@@ -4,6 +4,7 @@ import { useBenchmarks, useStages } from '../../../api/client';
 import { BenchmarkRow } from '../../../components/benchmark/BenchmarkList';
 import { BuildingDot, HalfDot, LifecycleMap } from '../../../components/lifecycle/LifecycleMap';
 import { HALF_LABELS, benchmarkStageLabels, benchmarksAt } from '../../../components/lifecycle/stages';
+import { stageName } from '../../../components/result/presentation';
 import { stageAnchor } from '../../../routes/site';
 import { Tag } from '../../../ui/content';
 import { InfoHint } from '../../../ui/hint';
@@ -46,7 +47,7 @@ export function BenchmarksPage() {
         ))}
         <p className={styles.building}>
           <Tag dashed>{t('benchmarks.building')}</Tag>
-          <span className="t-small c-muted">{building.map(stage => `${stage.id} ${stage.name}`).join(' · ')}</span>
+          <span className="t-small c-muted">{building.map(stageName).join(' · ')}</span>
           <InfoHint label={t('ui.about', { subject: t('benchmarks.building') })}>{t('benchmarks.comingSoon')}</InfoHint>
         </p>
       </div>

@@ -81,8 +81,7 @@ export const zh = {
   },
   lifecycle: {
     half: { dev: '研发', ops: '运维' },
-    listSeparator: '、',
-    stageWith: '{{stage}}：{{benchmarks}}',
+    stageWith: '{{stage}}：{{benchmarks, list(style: narrow)}}',
     stageBuilding: '{{stage}} · 评测基准建设中',
     benchmarksAt_one: '{{stage}} · {{count}} 个评测基准',
     benchmarksAt_other: '{{stage}} · {{count}} 个评测基准',
@@ -120,7 +119,7 @@ export const zh = {
     fullLeaderboard: '查看完整排行榜',
     recentRuns: '运行记录',
     allRuns: '查看全部运行记录',
-    replay: '回放 →',
+    replay: '回放',
     column: { model: '模型', task: '任务', process: '过程', result: '结果', steps: '步数', duration: '用时', replay: '回放' },
   },
   leaderboard: {
@@ -152,7 +151,7 @@ export const zh = {
       best: '最佳组合',
       rank: '名次',
       score: '成绩',
-      open: '排行榜 →',
+      open: '排行榜',
       leaderboard: '排行榜',
     },
     harnesses: {
@@ -184,7 +183,7 @@ export const zh = {
     huggingFace: '这次运行的记录与轨迹存放在 Hugging Face，可以在那里查看和下载原始文件。',
     tasks: '任务',
     runs: '运行',
-    passRate: '通过率 {{rate}}%',
+    passRate: '通过率 {{rate}}',
     noCountedRun: '没有计入成绩的运行',
     noTasks: '没有匹配的任务',
     noRuns: '没有符合筛选的运行',
@@ -269,8 +268,6 @@ export const zh = {
     stepCount_other: '共 {{count}} 步',
     stepOf_one: '第 {{step}} / {{count}} 步',
     stepOf_other: '第 {{step}} / {{count}} 步',
-    trajectoryFacts_one: 'ATIF {{version}} · {{agent}} · {{model}} · 共 {{count}} 步 · 成本 ${{cost}}',
-    trajectoryFacts_other: 'ATIF {{version}} · {{agent}} · {{model}} · 共 {{count}} 步 · 成本 ${{cost}}',
     trajectoryNote: '轨迹以 ATIF 格式原样公开。失败原因引用的步骤以红线标出。',
   },
   compare: {

@@ -1,9 +1,15 @@
+import { compile } from '@mdx-js/mdx';
 import { Ajv2020 } from 'ajv/dist/2020.js';
 import addFormats from 'ajv-formats';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import type { Catalog, FootprintFile, SignalsFile, Trajectory, WorldFile } from '../src/api/types';
+import remarkFrontmatter from 'remark-frontmatter';
+import type { Catalog, FootprintFile, Member, ReportDraftRecord, RunFact, RunFile, Settings, SignalsFile, TaskRecord, Trajectory, WorldFile } from '../src/api/types';
+import { isSameCombination } from '../src/mocks/catalog';
+import { sourcesProblemOf } from '../src/mocks/reports';
+import { isCounted } from '../src/mocks/results';
+import { findMediaType } from '../src/mocks/taskFiles';
 import {
   DATA_DIRECTORY, WORLD_DIRECTORY, dataDirectoryPathOf, keepsSignals, openRecords, openedIndexes, readAnnotations, readFootprint, readRunFile, readSignals, readTaskFile,
   readTrajectory, readWorld, runDirectoryOf, taskDirectoryOf, type BenchmarkIndexes,
@@ -78,6 +84,8 @@ export function checkIndexes(catalog: Catalog, benchmark: BenchmarkIndexes, dire
   for (const task of tasks) {
     const paths = new Set(task.files.map(file => file.path));
     task.checks.filter(check => !paths.has(check.path)).forEach(check => expect(false, at('tasks.json'), `${task.id} check ${check.id} names ${check.path}, which its files do not list`));
+    task.files.filter(file => findMediaType(file.path) === undefined).forEach(file => expect(false, at('tasks.json'), `${task.id} lists ${file.path}, whose extension has no media type`));
+    expect(task.revisions[0]?.version === task.version, at('tasks.json'), `${task.id} is at version ${task.version}, which is not the first of its revisions`);
   }
   const runIds = new Set(runs.map(fact => fact.id));
   expect(runIds.size === runs.length, at('runs.json'), 'a run id appears twice');
@@ -88,20 +96,70 @@ export function checkIndexes(catalog: Catalog, benchmark: BenchmarkIndexes, dire
     expect(catalog.harnesses.some(harness => harness.id === fact.harnessId), at('runs.json'), `${fact.id} names harness ${fact.harnessId}, which catalog.json does not list`);
     expect(!task || fact.failedChecks.every(id => task.checks.some(check => check.id === id)), at('runs.json'), `${fact.id} failed a check its task does not have`);
     expect(!task || task.revisions.some(revision => revision.version === fact.taskVersion), at('runs.json'), `${fact.id} answered version ${fact.taskVersion}, which its task never had`);
+    expect(fact.failureClass === undefined || fact.outcome === 'failed', at('runs.json'), `${fact.id} has a failure class but did not fail`);
   }
   for (const hunt of hunts) {
     const facetIds = new Set(hunt.facets.map(facet => facet.id));
     for (const trial of hunt.trials) {
       const fact = runs.find(candidate => candidate.id === trial.runId);
+      expect(trial.read || trial.markedFacets.length > 0, at('hunts.json'), `hunt ${hunt.id} lists ${trial.runId}, which no probe marked and no reader read`);
+      trial.marks.forEach(mark => expect(
+        mark.probes.every(name => hunt.facets.find(facet => facet.id === mark.facetId)?.probes.some(probe => probe.name === name)), at('hunts.json'),
+        `hunt ${hunt.id} marks ${trial.runId} with a probe facet ${mark.facetId} does not declare`,
+      ));
       expect(fact !== undefined, at('hunts.json'), `hunt ${hunt.id} names run ${trial.runId}, which runs.json does not list`);
       expect([...trial.markedFacets, ...trial.confirmedFacets, ...trial.marks.map(mark => mark.facetId)].every(id => facetIds.has(id)), at('hunts.json'), `hunt ${hunt.id} names a facet it does not have in ${trial.runId}`);
       expect(!fact || trial.marks.every(mark => mark.step <= fact.steps), at('hunts.json'), `hunt ${hunt.id} marks a step past the end of ${trial.runId}`);
     }
   }
   expect(releases.filter(release => release.status === 'current').length === 1, at('releases.json'), 'exactly one release must be current');
+  const versions = releases.map(release => release.version);
+  expect(new Set(versions).size === versions.length, at('releases.json'), 'a release version appears twice');
   for (const release of releases) {
-    expect(release.content.entrants.every(entrant => runs.some(fact => fact.modelId === entrant.modelId && fact.harnessId === entrant.harnessId)), at('releases.json'), `version ${release.version} ranks a combination with no runs`);
+    expect(release.restoresVersion === undefined || versions.includes(release.restoresVersion), at('releases.json'), `version ${release.version} restores version ${release.restoresVersion}, which does not exist`);
+    expect(release.content.entrants.every(entrant => runs.some(fact => isSameCombination(fact, entrant) && isCounted(fact))), at('releases.json'), `version ${release.version} ranks a combination with no counted run`);
     expect(release.content.replays.every(runId => runIds.has(runId)), at('releases.json'), `version ${release.version} shows a run runs.json does not list`);
+  }
+}
+
+/** A node of an MDX document's syntax tree, as far as reading the blocks' attributes needs. */
+interface SyntaxNode {
+  type: string;
+  name?: string;
+  value?: unknown;
+  attributes?: SyntaxNode[];
+  children?: SyntaxNode[];
+}
+
+/** The run ids a document's blocks name in their `run` attributes, read from the syntax tree MDX parses. */
+export async function runIdsIn(source: string): Promise<string[]> {
+  const ids: string[] = [];
+  const collect = (node: SyntaxNode) => {
+    ids.push(...(node.attributes ?? []).flatMap(attribute => (attribute.type === 'mdxJsxAttribute' && attribute.name === 'run' && typeof attribute.value === 'string' ? [attribute.value] : [])));
+    node.children?.forEach(collect);
+  };
+  await compile(source, { remarkPlugins: [remarkFrontmatter, () => (tree: SyntaxNode) => collect(tree)] });
+  return ids;
+}
+
+/** What the console's own files say of each other and of the runs: their members, the settings and the report drafts the demo opens with. */
+export async function checkConsoleFiles(members: Member[], settings: Settings, reports: ReportDraftRecord[], runIds: Set<string>) {
+  checkAgainst('MemberListFile', 'members.json', members);
+  checkAgainst('SettingsFile', 'settings.json', settings);
+  checkAgainst('ReportDraftListFile', 'reports.json', reports);
+  const accounts = new Set(members.map(member => member.account));
+  expect(accounts.size === members.length, 'members.json', 'an account appears twice');
+  expect(members.some(member => member.role === 'admin'), 'members.json', 'has no administrator');
+  expect(accounts.has(settings.updatedBy), 'settings.json', `updatedBy ${settings.updatedBy} is not a member`);
+  expect(new Set(reports.map(report => report.id)).size === reports.length, 'reports.json', 'a draft id appears twice');
+  expect(new Set(reports.map(report => report.slug)).size === reports.length, 'reports.json', 'a slug has two drafts');
+  for (const report of reports) {
+    expect(accounts.has(report.author), 'reports.json', `${report.id} is by ${report.author}, who is not a member`);
+    expect(report.reviews.every(review => accounts.has(review.reviewer)), 'reports.json', `${report.id} is reviewed by someone who is not a member`);
+    expect(sourcesProblemOf(report.sources) === undefined, 'reports.json', `${report.id}: ${sourcesProblemOf(report.sources)}`);
+    for (const source of Object.values(report.sources)) {
+      (await runIdsIn(source)).forEach(runId => expect(runIds.has(runId), 'reports.json', `${report.id} names run ${runId}, which runs.json does not list`));
+    }
   }
 }
 
@@ -186,6 +244,23 @@ export function checkSignals(signals: SignalsFile, footprint: FootprintFile, wor
 }
 
 /**
+ * What a run's files say of each other and of its task: a verdict on every check of the task unless the run did not
+ * execute, the failed checks the same in runs.json, the grading and the failure, and the cost and output tokens the
+ * trajectory's own metrics give.
+ */
+export function checkRunRecords(fact: RunFact, task: TaskRecord, run: RunFile, trajectory: Trajectory, file: string) {
+  expect(!isCounted(fact) || task.checks.every(check => run.grading.checks.some(verdict => verdict.id === check.id)), file, `has no verdict on a check of ${task.id}`);
+  const failedInGrading = run.grading.checks.filter(verdict => !verdict.passed).map(verdict => verdict.id).toSorted();
+  const failedInRuns = fact.failedChecks.toSorted();
+  const failedInFailure = (run.failure?.failedChecks ?? []).map(failed => failed.id).toSorted();
+  expect(!isCounted(fact) || failedInGrading.join() === failedInRuns.join(), file, `fails checks ${failedInGrading.join()} in its grading, runs.json says ${failedInRuns.join()}`);
+  expect(run.failure === undefined || failedInFailure.join() === failedInRuns.join(), file, `fails checks ${failedInFailure.join()} in its failure, runs.json says ${failedInRuns.join()}`);
+  const { total_cost_usd: cost, total_completion_tokens: outputTokens } = trajectory.final_metrics ?? {};
+  expect(cost === undefined || cost === fact.costUsd, file, `costs ${fact.costUsd} in runs.json, ${cost} in the trajectory's final_metrics`);
+  expect(outputTokens === undefined || outputTokens === run.metrics.outputTokens, file, `has ${run.metrics.outputTokens} output tokens in run.json, ${outputTokens} in the trajectory's final_metrics`);
+}
+
+/**
  * Reads of every run's and task's files, each noting what it finds, and how many files are left unread: the runs and
  * published task files a benchmark keeps on Hugging Face, unless the flag asks for them.
  */
@@ -211,6 +286,10 @@ export function fileReadsOf(benchmark: BenchmarkIndexes): { reads: (() => Promis
       }
     }
     checkAgainst('RunFile', named(`${runDirectoryOf(fact.id)}/run.json`), run);
+    const task = tasks.find(candidate => candidate.id === fact.taskId);
+    if (task) {
+      checkRunRecords(fact, task, run, trajectory, named(`${runDirectoryOf(fact.id)}/run.json`));
+    }
     checkAgainst('TrajectoryFile', named(`${runDirectoryOf(fact.id)}/trajectory.json`), trajectory);
     expect(trajectory.steps.length === fact.steps, named(`${runDirectoryOf(fact.id)}/trajectory.json`), `has ${trajectory.steps.length} steps, runs.json says ${fact.steps}`);
     if (record.annotationCategories) {
@@ -233,9 +312,11 @@ export function fileReadsOf(benchmark: BenchmarkIndexes): { reads: (() => Promis
 }
 
 await openRecords(dataReaderAt(directory));
-const { catalog, benchmarks } = openedIndexes();
+const { catalog, members, settings, reports, benchmarks, runs } = openedIndexes();
 checkAgainst('Catalog', 'catalog.json', catalog);
+await checkConsoleFiles(members, settings, reports, new Set(runs.keys()));
 benchmarks.forEach((benchmark, index) => checkIndexes(catalog, benchmark, catalog.benchmarks[index]));
+catalog.models.forEach(model => expect(benchmarks.some(benchmark => benchmark.runs.some(fact => fact.modelId === model.id)), 'catalog.json', `model ${model.id} has no run on any benchmark`));
 const fileReads = benchmarks.map(fileReadsOf);
 const reads = fileReads.flatMap(benchmark => benchmark.reads);
 for (let start = 0; start < reads.length; start += READS_AT_ONCE) {

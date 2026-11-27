@@ -2,14 +2,16 @@ import { clsx } from 'clsx';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { RunDetail } from '../../api/types';
-import { LocaleLink } from '../../i18n/LocaleRouting';
 import { INSTRUCTION_PATH } from '../../routes/site';
 import { FactList, HintedHeading } from '../../ui/content';
 import content from '../../ui/content.module.css';
-import controls from '../../ui/controls.module.css';
+import { TextLink } from '../../ui/controls';
 import { InfoHint } from '../../ui/hint';
+import { ArrowIcon } from '../../ui/icons';
 import table from '../../ui/table.module.css';
 import { VendorBadge } from '../model/ModelBadge';
+import { combinationName, formatCost } from '../result/presentation';
+import { ChangeSize, Diff } from './Diff';
 import { HuggingFaceLink } from './HuggingFace';
 import { OutcomeBadge, OutcomeText } from './Outcome';
 import styles from './RunDetail.module.css';
@@ -20,7 +22,7 @@ export function RunHeader({ run }: { run: RunDetail }) {
     <header className={styles.header}>
       <div className={styles.titleRow}>
         <VendorBadge model={run.model} />
-        <h2 className="t-heading">{run.model.name} · {run.harness.name}</h2>
+        <h2 className="t-heading">{combinationName(run.model, run.harness)}</h2>
         <span className="t-small c-muted">{t('runs.attempt', { attempt: run.attempt })}</span>
         <OutcomeBadge outcome={run.outcome} />
       </div>
@@ -30,7 +32,7 @@ export function RunHeader({ run }: { run: RunDetail }) {
         { label: t('runs.metrics.duration'), value: t('benchmarks.minutes', { count: run.metrics.durationMinutes }) },
         { label: t('runs.metrics.submissions'), value: t('benchmarks.times', { count: run.metrics.submissions }) },
         { label: t('runs.metrics.outputTokens'), value: `${Math.round(run.metrics.outputTokens / 1000)}K` },
-        { label: t('runs.metrics.cost'), value: `$${run.metrics.costUsd.toFixed(2)}` },
+        { label: t('runs.metrics.cost'), value: formatCost(run.metrics.costUsd) },
         { label: t('runs.metrics.endReason'), value: t(`runs.endReason.${run.metrics.endReason}`) },
       ]} />
       {run.huggingFaceUrl && <HuggingFaceLink about={t('runs.huggingFace')} url={run.huggingFaceUrl} />}
@@ -61,24 +63,15 @@ export function InputTab({ run, filePath }: { run: RunDetail; filePath: TaskFile
           <p className={clsx(styles.prose, 't-body')}>{input.instruction}</p>
           {input.reportSchema && <pre className={clsx(styles.code, 't-mono c-muted')}>{input.reportSchema}</pre>}
         </div>
-        <LocaleLink className={clsx(controls.textLink, 't-micro')} to={filePath(INSTRUCTION_PATH)}>{t('tasks.viewFile')}</LocaleLink>
+        <TextLink className="t-micro" to={filePath(INSTRUCTION_PATH)}>{t('tasks.viewFile')}</TextLink>
       </DetailSection>
       <DetailSection title={t('runs.input.environment')}>
         <FactList layout="rows" facts={input.environment} />
       </DetailSection>
       <DetailSection title={t('runs.input.harness')} about={t('runs.input.harnessNote')} aside={`${input.harness.name} · v${input.harness.version}`}>
-        <a className={clsx(controls.textLink, 't-micro')} href={input.harness.toolDefinitionsUrl}>{t('runs.input.toolDefinitions')}</a>
+        <TextLink className="t-micro" href={input.harness.toolDefinitionsUrl}>{t('runs.input.toolDefinitions')}</TextLink>
       </DetailSection>
     </>
-  );
-}
-
-/** A unified diff, each line coloured by whether it adds, removes or locates. */
-export function Diff({ lines }: { lines: string[] }) {
-  return (
-    <pre className={clsx(content.panel, styles.diff, 't-mono')}>
-      {lines.map((line, index) => <span key={index} className={line.startsWith('+') ? 'c-ok' : line.startsWith('-') ? 'c-bad' : line.startsWith('@@') ? 'c-faint' : 'c-muted'}>{line}{'\n'}</span>)}
-    </pre>
   );
 }
 
@@ -94,9 +87,9 @@ export function OutputTab({ run, onStep }: { run: RunDetail; onStep: (step: numb
               {/* A file shows its size until opened to its diff, as a pull request lists it. */}
               <details>
                 <summary>
-                  <svg className={styles.chevron} viewBox="0 0 10 10" width="10" height="10" aria-hidden="true"><path d="m3.5 2 3 3-3 3" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                  <span className={styles.chevron}><ArrowIcon direction="right" /></span>
                   <span className="t-mono">{file.path}</span>
-                  <span className="t-micro"><span className="c-ok">+{file.additions}</span> <span className="c-bad">−{file.deletions}</span></span>
+                  <ChangeSize additions={file.additions} deletions={file.deletions} />
                 </summary>
                 {file.patch ? <Diff lines={file.patch} /> : <p className="t-micro c-faint">{t('runs.output.fullPatch')}</p>}
               </details>
@@ -108,9 +101,9 @@ export function OutputTab({ run, onStep }: { run: RunDetail; onStep: (step: numb
         <div className={content.panel}><p className="t-body">{finalReply.text}</p></div>
       </DetailSection>
       <div className={styles.links}>
-        {artifacts.map(artifact => <a key={artifact.name} className={clsx(controls.textLink, 't-micro')} href={artifact.url}>{t('runs.output.artifact', { name: artifact.name })}</a>)}
-        <a className={clsx(controls.textLink, 't-micro')} href={patchUrl}>{t('runs.output.downloadPatch')}</a>
-        <button type="button" className={clsx(controls.textLink, 't-micro')} onClick={() => onStep(finalReply.step)}>{t('runs.output.inTrajectory')}</button>
+        {artifacts.map(artifact => <TextLink key={artifact.name} className="t-micro" href={artifact.url}>{t('runs.output.artifact', { name: artifact.name })}</TextLink>)}
+        <TextLink className="t-micro" href={patchUrl}>{t('runs.output.downloadPatch')}</TextLink>
+        <TextLink className="t-micro" onClick={() => onStep(finalReply.step)}>{t('runs.output.inTrajectory')}</TextLink>
       </div>
     </>
   );
@@ -128,7 +121,7 @@ export function GradingTab({ run, filePath, check, onCheck }: { run: RunDetail; 
         </span>
         <span className="t-micro c-ok">{t('runs.grading.passed', { count: grading.passCount })}</span>
         {grading.total > grading.passCount && <span className="t-micro c-bad">{t('runs.grading.failed', { count: grading.total - grading.passCount })}</span>}
-        <a className={clsx(controls.textLink, 't-micro')} href={grading.codeUrl}>{t('runs.grading.downloadCode')}</a>
+        <TextLink className="t-micro" href={grading.codeUrl}>{t('runs.grading.downloadCode')}</TextLink>
       </div>
       <div className={clsx(table.table, styles.checks)} role="table" aria-label={t('runs.grading.checks')}>
         <div className={clsx(table.row, table.head, styles.checkRow, 't-micro c-faint')} role="row">
@@ -150,7 +143,7 @@ export function GradingTab({ run, filePath, check, onCheck }: { run: RunDetail; 
                   {item.rubric && <p className="t-small c-muted">{t('runs.grading.rubric', { rubric: item.rubric })}</p>}
                   {item.code && (
                     <>
-                      <LocaleLink className={clsx(controls.textLink, 't-mono')} to={filePath(item.code.path)}>{item.code.path}</LocaleLink>
+                      <TextLink className="t-mono" to={filePath(item.code.path)}>{item.code.path}</TextLink>
                       <pre className={clsx(content.panel, styles.code, 't-mono c-muted')}>{item.code.source}</pre>
                     </>
                   )}
@@ -171,8 +164,11 @@ export function FailureTab({ run, onCheck, onStep }: { run: RunDetail; onCheck: 
   if (run.outcome === 'passed') {
     return <p className="t-body c-muted">{t('runs.failure.passed', { count: run.grading.total })}</p>;
   }
-  if (run.outcome === 'executionFailed' || !run.failure) {
+  if (run.outcome === 'executionFailed') {
     return <p className="t-body c-muted">{t('runs.failure.executionFailed')}</p>;
+  }
+  if (!run.failure) {
+    throw new Error(`Run ${run.id} failed without a failure record`);
   }
   const { failedChecks, review } = run.failure;
   return (
@@ -183,7 +179,7 @@ export function FailureTab({ run, onCheck, onStep }: { run: RunDetail; onCheck: 
             <li key={item.id}>
               <span className={styles.ring} aria-hidden="true" />
               <div><p><span className="t-mono c-faint">{item.id}</span> <span className="t-small">{item.title}</span></p><p className="t-micro c-muted">{item.detail}</p></div>
-              <button type="button" className={clsx(controls.textLink, 't-micro c-muted')} onClick={() => onCheck(item.id)}>{t('runs.failure.viewCheck')}</button>
+              <TextLink className="t-micro c-muted" onClick={() => onCheck(item.id)}>{t('runs.failure.viewCheck')}</TextLink>
             </li>
           ))}
         </ul>
@@ -194,7 +190,7 @@ export function FailureTab({ run, onCheck, onStep }: { run: RunDetail; onCheck: 
             <p className="t-body">{review.text}</p>
             <p className={styles.evidence}>
               <span className="t-micro c-faint">{t('runs.failure.evidence')}</span>
-              {review.evidenceSteps.map(step => <button key={step} type="button" className={clsx(controls.textLink, 't-micro')} onClick={() => onStep(step)}>{t('runs.step', { step })}</button>)}
+              {review.evidenceSteps.map(step => <TextLink key={step} className="t-micro" onClick={() => onStep(step)}>{t('runs.step', { step })}</TextLink>)}
             </p>
           </div>
         ) : <p className="t-small c-muted">{t('runs.failure.notReviewed')}</p>}

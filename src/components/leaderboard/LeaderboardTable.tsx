@@ -5,10 +5,11 @@ import { combinationKey } from '../../api/constraints';
 import type { LeaderboardEntry, Metric } from '../../api/types';
 import { LocaleLink } from '../../i18n/LocaleRouting';
 import { runRecordsPath } from '../../routes/runRecords';
+import { GoArrowIcon } from '../../ui/icons';
 import { REDUCED_MOTION_QUERY } from '../../ui/media';
 import table from '../../ui/table.module.css';
 import { ModelLink } from '../model/ModelBadge';
-import { formatScore } from '../result/presentation';
+import { formatCost, formatScore } from '../result/presentation';
 import { ScoreBar } from '../result/ScoreBar';
 import styles from './LeaderboardTable.module.css';
 
@@ -44,9 +45,9 @@ export function LeaderboardTable({ benchmarkId, entries, metric, markedModel }: 
             <span role="cell" className="t-small c-muted">{entry.harness.name}</span>
             <span role="cell" className={styles.score}><ScoreBar score={entry.score} /><span className="t-numeric">{formatScore(entry.score, metric)}</span></span>
             <span role="cell" className="t-numeric c-muted">{entry.runsPerTask}</span>
-            <span role="cell" className="t-numeric c-muted">${entry.avgCostUsd.toFixed(2)}</span>
+            <span role="cell" className="t-numeric c-muted">{formatCost(entry.avgCostUsd)}</span>
             <span role="cell" className="t-mono c-faint">{entry.evaluatedIn}</span>
-            <LocaleLink role="cell" className={table.primary} to={runs} aria-label={t('leaderboard.runsOf', { model: entry.model.name, harness: entry.harness.name })}><span className={table.arrow}>→</span></LocaleLink>
+            <LocaleLink role="cell" className={table.primary} to={runs} aria-label={t('leaderboard.runsOf', { model: entry.model.name, harness: entry.harness.name })}><span className={table.arrow}><GoArrowIcon /></span></LocaleLink>
           </div>
         );
       })}

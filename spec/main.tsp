@@ -214,7 +214,7 @@ model TaskSummary {
   huggingFaceUrl?: url;
 }
 
-/** No page of a list holds more than this, so no response carries a list that grows with the data. */
+/** No page of a list holds more than this, so no response carries a list that grows with the data; a run's whole trajectory, which is for export, is the one exception. */
 const MAX_PAGE_SIZE = 50;
 
 /** Which page of a list to return. */
@@ -271,6 +271,9 @@ model TaskEntry {
 
 model TaskEntryPage is Page<TaskEntry>;
 
+/** The most text of a file a response carries: its first 256 KiB. */
+const MAX_FILE_TEXT_LENGTH = 262144;
+
 /** A published file of a task's Harbor directory; no response carries more than its first 256 KiB of text. */
 model TaskFile {
   path: string;
@@ -280,7 +283,8 @@ model TaskFile {
 
   mediaType: string;
 
-  /** The file's text, cut at 256 KiB; absent for a binary file */
+  /** The file's text, cut at its first 256 KiB; absent for a binary file */
+  @maxLength(MAX_FILE_TEXT_LENGTH)
   text?: string;
 
   /** Whether text holds only the start of the file */
@@ -525,7 +529,11 @@ model HarnessComparison {
 
 model ModelProfile {
   `model`: ModelRef;
+
+  /** A record of the model, in the reader's language */
   summary: string;
+
+  /** When the benchmarks that publish one of the model's combinations were last updated, the latest of them */
   lastEvaluatedOn: plainDate;
   harnessCount: int32;
   standings: BenchmarkStanding[];
@@ -618,7 +626,7 @@ interface Benchmarks {
     ...LanguageHeader,
   ): Localized<LeaderboardPage> | NotFoundError;
 
-  /** Every combination evaluated on the benchmark, in ranking order, for choosing one */
+  /** Every combination the current release publishes on the benchmark, in ranking order, for choosing one */
   @get
   @route("/{benchmarkId}/combinations")
   combinations(@path benchmarkId: string, ...LanguageHeader): Localized<Combination[]> | NotFoundError;
@@ -721,6 +729,7 @@ interface Benchmarks {
   ): Localized<PublicTaskComparison> | NotFoundError | HuggingFaceUnreachableError;
 }
 
+/** Runs of the combinations a benchmark's current release publishes; any other run, or none, is not found. */
 @route("/runs")
 interface Runs {
   @get
@@ -738,6 +747,7 @@ interface Runs {
   trajectorySteps(@path runId: string, ...PageQuery<25>): TrajectoryPage | NotFoundError | HuggingFaceUnreachableError;
 }
 
+/** A model with a combination the current release of some benchmark publishes; any other model is not found. */
 @route("/models")
 interface Models {
   @get

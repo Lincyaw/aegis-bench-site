@@ -24,7 +24,7 @@ export function RunEventsTab({ run, onStep }: { run: ConsoleRunDetail; onStep: (
     <div className={styles.tab}>
       <div className={styles.filters}>
         <Select
-          label={t('console.run.events.kindFilter')} value={query.kind ?? EVERY_CHOICE}
+          variant="quiet" label={t('console.run.events.kindFilter')} value={query.kind ?? EVERY_CHOICE}
           onChange={kind => setQuery({ ...query, kind: kind === EVERY_CHOICE ? undefined : kind as RunEventKind, offset: 0 })}
           choices={[{ value: EVERY_CHOICE, label: t('console.run.events.everyKind') }, ...consoleRunEventKindValues.map(kind => ({ value: kind, label: kind }))]}
         />

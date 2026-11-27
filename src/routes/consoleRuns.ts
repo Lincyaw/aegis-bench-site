@@ -1,5 +1,5 @@
 import { consoleReviewFilterValues, runOutcomeValues } from '../api/schema';
-import type { ConsoleRunQuery, PendingKind, ReviewFilter, RunOutcome } from '../api/types';
+import type { ConsoleRunQuery, PendingWork, ReviewFilter, RunOutcome } from '../api/types';
 import { pathWithSearch, searchOf, type AddressTable } from './address';
 import { consoleBenchmarkPath, parseCombinationScope } from './console';
 import { RUN_TABS } from './runRecords';
@@ -40,16 +40,14 @@ export function isFilteredRunQuery(query: ConsoleRunQuery): boolean {
   return Boolean(query.q || query.task || query.model || query.outcome || query.review);
 }
 
-/** The runs each kind of waiting work concerns, as a filter of the run list. */
-export const PENDING_RUNS: Record<PendingKind, Partial<ConsoleRunQuery>> = {
-  unreviewedFailures: { review: 'unreviewed' },
-  executionFailures: { outcome: 'executionFailed' },
-  gradingErrors: { review: 'gradingError' },
-};
-
 /** A benchmark's run list, filtered as the query says. */
 export function consoleRunsPath(benchmarkId: string, query: Partial<ConsoleRunQuery> = {}): string {
   return pathWithSearch(`${consoleBenchmarkPath(benchmarkId)}/runs`, searchOf(RUN_QUERY_PARAMS, query));
+}
+
+/** The run list of the runs a kind of waiting work concerns, filtered as the work says. */
+export function pendingRunsPath(benchmarkId: string, work: PendingWork): string {
+  return consoleRunsPath(benchmarkId, { outcome: work.outcome, review: work.review });
 }
 
 /**

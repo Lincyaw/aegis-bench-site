@@ -4,12 +4,14 @@ import { useTranslation } from 'react-i18next';
 import { combinationKey } from '../../api/constraints';
 import type { Combination, ConsoleBenchmark, EntrantKey, ReleaseContent } from '../../api/types';
 import { LocaleLink } from '../../i18n/LocaleRouting';
+import { LOCALES, LOCALE_NAMES } from '../../i18n/locales';
 import { consoleRunPath } from '../../routes/consoleRuns';
 import { FactList, HintedHeading } from '../../ui/content';
 import content from '../../ui/content.module.css';
 import { Button, SubmitButton, TextArea, TextField, ToggleChip } from '../../ui/controls';
 import { ModelLabel } from '../model/ModelBadge';
-import { ChangeFailure } from '../shell/ChangeFailure';
+import { combinationName } from '../result/presentation';
+import { ChangeFailure } from '../change/ChangeFailure';
 import { isEntrant } from './entrants';
 import styles from './ReleaseContent.module.css';
 
@@ -20,7 +22,7 @@ export function ReleaseContentView({ benchmark, shown }: { benchmark: ConsoleBen
     <>
       <section className={styles.section}>
         <h2 className="t-heading">{t('console.release.summary')}</h2>
-        <FactList layout="rows" facts={[{ label: t('console.release.summaryZh'), value: shown.summary['zh-CN'] }, { label: t('console.release.summaryEn'), value: shown.summary.en }]} />
+        <FactList layout="rows" facts={LOCALES.map(locale => ({ label: LOCALE_NAMES[locale], value: shown.summary[locale] }))} />
       </section>
       <section className={styles.section}>
         <h2 className="t-heading">{t('console.release.entrants')}</h2>
@@ -54,7 +56,7 @@ export function EntrantChoice({ entrants, chosen, onChange }: { entrants: Combin
               key={combinationKey(entrant.model.id, entrant.harness.id)} pressed={pressed} disabled={pressed && chosen.length === 1}
               onToggle={() => onChange(pressed ? chosen.filter(key => !isEntrant(key, entrant)) : [...chosen, { modelId: entrant.model.id, harnessId: entrant.harness.id }])}
             >
-              {entrant.model.name} · {entrant.harness.name}
+              {combinationName(entrant.model, entrant.harness)}
             </ToggleChip>
           );
         })}
@@ -70,8 +72,10 @@ export function ReplayEditor({ benchmarkId, replays, onChange }: { benchmarkId: 
   const add = (event: FormEvent) => {
     event.preventDefault();
     const added = runId.trim();
-    onChange(replays.includes(added) ? replays : [...replays, added]);
-    setRunId('');
+    if (added) {
+      onChange(replays.includes(added) ? replays : [...replays, added]);
+      setRunId('');
+    }
   };
   return (
     <section className={styles.section}>

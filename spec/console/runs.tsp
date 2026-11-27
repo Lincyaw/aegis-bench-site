@@ -56,13 +56,19 @@ model ToolUsage {
   failures: int32;
 }
 
-/** What a run consumed, from its trajectory's own metrics. */
+/**
+ * What a run consumed beyond the run's own metrics, from its trajectory as it records them: a figure the trajectory
+ * leaves out is absent here rather than zero.
+ */
 model RunUsage {
-  inputTokens: int32;
-  cachedTokens: int32;
-  outputTokens: int32;
-  costUsd: float64;
-  modelCalls: int32;
+  /** The trajectory's `final_metrics.total_prompt_tokens` */
+  inputTokens?: int32;
+
+  /** The trajectory's `final_metrics.total_cached_tokens` */
+  cachedTokens?: int32;
+
+  /** The sum of the agent steps' `llm_call_count`; absent when no step records one */
+  modelCalls?: int32;
 
   /** By tool, the most called first */
   toolCalls: ToolUsage[];
@@ -102,6 +108,9 @@ enum RunEventKind {
   submit,
 }
 
+/** The most characters of an event's text its excerpt carries. */
+const MAX_EXCERPT_LENGTH = 200;
+
 /** One event of a run's trajectory as a list shows it: where it sits, its kind, and the start of its text. */
 model RunEventRow {
   /**
@@ -127,7 +136,7 @@ model RunEventRow {
    * `content`, with a list of parts giving its text parts a line apart; for a tool call it is the `arguments` as JSON.
    * The event read by its index holds the record whole.
    */
-  @maxLength(200)
+  @maxLength(MAX_EXCERPT_LENGTH)
   excerpt: string;
 }
 

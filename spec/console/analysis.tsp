@@ -146,15 +146,16 @@ model HuntTrial {
 
 model HuntTrialPage is Page<HuntTrial>;
 
-/** A position a probe marked in a trajectory, recognisable without its step number. */
+/**
+ * A position a probe marked in a trajectory, recognisable without its step number. The mark stands for the first of the
+ * step's `tool_calls`, or for its `message` when it calls no tool; its kind, tool, time and excerpt are that event's, as
+ * a run's event list gives them.
+ */
 model TrialMark {
   /** The step of the trajectory, numbered as the run's trajectory numbers it */
   step: int32;
 
-  kind: RunEventKind;
-  tool?: string;
-  at: utcDateTime;
-  excerpt: string;
+  ...OmitProperties<RunEventRow, "index" | "stepId">;
   probes: string[];
 }
 

@@ -7,7 +7,7 @@ import type { ModelTaskQuery, TaskOrder, TaskSpread } from '../../../api/types';
 import { VendorBadge } from '../../../components/model/ModelBadge';
 import { HarnessTable, ModelTaskTable } from '../../../components/model/ModelResults';
 import { FailureLegend } from '../../../components/result/FailureBar';
-import { formatCost, formatRate } from '../../../components/result/presentation';
+import { NO_VALUE, formatCost, formatRate } from '../../../components/result/presentation';
 import { ConsoleHeader } from '../../../components/shell/ConsoleHeader';
 import { useLocale } from '../../../i18n/localeContext';
 import { groupedNumber } from '../../../i18n/locales';
@@ -56,10 +56,10 @@ export function ModelDetailPage() {
         {query.task && <ScopeChip name={t('console.scope.task', { task: query.task })} to={consoleModelPath(benchmark.id, detail.model.id, { ...query, task: undefined, offset: 0 })} />}
       </div>
       <StatTiles>
-        <StatTile label={t('console.model.stats.passRate')} value={scope.passRate === undefined ? '—' : formatRate(scope.passRate)} />
+        <StatTile label={t('console.model.stats.passRate')} value={scope.passRate === undefined ? NO_VALUE : formatRate(scope.passRate)} />
         <StatTile label={t('console.model.stats.everyTime')} value={t('console.overview.tasksOf', { solved: scope.solvedEveryTime, total: scope.tasks })} />
-        <StatTile label={t('console.model.stats.steps')} value={scope.meanSteps === undefined ? '—' : groupedNumber(locale, Math.round(scope.meanSteps))} />
-        <StatTile label={t('console.model.stats.cost')} value={scope.meanCostUsd === undefined ? '—' : formatCost(scope.meanCostUsd)} />
+        <StatTile label={t('console.model.stats.steps')} value={scope.meanSteps === undefined ? NO_VALUE : groupedNumber(locale, Math.round(scope.meanSteps))} />
+        <StatTile label={t('console.model.stats.cost')} value={scope.meanCostUsd === undefined ? NO_VALUE : formatCost(scope.meanCostUsd)} />
       </StatTiles>
       <section className={styles.section}>
         <h2 className="t-heading">{t('console.model.byHarness')}</h2>

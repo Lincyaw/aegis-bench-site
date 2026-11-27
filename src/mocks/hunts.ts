@@ -1,6 +1,7 @@
-import type { Hunt, HuntFacet, HuntProbe, HuntRecord, HuntTrial, HuntVerdict, Locale, RunEventKind, RunHuntFinding, TrajectoryStep, TrialRecord } from '../api/types';
+import { consoleHuntVerdictValues } from '../api/schema';
+import type { Hunt, HuntFacet, HuntProbe, HuntRecord, HuntTrial, HuntVerdict, Locale, RunHuntFinding, TrialRecord } from '../api/types';
 import { benchmarkOf } from './benchmarks';
-import { runRowOf } from './consoleRuns';
+import { runEventRowOf, runEventsOf, runRowOf } from './consoleRuns';
 import { openedIndexes, readTrajectory, recordedRunOf } from './records';
 
 /*
@@ -8,9 +9,6 @@ import { openedIndexes, readTrajectory, recordedRunOf } from './records';
  * marked ones and a random sample of the rest. What a hunt found, and how precise its probes are, is counted from its
  * trials.
  */
-
-/** Trials of a hunt per page when a request names no limit, as the spec declares. */
-export const DEFAULT_HUNT_TRIAL_PAGE_SIZE = 25;
 
 export function huntById(benchmarkId: string, huntId: string): HuntRecord | undefined {
   return benchmarkOf(benchmarkId).hunts.find(hunt => hunt.id === huntId);
@@ -63,9 +61,6 @@ export function huntOf(benchmarkId: string, hunt: HuntRecord): Hunt {
   };
 }
 
-/** The order trials list in: confirmed first, then cleared, then unread, each newest first. */
-export const VERDICT_ORDER: HuntVerdict[] = ['confirmed', 'cleared', 'unread'];
-
 export function huntTrialOf(benchmarkId: string, trial: TrialRecord, locale: Locale): HuntTrial {
   return {
     run: runRowOf(benchmarkId, recordedRunOf(trial.runId).fact, locale), verdict: verdictOf(trial),
@@ -74,18 +69,12 @@ export function huntTrialOf(benchmarkId: string, trial: TrialRecord, locale: Loc
   };
 }
 
-/** The trials of a hunt a filter keeps, in list order. */
+/** The trials of a hunt a filter keeps, in list order: the verdicts in the order the spec declares them, each newest first. */
 export function filteredTrialsOf(hunt: HuntRecord, facet: string, verdict: HuntVerdict | undefined): TrialRecord[] {
   const finishedAt = (trial: TrialRecord) => recordedRunOf(trial.runId).fact.finishedAt;
   return hunt.trials
     .filter(trial => (!facet || trial.markedFacets.includes(facet) || trial.confirmedFacets.includes(facet)) && (!verdict || verdictOf(trial) === verdict))
-    .toSorted((a, b) => VERDICT_ORDER.indexOf(verdictOf(a)) - VERDICT_ORDER.indexOf(verdictOf(b)) || finishedAt(b).localeCompare(finishedAt(a)));
-}
-
-/** What a trajectory step records, as an event kind: a tool call or a submission when it calls one, else its message. */
-export function stepKindOf(step: TrajectoryStep): RunEventKind {
-  const tool = step.tool_calls?.[0]?.function_name;
-  return tool === undefined ? 'message' : tool === 'submit' ? 'submit' : 'toolCall';
+    .toSorted((a, b) => consoleHuntVerdictValues.indexOf(verdictOf(a)) - consoleHuntVerdictValues.indexOf(verdictOf(b)) || finishedAt(b).localeCompare(finishedAt(a)));
 }
 
 /** What every hunt found in one run, with the marked steps as the run's trajectory records them, or nothing when there is no such run. */
@@ -95,7 +84,7 @@ export async function runHuntFindingsOf(runId: string): Promise<RunHuntFinding[]
     return undefined;
   }
   const { record, hunts } = benchmarkOf(located.benchmarkId);
-  const trajectory = await readTrajectory(record, runId);
+  const events = runEventsOf(await readTrajectory(record, runId));
   return hunts.flatMap(hunt => {
     const trial = hunt.trials.find(candidate => candidate.runId === runId);
     if (!trial) {
@@ -106,13 +95,13 @@ export async function runHuntFindingsOf(runId: string): Promise<RunHuntFinding[]
     const facets = hunt.facets.filter(facet => facetIds.includes(facet.id)).map(facet => ({
       facetId: facet.id, name: facet.name, definition: facet.definition, confirmed: trial.confirmedFacets.includes(facet.id),
       marks: trial.marks.filter(mark => mark.facetId === facet.id).map(mark => {
-        const step = trajectory.steps.find(candidate => candidate.step_id === mark.step);
-        if (!step) {
+        const stepEvents = events.filter(event => event.stepId === mark.step);
+        const event = stepEvents.find(candidate => candidate.kind === 'toolCall' || candidate.kind === 'submit') ?? stepEvents[0];
+        if (!event) {
           throw new Error(`hunt ${hunt.id} marks step ${mark.step}, which run ${runId} does not have`);
         }
-        const text = typeof step.message === 'string' ? step.message : '';
-        const tool = step.tool_calls?.[0]?.function_name;
-        return { step: mark.step, kind: stepKindOf(step), ...(tool && { tool }), at: step.timestamp ?? trajectory.steps[0].timestamp ?? '', excerpt: text, probes: mark.probes };
+        const { index: _index, stepId: _stepId, ...marked } = runEventRowOf(event);
+        return { step: mark.step, ...marked, probes: mark.probes };
       }),
     }));
     return [{ huntId: hunt.id, title: hunt.title, need: hunt.need, verdict, ...(trial.why && { why: trial.why }), facets }];

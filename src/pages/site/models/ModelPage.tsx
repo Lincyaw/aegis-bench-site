@@ -2,10 +2,12 @@ import { clsx } from 'clsx';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import { useModelProfile, useStages } from '../../../api/client';
+import { reportsIn } from '../../../articles/library';
 import { LifecycleMap } from '../../../components/lifecycle/LifecycleMap';
 import { modelStageLabels } from '../../../components/lifecycle/stages';
 import { VendorBadge } from '../../../components/model/ModelBadge';
 import { HarnessComparison, RelatedReports, Standings } from '../../../components/model/ModelProfile';
+import { useLocale } from '../../../i18n/localeContext';
 import { leaderboardPath } from '../../../routes/site';
 import { Breadcrumbs } from '../../../ui/navigation';
 import styles from './ModelPage.module.css';
@@ -15,6 +17,7 @@ export function ModelPage() {
   const { modelId = '' } = useParams();
   const profile = useModelProfile(modelId);
   const stages = useStages();
+  const reports = reportsIn(useLocale()).filter(report => report.models.includes(profile.model.id));
   return (
     <div className={clsx('page', styles.page)}>
       <Breadcrumbs crumbs={[{ label: t('site.nav.leaderboard'), to: leaderboardPath() }, { label: profile.model.name }]} />
@@ -30,7 +33,7 @@ export function ModelPage() {
       </section>
       <Standings profile={profile} />
       <HarnessComparison profile={profile} />
-      <RelatedReports modelId={profile.model.id} />
+      <RelatedReports reports={reports} />
     </div>
   );
 }

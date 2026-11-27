@@ -2,12 +2,13 @@ import { clsx } from 'clsx';
 import type { CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { BenchmarkSummary, Stage } from '../../api/types';
-import { Citation } from '../../articles/blocks';
 import { LocaleLink } from '../../i18n/LocaleRouting';
 import { BENCHMARKS_PATH, benchmarkPath, leaderboardPath } from '../../routes/site';
 import { Tag } from '../../ui/content';
 import { ButtonLink, CopyButton } from '../../ui/controls';
+import { GoArrowIcon } from '../../ui/icons';
 import { REDUCED_MOTION_QUERY, useMediaQuery } from '../../ui/media';
+import { Citation } from '../citation/Citation';
 import { HALF_LABELS } from '../lifecycle/stages';
 import { VendorBadge } from '../model/ModelBadge';
 import { formatScore } from '../result/presentation';
@@ -82,7 +83,7 @@ export function BenchmarkCard({ benchmark }: { benchmark: BenchmarkSummary }) {
   return (
     <LocaleLink className={styles.benchmark} to={benchmarkPath(benchmark.id)}>
       <span className={styles.benchmarkHead}>
-        <h3 className="t-bench">{benchmark.name}</h3>
+        <h3 className="t-bench">{benchmark.name}<GoArrowIcon /></h3>
         <span className="t-micro c-faint">{t('landing.benchmarkMeta', { count: benchmark.taskCount, metric: benchmark.metric.name })}</span>
       </span>
       <ol className={styles.leaders} data-part={PART.leaders}>

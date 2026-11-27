@@ -22,6 +22,8 @@
   --control-medium: 34px;
   --control-small: 26px;
   --control-icon: 36px;
+  /* Icons are 16px line drawings; a small control scales them to this size, and their stroke with them. */
+  --icon-small: 12px;
   /* Hairlines divide, strokes outline marks, thick lines carry an accent or an indicator. */
   --size-hairline: 1px;
   --size-stroke: 1.5px;

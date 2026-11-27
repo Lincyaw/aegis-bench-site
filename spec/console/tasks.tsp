@@ -100,6 +100,9 @@ model ConsoleTaskDetail {
   /** The combinations the request keeps to, in ranking order */
   entrants: EntrantMark[];
 
+  /** How many of those combinations passed the task at least once */
+  solvedEntrants: int32;
+
   /** How much each of the task's other views holds */
   sizes: TaskSizes;
 
@@ -139,7 +142,7 @@ model ReferenceFile {
 model TaskEntrantRuns {
   ...Combination;
 
-  /** In attempt order */
+  /** By attempt */
   runs: RunRow[];
 
   result: ResultCounts;
@@ -174,6 +177,9 @@ model TaskResults {
 model CheckPassCount {
   passed: int32;
   counted: int32;
+
+  /** Absent when no run counts */
+  passRate?: float64;
 }
 
 model CheckResultRow {

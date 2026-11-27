@@ -1,9 +1,37 @@
 import openapi from './openapi.json';
+import type { paths } from './schema';
 
 /*
- * The bounds and forms the spec declares for what the site sends, read from the OpenAPI document where it states them,
- * so the site checks and builds them as the API does and the two never disagree.
+ * The bounds, forms and defaults the spec declares for what the site sends and the server answers, read from the OpenAPI
+ * document where it states them, so the site and the mock server check and build them as the API does and never disagree.
  */
+
+interface QueryParameter {
+  name: string;
+  schema: { default?: string | number };
+}
+
+const GET_PARAMETERS = openapi.paths as unknown as Record<string, { get: { parameters: (QueryParameter | { $ref: string })[] } }>;
+
+/** The default of a query parameter of a GET operation, as the spec declares it; an operation without one fails here. */
+export function queryDefaultOf<Value extends string | number>(path: keyof paths, name: string): Value {
+  const parameter = GET_PARAMETERS[path].get.parameters.find((candidate): candidate is QueryParameter => 'name' in candidate && candidate.name === name);
+  if (parameter?.schema.default === undefined) {
+    throw new Error(`the spec declares no default of ${name} for GET ${path}`);
+  }
+  return parameter.schema.default as Value;
+}
+
+/** Items per page of a list operation when a request names no limit. */
+export function defaultPageSizeOf(path: keyof paths): number {
+  return queryDefaultOf<number>(path, 'limit');
+}
+
+/** The most characters of an event's text its excerpt carries. */
+export const MAX_EXCERPT_LENGTH = openapi.components.schemas['Console.RunEventRow'].properties.excerpt.maxLength;
+
+/** The most text of a task's file a response carries. */
+export const MAX_FILE_TEXT_LENGTH = openapi.components.schemas.TaskFile.properties.text.maxLength;
 
 /**
  * The key the spec names a model and harness pair by, "<model id>-<harness id>": a combination's identity in the API's

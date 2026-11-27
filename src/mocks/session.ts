@@ -1,10 +1,11 @@
-import type { ConsoleUser, Member } from '../api/types';
-import { memberOf } from './members';
+import { consoleRoleValues } from '../api/schema';
+import type { ConsoleUser, DemoHint, Member } from '../api/types';
+import { abilitiesOf, memberOf, membersInOrder } from './members';
 
 /** The cookie the spec's SessionCookie names; its value is the signed-in account, whose name needs no encoding. */
 export const SESSION_COOKIE = 'aegis_console';
 
-/** Every member of the demo signs in with this password; the sign-in page tells the reader so. */
+/** Every member of the demo signs in with this password; the session's demo hint tells the sign-in page so. */
 export const DEMO_PASSWORD = 'demo';
 
 /**
@@ -21,7 +22,16 @@ export const SIGN_IN_REQUIRED = { message: 'sign in to use the console' };
 
 export function consoleUserOf(member: Member): ConsoleUser {
   const initials = member.account.split(/[._-]+/).filter(Boolean).slice(0, 2).map(part => part[0].toUpperCase()).join('');
-  return { account: member.account, name: member.name, initials, role: member.role };
+  return { account: member.account, name: member.name, initials, role: member.role, can: abilitiesOf(member.role) };
+}
+
+/** What the demo tells the sign-in page: the password, and the first member of each role that has one. */
+export function demoHint(): DemoHint {
+  const members = membersInOrder();
+  return {
+    password: DEMO_PASSWORD,
+    accounts: consoleRoleValues.flatMap(role => members.filter(member => member.role === role).slice(0, 1).map(member => ({ account: member.account, role }))),
+  };
 }
 
 /** The signed-in user a request's cookies carry, if any; a session ends once its account is no longer a member. */

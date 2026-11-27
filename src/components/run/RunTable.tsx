@@ -13,7 +13,7 @@ import { SearchField, Select } from '../../ui/controls';
 import table from '../../ui/table.module.css';
 import { ModelLabel } from '../model/ModelBadge';
 import { FailureClassTag } from '../result/FailureClassTag';
-import { formatCost } from '../result/presentation';
+import { combinationName, formatCost } from '../result/presentation';
 import { OutcomeBadge } from './Outcome';
 import styles from './RunTable.module.css';
 
@@ -39,7 +39,7 @@ export function RunFilters({ benchmark, query, onChange, children }: { benchmark
           variant="quiet" label={t('console.runs.combinationFilter')} value={EVERY_CHOICE} onChange={choose}
           choices={[
             { value: EVERY_CHOICE, label: t('console.runs.everyCombination') },
-            ...[...keyed].map(([key, { model, harness }]) => ({ value: key, label: `${model.name} · ${harness.name}` })),
+            ...[...keyed].map(([key, { model, harness }]) => ({ value: key, label: combinationName(model, harness) })),
           ]}
         />
       )}

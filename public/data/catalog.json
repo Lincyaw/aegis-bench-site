@@ -116,6 +116,10 @@
       "vendor": {
         "zh-CN": "厂商 A",
         "en": "Vendor A"
+      },
+      "summary": {
+        "zh-CN": "厂商 A 发布的通用模型。各评测基准分别排名，不计算综合分。",
+        "en": "A general-purpose model from Vendor A. Each benchmark ranks it separately; there is no composite score."
       }
     },
     {
@@ -128,6 +132,10 @@
       "vendor": {
         "zh-CN": "厂商 B",
         "en": "Vendor B"
+      },
+      "summary": {
+        "zh-CN": "厂商 B 发布的通用模型。各评测基准分别排名，不计算综合分。",
+        "en": "A general-purpose model from Vendor B. Each benchmark ranks it separately; there is no composite score."
       }
     },
     {
@@ -140,6 +148,10 @@
       "vendor": {
         "zh-CN": "厂商 C",
         "en": "Vendor C"
+      },
+      "summary": {
+        "zh-CN": "厂商 C 发布的通用模型。各评测基准分别排名，不计算综合分。",
+        "en": "A general-purpose model from Vendor C. Each benchmark ranks it separately; there is no composite score."
       }
     },
     {
@@ -152,6 +164,10 @@
       "vendor": {
         "zh-CN": "厂商 D",
         "en": "Vendor D"
+      },
+      "summary": {
+        "zh-CN": "厂商 D 发布的通用模型。各评测基准分别排名，不计算综合分。",
+        "en": "A general-purpose model from Vendor D. Each benchmark ranks it separately; there is no composite score."
       }
     },
     {
@@ -164,6 +180,10 @@
       "vendor": {
         "zh-CN": "厂商 D",
         "en": "Vendor D"
+      },
+      "summary": {
+        "zh-CN": "厂商 D 发布的通用模型。各评测基准分别排名，不计算综合分。",
+        "en": "A general-purpose model from Vendor D. Each benchmark ranks it separately; there is no composite score."
       }
     },
     {
@@ -176,6 +196,10 @@
       "vendor": {
         "zh-CN": "厂商 A",
         "en": "Vendor A"
+      },
+      "summary": {
+        "zh-CN": "厂商 A 发布的通用模型。各评测基准分别排名，不计算综合分。",
+        "en": "A general-purpose model from Vendor A. Each benchmark ranks it separately; there is no composite score."
       }
     },
     {
@@ -188,6 +212,10 @@
       "vendor": {
         "zh-CN": "厂商 B",
         "en": "Vendor B"
+      },
+      "summary": {
+        "zh-CN": "厂商 B 发布的通用模型。各评测基准分别排名，不计算综合分。",
+        "en": "A general-purpose model from Vendor B. Each benchmark ranks it separately; there is no composite score."
       }
     }
   ],

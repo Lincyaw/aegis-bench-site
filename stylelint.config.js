@@ -24,7 +24,14 @@ export default {
     // A property a component's user or a script sets is a component parameter, read with a default as var(--name, value).
     'csstools/value-no-unknown-custom-properties': [true, { importFrom: [...TOKEN_FILES, LIBRARY_PROPERTIES] }],
     'declaration-property-value-allowed-list': [{ 'font-weight': ['400', '500', '600'] }, { message: 'Use the weights 400, 500 and 600: PingFang SC, the Chinese face, goes no heavier than 600.' }],
-    'declaration-property-value-disallowed-list': [{ 'font-style': ['italic', 'oblique'] }, { message: 'Interface text is never italic; emphasis comes from weight and colour.' }],
+    'declaration-property-value-disallowed-list': [
+      { 'font-style': ['italic', 'oblique'], content: [/[→←‹›×−⋯↗]/u] },
+      {
+        message: (property) => (property === 'content'
+          ? 'Draw arrows, crosses and the like with an icon from src/ui/icons.tsx: a typed character takes the font\'s shape and weight, not the site\'s 16px line icons.'
+          : 'Interface text is never italic; emphasis comes from weight and colour.'),
+      },
+    ],
     'function-disallowed-list': [['cubic-bezier', 'steps'], { message: 'Take easing from the tokens: every change decelerates with --ease-out and never bounces.' }],
     'comment-pattern': [/^[^\p{Script=Han}]*$/u, { message: 'Write comments in English.' }],
     'selector-class-pattern': [

@@ -1,13 +1,7 @@
 import { annotationSeverityValues } from '../../api/schema';
-import type { AnnotationCategory, AnnotationSeverity, ComparedRun, StepAnnotation, SubmissionVerdict, TrajectoryStep } from '../../api/types';
+import type { AnnotationCategory, AnnotationSeverity, ComparedRun, StepAnnotation, TrajectoryStep } from '../../api/types';
 
 /* How a trajectory's steps are read: what a step records, the labels annotators gave it, and where submissions cut a run. */
-
-/** The verdict a submit step carries as `extra.submission` on its observation result, as the API declares. */
-export function submissionOf(step: TrajectoryStep): SubmissionVerdict | undefined {
-  const extra = step.observation?.results[0]?.extra as { submission?: SubmissionVerdict } | undefined;
-  return extra?.submission;
-}
 
 export function textOf(content: TrajectoryStep['message'] | undefined): string {
   if (content === undefined) {
@@ -36,7 +30,7 @@ export function segmentsOf(steps: TrajectoryStep[], run: ComparedRun): Trajector
   const submissions = new Set(run.timeline.filter(step => step.mark === 'submitPassed' || step.mark === 'submitFailed').map(step => step.stepId));
   return steps.reduce<TrajectoryStep[][]>((segments, step) => {
     const last = segments.at(-1);
-    const open = last && !submissions.has(last.at(-1)?.step_id ?? -1) ? last : undefined;
+    const open = last && !submissions.has(last[last.length - 1].step_id) ? last : undefined;
     return open ? [...segments.slice(0, -1), [...open, step]] : [...segments, [step]];
   }, []);
 }

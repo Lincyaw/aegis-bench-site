@@ -11,7 +11,7 @@
 | `src/ui` | 设计系统：令牌、全局样式、通用控件、主题切换 |
 | `src/components/<主题>` | 业务组件，按主题分目录，例如 `run`、`trajectory`、`comparison`、`task`、`model`、`result`；组件的展示规则和样式与组件放在一起 |
 | `src/routes` | 地址：站点和中台的全部路径，各页面写在地址里的状态（解析、写回、带上下文的跳转），以及列表每页的条数 |
-| `src/pages/site`、`src/pages/console` | 对外站点和中台的页面与框架，按领域分子目录；导航的结构、角色的权限这类只有页面用到的规则也在这里 |
+| `src/pages/site`、`src/pages/console` | 对外站点和中台的页面与框架，按领域分子目录；导航的结构这类只有页面用到的规则也在这里 |
 | `src/articles`、`content` | MD/MDX 文档的编译、自定义块（包括自己取数据的块）和正文 |
 | `src/i18n` | 语言路由与界面文案 |
 | `src/api` | 由 spec 生成的 OpenAPI 文档与类型、模型类型（`types.ts`）、spec 声明的格式与上限（`constraints.ts`）、接口的错误（`errors.ts`）、接口路径（`server.ts`）、请求客户端（对外站点 `client.ts`，中台 `consoleClient.ts`） |
@@ -42,7 +42,7 @@ mock 服务端的作用除了提供演示数据，还在于检验接口设计是
   - mock 自己的响应不合 spec 时返回 500，包括响应体、日期等格式和响应头。
 
   这三种错误都会写明是哪个操作、哪一项不合规。站点里一旦出现这类错误，就说明接口或 mock 有问题，要先查清原因再改。
-- **数据来自数据目录**：mock 只读 `public/data/` 下的文件，以及评测基准写明放在 Hugging Face 上的运行与任务文件，不生成数据。浏览器里按站点的 base 取数据目录的文件，`npm run mock` 从磁盘读取；Hugging Face 上的文件两者都按 URL 请求。文件只记录评测产生的事实；排行榜、通过率、各类计数这些汇总都由 mock 从中计算，不另存一份。目录结构见 README 的「数据」一节。
+- **数据来自数据目录**：mock 只读 `public/data/` 下的文件，以及评测基准写明放在 Hugging Face 上的运行与任务文件，不生成数据。浏览器里按站点的 base 取数据目录的文件，`npm run mock` 从磁盘读取；Hugging Face 上的文件两者都按 URL 请求。文件记录评测产生的事实，以及中台打开时的成员、设置和报告草稿；排行榜、通过率、各类计数这些汇总都由 mock 从中计算，不另存一份。目录结构见 README 的「数据」一节。
 
 ### 直接调用接口
 

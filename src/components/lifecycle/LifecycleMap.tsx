@@ -6,6 +6,7 @@ import { LocaleLink } from '../../i18n/LocaleRouting';
 import { useLocalizedNavigate } from '../../i18n/localeContext';
 import { benchmarkPath } from '../../routes/site';
 import { REDUCED_MOTION_QUERY, useMediaQuery } from '../../ui/media';
+import { stageName } from '../result/presentation';
 import { MAP, labelPlacement, lobePath, nodePlacement, numberOffset } from './loop';
 import { HALF_LABELS, type StageLabel } from './stages';
 import styles from './LifecycleMap.module.css';
@@ -72,7 +73,7 @@ export function StageNode({ stage, current = false, caption }: { stage: Stage; c
   const navigate = useLocalizedNavigate();
   const [choosing, setChoosing] = useState(false);
   const [hinting, setHinting] = useState(false);
-  const name = `${stage.id} ${stage.name}`;
+  const name = stageName(stage);
   const [only] = stage.benchmarks;
   const published = stage.benchmarks.length > 0;
   return (
@@ -82,7 +83,7 @@ export function StageNode({ stage, current = false, caption }: { stage: Stage; c
           type="button"
           className={styles.node}
           aria-current={current ? 'true' : undefined}
-          aria-label={t('lifecycle.stageWith', { stage: name, benchmarks: stage.benchmarks.map(benchmark => benchmark.name).join(t('lifecycle.listSeparator')) })}
+          aria-label={t('lifecycle.stageWith', { stage: name, benchmarks: stage.benchmarks.map(benchmark => benchmark.name) })}
           aria-expanded={stage.benchmarks.length > 1 ? choosing : undefined}
           onClick={() => (stage.benchmarks.length === 1 ? navigate(benchmarkPath(only.id)) : setChoosing(!choosing))}
         />

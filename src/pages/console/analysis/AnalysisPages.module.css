@@ -8,7 +8,6 @@
 .trials { --columns: minmax(12rem, 1.5fr) minmax(10rem, 1.2fr) 7rem minmax(10rem, 1.3fr) 4rem 5.5rem; }
 .pager { justify-self: end; }
 
-.findings { display: grid; gap: var(--space-4); }
 
 @media (max-width: 760px) {
   .trials { --columns: minmax(0, 1fr) auto; }

@@ -5,7 +5,7 @@ import { useConsoleBenchmark, useConsoleModels } from '../../../api/consoleClien
 import { VendorBadge } from '../../../components/model/ModelBadge';
 import { FailureBar, FailureLegend } from '../../../components/result/FailureBar';
 import { PassRate } from '../../../components/result/PassRate';
-import { formatCost } from '../../../components/result/presentation';
+import { NO_VALUE, formatCost } from '../../../components/result/presentation';
 import { ConsoleHeader } from '../../../components/shell/ConsoleHeader';
 import { LocaleLink } from '../../../i18n/LocaleRouting';
 import { useLocale } from '../../../i18n/localeContext';
@@ -50,7 +50,7 @@ export function ModelListPage() {
               <span role="cell" className="t-numeric c-muted">{t('console.overview.tasksOf', { solved: result.solvedEveryTime, total: result.tasks })}</span>
               <span role="cell" className="t-numeric c-muted">{t('console.overview.tasksOf', { solved: result.solvedOnce, total: result.tasks })}</span>
               <span role="cell" className="t-numeric c-muted">{groupedNumber(locale, result.passed + result.failed)}</span>
-              <span role="cell" className="t-numeric c-muted">{result.meanCostUsd === undefined ? '—' : formatCost(result.meanCostUsd)}</span>
+              <span role="cell" className="t-numeric c-muted">{result.meanCostUsd === undefined ? NO_VALUE : formatCost(result.meanCostUsd)}</span>
               <span role="cell"><FailureBar result={result} /></span>
             </div>
           );

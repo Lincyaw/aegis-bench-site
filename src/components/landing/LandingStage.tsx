@@ -6,7 +6,10 @@ import { halfValues } from '../../api/schema';
 import type { Stage } from '../../api/types';
 import { LocaleLink } from '../../i18n/LocaleRouting';
 import { benchmarkPath } from '../../routes/site';
+import hint from '../../ui/hint.module.css';
+import { GoArrowIcon } from '../../ui/icons';
 import { HALF_LABELS, benchmarkNames } from '../lifecycle/stages';
+import { stageName } from '../result/presentation';
 import { PART } from './landingMarkup';
 import { VignetteCard } from './Vignettes';
 import styles from './LandingStage.module.css';
@@ -22,9 +25,9 @@ export function LoopBackdrop({ stages, onOpenStage }: { stages: Stage[]; onOpenS
   const { t } = useTranslation();
   // What a stage's hotspot and scene card open, for a reader who does not see the map.
   const nameOf = (stage: Stage) => {
-    const name = `${stage.id} ${stage.name}`;
+    const name = stageName(stage);
     return stage.benchmarks.length > 0
-      ? t('lifecycle.stageWith', { stage: name, benchmarks: stage.benchmarks.map(benchmark => benchmark.name).join(t('lifecycle.listSeparator')) })
+      ? t('lifecycle.stageWith', { stage: name, benchmarks: stage.benchmarks.map(benchmark => benchmark.name) })
       : t('lifecycle.stageBuilding', { stage: name });
   };
   return (
@@ -64,7 +67,7 @@ export function StationMarker({ stage, name, onOpen }: { stage: Stage; name: str
         className={clsx(styles.hotspot, !covered && styles.planned)}
         data-part={PART.hotspot}
         data-half={stage.half}
-        data-tip={covered ? `${benchmarkNames(stage)} →` : t('landing.building')}
+        data-tip={covered ? benchmarkNames(stage) : t('landing.building')}
         aria-label={name}
         onClick={open}
       />
@@ -88,7 +91,7 @@ export function StageRail({ stages, current, onSelect }: { stages: Stage[]; curr
               className={clsx(covered && styles.covered)}
               data-half={stage.half}
               aria-current={index === current ? 'step' : undefined}
-              aria-label={`${stage.id} ${stage.name}${state}`}
+              aria-label={`${stageName(stage)}${state}`}
               onClick={() => onSelect(index)}
             >
               <span className={styles.railName}>{`${t(HALF_LABELS[stage.half])} · ${stage.name}${state}`}</span>
@@ -118,10 +121,10 @@ export function StageChooser({ choice, onClose }: { choice: StageChoice | null; 
         <>
           <Popover.Anchor virtualRef={{ current: choice.anchor }} />
           <Popover.Portal>
-            <Popover.Content className={styles.chooser} side="bottom" sideOffset={8} collisionPadding={16}>
-              <p className="t-micro c-faint">{t('lifecycle.benchmarksAt', { stage: `${choice.stage.id} ${choice.stage.name}`, count: choice.stage.benchmarks.length })}</p>
+            <Popover.Content className={clsx(hint.popover, styles.chooser)} side="bottom" sideOffset={8} collisionPadding={16}>
+              <p className="t-micro c-faint">{t('lifecycle.benchmarksAt', { stage: stageName(choice.stage), count: choice.stage.benchmarks.length })}</p>
               {choice.stage.benchmarks.map(benchmark => (
-                <LocaleLink key={benchmark.id} to={benchmarkPath(benchmark.id)} onClick={onClose}>{benchmark.name}</LocaleLink>
+                <LocaleLink key={benchmark.id} to={benchmarkPath(benchmark.id)} onClick={onClose}>{benchmark.name}<GoArrowIcon /></LocaleLink>
               ))}
             </Popover.Content>
           </Popover.Portal>

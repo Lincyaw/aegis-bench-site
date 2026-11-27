@@ -1,7 +1,6 @@
 import { useSyncExternalStore } from 'react';
 
-export const NARROW_QUERY = '(max-width: 760px)';
-export const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';
+export const NARROW_QUERY = '(max-width: 760px)';export const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';
 
 /** The nav's height, from the site's layout tokens. */
 export function navHeight(): number {

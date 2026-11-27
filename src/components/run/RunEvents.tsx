@@ -3,7 +3,7 @@ import { Suspense, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { RunEvent, RunEventRow } from '../../api/types';
 import { Loading } from '../../ui/content';
-import controls from '../../ui/controls.module.css';
+import { TextLink } from '../../ui/controls';
 import { AtifFields } from '../trajectory/AtifStep';
 import { HuggingFaceBoundary } from './HuggingFace';
 import styles from './RunEvents.module.css';
@@ -35,7 +35,7 @@ export function RunEventList({ events, useEvent, onStep }: { events: RunEventRow
                     <RunEventFields useEvent={useEvent} index={event.index} />
                   </Suspense>
                 </HuggingFaceBoundary>
-                <button type="button" className={clsx(controls.textLink, 't-micro')} onClick={() => onStep(event.stepId)}>{t('console.run.events.inTrajectory')}</button>
+                <TextLink className="t-micro" onClick={() => onStep(event.stepId)}>{t('console.run.events.inTrajectory')}</TextLink>
               </div>
             )}
           </li>
