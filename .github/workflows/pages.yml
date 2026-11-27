@@ -1,11 +1,11 @@
-# Publishes the demo to GitHub Pages on every push to master once the checks pass. The site is served under the
+# Publishes the demo to GitHub Pages on every push to main once the checks pass. The site is served under the
 # project's path, so the build takes that path as its base; 404.html is the page itself, so that an address deep in
 # the site opens it too.
 name: Pages
 
 on:
   push:
-    branches: [master]
+    branches: [main]
   workflow_dispatch:
 
 permissions:

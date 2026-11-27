@@ -86,7 +86,7 @@ mock 服务端的作用除了提供演示数据，还在于检验接口设计是
 
 ## 检查与验证
 
-提交前 `npm run check` 和 `npm run build` 都必须通过；推送到 master 时，Pages 工作流先跑这两项再发布。放在 Hugging Face 上的数据文件另用 `npm run check:data -- --hugging-face` 检查。
+提交前 `npm run check` 和 `npm run build` 都必须通过；推送到 main 时，Pages 工作流先跑这两项再发布。放在 Hugging Face 上的数据文件另用 `npm run check:data -- --hugging-face` 检查。
 
 功能改动还要在浏览器中验证：
 1. 运行 `npm run build`，再用 `npx vite preview` 打开生产构建。
