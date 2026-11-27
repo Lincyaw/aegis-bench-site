@@ -303,7 +303,10 @@ export function layoutBands(layers: WorldLayer[], nodes: WorldNode[], edges: Wor
   const bands = layers.map(layer => {
     const own = nodes.filter(node => node.layer === layer.id);
     const ids = new Set(own.map(node => node.id));
-    const placement = LAYER_LAYOUTS[layer.shape](own, edges.filter(edge => ids.has(edge.from) && ids.has(edge.to)), width - 2 * CANVAS_MARGIN, widthOf);
+    // A layer with nothing to draw, such as one the run never touched in a footprint, is an empty band; dagre would size it as -Infinity.
+    const placement = own.length === 0
+      ? { nodes: [], boxes: [], edges: [], guides: [], height: 0 }
+      : LAYER_LAYOUTS[layer.shape](own, edges.filter(edge => ids.has(edge.from) && ids.has(edge.to)), width - 2 * CANVAS_MARGIN, widthOf);
     const band = { layer, top, height: BAND_HEAD + placement.height + BAND_FOOT, origin: { x: CANVAS_MARGIN, y: top + BAND_HEAD }, placement };
     widest = Math.max(widest, ...[...placement.nodes, ...placement.boxes].map(entry => 2 * CANVAS_MARGIN + entry.x + entry.width));
     top += band.height;
