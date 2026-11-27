@@ -218,6 +218,8 @@ model RunReplay {
 
   world: World;
   footprint: Footprint;
+
+  /** Empty when the benchmark's panel shows none of what a world reports, as for a world that is only code */
   signals: RunSignals;
 }
 

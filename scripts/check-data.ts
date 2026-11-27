@@ -5,7 +5,7 @@ import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import type { Catalog, FootprintFile, SignalsFile, Trajectory, WorldFile } from '../src/api/types';
 import {
-  DATA_DIRECTORY, WORLD_DIRECTORY, dataDirectoryPathOf, openRecords, openedIndexes, readAnnotations, readFootprint, readRunFile, readSignals, readTaskFile,
+  DATA_DIRECTORY, WORLD_DIRECTORY, dataDirectoryPathOf, keepsSignals, openRecords, openedIndexes, readAnnotations, readFootprint, readRunFile, readSignals, readTaskFile,
   readTrajectory, readWorld, runDirectoryOf, taskDirectoryOf, type BenchmarkIndexes,
 } from '../src/mocks/records';
 import { dataReaderAt } from './dataReader';
@@ -202,9 +202,13 @@ export function fileReadsOf(benchmark: BenchmarkIndexes): { reads: (() => Promis
       readRunFile(record, fact.id), readTrajectory(record, fact.id), record.annotationCategories ? readAnnotations(record, fact.id) : [],
     ]);
     if (record.worldLayers) {
-      const [footprint, signals, world] = await Promise.all([readFootprint(record, fact.id), readSignals(record, fact.id), readWorld(record.id, fact.taskId)]);
+      const [footprint, world] = await Promise.all([readFootprint(record, fact.id), readWorld(record.id, fact.taskId)]);
       checkFootprint(footprint, trajectory, world, named(`${runDirectoryOf(fact.id)}/footprint.json`));
-      checkSignals(signals, footprint, world, named(`${runDirectoryOf(fact.id)}/signals.json`));
+      if (keepsSignals(record)) {
+        checkSignals(await readSignals(record, fact.id), footprint, world, named(`${runDirectoryOf(fact.id)}/signals.json`));
+      } else {
+        expect(footprint.touches.every(touch => !touch.view?.series && !touch.view?.logs && !touch.view?.traces), named(`${runDirectoryOf(fact.id)}/footprint.json`), 'shows series, logs or traces of a benchmark that keeps no signals');
+      }
     }
     checkAgainst('RunFile', named(`${runDirectoryOf(fact.id)}/run.json`), run);
     checkAgainst('TrajectoryFile', named(`${runDirectoryOf(fact.id)}/trajectory.json`), trajectory);
@@ -224,7 +228,7 @@ export function fileReadsOf(benchmark: BenchmarkIndexes): { reads: (() => Promis
     const text = await readTaskFile(record, task.id, file);
     expect(new TextEncoder().encode(text).length === file.size, named(`${taskDirectoryOf(task.id)}/${file.path}`), `is not the ${file.size} bytes tasks.json says`);
   });
-  const filesPerRun = 2 + (record.annotationCategories ? 1 : 0) + (record.worldLayers ? 2 : 0);
+  const filesPerRun = 2 + (record.annotationCategories ? 1 : 0) + (record.worldLayers ? 1 : 0) + (keepsSignals(record) ? 1 : 0);
   return { reads: [...worldReads, ...(leaveKept ? [] : runReads), ...taskReads], unread: (leaveKept ? runs.length * filesPerRun : 0) + taskFiles.length - readable.length };
 }
 

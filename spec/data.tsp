@@ -20,7 +20,7 @@ using AegisBench.Console;
  *   benchmarks/<benchmark>/runs/<run>/trajectory.json  TrajectoryFile
  *   benchmarks/<benchmark>/runs/<run>/annotations.json AnnotationListFile, for a benchmark that declares annotation categories
  *   benchmarks/<benchmark>/runs/<run>/footprint.json   FootprintFile, for a benchmark that declares world layers
- *   benchmarks/<benchmark>/runs/<run>/signals.json     SignalsFile, for a benchmark that declares world layers
+ *   benchmarks/<benchmark>/runs/<run>/signals.json     SignalsFile, for a benchmark whose replay panel shows metrics, logs or traces
  *   benchmarks/<benchmark>/worlds/<task>.json WorldFile, for a benchmark that declares world layers
  *   benchmarks/<benchmark>/hunts.json         HuntListFile
  *   benchmarks/<benchmark>/releases.json      ReleaseListFile
@@ -111,7 +111,8 @@ model BenchmarkFile {
 
   /**
    * The layers of the benchmark's worlds, in the order a replay stacks them; when present, every task has a world, every
-   * run a footprint and signals, and the blocks name the replay's panel
+   * run a footprint, and the blocks name the replay's panel. A benchmark may declare any layers its worlds have, such as
+   * only modules and code for a coding task; every run also keeps signals when the panel shows metrics, logs or traces.
    */
   @minItems(1)
   worldLayers?: WorldLayerRecord[];

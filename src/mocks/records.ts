@@ -1,5 +1,6 @@
 import type {
-  BenchmarkFile, Catalog, FootprintFile, HuntRecord, PublishedRelease, RunFact, RunFile, SignalsFile, StepAnnotation, TaskFileRecord, TaskRecord, Trajectory, WorldFile,
+  BenchmarkFile, Catalog, FootprintFile, HuntRecord, PublishedRelease, ReplayPanelBlock, RunFact, RunFile, SignalsFile, StepAnnotation, TaskFileRecord, TaskRecord, Trajectory,
+  WorldFile,
 } from '../api/types';
 
 /*
@@ -171,7 +172,15 @@ export function readFootprint(record: BenchmarkFile, runId: string): Promise<Foo
   return readFromDirectory(record, runDirectoryOf(runId), 'footprint.json', location => readJson<FootprintFile>(location));
 }
 
-/** What a run's world reported while the run went on; only a benchmark that declares world layers has signals. */
+/** The blocks of a replay's panel that show what a world reported; a benchmark whose panel shows none keeps no signals. */
+export const SIGNAL_BLOCKS: readonly ReplayPanelBlock[] = ['metrics', 'logs', 'traces'];
+
+/** Whether the benchmark's runs keep signals: its worlds report metrics, logs or traces, and its replay's panel shows them. */
+export function keepsSignals(record: BenchmarkFile): boolean {
+  return record.blocks.replayPanel?.some(block => SIGNAL_BLOCKS.includes(block)) ?? false;
+}
+
+/** What a run's world reported while the run went on; only a benchmark that keeps signals has them. */
 export function readSignals(record: BenchmarkFile, runId: string): Promise<SignalsFile> {
   return readFromDirectory(record, runDirectoryOf(runId), 'signals.json', location => readJson<SignalsFile>(location));
 }
