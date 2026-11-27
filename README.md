@@ -14,6 +14,8 @@ npm run check    # 类型检查、oxlint、样式检查、译文检查与数据�
 npm run mock     # 在本地启动 mock 服务：接口 http://127.0.0.1:4010/api，接口文档 http://127.0.0.1:4010/docs
 ```
 
+mock 的 service worker 只能在 HTTPS 或 localhost 下运行。从别的机器用 HTTP 地址打开时，页面不启动 service worker，接口请求由开发或预览服务器转发给 `npm run mock`，所以要同时运行两者，例如 `npm run mock` 加上 `npx vite preview --host`。
+
 ## 规范
 
 - [工程规范](CONTRIBUTING.md)：目录、接口先行与 mock、语言、内容、代码规则、检查与验证、提交。

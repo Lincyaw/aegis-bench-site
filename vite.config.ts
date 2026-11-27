@@ -7,6 +7,12 @@ import remarkFrontmatter from 'remark-frontmatter';
 import remarkGfm from 'remark-gfm';
 import remarkMdxFrontmatter from 'remark-mdx-frontmatter';
 import { defineConfig } from 'vite';
+import { MOCK_ORIGIN } from './scripts/mockAddress';
+import { API_ROOT } from './src/api/server';
+
+// A page opened outside a secure context cannot run the mock service worker; its API requests reach the server that
+// served it, which forwards them to `npm run mock`.
+const apiForwarding = { [API_ROOT]: MOCK_ORIGIN };
 
 // Editorial documents under content/ compile to React components: .mdx with the site's blocks, .md as plain Markdown.
 // Each also exports its frontmatter and its headings with their anchors, as `tableOfContents`.
@@ -31,4 +37,6 @@ export default defineConfig({
     },
     react({ include: /\.(mdx|md|tsx|ts|jsx|js)$/ }),
   ],
+  server: { proxy: apiForwarding },
+  preview: { proxy: apiForwarding },
 });

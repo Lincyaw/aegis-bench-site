@@ -8,14 +8,13 @@ import { contractHandler } from '../src/mocks/contract';
 import { handlers } from '../src/mocks/handlers';
 import { DATA_DIRECTORY, openRecords } from '../src/mocks/records';
 import { dataReaderAt } from './dataReader';
+import { MOCK_HOST, MOCK_ORIGIN, MOCK_PORT } from './mockAddress';
 
 /*
  * The mock server outside the browser: the same handlers behind the same contract, reachable with curl or from the
  * API's documentation page, so the spec can be tried out on its own.
  */
 
-export const MOCK_HOST = '127.0.0.1';
-export const MOCK_PORT = 4010;
 export const OPENAPI_PATH = '/openapi.json';
 export const DOCS_PATH = '/docs';
 
@@ -34,5 +33,5 @@ app.all(`${API_ROOT}/*`, async context => {
   return response;
 });
 serve({ fetch: app.fetch, hostname: MOCK_HOST, port: MOCK_PORT }, () => {
-  console.log(`API: http://${MOCK_HOST}:${MOCK_PORT}${API_ROOT}  documentation: http://${MOCK_HOST}:${MOCK_PORT}${DOCS_PATH}`);
+  console.log(`API: ${MOCK_ORIGIN}${API_ROOT}  documentation: ${MOCK_ORIGIN}${DOCS_PATH}`);
 });

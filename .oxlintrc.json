@@ -2,6 +2,8 @@
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "plugins": ["react", "typescript", "oxc", "jsx-a11y"],
   "jsPlugins": ["./scripts/lint-rules.js"],
+  // Task files under the data directory are benchmark records kept as the tasks have them, not the site's code.
+  "ignorePatterns": ["public/data/**"],
   "rules": {
     "react/rules-of-hooks": "error",
     "react/exhaustive-deps": "error",
