@@ -33,6 +33,7 @@ mock 的 service worker 只能在 HTTPS 或 localhost 下运行。从别的机�
 | `content/` | 各评测基准的介绍页与研究报告（MD/MDX） |
 | `public/data/` | mock 服务端读取的评测记录：评测基准、任务、运行、轨迹、轨迹分析与发布记录 |
 | `scripts/` | 仓库自带的检查脚本（译文、数据）与本地 mock 服务 |
+| `examples/` | 接入示例：Bench E 数据的离线生成程序，演示怎样从代码推出世界和足迹（见「接入新的评测基准」） |
 
 ## 运行记录
 
@@ -142,3 +143,33 @@ public/data/
 - 数据集仓库必须公开：静态站点里放不了访问令牌，私有或受限的仓库读不到。
 - 读者访问不了 huggingface.co 时，接口对需要这些记录的请求返回 502，并给出记录在 Hugging Face 上的页面。页面在原本显示记录的位置说明读取不到，并给出链接；评测基准页和运行记录页的其余部分照常显示。匿名访问时，每个 IP 每 5 分钟最多下载 3,000 个文件。
 - 现在 Bench A、B、C 的运行与任务文件放在 [PolarBear2026/agent-eval-demo](https://huggingface.co/datasets/PolarBear2026/agent-eval-demo)，Bench D 和 Bench E 全部在仓库里。
+
+## 接入新的评测基准
+
+站点没有后端：mock 服务端运行在浏览器的 service worker 里，直接读站点 `data/` 下的文件。接入一个评测基准只需要准备数据，不用改代码；数据检查通过后，本地运行 `npm run dev` 就能查看，推送到 main 就会发布。
+
+1. **准备数据。** 在 `public/data/catalog.json` 的 `benchmarks` 里加上评测基准的目录名，运行用到的模型和框架也要在其中登记；再按上文「数据」一节的目录结构准备 `benchmarks/<评测基准>/` 下的文件。`hunts.json` 可以是空数组，`releases.json` 必须恰好有一个当前版本。每种文件的格式在 `spec/data.tsp` 中声明，也可以对照 `npm run gen` 生成的 JSON Schema `public/schema/data-files.json`。运行和任务文件多时可以放在 Hugging Face 上，见上文。
+2. **写介绍页。** 在 `content/benchmarks/<评测基准>/` 下放 `zh-CN.mdx` 和 `en.mdx`，对外站点的评测基准页以它为正文，可以照现有评测基准的写法。
+3. **需要回放时**，在 `benchmark.json` 里声明 `worldLayers` 和 `blocks.replayPanel`，再用自己的离线程序生成每道任务的 `worlds/<任务>.json` 和每次运行的 `footprint.json`；侧栏显示指标、日志或调用链时，每次运行还要有 `signals.json`。下面的 Bench E 生成程序是一个完整的例子。
+4. **检查。** 运行 `npm run check:data`；放在 Hugging Face 上的数据用 `npm run check:data -- --hugging-face` 一并检查。
+5. **查看与发布。** `npm run dev` 在本地查看；推送到 main 后由 GitHub Actions 发布到 GitHub Pages。部署到别处时，用 `npm run build -- --base=/<路径>/` 构建，把 `dist/index.html` 复制为 `dist/404.html`（站内的深层地址才能直接打开），再用任意静态服务器托管 `dist/`。service worker 只能在 HTTPS 或 localhost 下运行。
+
+只有这几种情况需要改代码：
+- 新的对照或侧栏 block：新增一个组件，登记到对应的登记表，并加入 spec 中的枚举。
+- 新的层画法：在 `src/components/replay/layout.ts` 的 `LAYER_LAYOUTS` 里登记一个布局函数。
+- 接入真实的后端：后端按 `spec/` 生成的 OpenAPI 实现同样的接口，站点代码不用改；目前构建总会启动 mock，切换到真实后端的开关还没有做。
+
+### 示例：Bench E 的生成程序
+
+`examples/bench-e/make_bench_e.py` 生成 Bench E 的全部数据，可以作为离线映射程序的参考。程序里只写了一份场景：代码仓库的初始文件，以及每次运行按顺序发出的工具调用。其余内容都由它推出：
+- 每一步的世界从当时的文件解析得到：用 `ast` 找出类和函数及其行号、函数之间的调用和包之间的导入；测试用例的状态取自最近一次运行测试的结果。一步的事件就是这一步前后两个世界的差别。
+- 工具的输出按调用实际执行：读文件给出带行号的内容，搜索给出匹配的行，运行测试就在那一步的文件上运行 pytest。足迹按输出记下每一步碰到的文件、函数、模块和测试用例。
+- 评分在提交的文件上运行隐藏检查。
+
+程序需要 Python 3.12 以上和 pytest。在仓库根目录运行：
+
+```bash
+python3 -I examples/bench-e/make_bench_e.py public/data .scratch/bench-e
+```
+
+第一个参数是数据目录，第二个是运行测试用的工作目录。程序会重写 `public/data/benchmarks/bench-e/`；结果是确定的，重复运行不会产生改动。
