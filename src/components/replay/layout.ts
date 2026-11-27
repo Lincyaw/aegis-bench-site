@@ -118,8 +118,9 @@ export function across(from: Rect, to: Rect): string {
 }
 
 /**
- * A tree: every root heads a block, its descendants listed beneath it, indented by depth, in columns of a few rows; the
- * blocks run from left to right and wrap at the width.
+ * A tree: every root heads a block, its descendants listed beneath it, indented by depth, in columns of a few rows that
+ * each hold whole subtrees of the root's children; the blocks run from left to right and wrap at the width. A tree may be
+ * as deep as its world, such as directories, files, classes and their methods.
  */
 export function layoutTree(nodes: WorldNode[], _edges: WorldEdge[], width: number, widthOf: (node: WorldNode) => number): Placement {
   const children = childrenOf(nodes);
@@ -135,7 +136,19 @@ export function layoutTree(nodes: WorldNode[], _edges: WorldEdge[], width: numbe
       descend(child, depth + 1);
     });
     descend(root, 1);
-    const columns = Array.from({ length: Math.ceil(entries.length / TREE_ROWS) }, (_, index) => entries.slice(index * TREE_ROWS, (index + 1) * TREE_ROWS));
+    // A column breaks only between the root's children, so a file keeps its symbols, or a directory its files, beside it;
+    // a child with more than a column's rows has a column to itself.
+    const columns: { node: WorldNode; depth: number }[][] = [];
+    entries.forEach((entry, index) => {
+      const column = columns.at(-1);
+      const next = entries.findIndex((later, at) => at > index && later.depth === 1);
+      const size = (next < 0 ? entries.length : next) - index;
+      if (column && (entry.depth > 1 || column.length + size <= TREE_ROWS)) {
+        column.push(entry);
+      } else {
+        columns.push([entry]);
+      }
+    });
     const columnWidths = columns.map(column => Math.max(...column.map(entry => entry.depth * TREE_INDENT + widthOf(entry.node))));
     const blockWidth = Math.max(widthOf(root), columnWidths.reduce((sum, columnWidth) => sum + columnWidth + BLOCK_GAP / 2, 0));
     if (x > 0 && x + blockWidth > width) {
